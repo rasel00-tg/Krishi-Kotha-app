@@ -1,0 +1,3282 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>কৃষি কথা – এডমিন কন্ট্রোল</title>
+  <!-- Distinctive Admin Favicon (Vector SVG + High-Res PNG) -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Firebase Web SDK (v10 compat) for Live Firestore Synchronization -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #2E7D32;
+      --primary-dark: #1B5E20;
+      --primary-light: #4CAF50;
+      --primary-container: #E8F5E9;
+      --secondary: #388E3C;
+      --secondary-container: #C8E6C9;
+      --sidebar-bg: #162D1A;
+      --sidebar-hover: #214227;
+      --sidebar-active: #2E7D32;
+      --bg: #F8FAF7;
+      --surface: #FFFFFF;
+      --border: #D8E4D8;
+      --text-primary: #1E281F;
+      --text-secondary: #4A5B4C;
+      --text-muted: #758577;
+      --alert-critical: #D32F2F;
+      --alert-critical-bg: #FFEBEE;
+      --alert-warning: #E65100;
+      --alert-warning-bg: #FFF3E0;
+      --alert-info: #1976D2;
+      --alert-info-bg: #E3F2FD;
+    }
+
+    *, html, body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, input, button, select, textarea, optgroup, option {
+      font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Tiro Bangla', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Resilient Vector SVG & Font Icon System (Zero Tofu Box / Missing Glyph) */
+    .app-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .menu-icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    .btn .app-icon {
+      margin-right: 5px;
+    }
+
+    .fa, .fas, .fa-solid, .fa-regular, [class*="fa-"] {
+      font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 270px;
+      background-color: var(--sidebar-bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-logo-container {
+      width: 44px;
+      height: 44px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-text h2 {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: #8BA58E;
+    }
+
+    .menu {
+      padding: 16px 12px;
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .menu-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      color: #DCE7DC;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .menu-item:hover {
+      background-color: var(--sidebar-hover);
+      color: #fff;
+    }
+
+    .menu-item.active {
+      background-color: var(--sidebar-active);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .menu-item i {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 18px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Main Content */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .badge-live {
+      background: var(--primary-container);
+      color: var(--primary-dark);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(46, 125, 50, 0.3);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .content-area {
+      padding: 28px;
+      flex: 1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .banner {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(46, 125, 50, 0.2);
+    }
+
+    .banner h2 {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .banner p {
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stat-header span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--bg); }
+
+    .panel-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+    }
+
+    .item-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .item-card:hover {
+      background: #f1f6f1;
+    }
+
+    .item-info h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .item-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-weather { background: var(--alert-warning-bg); color: var(--alert-warning); }
+    .badge-crop { background: var(--primary-container); color: var(--primary-dark); }
+    .badge-market { background: var(--alert-info-bg); color: var(--alert-info); }
+    .badge-general { background: #F3E5F5; color: #7B1FA2; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      width: 90%;
+      max-width: 520px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .crop-overview-card {
+      transition: all 0.22s ease-in-out;
+    }
+    .crop-overview-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08) !important;
+      border-color: #B0BEC5 !important;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary-dark);
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      transform: translateY(100px);
+      transition: transform 0.3s ease;
+      z-index: 300;
+    }
+
+    #toast.show { transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo-container">
+        <img src="favicon.png" alt="কৃষি কথা এডমিন" class="brand-logo" onerror="this.onerror=null; this.src='pnglogo.png';">
+      </div>
+      <div class="brand-text">
+        <h2>কৃষি কথা</h2>
+        <p>এডমিন কন্ট্রোল প্যানেল</p>
+      </div>
+    </div>
+
+    <ul class="menu">
+      <li class="menu-item active" onclick="switchTab('dashboard')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1.5"/><rect width="7" height="5" x="14" y="3" rx="1.5"/><rect width="7" height="9" x="14" y="12" rx="1.5"/><rect width="7" height="5" x="3" y="16" rx="1.5"/></svg>
+        <span>ড্যাশবোর্ড</span>
+      </li>
+      <li class="menu-item" onclick="switchTab('notifications')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span>নোটিফিকেশন কন্ট্রোল</span>
+      </li>
+      <li class="menu-item" onclick="switchTab('market')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>বাজার দর আপডেট</span>
+      </li>
+      <li class="menu-item" onclick="switchTab('crops')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg>
+        <span>ফসলের তথ্য (Crops)</span>
+      </li>
+      <li class="menu-item" onclick="switchTab('pests')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="14" x="8" y="6" rx="4"/><path d="m19 7-3 2"/><path d="m5 7 3 2"/><path d="m19 19-3-2"/><path d="m5 19 3-2"/><path d="M20 13h-4"/><path d="M4 13h4"/><path d="m10 4 1 2"/><path d="m14 4-1 2"/></svg>
+        <span>রোগবালাই ও দমন</span>
+      </li>
+      <li class="menu-item" onclick="switchTab('users')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/><path d="M21 16v2a3 3 0 0 1-3 3h-5"/></svg>
+        <span>কৃষক ও সহায়তা টিকিট</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar">A</div>
+      <div>
+        <div style="font-size: 13px; font-weight: 600;">এডমিন অফিসার</div>
+        <div style="font-size: 11px; color: #8BA58E;">সুপার এডমিনিস্ট্রেটর</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <div class="main-wrapper">
+    <header>
+      <div class="header-title">
+        <h1 id="pageTitle">ড্যাশবোর্ড ওভারভিউ</h1>
+        <p>কৃষি কথা – মোবাইল ও ওয়েব সেন্ট্রাল অ্যাডমিন</p>
+      </div>
+      <div class="badge-live">
+        <div class="live-dot"></div>
+        <span id="firestoreStatusText">Firestore লাইভ সিঙ্ক</span>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- ================= TAB 1: DASHBOARD ================= -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="banner">
+          <div>
+            <h2>স্বাগতম! কৃষি কথা অ্যাডমিন কন্ট্রোল সেন্টারে</h2>
+            <p>এখান থেকে মোবাইল অ্যাপের নোটিফিকেশন, বাজার দর ও ফসল ডাটা রিয়েল-টাইমে আপডেট করা যাবে।</p>
+          </div>
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.85;"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>নিবন্ধিত কৃষক</span>
+              <div class="stat-icon" style="background: var(--primary-container); color: var(--primary);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="stat-farmers">০</div>
+            <div class="stat-sub"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); margin-right: 4px;"></span> ৬৪ জেলা সিঙ্ক</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>সক্রিয় বাজার দর পণ্য</span>
+              <div class="stat-icon" style="background: var(--secondary-container); color: var(--secondary);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="stat-market">০</div>
+            <div class="stat-sub"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--secondary); margin-right: 4px;"></span> পাইকারি ও খুচরা দর</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>নথিভুক্ত ফসল ক্যাটালগ</span>
+              <div class="stat-icon" style="background: #FFF3E0; color: #E65100;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="stat-crops">০</div>
+            <div class="stat-sub"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #E65100; margin-right: 4px;"></span> রোগবালাই ও জাত</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>প্রচারিত নোটিফিকেশন</span>
+              <div class="stat-icon" style="background: var(--alert-critical-bg); color: var(--alert-critical);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="stat-notifs">০</div>
+            <div class="stat-sub"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--alert-critical); margin-right: 4px;"></span> পুশ অ্যালার্ট সচল</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 12px; font-size: 16px;">দ্রুত অ্যাকশন (Quick Actions)</h3>
+        <div class="quick-actions">
+          <button class="btn btn-primary" onclick="switchTab('notifications')"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> নতুন নোটিফিকেশন পাঠান</button>
+          <button class="btn btn-secondary" onclick="openMarketModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg> বাজার দর আপডেট করুন</button>
+          <button class="btn btn-outline" onclick="openCropModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg> নতুন ফসল যোগ করুন</button>
+          <button class="btn btn-outline" onclick="switchTab('users')"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/><path d="M21 16v2a3 3 0 0 1-3 3h-5"/></svg> সহায়তা টিকিট দেখুন</button>
+          <button class="btn btn-primary" style="background: #1B5E20; border-color: #1B5E20;" onclick="seedInitialDatabase()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg> ডেটাবেজ সিড করুন (Seed Database)</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>সাম্প্রতিক নোটিফিকেশন</h3>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('notifications')">সব দেখুন</button>
+            </div>
+            <div id="dashboardNotifList"></div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>লাইভ বাজার দর আপডেট</h3>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('market')">সব আপডেট</button>
+            </div>
+            <div id="dashboardMarketList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: NOTIFICATIONS ================= -->
+      <div id="tab-notifications" class="tab-content">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 style="display: flex; align-items: center; gap: 8px;"><svg class="app-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> নতুন নোটিশ প্রচার করুন</h3>
+            </div>
+            <form onsubmit="broadcastNotification(event)">
+              <div class="form-group">
+                <label>বিজ্ঞপ্তির ধরন</label>
+                <select id="notifType" class="form-control">
+                  <option value="general">সাধারণ নোটিশ</option>
+                  <option value="weather">আবহাওয়া সতর্কতা</option>
+                  <option value="crop">ফসল ও রোগবালাই পরামর্শ</option>
+                  <option value="market">বাজার দর বিজ্ঞপ্তি</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>শিরোনাম</label>
+                <input id="notifTitle" class="form-control" placeholder="বিজ্ঞপ্তির শিরোনাম লিখুন" required>
+              </div>
+              <div class="form-group">
+                <label>বিস্তারিত বার্তা</label>
+                <textarea id="notifMsg" class="form-control" rows="4" placeholder="বিস্তারিত বার্তা লিখুন" required></textarea>
+              </div>
+              <div class="form-group">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>সংযুক্ত ছবি (ঐচ্ছিক)</span>
+                  <span style="font-size: 11px; font-weight: 600; color: #2E7D32;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudflare R2 স্টোরেজ</span>
+                </label>
+                <div style="display: flex; gap: 8px;">
+                  <input id="notifImg" class="form-control" placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1;">
+                  <button type="button" class="btn btn-primary" onclick="document.getElementById('notifFileInput').click()" style="white-space: nowrap; padding: 0 14px; font-size: 13px;">
+                    <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg> ছবি নির্বাচন
+                  </button>
+                  <input type="file" id="notifFileInput" accept="image/*" style="display: none;" onchange="handleImagePick(this, 'notif', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg')">
+                </div>
+                <div id="notifUploadStatus" style="font-size: 12px; margin-top: 4px; display: none;"></div>
+                <div id="notifImgPreviewBox" style="margin-top: 8px; display: none;">
+                  <div style="position: relative; display: inline-block;">
+                    <img id="notifImgPreview" src="" alt="Preview" style="max-height: 120px; border-radius: 10px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+                    <button type="button" onclick="removeNotifImage()" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);" title="ছবি মুছুন">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" id="notifSubmitBtn" class="btn btn-primary" style="width: 100%; justify-content: center;"><svg class="app-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg> লাইভ প্রচার করুন (Broadcast)</button>
+            </form>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>প্রচারিত নোটিফিকেশন তালিকা</h3>
+              <span class="badge badge-crop" id="notifCountBadge">মোট: ০</span>
+            </div>
+            <div id="allNotifsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: MARKET PRICES ================= -->
+      <div id="tab-market" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>বাজার দর আপডেট ও মনিটরিং</h3>
+              <p style="font-size: 12px; color: var(--text-muted);">সারাদেশের হাট-বাজারের কৃষিপণ্যের পাইকারি ও খুচরা দর ইনপুট ও আপডেট করুন।</p>
+            </div>
+            <button class="btn btn-primary" onclick="openMarketModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> নতুন দর যোগ করুন</button>
+          </div>
+
+          <!-- Professional Filter Bar: Cascading Division + 64 Districts + Instant Search + Reset -->
+          <div style="margin-bottom: 20px; padding: 14px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>
+              <label style="font-weight: 600; font-size: 13px;">বিভাগ:</label>
+              <select id="marketDivisionFilter" class="form-control" style="width: 150px; padding: 7px 10px; font-size: 13px;" onchange="onMarketDivisionChange()">
+                <option value="all">সকল বিভাগ</option>
+                <option value="ঢাকা বিভাগ">ঢাকা বিভাগ</option>
+                <option value="চট্টগ্রাম বিভাগ">চট্টগ্রাম বিভাগ</option>
+                <option value="রাজশাহী বিভাগ">রাজশাহী বিভাগ</option>
+                <option value="রংপুর বিভাগ">রংপুর বিভাগ</option>
+                <option value="খুলনা বিভাগ">খুলনা বিভাগ</option>
+                <option value="বরিশাল বিভাগ">বরিশাল বিভাগ</option>
+                <option value="সিলেট বিভাগ">সিলেট বিভাগ</option>
+                <option value="ময়মনসিংহ বিভাগ">ময়মনসিংহ বিভাগ</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <label style="font-weight: 600; font-size: 13px;">জেলা (৬৪ জেলা):</label>
+              <select id="marketDistrictFilter" class="form-control" style="width: 180px; padding: 7px 10px; font-size: 13px;" onchange="renderMarketList()">
+                <option value="all">সারাদেশ / সকল জেলা</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px;">
+              <svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="marketSearchFilter" type="text" class="form-control" style="padding: 7px 12px; font-size: 13px;" placeholder="পণ্য, বাজার বা জেলা দিয়ে খুঁজুন..." oninput="renderMarketList()">
+            </div>
+
+            <button class="btn btn-outline" id="marketResetBtn" style="padding: 6px 12px; font-size: 12px; color: var(--alert-critical); display: none;" onclick="resetMarketFilters()">
+              <svg class="app-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg> রিসেট
+            </button>
+          </div>
+
+          <div id="allMarketList"></div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: CROPS MANAGEMENT ================= -->
+      <div id="tab-crops" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;"><svg class="app-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg> <span>ফসলের তথ্য ব্যবস্থাপনা (Crops Management)</span></h3>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 3px;">ডাটাবেজের <code>crops</code> কালেকশনে সরাসরি নতুন ফসল যুক্ত, সম্পাদন ও ডিলিট করুন</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCropModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> নতুন ফসল যোগ করুন</button>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px; position: relative;">
+              <input type="text" id="cropSearchAdmin" class="form-control" placeholder="ফসলের নাম দিয়ে খুঁজুন..." oninput="renderCrops()">
+            </div>
+            <div style="width: 180px;">
+              <select id="cropCatFilterAdmin" class="form-control" onchange="renderCrops()">
+                <option value="all">সকল শ্রেণি / ক্যাটাগরি</option>
+                <option value="দানাদার শস্য">দানাদার শস্য</option>
+                <option value="শাকসবজি">শাকসবজি</option>
+                <option value="ফলমূল">ফলমূল</option>
+                <option value="মসলা জাতীয়">মসলা জাতীয়</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="cropsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px;"></div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 5: PESTS MANAGEMENT ================= -->
+      <div id="tab-pests" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;"><svg class="app-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--alert-critical)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="14" x="8" y="6" rx="4"/><path d="m19 7-3 2"/><path d="m5 7 3 2"/><path d="m19 19-3-2"/><path d="m5 19 3-2"/><path d="M20 13h-4"/><path d="M4 13h4"/><path d="m10 4 1 2"/><path d="m14 4-1 2"/></svg> <span>রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)</span></h3>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 3px;">ফসলের রোগ ও কীটশত্রু দমন নির্দেশিকা ডাটাবেজ</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openPestModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> নতুন বালাই যোগ করুন</button>
+          </div>
+          <div id="pestsList"></div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 5: USERS & SUPPORT ================= -->
+      <div id="tab-users" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>নিবন্ধিত কৃষক তালিকা (Users)</h3>
+            <span class="badge badge-crop" id="usersCountBadge">মোট: ০ জন</span>
+          </div>
+          <div id="usersList"></div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>সহায়তা টিকিট ও মতামত (Support Tickets)</h3>
+            <span class="badge badge-general">লাইভ কিউরি</span>
+          </div>
+          <div id="ticketsList"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Market Price Modal (No Screen Overflow, Compact 2-Col Grid, Pinned Footer) -->
+  <div class="modal-overlay" id="marketModal">
+    <div class="modal-box" style="max-width: 580px; width: 92%; max-height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);">
+      <!-- Pinned Modal Header -->
+      <div style="padding: 16px 22px 14px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; flex-shrink: 0;">
+        <h3 class="modal-title" id="marketModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+          <svg class="app-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2.5"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
+          <span>নতুন বাজার দর যোগ করুন</span>
+        </h3>
+        <button type="button" onclick="closeMarketModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1;" title="বন্ধ করুন">✕</button>
+      </div>
+
+      <!-- Form with smooth scrollable body and pinned actions -->
+      <form onsubmit="saveMarketPrice(event)" style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin: 0;">
+        <input type="hidden" id="mpId">
+        
+        <!-- Smooth Scrollable Form Body (Max Height with auto scroll) -->
+        <div class="modal-form-scroll" style="overflow-y: auto; max-height: calc(85vh - 120px); padding: 18px 22px; flex: 1;">
+          
+          <!-- Row 1: Crop Name & Market Name (2-Column Compact Grid) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">ফসলের নাম <span style="color: red;">*</span></label>
+              <input id="mpCrop" class="form-control" placeholder="যেমন: আলু, পেঁয়াজ, ধান" required style="padding: 8px 12px; font-size: 13.5px;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">বাজার / হাটের নাম <span style="color: red;">*</span></label>
+              <input id="mpMarket" class="form-control" placeholder="যেমন: কাওরান বাজার" required style="padding: 8px 12px; font-size: 13.5px;">
+            </div>
+          </div>
+
+          <!-- Row 2: Division & District (2-Column Grid) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">বিভাগ <span style="color: red;">*</span></label>
+              <select id="mpDivision" class="form-control" onchange="onMpDivisionChange()" required style="padding: 8px 12px; font-size: 13.5px;">
+                <option value="ঢাকা বিভাগ">ঢাকা বিভাগ</option>
+                <option value="চট্টগ্রাম বিভাগ">চট্টগ্রাম বিভাগ</option>
+                <option value="রাজশাহী বিভাগ">রাজশাহী বিভাগ</option>
+                <option value="রংপুর বিভাগ">রংপুর বিভাগ</option>
+                <option value="খুলনা বিভাগ">খুলনা বিভাগ</option>
+                <option value="বরিশাল বিভাগ">বরিশাল বিভাগ</option>
+                <option value="সিলেট বিভাগ">সিলেট বিভাগ</option>
+                <option value="ময়মনসিংহ বিভাগ">ময়মনসিংহ বিভাগ</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">জেলা (৬৪ জেলা) <span style="color: red;">*</span></label>
+              <select id="mpDistrict" class="form-control" required style="padding: 8px 12px; font-size: 13.5px;">
+                <!-- Populated dynamically based on mpDivision -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: Wholesale, Retail, Unit, Trend (Compact Multi-Col Grid) -->
+          <div style="display: grid; grid-template-columns: 1.1fr 1.1fr 0.9fr 1.1fr; gap: 10px; margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">পাইকারি দর (৳) <span style="color: red;">*</span></label>
+              <input id="mpPrice" type="number" step="any" class="form-control" placeholder="দর দিন" required style="padding: 8px 12px; font-size: 13.5px;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">খুচরা দর (৳)</label>
+              <input id="mpRetail" type="number" step="any" class="form-control" placeholder="দর দিন" style="padding: 8px 12px; font-size: 13.5px;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">একক</label>
+              <select id="mpUnit" class="form-control" style="padding: 8px 10px; font-size: 13px;">
+                <option value="কেজি">কেজি</option>
+                <option value="মণ">মণ</option>
+                <option value="বস্তা">বস্তা</option>
+                <option value="হালি">হালি</option>
+                <option value="কুড়ি">কুড়ি</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">দরের ট্রেন্ড</label>
+              <select id="mpTrend" class="form-control" style="padding: 8px 10px; font-size: 13px;">
+                <option value="stable">স্থিতিশীল</option>
+                <option value="up">উর্ধ্বমুখী</option>
+                <option value="down">নিম্নমুখী</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 4: Image Upload Widget (Clean & Compact) -->
+          <input type="hidden" id="mpImg">
+          <div class="form-group" style="margin-bottom: 0; background: #F8FAF7; border: 1px dashed #B0BEC5; border-radius: 10px; padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-weight: 600; font-size: 12.5px; color: var(--text-primary);">ফসলের ছবি আপলোড</span>
+              <span style="font-size: 11px; font-weight: 600; color: #0288D1;"><svg class="app-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudinary স্টোরেজ</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="mpUploadBtnWrap" style="flex: 1;">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('mpFileInput').click()" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 38px; border: 1.5px dashed #0288D1; border-radius: 8px; background: #F0F8FF; color: #0288D1; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#E1F5FE'" onmouseout="this.style.background='#F0F8FF'">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                  <span>ছবি নির্বাচন করুন</span>
+                </button>
+                <input type="file" id="mpFileInput" accept="image/*" style="display: none;" onchange="handleImagePick(this, 'market', 'mpImgPreviewBox', 'mpUploadStatus', 'mpImg')">
+              </div>
+              
+              <div id="mpImgPreviewBox" style="display: none;">
+                <div style="position: relative; display: inline-block;">
+                  <img id="mpImgPreview" src="" alt="Preview" style="height: 44px; width: 44px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+                  <button type="button" onclick="removeMarketImage()" style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.25);" title="ছবি মুছুন">✕</button>
+                </div>
+              </div>
+            </div>
+            
+            <div id="mpUploadStatus" style="font-size: 11.5px; margin-top: 4px; display: none;"></div>
+          </div>
+
+        </div>
+
+        <!-- Pinned Footer Actions (Always Visible at Modal Bottom) -->
+        <div class="modal-actions" style="margin: 0; padding: 12px 22px; border-top: 1px solid var(--border); background: #F8FAF7; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeMarketModal()" style="padding: 8px 18px; font-size: 13.5px; font-weight: 600;">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="mpSubmitBtn" style="padding: 8px 22px; font-size: 13.5px; font-weight: 700; box-shadow: 0 2px 6px rgba(46,125,50,0.25);">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Market Price Detail Modal (Admin View) -->
+  <div class="modal-overlay" id="marketDetailAdminModal">
+    <div class="modal-box" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+          <svg class="app-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>বাজার দর বিস্তারিত তথ্য</span>
+        </h3>
+        <button type="button" class="btn btn-outline" onclick="closeMarketDetailAdminModal()" style="padding: 4px 10px; font-size: 13px;">✕</button>
+      </div>
+
+      <div id="marketDetailAdminBody">
+        <!-- Rendered dynamically by viewMarketDetail(id) -->
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="closeMarketDetailAdminModal()">বন্ধ করুন</button>
+        <button type="button" class="btn btn-primary" id="marketDetailEditBtn" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>সম্পাদনা করুন</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop Modal -->
+  <div class="modal-overlay" id="cropModal">
+    <div class="modal-box" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <h3 class="modal-title" id="cropModalTitle">নতুন ফসল যোগ করুন</h3>
+      <form onsubmit="saveCrop(event)">
+        <input type="hidden" id="cropId">
+        <div class="form-group">
+          <label>ফসলের বাংলা নাম</label>
+          <input id="cropName" class="form-control" placeholder="ফসলের নাম লিখুন" required>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <div class="form-group" style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="margin: 0; font-size: 13px; font-weight: 600;">শ্রেণি / ক্যাটাগরি</label>
+              <button type="button" onclick="toggleNewCategoryInput(true)" style="background: none; border: none; color: var(--primary); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0;" title="নতুন ক্যাটাগরি যোগ করুন">
+                <svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> <span>নতুন ক্যাটাগরি</span>
+              </button>
+            </div>
+            <select id="cropCat" class="form-control" onchange="handleCropCatChange(this)" required>
+              <option value="দানাদার শস্য">দানাদার শস্য</option>
+              <option value="শাকসবজি">শাকসবজি</option>
+              <option value="ফলমূল">ফলমূল</option>
+              <option value="মসলা জাতীয়">মসলা জাতীয়</option>
+              <option value="তৈলবীজ">তৈলবীজ</option>
+              <option value="__new__">+ নতুন ক্যাটাগরি যোগ করুন...</option>
+            </select>
+            <!-- New Category Input box (hidden by default) -->
+            <div id="newCropCatRow" style="display: none; margin-top: 8px;">
+              <div style="display: flex; gap: 6px;">
+                <input type="text" id="newCropCatInput" class="form-control" placeholder="নতুন ক্যাটাগরির নাম লিখুন (যেমন: তৈলবীজ / ঔষধি)" style="font-size: 13px;">
+                <button type="button" class="btn btn-outline" onclick="toggleNewCategoryInput(false)" style="padding: 6px 12px; font-size: 12px; color: var(--alert-critical); border-color: #ffcdd2;" title="বাতিল">
+                  <svg class="app-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>মৌসুম (Season)</label>
+            <input id="cropSeason" class="form-control" placeholder="মৌসুম লিখুন" required>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <div class="form-group" style="flex: 1;">
+            <label>উপযোগী মাটি (Soil Type)</label>
+            <input id="cropSoil" class="form-control" placeholder="উপযোগী মাটির বিবরণ দিন">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>বপন/রোপণের সময় (Sowing Time)</label>
+            <input id="cropSowing" class="form-control" placeholder="বপন বা রোপণের সময় লিখুন">
+          </div>
+        </div>
+
+        <!-- Clean Image Upload Widget (No visible URL text field) -->
+        <input type="hidden" id="cropImg">
+        <div class="form-group" style="margin-top: 14px;">
+          <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 600; font-size: 13.5px;">ফসলের ছবি</span>
+            <span style="font-size: 11.5px; font-weight: 600; color: #2E7D32;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudflare R2 স্টোরেজ</span>
+          </label>
+          
+          <div id="cropUploadBtnWrap">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('cropFileInput').click()" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 46px; border: 1.5px dashed var(--primary); border-radius: 12px; background: #F8FAF7; color: var(--primary); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F8FAF7'">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <span>ছবি নির্বাচন করুন</span>
+            </button>
+            <input type="file" id="cropFileInput" accept="image/*" style="display: none;" onchange="handleImagePick(this, 'crop', 'cropImgPreviewBox', 'cropUploadStatus', 'cropImg')">
+          </div>
+          
+          <div id="cropUploadStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
+          
+          <div id="cropImgPreviewBox" style="margin-top: 10px; display: none;">
+            <div style="position: relative; display: inline-block;">
+              <img id="cropImgPreview" src="" alt="Preview" style="max-height: 120px; border-radius: 10px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+              <button type="button" onclick="removeCropImage()" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);" title="ছবি মুছুন">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Stages / ধাপসমূহ -->
+        <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="font-weight: 700; font-size: 13.5px; margin: 0; display: flex; align-items: center; gap: 6px;"><svg class="app-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> <span>ধাপ ভিত্তিক চাষাবাদ গাইড (Stages)</span></label>
+            <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;" onclick="addCropStageInputRow()">
+              <svg class="app-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg> <span>ধাপ যোগ করুন</span>
+            </button>
+          </div>
+          <div id="cropStagesInputsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="closeCropModal()">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="cropSubmitBtn">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Crop Detail Modal (Prestige Full View) -->
+  <div class="modal-overlay" id="cropDetailModal">
+    <div class="modal-box" style="max-width: 720px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 0; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.08);">
+      <!-- Hero Header with Image -->
+      <div id="cropDetailHeader" style="flex-shrink: 0; position: relative; height: 210px; background: linear-gradient(135deg, #1B5E20, #2E7D32); overflow: hidden; display: flex; align-items: flex-end;">
+        <img id="cropDetailHeroImg" src="" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;" onerror="this.style.display='none'">
+        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.15) 100%);"></div>
+        
+        <!-- Close Button (Top-Right) -->
+        <button type="button" onclick="closeCropDetailModal()" style="position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: 1.5px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: all 0.2s; z-index: 30; box-shadow: 0 4px 12px rgba(0,0,0,0.35);" onmouseover="this.style.background='rgba(220,38,38,0.95)'; this.style.transform='scale(1.08)';" onmouseout="this.style.background='rgba(0,0,0,0.6)'; this.style.transform='scale(1)';" title="বন্ধ করুন (Esc)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+
+        <!-- Title & Badges in Hero -->
+        <div style="position: relative; z-index: 2; padding: 18px 24px; width: 100%;">
+          <div style="display: flex; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+            <span id="cropDetailCategoryBadge" class="badge" style="background: rgba(255,255,255,0.95); color: #2E7D32; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px;">ক্যাটাগরি</span>
+            <span id="cropDetailSeasonBadge" class="badge" style="background: #FFE082; color: #E65100; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px;">মৌসুম</span>
+          </div>
+          <h2 id="cropDetailTitle" style="color: #fff; font-size: 24px; font-weight: 800; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">ফসলের নাম</h2>
+        </div>
+      </div>
+
+      <!-- Content Body (Scrollable!) -->
+      <div style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 24px; min-height: 0;">
+        <!-- Info Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 22px;">
+          <div style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">শ্রেণি / ক্যাটাগরি</div>
+              <div id="cropDetailCategory" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-top: 2px; word-break: break-word;">-</div>
+            </div>
+          </div>
+
+          <div style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFF8E1; color: #F57F17; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">উৎপাদন মৌসুম</div>
+              <div id="cropDetailSeason" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-top: 2px; word-break: break-word;">-</div>
+            </div>
+          </div>
+
+          <div style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #EFEBE9; color: #6D4C41; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">উপযোগী মাটির ধরন</div>
+              <div id="cropDetailSoil" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-top: 2px; word-break: break-word;">-</div>
+            </div>
+          </div>
+
+          <div style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #E0F2F1; color: #00796B; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">বপন বা রোপণের সময়</div>
+              <div id="cropDetailSowing" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-top: 2px; word-break: break-word;">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cultivation Stages (Timeline / Step Cards) -->
+        <div style="margin-bottom: 22px;">
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <svg class="app-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>চাষাবাদ ও পরিচর্যার ধাপসমূহ</span>
+          </h4>
+          <div id="cropDetailStagesList" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Timestamp / Meta Card -->
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 12px 16px; font-size: 12px; color: #64748B; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>তৈরি: <strong id="cropDetailCreatedAt" style="color: #334155;">-</strong></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+            <span>সর্বশেষ আপডেট: <strong id="cropDetailUpdatedAt" style="color: #334155;">-</strong></span>
+          </div>
+        </div>
+
+        <!-- Actions Footer -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border);">
+          <button type="button" class="btn btn-outline" onclick="closeCropDetailModal()" style="padding: 8px 18px; font-weight: 600;">বন্ধ করুন</button>
+          <button type="button" class="btn btn-primary" id="cropDetailEditBtn" style="padding: 8px 18px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> <span>সম্পাদনা করুন</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pest Modal -->
+  <div class="modal-overlay" id="pestModal">
+    <div class="modal-box">
+      <h3 class="modal-title" id="pestModalTitle">নতুন বালাই / রোগ যোগ করুন</h3>
+      <form onsubmit="savePest(event)">
+        <input type="hidden" id="pestId">
+        <div class="form-group">
+          <label>রোগ বা পোকার নাম</label>
+          <input id="pestName" class="form-control" placeholder="রোগ বা পোকার নাম লিখুন" required>
+        </div>
+        <div class="form-group">
+          <label>আক্রান্ত ফসল</label>
+          <input id="pestCrop" class="form-control" placeholder="আক্রান্ত ফসলের নাম লিখুন" required>
+        </div>
+        <div class="form-group">
+          <label>লক্ষণসমূহ</label>
+          <textarea id="pestSymptoms" class="form-control" rows="2" placeholder="লক্ষণসমূহ লিখুন" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>জৈব প্রতিকার</label>
+          <textarea id="pestOrganic" class="form-control" rows="2" placeholder="জৈব বা প্রাকৃতিক প্রতিকার লিখুন" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>রাসায়নিক প্রতিকার</label>
+          <textarea id="pestChemical" class="form-control" rows="2" placeholder="রাসায়নিক সমাধান ও ওষুধের নাম লিখুন" required></textarea>
+        </div>
+        <div class="form-group">
+          <label style="display: flex; justify-content: space-between; align-items: center;">
+            <span>বালাই / পোকার ছবি (ঐচ্ছিক)</span>
+            <span style="font-size: 11px; font-weight: 600; color: #2E7D32;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudflare R2 স্টোরেজ</span>
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <input id="pestImg" class="form-control" placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1;">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('pestFileInput').click()" style="white-space: nowrap; padding: 0 14px; font-size: 13px;">
+              <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg> ছবি নির্বাচন
+            </button>
+            <input type="file" id="pestFileInput" accept="image/*" style="display: none;" onchange="handleImagePick(this, 'pest', 'pestImgPreviewBox', 'pestUploadStatus', 'pestImg')">
+          </div>
+          <div id="pestUploadStatus" style="font-size: 12px; margin-top: 4px; display: none;"></div>
+          <div id="pestImgPreviewBox" style="margin-top: 8px; display: none;">
+            <div style="position: relative; display: inline-block;">
+              <img id="pestImgPreview" src="" alt="Preview" style="max-height: 120px; border-radius: 10px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+              <button type="button" onclick="removePestImage()" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);" title="ছবি মুছুন">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closePestModal()">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="pestSubmitBtn">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Support Reply Modal -->
+  <div class="modal-overlay" id="ticketModal">
+    <div class="modal-box">
+      <h3 class="modal-title">কৃষকের প্রশ্নের উত্তর দিন</h3>
+      <form onsubmit="saveTicketReply(event)">
+        <input type="hidden" id="replyTicketId">
+        <div class="form-group">
+          <label>উত্তরদাতার নাম ও পদবি</label>
+          <input id="replyOfficer" class="form-control" placeholder="উত্তরদাতার নাম ও পদবি লিখুন" required>
+        </div>
+        <div class="form-group">
+          <label>পরামর্শ ও সমাধান</label>
+          <textarea id="replyText" class="form-control" rows="4" placeholder="পরামর্শ ও সমাধান লিখুন" required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeTicketModal()">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="replySubmitBtn">উত্তর পাঠান</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">বার্তা সফলভাবে আপডেট হয়েছে!</div>
+
+  <script>
+    // Initialize Real Firebase Connection
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE3NMLtENJ6abrQauQQrJ-BorS-K8-LHQ",
+      authDomain: "krishikotha-app.firebaseapp.com",
+      projectId: "krishikotha-app",
+      storageBucket: "krishikotha-app.firebasestorage.app",
+      messagingSenderId: "161614701103",
+      appId: "1:161614701103:web:12c184d7d5b13580791cda",
+      measurementId: "G-6BB8ZFHR9M"
+    };
+
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      document.getElementById('firestoreStatusText').innerText = 'Firestore লাইভ সিঙ্ক';
+    } catch (err) {
+      console.warn("Firebase initialization notice:", err);
+      document.getElementById('firestoreStatusText').innerText = 'লোকাল মোড';
+    }
+
+    // Live Data State (Empty by default - NO Hardcoded Dummy Data)
+    let notifications = [];
+    let marketPrices = [];
+    let crops = [];
+    let pests = [];
+    let users = [];
+    let tickets = [];
+
+    // ==================== ROCK-SOLID INLINE SVG ICONS (IMMUNE TO FONT FAILURES) ====================
+    const ICONS = {
+      dashboard: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1.5"/><rect width="7" height="5" x="14" y="3" rx="1.5"/><rect width="7" height="9" x="14" y="12" rx="1.5"/><rect width="7" height="5" x="3" y="16" rx="1.5"/></svg>`,
+      bell: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
+      store: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+      sprout: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg>`,
+      bug: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="14" x="8" y="6" rx="4"/><path d="m19 7-3 2"/><path d="m5 7 3 2"/><path d="m19 19-3-2"/><path d="m5 19 3-2"/><path d="M20 13h-4"/><path d="M4 13h4"/><path d="m10 4 1 2"/><path d="m14 4-1 2"/></svg>`,
+      headset: `<svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/><path d="M21 16v2a3 3 0 0 1-3 3h-5"/></svg>`,
+      soil: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#8D6E63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>`,
+      calendar: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0288D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>`,
+      eye: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0288D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>`,
+      edit: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`,
+      trash: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`,
+      trendUp: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--alert-critical)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+      trendDown: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`,
+      trendStable: `<svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"/></svg>`
+    };
+
+    function formatErrorMsg(err) {
+      if (!err) return 'অজানা সমস্যা';
+      const s = String(err.message || err).toLowerCase();
+      if (s.includes('permission-denied') || s.includes('insufficient permissions')) {
+        return 'ফায়ারবেস পারমিশন এরর: Firebase Console > Firestore Database > Rules-এ গিয়ে read/write পারমিশন চালু করুন।';
+      }
+      if (s.includes('network') || s.includes('unavailable') || s.includes('failed to fetch')) {
+        return 'ইন্টারনেট বা ফায়ারবেস সার্ভার সংযোগ বিচ্ছিন্ন।';
+      }
+      return 'ত্রুটি: ' + (err.message || err);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+      const targetTab = document.getElementById('tab-' + tabKey);
+      if (targetTab) targetTab.classList.add('active');
+
+      const titles = {
+        'dashboard': 'ড্যাশবোর্ড ওভারভিউ',
+        'notifications': 'লাইভ নোটিফিকেশন ম্যানেজমেন্ট',
+        'market': 'বাজার দর ইনপুট ও আপডেট',
+        'crops': 'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
+        'pests': 'রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)',
+        'users': 'কৃষক ও সহায়তা টিকিট মনিটরিং'
+      };
+      document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
+
+      const keys = ['dashboard', 'notifications', 'market', 'crops', 'pests', 'users'];
+      const idx = keys.indexOf(tabKey);
+      if (idx >= 0) {
+        document.querySelectorAll('.menu-item')[idx].classList.add('active');
+      }
+    }
+
+    // ==================== REAL-TIME FIRESTORE LISTENERS ====================
+    function initFirestoreListeners() {
+      if (!db) return;
+
+      // 1. Notifications Listener
+      db.collection('notifications').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+        notifications = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          notifications.push({
+            id: doc.id,
+            title: d.title || d.heading || '',
+            message: d.message || d.description || d.details || '',
+            type: d.type || 'general',
+            time: formatTime(d.timestamp || d.updatedAt)
+          });
+        });
+        renderNotifications();
+      }, err => {
+        console.warn("Notifications orderBy fallback, querying snapshot:", err);
+        db.collection('notifications').onSnapshot(snapshot => {
+          notifications = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            notifications.push({
+              id: doc.id,
+              title: d.title || d.heading || '',
+              message: d.message || d.description || d.details || '',
+              type: d.type || 'general',
+              time: formatTime(d.timestamp || d.updatedAt),
+              rawTime: d.timestamp ? (d.timestamp.toMillis ? d.timestamp.toMillis() : new Date(d.timestamp).getTime()) : 0
+            });
+          });
+          notifications.sort((a, b) => b.rawTime - a.rawTime);
+          renderNotifications();
+        });
+      });
+
+      // 2. Market Prices Listener (Robust unfiltered listening to prevent missing index/timestamp blocking)
+      db.collection('market_prices').onSnapshot(snapshot => {
+        marketPrices = [];
+        snapshot.forEach(doc => {
+          const d = doc.data() || {};
+          const crop = (d.cropName && d.cropName.trim()) || (d.crop_name && d.crop_name.trim()) || (d.name && d.name.trim()) || (d.crop && d.crop.trim()) || 'ফসল';
+          const market = (d.marketName && d.marketName.trim()) || (d.market_name && d.market_name.trim()) || (d.market && d.market.trim()) || (d.bazar_name && d.bazar_name.trim()) || 'স্থানীয় বাজার';
+          const district = (d.district && d.district.trim()) || (d.district_name && d.district_name.trim()) || (d.division && d.division.trim()) || '';
+          const unit = (d.unit && d.unit.trim()) || (d.unit_name && d.unit_name.trim()) || 'কেজি';
+          const img = (d.imageUrl && d.imageUrl.trim()) || (d.image_url && d.image_url.trim()) || (d.img && d.img.trim()) || (d.image && d.image.trim()) || '';
+          const trend = (d.trend && d.trend.trim()) || (d.status && d.status.trim()) || 'stable';
+
+          let price = 0;
+          if (d.price !== undefined && d.price !== null && d.price !== '') price = d.price;
+          else if (d.wholesale_price !== undefined && d.wholesale_price !== null && d.wholesale_price !== '') price = d.wholesale_price;
+
+          let retail = 0;
+          if (d.retailPrice !== undefined && d.retailPrice !== null && d.retailPrice !== '') retail = d.retailPrice;
+          else if (d.retail_price !== undefined && d.retail_price !== null && d.retail_price !== '') retail = d.retail_price;
+
+          let rawTime = 0;
+          const ts = d.updatedAt || d.updated_at || d.timestamp || d.date || d.createdAt;
+          if (ts) {
+            if (ts.toMillis) rawTime = ts.toMillis();
+            else if (typeof ts.toDate === 'function') rawTime = ts.toDate().getTime();
+            else if (typeof ts === 'string') rawTime = new Date(ts).getTime() || 0;
+            else if (typeof ts === 'number') rawTime = ts;
+          }
+
+          marketPrices.push({
+            id: doc.id,
+            crop: crop,
+            district: district,
+            market: market,
+            price: price,
+            retail: retail,
+            unit: unit,
+            trend: trend,
+            img: img,
+            updatedAt: ts,
+            rawTime: rawTime
+          });
+        });
+        // Sort newest updated first
+        marketPrices.sort((a, b) => b.rawTime - a.rawTime);
+        renderMarketList();
+      }, err => console.error("Market stream error:", err));
+
+      // 3. Crops Listener & Category Discovery
+      db.collection('crops').onSnapshot(snapshot => {
+        crops = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          if (d.category && typeof d.category === 'string') {
+            categoriesSet.add(d.category.trim());
+          }
+          let parsedStages = [];
+          if (Array.isArray(d.stages)) {
+            parsedStages = d.stages.map(s => {
+              if (typeof s === 'string') return { name: s, desc: '' };
+              return { name: s.title || s.name || s.step || s.stage_name || '', desc: s.desc || s.description || s.details || '' };
+            });
+          }
+          crops.push({
+            id: doc.id,
+            name: d.title || d.name_bn || d.name || 'ফসল',
+            cat: d.category || 'অন্যান্য',
+            season: d.season || '',
+            soil: d.soil_type || d.soil || '',
+            sowing: d.sowing_time || d.sowing || '',
+            img: d.imageUrl || d.image_url || d.image || '',
+            stages: parsedStages,
+            createdAt: d.createdAt || d.created_at || d.timestamp || null,
+            updatedAt: d.updatedAt || d.updated_at || d.timestamp || null
+          });
+        });
+        refreshCategoryDropdowns();
+        renderCrops();
+      }, err => console.error("Crops stream error:", err));
+
+      // 3.1 Dedicated Categories Collection Listener
+      try {
+        db.collection('categories').onSnapshot(snapshot => {
+          if (snapshot && !snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              const catName = (d.name || d.name_bn || doc.id.replace(/^cat_/, '')).trim();
+              if (catName) categoriesSet.add(catName);
+            });
+            refreshCategoryDropdowns();
+          }
+        }, err => console.warn("Categories stream note:", err));
+      } catch (catErr) {
+        console.warn("Categories listener init:", catErr);
+      }
+
+      // 4. Pests Listener
+      db.collection('pests_diseases').onSnapshot(snapshot => {
+        pests = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          pests.push({
+            id: doc.id,
+            name: d.title || d.name_bn || d.name || '',
+            crop: d.crop_name_bn || d.crop_name || '',
+            symptoms: d.symptoms || '',
+            cure: d.solution || d.organic_cure || '',
+            chemical: d.chemical_cure || ''
+          });
+        });
+        renderCrops();
+      }, err => console.error("Pests stream error:", err));
+
+      // 5. Users Listener
+      db.collection('users').onSnapshot(snapshot => {
+        users = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          users.push({
+            id: doc.id,
+            name: d.name || 'কৃষক ভাই',
+            phone: d.phone || '',
+            district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
+            crops: d.preferred_crops || []
+          });
+        });
+        renderUsers();
+      }, err => console.error("Users stream error:", err));
+
+      // 6. Support Tickets Listener
+      db.collection('support_tickets').onSnapshot(snapshot => {
+        tickets = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          tickets.push({
+            id: doc.id,
+            farmer: d.authorName || 'কৃষক ভাই',
+            phone: d.authorPhone || '',
+            district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
+            subject: d.subject || '',
+            details: d.details || '',
+            status: d.status || 'pending',
+            reply: d.officerReply || null
+          });
+        });
+        renderUsers();
+      }, err => console.error("Tickets stream error:", err));
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return 'এইমাত্র';
+      try {
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const diff = Math.floor((new Date() - date) / 60000);
+        if (diff < 60) return `${diff <= 0 ? 1 : diff} মিনিট আগে`;
+        const hours = Math.floor(diff / 60);
+        if (hours < 24) return `${hours} ঘণ্টা আগে`;
+        return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+      } catch (e) {
+        return 'এইমাত্র';
+      }
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    function renderNotifications() {
+      const dbList = document.getElementById('dashboardNotifList');
+      const allList = document.getElementById('allNotifsList');
+      document.getElementById('notifCountBadge').innerText = 'মোট: ' + notifications.length;
+      document.getElementById('stat-notifs').innerText = notifications.length;
+
+      if (notifications.length === 0) {
+        if (allList) allList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        if (dbList) dbList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        return;
+      }
+
+      let html = '';
+      notifications.forEach(n => {
+        html += `
+          <div class="item-card">
+            <div class="item-info">
+              <span class="badge badge-${n.type}">${n.type === 'weather' ? 'আবহাওয়া' : (n.type === 'crop' ? 'ফসল' : (n.type === 'market' ? 'বাজার দর' : 'সাধারণ'))}</span>
+              <h4 style="margin-top: 4px;">${n.title}</h4>
+              <p>${n.message}</p>
+              <span style="font-size: 11px; color: var(--text-muted);">${n.time}</span>
+            </div>
+            <button class="btn btn-outline" style="color: var(--alert-critical); display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;" onclick="deleteNotification('${n.id}')" title="মুছে ফেলুন">${ICONS.trash}</button>
+          </div>
+        `;
+      });
+
+      if (allList) allList.innerHTML = html;
+      if (dbList) dbList.innerHTML = notifications.slice(0, 3).map(n => `
+        <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <div style="font-weight: 600; font-size: 13px;">${n.title}</div>
+          <div style="font-size: 12px; color: var(--text-muted);">${n.message.substring(0, 50)}...</div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== DYNAMIC CATEGORIES MANAGEMENT ====================
+    let categoriesSet = new Set(['দানাদার শস্য', 'শাকসবজি', 'ফলমূল', 'মসলা জাতীয়', 'তৈলবীজ', 'অন্যান্য']);
+
+    function refreshCategoryDropdowns() {
+      const cropCat = document.getElementById('cropCat');
+      const filterSelect = document.getElementById('cropCatFilterAdmin');
+      
+      const currentVal = cropCat ? cropCat.value : 'শাকসবজি';
+      const currentFilter = filterSelect ? filterSelect.value : 'all';
+
+      // 1. Populate Crop Form Dropdown
+      if (cropCat) {
+        const sortedCats = Array.from(categoriesSet).filter(c => c && c !== '__new__');
+        cropCat.innerHTML = sortedCats.map(c => `<option value="${c.replace(/"/g, '&quot;')}">${c}</option>`).join('') +
+          '<option value="__new__">+ নতুন ক্যাটাগরি যোগ করুন...</option>';
+        if (categoriesSet.has(currentVal)) {
+          cropCat.value = currentVal;
+        } else if (currentVal === '__new__') {
+          cropCat.value = '__new__';
+        }
+      }
+
+      // 2. Populate Admin Filter Dropdown
+      if (filterSelect) {
+        const sortedCats = Array.from(categoriesSet).filter(c => c && c !== '__new__');
+        filterSelect.innerHTML = '<option value="all">সকল শ্রেণি / ক্যাটাগরি</option>' +
+          sortedCats.map(c => `<option value="${c.replace(/"/g, '&quot;')}">${c}</option>`).join('');
+        if (currentFilter === 'all' || categoriesSet.has(currentFilter)) {
+          filterSelect.value = currentFilter;
+        } else {
+          filterSelect.value = 'all';
+        }
+      }
+    }
+
+    function toggleNewCategoryInput(show) {
+      const row = document.getElementById('newCropCatRow');
+      const input = document.getElementById('newCropCatInput');
+      const select = document.getElementById('cropCat');
+      if (!row) return;
+
+      if (show) {
+        row.style.display = 'block';
+        if (select) select.value = '__new__';
+        if (input) {
+          input.focus();
+        }
+      } else {
+        row.style.display = 'none';
+        if (input) input.value = '';
+        if (select && select.value === '__new__') {
+          select.value = 'শাকসবজি';
+        }
+      }
+    }
+
+    function handleCropCatChange(selectEl) {
+      if (selectEl.value === '__new__') {
+        toggleNewCategoryInput(true);
+      } else {
+        const row = document.getElementById('newCropCatRow');
+        if (row) row.style.display = 'none';
+      }
+    }
+
+    // ==================== AUTOMATIC CLIENT-SIDE IMAGE OPTIMIZER ====================
+    // Compress raw images (phone camera, 4K) into ultra-crisp 200KB - 380KB before upload
+    async function compressImageClientSide(file, targetMaxKB = 380) {
+      if (!file || !file.type.startsWith('image/')) {
+        return { file: file, originalKB: file.size / 1024, optimizedKB: file.size / 1024 };
+      }
+      
+      // If already within lightweight size (<= 220KB), return as is
+      if (file.size <= 220 * 1024) {
+        return { file: file, originalKB: file.size / 1024, optimizedKB: file.size / 1024 };
+      }
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.naturalWidth || img.width;
+            let height = img.naturalHeight || img.height;
+
+            // Target crisp Retina display resolution (max 1600px width/height)
+            const maxDim = 1600;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            function getBlobAtQuality(q) {
+              return new Promise(res => canvas.toBlob(res, 'image/jpeg', q));
+            }
+
+            (async () => {
+              let quality = 0.85;
+              let blob = await getBlobAtQuality(quality);
+              
+              if (blob && (blob.size / 1024) > targetMaxKB) {
+                quality = 0.78;
+                blob = await getBlobAtQuality(quality);
+              }
+              if (blob && (blob.size / 1024) > targetMaxKB) {
+                quality = 0.70;
+                blob = await getBlobAtQuality(quality);
+              }
+
+              if (blob) {
+                const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                const optimizedFile = new File([blob], `${baseName}.jpg`, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve({ file: optimizedFile, originalKB: file.size / 1024, optimizedKB: blob.size / 1024 });
+              } else {
+                resolve({ file: file, originalKB: file.size / 1024, optimizedKB: file.size / 1024 });
+              }
+            })();
+          };
+          img.onerror = () => resolve({ file: file, originalKB: file.size / 1024, optimizedKB: file.size / 1024 });
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve({ file: file, originalKB: file.size / 1024, optimizedKB: file.size / 1024 });
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ==================== DEFERRED / LAZY UPLOAD PIPELINE ON SUBMIT ====================
+    // Holds pending picked File objects and local blob URLs in memory (Zero network calls on pick)
+    const pendingUploads = {
+      crop: { file: null, blobUrl: null },
+      pest: { file: null, blobUrl: null },
+      notif: { file: null, blobUrl: null },
+      market: { file: null, blobUrl: null }
+    };
+
+    // Step 1: Pre-upload Local Memory Hold (Local File Preview Only)
+    function handleImagePick(inputElement, scope, previewBoxId, statusId, targetInputId) {
+      const file = inputElement.files && inputElement.files[0];
+      if (!file) return;
+
+      // Revoke any previous local object URL to prevent memory leaks
+      if (pendingUploads[scope] && pendingUploads[scope].blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads[scope].blobUrl); } catch (_) {}
+      }
+
+      const localBlobUrl = URL.createObjectURL(file);
+      pendingUploads[scope] = { file: file, blobUrl: localBlobUrl };
+
+      // Instant local preview in form without network delay
+      const previewBox = document.getElementById(previewBoxId);
+      if (previewBox) {
+        previewBox.style.display = 'block';
+        const imgEl = previewBox.querySelector('img');
+        if (imgEl) imgEl.src = localBlobUrl;
+      }
+
+      // Reassuring status for Admin
+      const statusEl = document.getElementById(statusId);
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        const kb = (file.size / 1024).toFixed(1);
+        statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ছবি নির্বাচিত (${kb} KB) — লোকাল প্রিভিউ সক্রিয় (চূড়ান্ত সংরক্ষণ করার সময় আপলোড হবে)</span>`;
+      }
+    }
+
+    // Local image selection removers
+    function removeImageSelection(scope, fileInputId, previewBoxId, statusId, targetInputId) {
+      if (pendingUploads[scope] && pendingUploads[scope].blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads[scope].blobUrl); } catch (_) {}
+      }
+      pendingUploads[scope] = { file: null, blobUrl: null };
+
+      const targetInput = document.getElementById(targetInputId);
+      if (targetInput) targetInput.value = '';
+
+      const fileInput = document.getElementById(fileInputId);
+      if (fileInput) fileInput.value = '';
+
+      const previewBox = document.getElementById(previewBoxId);
+      if (previewBox) {
+        previewBox.style.display = 'none';
+        const imgEl = previewBox.querySelector('img');
+        if (imgEl) imgEl.src = '';
+      }
+
+      const statusEl = document.getElementById(statusId);
+      if (statusEl) {
+        statusEl.innerHTML = '';
+        statusEl.style.display = 'none';
+      }
+    }
+
+    function removeCropImage() {
+      removeImageSelection('crop', 'cropFileInput', 'cropImgPreviewBox', 'cropUploadStatus', 'cropImg');
+    }
+
+    function removePestImage() {
+      removeImageSelection('pest', 'pestFileInput', 'pestImgPreviewBox', 'pestUploadStatus', 'pestImg');
+    }
+
+    function removeNotifImage() {
+      removeImageSelection('notif', 'notifFileInput', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg');
+    }
+
+    function removeMarketImage() {
+      removeImageSelection('market', 'mpFileInput', 'mpImgPreviewBox', 'mpUploadStatus', 'mpImg');
+    }
+
+    // Cloudinary Storage Integration (Unsigned Upload Preset + Client-side Auto Compression 150KB - 300KB)
+    const CLOUDINARY_CONFIG = {
+      cloudName: 'krishikotha',
+      uploadPreset: 'krishi_kotha_market'
+    };
+
+    async function uploadFileToCloudinary(file, scope = 'market', statusId = 'mpUploadStatus') {
+      const statusEl = document.getElementById(statusId);
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (${(file.size / 1024).toFixed(1)} KB)...</span>`;
+      }
+
+      // Step A: Client-side High-Fidelity Compression (Target 150KB - 280KB)
+      let uploadFile = file;
+      try {
+        const comp = await compressImageClientSide(file, 280);
+        uploadFile = comp.file;
+        const origKB = comp.originalKB.toFixed(0);
+        const optKB = comp.optimizedKB.toFixed(0);
+        const savedPct = Math.max(0, Math.round((1 - (comp.optimizedKB / comp.originalKB)) * 100));
+
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origKB} KB ➔ ${optKB} KB, ${savedPct}% সাশ্রয়)! Cloudinary-তে আপলোড হচ্ছে...</span>`;
+        }
+      } catch (compErr) {
+        console.warn("Client compression notice:", compErr);
+      }
+
+      // Step B: Direct Cloudinary Unsigned Upload
+      try {
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+        formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+        formData.append('folder', `krishi_kotha/${scope}`);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          const cData = await res.json();
+          if (cData && (cData.secure_url || cData.url)) {
+            const finalUrl = cData.secure_url || cData.url;
+            if (statusEl) {
+              statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Cloudinary-তে সফলভাবে সংরক্ষিত! (${(uploadFile.size / 1024).toFixed(1)} KB)</span>`;
+            }
+            return finalUrl;
+          }
+        }
+        throw new Error('Cloudinary response did not contain secure_url');
+      } catch (cloudErr) {
+        console.warn("Cloudinary upload fallback to R2/Gateway:", cloudErr);
+        // Fallback to R2/Server upload
+        return await uploadFileToR2Pipeline(uploadFile, scope, statusId);
+      }
+    }
+
+    // Step 2: Upload to Cloudflare R2 on Final Form Submit
+    async function uploadFileToR2Pipeline(file, scope, statusId) {
+      const statusEl = document.getElementById(statusId);
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি বিশ্লেষণ ও স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (${(file.size / 1024).toFixed(1)} KB)...</span>`;
+      }
+
+      // Client-side High-Fidelity Compression (Target 200KB - 380KB)
+      let uploadFile = file;
+      try {
+        const comp = await compressImageClientSide(file);
+        uploadFile = comp.file;
+        const origKB = comp.originalKB.toFixed(0);
+        const optKB = comp.optimizedKB.toFixed(0);
+        const savedPct = Math.max(0, Math.round((1 - (comp.optimizedKB / comp.originalKB)) * 100));
+
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origKB} KB ➔ ${optKB} KB, ${savedPct}% সাশ্রয়)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+        }
+      } catch (compErr) {
+        console.warn("Client compression notice:", compErr);
+      }
+
+      try {
+        const cleanExt = (uploadFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const uniqueFileName = `${scope}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${cleanExt}`;
+        let publicUrl = '';
+
+        // Handshake 1: Secure Pre-signed URL Handshake (Client holds ZERO secret keys)
+        try {
+          const presignRes = await fetch(`/api/get-presigned-url?filename=${encodeURIComponent(uniqueFileName)}&contentType=${encodeURIComponent(uploadFile.type || 'image/jpeg')}`);
+          if (presignRes.ok) {
+            const presignData = await presignRes.json();
+            if (presignData && presignData.uploadUrl) {
+              const putRes = await fetch(presignData.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': uploadFile.type || 'image/jpeg' },
+                body: uploadFile
+              });
+              if (putRes.ok || putRes.status === 200 || putRes.status === 201) {
+                publicUrl = presignData.publicUrl;
+              }
+            }
+          }
+        } catch (presignErr) {
+          console.warn("Direct pre-signed PUT fallback:", presignErr);
+        }
+
+        // Handshake 2: Fallback to Secure Backend Gateway
+        if (!publicUrl) {
+          const res = await fetch(`/api/upload-r2?filename=${encodeURIComponent(uniqueFileName)}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': uploadFile.type || 'image/jpeg',
+              'x-filename': uniqueFileName
+            },
+            body: uploadFile
+          });
+
+          const data = await res.json();
+          if (data && data.success && data.publicUrl) {
+            publicUrl = data.publicUrl;
+          } else {
+            throw new Error(data.error || 'ছবি আপলোড ব্যর্থ হয়েছে');
+          }
+        }
+
+        if (publicUrl) {
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Cloudflare R2-তে সংরক্ষিত! (${(uploadFile.size / 1024).toFixed(1)} KB অপ্টিমাইজড)</span>`;
+          }
+          return publicUrl;
+        } else {
+          throw new Error('পাবলিক লিংক তৈরি করা যায়নি');
+        }
+      } catch (err) {
+        console.error("R2 Upload Error:", err);
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #D32F2F; font-weight: 600; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> আপলোড ত্রুটি: ${err.message}</span>`;
+        }
+        throw err;
+      }
+    }
+
+    // Step 3 & 4: Broadcast Notification on Submit
+    async function broadcastNotification(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('notifSubmitBtn');
+      const origBtnContent = submitBtn ? submitBtn.innerHTML : '';
+
+      const title = document.getElementById('notifTitle').value.trim();
+      const msg = document.getElementById('notifMsg').value.trim();
+      const type = document.getElementById('notifType').value;
+      let notifImg = document.getElementById('notifImg')?.value.trim() || '';
+
+      if (!title || !msg) {
+        showToast('বিজ্ঞপ্তির শিরোনাম ও বার্তা পূরণ করুন');
+        return;
+      }
+
+      try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> প্রচার ও সংরক্ষণ হচ্ছে...`;
+        }
+
+        // Deferred Upload: Only uploads to Cloudflare R2 if a new file is pending!
+        if (pendingUploads.notif && pendingUploads.notif.file) {
+          notifImg = await uploadFileToR2Pipeline(pendingUploads.notif.file, 'notif', 'notifUploadStatus');
+          const notifImgInput = document.getElementById('notifImg');
+          if (notifImgInput) notifImgInput.value = notifImg;
+        }
+
+        if (db) {
+          const docRef = db.collection('notifications').doc();
+          const now = firebase.firestore.FieldValue.serverTimestamp();
+          await docRef.set({
+            id: docRef.id,
+            title: title,
+            message: msg,
+            type: type,
+            imageUrl: notifImg,
+            image_url: notifImg,
+            isSeen: false,
+            timestamp: now,
+            updatedAt: now
+          });
+        }
+
+        // Clean up pending blob memory
+        if (pendingUploads.notif && pendingUploads.notif.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.notif.blobUrl); } catch (_) {}
+        }
+        pendingUploads.notif = { file: null, blobUrl: null };
+
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifMsg').value = '';
+        const notifImgInput = document.getElementById('notifImg');
+        if (notifImgInput) notifImgInput.value = '';
+        const notifFileInput = document.getElementById('notifFileInput');
+        if (notifFileInput) notifFileInput.value = '';
+        const previewBox = document.getElementById('notifImgPreviewBox');
+        if (previewBox) previewBox.style.display = 'none';
+        const statusBox = document.getElementById('notifUploadStatus');
+        if (statusBox) statusBox.style.display = 'none';
+
+        showToast('বিজ্ঞপ্তি সফলভাবে প্রচার করা হয়েছে! মূল মোবাইল অ্যাপে সাথে সাথে সিঙ্ক হয়েছে।');
+      } catch (err) {
+        console.error("Error broadcasting notification:", err);
+        showToast('ত্রুটি: ' + err.message);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origBtnContent;
+        }
+      }
+    }
+
+    async function deleteNotification(id) {
+      if (!confirm('নোটিফিকেশনটি মুছে ফেলতে চান?')) return;
+      try {
+        if (db) {
+          await db.collection('notifications').doc(id).delete();
+        }
+        showToast('নোটিফিকেশন মুছে ফেলা হয়েছে।');
+      } catch (err) {
+        showToast('ত্রুটি: ' + err.message);
+      }
+    }
+
+    // ==================== BANGLADESH 64 DISTRICTS & LOCATIONS ====================
+    const BD_LOCATIONS = {
+      'ঢাকা বিভাগ': ['ঢাকা', 'গাজীপুর', 'নারায়ণগঞ্জ', 'টাঙ্গাইল', 'কিশোরগঞ্জ', 'নরসিংদী', 'মানিকগঞ্জ', 'মুন্সীগঞ্জ', 'ফরিদপুর', 'রাজবাড়ী', 'গোপালগঞ্জ', 'মাদারীপুর', 'শরীয়তপুর'],
+      'চট্টগ্রাম বিভাগ': ['চট্টগ্রাম', 'কক্সবাজার', 'কুমিল্লা', 'নোয়াখালী', 'ফেনী', 'ব্রাহ্মণবাড়িয়া', 'চাঁদপুর', 'লক্ষ্মীপুর', 'রাঙ্গামাটি', 'খাগড়াছড়ি', 'বান্দরবান'],
+      'রাজশাহী বিভাগ': ['রাজশাহী', 'বগুড়া', 'পাবনা', 'সিরাজগঞ্জ', 'নওগাঁ', 'নাটোর', 'চাঁপাইনবাবগঞ্জ', 'জয়পুরহাট'],
+      'রংপুর বিভাগ': ['রংপুর', 'দিনাজপুর', 'কুড়িগ্রাম', 'গাইবান্ধা', 'নীলফামারী', 'লালমনিরহাট', 'পঞ্চগড়', 'ঠাকুরগাঁও'],
+      'খুলনা বিভাগ': ['খুলনা', 'যশোর', 'কুষ্টিয়া', 'ঝিনাইদহ', 'সাতক্ষীরা', 'বাগেরহাট', 'চুয়াডাঙ্গা', 'মেহেরপুর', 'মাগুরা', 'নড়াইল'],
+      'বরিশাল বিভাগ': ['বরিশাল', 'পটুয়াখালী', 'ভোলা', 'পিরোজপুর', 'বরগুনা', 'ঝালকাঠি'],
+      'সিলেট বিভাগ': ['সিলেট', 'মৌলভীবাজার', 'হবিগঞ্জ', 'সুনামগঞ্জ'],
+      'ময়মনসিংহ বিভাগ': ['ময়মনসিংহ', 'জামালপুর', 'নেত্রকোণা', 'শেরপুর']
+    };
+
+    function matchDistrict(a, b) {
+      if (!a || !b) return false;
+      if (a === b) return true;
+      const norm = str => String(str).replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়').replace(/য়/g, 'য়').replace(/ণ/g, 'ন').trim().toLowerCase();
+      return norm(a) === norm(b);
+    }
+
+    function getDivisionForDistrict(dist) {
+      for (const [div, dList] of Object.entries(BD_LOCATIONS)) {
+        if (dList.some(d => matchDistrict(d, dist))) return div;
+      }
+      return 'ঢাকা বিভাগ';
+    }
+
+    function updateDistrictFilterOptions(selectedDivision = 'all') {
+      const distSelect = document.getElementById('marketDistrictFilter');
+      if (!distSelect) return;
+      const prevVal = distSelect.value;
+      let html = '<option value="all">সারাদেশ / সকল জেলা</option>';
+
+      if (selectedDivision === 'all') {
+        for (const [div, dList] of Object.entries(BD_LOCATIONS)) {
+          html += `<optgroup label="${div}">`;
+          dList.forEach(d => {
+            html += `<option value="${d}">${d}</option>`;
+          });
+          html += '</optgroup>';
+        }
+      } else {
+        const dList = BD_LOCATIONS[selectedDivision] || [];
+        dList.forEach(d => {
+          html += `<option value="${d}">${d}</option>`;
+        });
+      }
+
+      distSelect.innerHTML = html;
+      if (prevVal && prevVal !== 'all') {
+        const exists = Array.from(distSelect.options).some(o => matchDistrict(o.value, prevVal));
+        if (exists) distSelect.value = prevVal;
+      }
+    }
+
+    function onMarketDivisionChange() {
+      const divVal = document.getElementById('marketDivisionFilter').value;
+      updateDistrictFilterOptions(divVal);
+      renderMarketList();
+    }
+
+    function resetMarketFilters() {
+      if (document.getElementById('marketDivisionFilter')) document.getElementById('marketDivisionFilter').value = 'all';
+      updateDistrictFilterOptions('all');
+      if (document.getElementById('marketDistrictFilter')) document.getElementById('marketDistrictFilter').value = 'all';
+      if (document.getElementById('marketSearchFilter')) document.getElementById('marketSearchFilter').value = '';
+      renderMarketList();
+    }
+
+    function onMpDivisionChange() {
+      const div = document.getElementById('mpDivision').value;
+      const distSelect = document.getElementById('mpDistrict');
+      const list = BD_LOCATIONS[div] || [];
+      distSelect.innerHTML = list.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    // ==================== MARKET PRICES ====================
+    function renderMarketList() {
+      const divFilter = document.getElementById('marketDivisionFilter') ? document.getElementById('marketDivisionFilter').value : 'all';
+      const distFilter = document.getElementById('marketDistrictFilter') ? document.getElementById('marketDistrictFilter').value : 'all';
+      const searchVal = document.getElementById('marketSearchFilter') ? document.getElementById('marketSearchFilter').value.trim().toLowerCase() : '';
+      const resetBtn = document.getElementById('marketResetBtn');
+      const allList = document.getElementById('allMarketList');
+      const dbList = document.getElementById('dashboardMarketList');
+
+      if (document.getElementById('stat-market')) {
+        document.getElementById('stat-market').innerText = marketPrices.length;
+      }
+
+      const isFiltered = (divFilter !== 'all') || (distFilter !== 'all') || (searchVal !== '');
+      if (resetBtn) {
+        resetBtn.style.display = isFiltered ? 'inline-flex' : 'none';
+      }
+
+      let filtered = [...marketPrices];
+
+      // 1. Division filter
+      if (divFilter !== 'all') {
+        const divDistricts = BD_LOCATIONS[divFilter] || [];
+        filtered = filtered.filter(m => divDistricts.some(d => matchDistrict(d, m.district)));
+      }
+
+      // 2. District filter
+      if (distFilter !== 'all') {
+        filtered = filtered.filter(m => matchDistrict(m.district, distFilter));
+      }
+
+      // 3. Search query filter
+      if (searchVal) {
+        filtered = filtered.filter(m =>
+          (m.crop && m.crop.toLowerCase().includes(searchVal)) ||
+          (m.market && m.market.toLowerCase().includes(searchVal)) ||
+          (m.district && m.district.toLowerCase().includes(searchVal))
+        );
+      }
+
+      if (filtered.length === 0) {
+        const emptyMsg = isFiltered
+          ? `
+            <div class="empty-state" style="padding: 40px 20px;">
+              <svg class="app-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--text-muted)" stroke-width="2" style="margin-bottom: 12px; display: inline-block;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">নির্বাচিত জেলায় কোনো বাজার দর পাওয়া যায়নি।</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">অন্য কোনো জেলা বা বিভাগ নির্বাচন করুন অথবা ফিল্টার রিসেট করুন।</div>
+              <button class="btn btn-outline" onclick="resetMarketFilters()" style="display: inline-flex; align-items: center; gap: 6px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg> <span>ফিল্টার রিসেট করুন</span></button>
+            </div>
+          `
+          : '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+
+        if (allList) allList.innerHTML = emptyMsg;
+        if (dbList) dbList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(m => {
+        const trendIcon = m.trend === 'up'
+          ? ICONS.trendUp
+          : (m.trend === 'down' ? ICONS.trendDown : ICONS.trendStable);
+
+        html += `
+          <div class="item-card" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; margin-bottom: 12px; background: #fff; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: transform 0.15s, box-shadow 0.15s;">
+            <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+              ${m.img ? `
+                <img src="${m.img}" alt="${m.crop}" style="width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.06);" onerror="this.outerHTML='<div style=\\'width:52px;height:52px;border-radius:10px;background:#F1F8E9;color:#2E7D32;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--border);\\'>🌾</div>'">
+              ` : `
+                <div style="width: 52px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #F1F8E9, #E8F5E9); color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; border: 1px solid #C8E6C9;">
+                  🌾
+                </div>
+              `}
+              <div class="item-info" style="min-width: 0;">
+                <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0;">${m.crop} <span style="font-size: 12.5px; font-weight: 500; color: var(--text-muted);">- ${m.market}, জেলা: <strong style="color: var(--text-primary);">${m.district}</strong></span></h4>
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span>পাইকারি: <strong style="color: var(--primary); font-size: 13.5px;">৳${m.price}/${m.unit}</strong></span>
+                  ${m.retail ? `<span>| খুচরা: <strong style="color: #1976D2; font-size: 13.5px;">৳${m.retail}/${m.unit}</strong></span>` : ''}
+                  <span>${trendIcon}</span>
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 12px;">
+              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; color: #0288D1; border-color: #B3E5FC; background: #F0F9FF; display: inline-flex; align-items: center; gap: 5px;" onclick="viewMarketDetail('${m.id}')" title="সম্পূর্ণ তথ্য দেখুন">
+                <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>বিস্তারিত</span>
+              </button>
+              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; color: var(--primary); display: inline-flex; align-items: center; gap: 4px;" onclick="editMarketPrice('${m.id}')">${ICONS.edit} <span>এডিট</span></button>
+              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; color: var(--alert-critical); display: inline-flex; align-items: center; gap: 4px;" onclick="deleteMarketPrice('${m.id}')">${ICONS.trash} <span>ডিলিট</span></button>
+            </div>
+          </div>
+        `;
+      });
+
+      if (allList) allList.innerHTML = html;
+      if (dbList) dbList.innerHTML = marketPrices.slice(0, 3).map(m => `
+        <div style="padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+          <div><strong>${m.crop}</strong> (${m.market})</div>
+          <div>৳${m.price}/${m.unit}</div>
+        </div>
+      `).join('');
+    }
+
+    function formatBanglaFullDateTime(ts) {
+      if (!ts) return 'আজকের লাইভ রেট';
+      try {
+        let date;
+        if (ts.toDate && typeof ts.toDate === 'function') {
+          date = ts.toDate();
+        } else if (ts.toMillis && typeof ts.toMillis === 'function') {
+          date = new Date(ts.toMillis());
+        } else if (ts.seconds) {
+          date = new Date(ts.seconds * 1000);
+        } else if (typeof ts === 'string' || typeof ts === 'number') {
+          date = new Date(ts);
+        }
+        if (!date || isNaN(date.getTime())) return 'আজকের লাইভ রেট';
+
+        const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        const toBn = (num) => String(num).replace(/[0-9]/g, d => bnDigits[d]);
+
+        const day = toBn(date.getDate());
+        const year = toBn(date.getFullYear());
+        const monthsBn = [
+          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+        ];
+        const month = monthsBn[date.getMonth()];
+
+        const hours24 = date.getHours();
+        let period = 'রাত';
+        if (hours24 >= 5 && hours24 < 12) {
+          period = 'সকাল';
+        } else if (hours24 >= 12 && hours24 < 15) {
+          period = 'দুপুর';
+        } else if (hours24 >= 15 && hours24 < 18) {
+          period = 'বিকাল';
+        } else if (hours24 >= 18 && hours24 < 20) {
+          period = 'সন্ধ্যা';
+        } else {
+          period = 'রাত';
+        }
+
+        let hours12 = hours24 % 12;
+        if (hours12 === 0) hours12 = 12;
+        const hoursBn = toBn(hours12);
+        const minutesBn = toBn(String(date.getMinutes()).padStart(2, '0'));
+
+        return `${day} ${month} ${year}, ${period} ${hoursBn}:${minutesBn}`;
+      } catch (e) {
+        return 'আজকের লাইভ রেট';
+      }
+    }
+
+    function viewMarketDetail(id) {
+      const item = marketPrices.find(m => m.id === id);
+      if (!item) return;
+
+      const body = document.getElementById('marketDetailAdminBody');
+      const editBtn = document.getElementById('marketDetailEditBtn');
+      if (editBtn) {
+        editBtn.onclick = () => {
+          closeMarketDetailAdminModal();
+          editMarketPrice(item.id);
+        };
+      }
+
+      // Trend Indicator with explicit Green Up Arrow for উর্ধ্বমুখী, Red Down Arrow for নিম্নমুখী, Gray for স্থিতিশীল
+      const trendLabel = item.trend === 'up'
+        ? '<span style="background: #E8F5E9; color: #2E7D32; border: 1.5px solid #A5D6A7; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> <span>উর্ধ্বমুখী</span></span>'
+        : (item.trend === 'down'
+            ? '<span style="background: #FFEBEE; color: #D32F2F; border: 1.5px solid #FFCDD2; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg> <span>নিম্নমুখী</span></span>'
+            : '<span style="background: #F5F5F5; color: #616161; border: 1.5px solid #E0E0E0; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg> <span>স্থিতিশীল</span></span>');
+
+      const liveDateFormatted = formatBanglaFullDateTime(item.updatedAt || item.rawTime);
+
+      if (body) {
+        body.innerHTML = `
+          <!-- Image Frame preserving natural aspect ratio with crisp preview -->
+          <div style="margin-bottom: 16px;">
+            ${item.img ? `
+              <div style="width: 100%; height: 210px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 14px rgba(0,0,0,0.06); background: #F8FAF7; display: flex; align-items: center; justify-content: center;">
+                <img src="${item.img}" alt="${item.crop}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F1F8E9;color:#2E7D32;font-size:48px;\\'>🌾</div>'">
+              </div>
+            ` : `
+              <div style="width: 100%; height: 140px; border-radius: 14px; background: linear-gradient(135deg, #F1F8E9, #DCEDC8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #2E7D32; border: 1px solid #C8E6C9;">
+                <span style="font-size: 42px;">🌾</span>
+                <span style="font-size: 13px; font-weight: 600; margin-top: 6px; color: #33691E;">ফসলের ছবি সংযুক্ত নেই</span>
+              </div>
+            `}
+          </div>
+
+          <!-- Title and Market Location Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+            <div>
+              <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">${item.crop}</h2>
+              <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${item.market}, জেলা: <strong>${item.district}</strong></span>
+              </div>
+            </div>
+            <span class="badge" style="background: #E8F5E9; color: #2E7D32; font-weight: 700; padding: 6px 12px; border-radius: 20px; border: 1px solid #C8E6C9;">${item.unit} ভিত্তিক</span>
+          </div>
+
+          <!-- Wholesale & Retail Rate Cards with Soft Colorful Badges & Curved Borders -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9); border: 1.5px solid #A5D6A7; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(46,125,50,0.06);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 11px; font-weight: 700; color: #2E7D32; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(46,125,50,0.12); padding: 3px 8px; border-radius: 12px;">পাইকারি দর (Wholesale)</span>
+              </div>
+              <div style="font-size: 22px; font-weight: 900; color: #1B5E20; margin-top: 6px;">৳${item.price} <span style="font-size: 13px; font-weight: 600; color: #2E7D32;">/${item.unit}</span></div>
+            </div>
+            <div style="background: linear-gradient(135deg, #E3F2FD, #EDE7F6); border: 1.5px solid #90CAF9; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(25,118,210,0.06);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 11px; font-weight: 700; color: #1565C0; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(25,118,210,0.12); padding: 3px 8px; border-radius: 12px;">খুচরা দর (Retail)</span>
+              </div>
+              <div style="font-size: 22px; font-weight: 900; color: #0D47A1; margin-top: 6px;">${item.retail ? '৳' + item.retail + ' <span style="font-size: 13px; font-weight: 600; color: #1565C0;">/' + item.unit + '</span>' : '<span style="font-size: 14px; color: var(--text-muted); font-weight: 600;">তথ্য নেই</span>'}</div>
+            </div>
+          </div>
+
+          <!-- Trend & Real Database Bengali Timestamp Card -->
+          <div style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #ECEFF1; font-size: 13.5px;">
+              <span style="color: var(--text-muted); font-weight: 600;">দরের অবস্থা / প্রবণতা:</span>
+              <span>${trendLabel}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; font-size: 13.5px;">
+              <span style="color: var(--text-muted); font-weight: 600;">সর্বশেষ আপডেট:</span>
+              <span style="font-weight: 700; color: var(--text-primary);">${liveDateFormatted}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('marketDetailAdminModal').classList.add('active');
+    }
+
+    function closeMarketDetailAdminModal() {
+      const m = document.getElementById('marketDetailAdminModal');
+      if (m) m.classList.remove('active');
+    }
+
+    function openMarketModal() {
+      removeMarketImage();
+      document.getElementById('mpId').value = '';
+      document.getElementById('marketModalTitle').innerText = 'নতুন বাজার দর যোগ করুন';
+      document.getElementById('mpCrop').value = '';
+      document.getElementById('mpDivision').value = 'ঢাকা বিভাগ';
+      onMpDivisionChange();
+      document.getElementById('mpDistrict').value = 'ঢাকা';
+      document.getElementById('mpMarket').value = '';
+      document.getElementById('mpPrice').value = '';
+      document.getElementById('mpRetail').value = '';
+      document.getElementById('mpUnit').value = 'কেজি';
+      document.getElementById('mpTrend').value = 'stable';
+      document.getElementById('mpImg').value = '';
+      document.getElementById('marketModal').classList.add('active');
+    }
+
+    function editMarketPrice(id) {
+      const item = marketPrices.find(m => m.id === id);
+      if (!item) return;
+      removeMarketImage();
+
+      document.getElementById('mpId').value = item.id;
+      document.getElementById('marketModalTitle').innerText = 'বাজার দর সম্পাদনা করুন';
+      document.getElementById('mpCrop').value = item.crop;
+
+      const div = getDivisionForDistrict(item.district);
+      document.getElementById('mpDivision').value = div;
+      onMpDivisionChange();
+
+      const distSelect = document.getElementById('mpDistrict');
+      const optMatch = Array.from(distSelect.options).find(o => matchDistrict(o.value, item.district));
+      if (optMatch) {
+        distSelect.value = optMatch.value;
+      } else {
+        distSelect.value = item.district;
+      }
+
+      document.getElementById('mpMarket').value = item.market;
+      document.getElementById('mpPrice').value = item.price;
+      document.getElementById('mpRetail').value = item.retail || '';
+      document.getElementById('mpUnit').value = item.unit || 'কেজি';
+      document.getElementById('mpTrend').value = item.trend || 'stable';
+
+      const existingImg = item.img || '';
+      document.getElementById('mpImg').value = existingImg;
+      if (existingImg) {
+        const previewBox = document.getElementById('mpImgPreviewBox');
+        if (previewBox) {
+          previewBox.style.display = 'block';
+          const imgEl = previewBox.querySelector('img');
+          if (imgEl) imgEl.src = existingImg;
+        }
+      }
+
+      document.getElementById('marketModal').classList.add('active');
+    }
+
+    function closeMarketModal() {
+      removeMarketImage();
+      document.getElementById('marketModal').classList.remove('active');
+    }
+
+    async function saveMarketPrice(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('mpSubmitBtn');
+      const origBtnText = submitBtn.innerText;
+
+      const id = document.getElementById('mpId').value;
+      const crop = document.getElementById('mpCrop').value.trim();
+      const district = document.getElementById('mpDistrict').value.trim();
+      const market = document.getElementById('mpMarket').value.trim();
+      const price = parseFloat(document.getElementById('mpPrice').value);
+      const retail = parseFloat(document.getElementById('mpRetail').value) || 0;
+      const unit = document.getElementById('mpUnit').value;
+      const trend = document.getElementById('mpTrend').value;
+
+      if (!crop || !market || isNaN(price)) {
+        showToast('অনুগ্রহ করে পণ্যের নাম, বাজার ও পাইকারি দর পূরণ করুন।');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'সংরক্ষণ হচ্ছে...';
+
+      try {
+        let finalImageUrl = document.getElementById('mpImg').value || '';
+
+        // Deferred Upload: Only upon final submit, compress & upload to Cloudinary
+        if (pendingUploads.market && pendingUploads.market.file) {
+          submitBtn.innerText = 'ছবি আপলোড হচ্ছে...';
+          finalImageUrl = await uploadFileToCloudinary(pendingUploads.market.file, 'market', 'mpUploadStatus');
+          document.getElementById('mpImg').value = finalImageUrl;
+        }
+
+        if (db) {
+          const docRef = id ? db.collection('market_prices').doc(id) : db.collection('market_prices').doc();
+          const dataToSave = {
+            crop_name: crop,
+            cropName: crop,
+            district: district,
+            market_name: market,
+            marketName: market,
+            price: price,
+            retail_price: retail,
+            retailPrice: retail,
+            unit: unit,
+            trend: trend,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          if (finalImageUrl) {
+            dataToSave.image_url = finalImageUrl;
+            dataToSave.imageUrl = finalImageUrl;
+          }
+
+          await docRef.set(dataToSave, { merge: true });
+        }
+
+        removeMarketImage();
+        closeMarketModal();
+        showToast('বাজার দর সফলভাবে সংরক্ষণ করা হয়েছে! মূল মোবাইল অ্যাপে সাথে সাথে সিঙ্ক হয়েছে।');
+      } catch (err) {
+        showToast('ত্রুটি: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = origBtnText;
+      }
+    }
+
+    async function deleteMarketPrice(id) {
+      if (!confirm('দর তথ্যটি মুছে ফেলতে চান?')) return;
+      try {
+        if (db) {
+          await db.collection('market_prices').doc(id).delete();
+        }
+        showToast('দর তথ্য মুছে ফেলা হয়েছে।');
+      } catch (err) {
+        showToast('ত্রুটি: ' + err.message);
+      }
+    }
+
+    // ==================== CROPS & PESTS ====================
+    // ==================== CROPS MANAGEMENT ====================
+    function addCropStageInputRow(name = '', desc = '') {
+      const container = document.getElementById('cropStagesInputsContainer');
+      if (!container) return;
+      const count = container.children.length + 1;
+      const row = document.createElement('div');
+      row.className = 'crop-stage-row';
+      row.style = 'background: #F8FAF7; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;';
+      row.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--primary); display: inline-flex; align-items: center; gap: 5px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg> ধাপ ${count}</span>
+          <button type="button" onclick="this.closest('.crop-stage-row').remove()" style="background: none; border: none; color: var(--alert-critical); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;" title="ধাপ মুছুন">
+            ${ICONS.trash}
+          </button>
+        </div>
+        <input type="text" class="form-control crop-stage-name" placeholder="ধাপের নাম (যেমন: জমি তৈরি ও চারা রোপণ)" value="${name.replace(/"/g, '&quot;')}" style="margin-bottom: 6px; font-size: 13px;">
+        <textarea class="form-control crop-stage-desc" rows="2" placeholder="পরিচর্যা নির্দেশিকা ও বিবরণ..." style="font-size: 12px;">${desc}</textarea>
+      `;
+      container.appendChild(row);
+    }
+
+    function formatBanglaTimestamp(ts) {
+      if (!ts) return 'তথ্য নেই';
+      try {
+        let date;
+        if (ts.toDate && typeof ts.toDate === 'function') {
+          date = ts.toDate();
+        } else if (ts.seconds) {
+          date = new Date(ts.seconds * 1000);
+        } else if (typeof ts === 'string' || typeof ts === 'number') {
+          date = new Date(ts);
+        }
+        if (!date || isNaN(date.getTime())) return 'তথ্য নেই';
+        
+        const day = date.getDate().toLocaleString('bn-BD');
+        const year = date.getFullYear().toLocaleString('bn-BD', { useGrouping: false });
+        const monthsBn = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+        const month = monthsBn[date.getMonth()];
+        let hours = date.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const minutes = date.getMinutes().toString().padStart(2, '0').toLocaleString('bn-BD');
+        const hoursBn = hours.toLocaleString('bn-BD');
+        return `${day} ${month}, ${year} • ${hoursBn}:${minutes} ${ampm}`;
+      } catch (e) {
+        return 'তথ্য নেই';
+      }
+    }
+
+    function openCropDetailModal(id) {
+      const c = crops.find(item => item.id === id);
+      if (!c) return;
+      
+      const heroImg = document.getElementById('cropDetailHeroImg');
+      if (heroImg) {
+        if (c.img) {
+          heroImg.src = c.img;
+          heroImg.style.display = 'block';
+        } else {
+          heroImg.style.display = 'none';
+        }
+      }
+      
+      document.getElementById('cropDetailTitle').innerText = c.name;
+      document.getElementById('cropDetailCategoryBadge').innerText = c.cat || 'ক্যাটাগরি নেই';
+      document.getElementById('cropDetailSeasonBadge').innerText = c.season || 'মৌসুম নেই';
+      
+      document.getElementById('cropDetailCategory').innerText = c.cat || 'তথ্য নেই';
+      document.getElementById('cropDetailSeason').innerText = c.season || 'তথ্য নেই';
+      document.getElementById('cropDetailSoil').innerText = c.soil || 'তথ্য নেই';
+      document.getElementById('cropDetailSowing').innerText = c.sowing || 'তথ্য নেই';
+      
+      document.getElementById('cropDetailCreatedAt').innerText = formatBanglaTimestamp(c.createdAt);
+      document.getElementById('cropDetailUpdatedAt').innerText = formatBanglaTimestamp(c.updatedAt);
+      
+      const stagesList = document.getElementById('cropDetailStagesList');
+      if (stagesList) {
+        if (c.stages && c.stages.length > 0) {
+          stagesList.innerHTML = c.stages.map((st, idx) => `
+            <div style="background: #F8FAF7; border: 1px solid #E8EDE7; border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start;">
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">
+                ${(idx + 1).toLocaleString('bn-BD')}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 3px;">${st.title || st.name || st.step || st.stage_name || 'ধাপ ' + (idx + 1).toLocaleString('bn-BD')}</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; word-break: break-word;">${st.desc || st.description || st.details || 'কোনো বিবরণ নেই'}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          stagesList.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); font-style: italic; padding: 14px; background: #FAFBF9; border-radius: 10px; text-align: center; border: 1px dashed var(--border);">কোনো পরিচর্যা ধাপ যোগ করা হয়নি</div>';
+        }
+      }
+
+      const editBtn = document.getElementById('cropDetailEditBtn');
+      if (editBtn) {
+        editBtn.onclick = function() {
+          closeCropDetailModal();
+          editCrop(c.id);
+        };
+      }
+
+      document.getElementById('cropDetailModal').classList.add('active');
+    }
+
+    function closeCropDetailModal() {
+      const modal = document.getElementById('cropDetailModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function renderCrops() {
+      const grid = document.getElementById('cropsGrid');
+      const pList = document.getElementById('pestsList');
+      if (document.getElementById('stat-crops')) {
+        document.getElementById('stat-crops').innerText = crops.length;
+      }
+
+      if (grid) {
+        const searchVal = document.getElementById('cropSearchAdmin') ? document.getElementById('cropSearchAdmin').value.trim().toLowerCase() : '';
+        const catFilter = document.getElementById('cropCatFilterAdmin') ? document.getElementById('cropCatFilterAdmin').value : 'all';
+
+        let filtered = [...crops];
+        if (catFilter !== 'all') {
+          filtered = filtered.filter(c => (c.cat || '').toLowerCase().includes(catFilter.toLowerCase()));
+        }
+        if (searchVal) {
+          filtered = filtered.filter(c =>
+            (c.name && c.name.toLowerCase().includes(searchVal)) ||
+            (c.cat && c.cat.toLowerCase().includes(searchVal)) ||
+            (c.season && c.season.toLowerCase().includes(searchVal)) ||
+            (c.soil && c.soil.toLowerCase().includes(searchVal))
+          );
+        }
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">কোনো ফসলের তথ্য পাওয়া যায়নি</div>';
+        } else {
+          grid.innerHTML = filtered.map(c => `
+            <div class="crop-overview-card" style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; height: 215px; box-sizing: border-box;">
+              <div>
+                <!-- Top Header: Thumbnail + Name + Badges -->
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                  <div style="width: 56px; height: 56px; border-radius: 12px; overflow: hidden; background: #F4F6F4; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center;">
+                    ${c.img ? `<img src="${c.img}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<svg class=\\'app-icon\\' viewBox=\\'0 0 24 24\\' width=\\'22\\' height=\\'22\\' fill=\\'none\\' stroke=\\'var(--primary)\\' stroke-width=\\'2\\'><path d=\\'M7 20h10\\'/><path d=\\'M10 20c0-4 1.5-7.5 4-10\\'/><path d=\\'M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z\\'/><path d=\\'M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z\\'/></svg>'">` : `<svg class="app-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg>`}
+                  </div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; gap: 6px; margin-bottom: 4px; overflow: hidden;">
+                      <span class="badge" style="background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${c.cat}</span>
+                      <span class="badge" style="background: #FFF8E1; color: #F57F17; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;">${c.season || 'মৌসুম'}</span>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</h4>
+                  </div>
+                </div>
+
+                <!-- Brief Info: Soil & Sowing with Strict Ellipsis -->
+                <div style="font-size: 12px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: #F8FAF7; border-radius: 10px; border: 1px solid #EEF2ED;">
+                  <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;" title="মাটি: ${c.soil || 'তথ্য নেই'}">
+                    ${ICONS.soil}
+                    <span style="font-weight: 600; color: #555; flex-shrink: 0;">মাটি:</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.soil || 'তথ্য নেই'}</span>
+                  </div>
+                  <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;" title="বপন: ${c.sowing || 'তথ্য নেই'}">
+                    ${ICONS.calendar}
+                    <span style="font-weight: 600; color: #555; flex-shrink: 0;">বপন:</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.sowing || 'তথ্য নেই'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Action Buttons: বিস্তারিত, সম্পাদনা, ডিলিট -->
+              <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border);">
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 11.5px; font-weight: 700; color: #0288D1; border-color: #B3E5FC; background: #E1F5FE; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;" onclick="openCropDetailModal('${c.id}')">
+                  ${ICONS.eye} <span>বিস্তারিত</span>
+                </button>
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 11.5px; font-weight: 700; color: var(--primary); border-color: #C8E6C9; background: #F1F8E9; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;" onclick="editCrop('${c.id}')">
+                  ${ICONS.edit} <span>সম্পাদনা</span>
+                </button>
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 11.5px; font-weight: 700; color: var(--alert-critical); border-color: #FFCDD2; background: #FFEBEE; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;" onclick="deleteCrop('${c.id}', '${c.name}')">
+                  ${ICONS.trash} <span>ডিলিট</span>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (pList) {
+        if (pests.length === 0) {
+          pList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        } else {
+          pList.innerHTML = pests.map(p => `
+            <div class="item-card" style="display: block; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <h4 style="color: var(--alert-critical); margin: 0; font-size: 15px; display: inline-flex; align-items: center; gap: 6px;">${ICONS.bug} <span>${p.name} (আক্রান্ত ফসল: ${p.crop})</span></h4>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; color: var(--primary); display: inline-flex; align-items: center; gap: 4px;" onclick="editPest('${p.id}')">${ICONS.edit} <span>এডিট</span></button>
+                  <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; color: var(--alert-critical); display: inline-flex; align-items: center; gap: 4px;" onclick="deletePest('${p.id}')">${ICONS.trash} <span>ডিলিট</span></button>
+                </div>
+              </div>
+              <p style="margin-top: 4px; font-size: 13px;"><strong>লক্ষণ:</strong> ${p.symptoms}</p>
+              <p style="color: var(--primary); font-size: 13px;"><strong>জৈব প্রতিকার:</strong> ${p.cure}</p>
+              <p style="color: var(--alert-warning); font-size: 13px;"><strong>রাসায়নিক দমন:</strong> ${p.chemical}</p>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function openCropModal() {
+      refreshCategoryDropdowns();
+      toggleNewCategoryInput(false);
+      document.getElementById('cropId').value = '';
+      document.getElementById('cropModalTitle').innerText = 'নতুন ফসল যোগ করুন';
+      document.getElementById('cropName').value = '';
+      document.getElementById('cropCat').value = 'শাকসবজি';
+      document.getElementById('cropSeason').value = '';
+      document.getElementById('cropSoil').value = '';
+      document.getElementById('cropSowing').value = '';
+      document.getElementById('cropImg').value = '';
+      
+      const fileInput = document.getElementById('cropFileInput');
+      if (fileInput) fileInput.value = '';
+      if (pendingUploads.crop && pendingUploads.crop.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.crop.blobUrl); } catch (_) {}
+      }
+      pendingUploads.crop = { file: null, blobUrl: null };
+
+      const preview = document.getElementById('cropImgPreviewBox');
+      if (preview) preview.style.display = 'none';
+      const status = document.getElementById('cropUploadStatus');
+      if (status) status.style.display = 'none';
+
+      const stagesContainer = document.getElementById('cropStagesInputsContainer');
+      if (stagesContainer) {
+        stagesContainer.innerHTML = '';
+        addCropStageInputRow('জমি তৈরি ও বীজ বপন', 'জমি ভালো করে চাষ ও মই দিয়ে উপযোগী করুন।');
+        addCropStageInputRow('সার ও সেচ ব্যবস্থাপনা', 'পরিমিত মাত্রায় সুষম সার ও সময়মতো সেচ প্রয়োগ করুন।');
+      }
+      document.getElementById('cropModal').classList.add('active');
+    }
+
+    function editCrop(id) {
+      const c = crops.find(item => item.id === id);
+      if (!c) return;
+      if (c.cat) categoriesSet.add(c.cat);
+      refreshCategoryDropdowns();
+      toggleNewCategoryInput(false);
+
+      document.getElementById('cropId').value = c.id;
+      document.getElementById('cropModalTitle').innerText = 'ফসলের তথ্য সম্পাদনা করুন';
+      document.getElementById('cropName').value = c.name;
+      document.getElementById('cropCat').value = c.cat || 'শাকসবজি';
+      document.getElementById('cropSeason').value = c.season;
+      document.getElementById('cropSoil').value = c.soil;
+      document.getElementById('cropSowing').value = c.sowing || '';
+      document.getElementById('cropImg').value = c.img || '';
+
+      const fileInput = document.getElementById('cropFileInput');
+      if (fileInput) fileInput.value = '';
+      if (pendingUploads.crop && pendingUploads.crop.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.crop.blobUrl); } catch (_) {}
+      }
+      pendingUploads.crop = { file: null, blobUrl: null };
+
+      const preview = document.getElementById('cropImgPreviewBox');
+      if (preview) {
+        if (c.img) {
+          preview.style.display = 'block';
+          const imgEl = preview.querySelector('img');
+          if (imgEl) imgEl.src = c.img;
+        } else {
+          preview.style.display = 'none';
+        }
+      }
+      const status = document.getElementById('cropUploadStatus');
+      if (status) status.style.display = 'none';
+
+      const stagesContainer = document.getElementById('cropStagesInputsContainer');
+      if (stagesContainer) {
+        stagesContainer.innerHTML = '';
+        if (c.stages && c.stages.length) {
+          c.stages.forEach(s => addCropStageInputRow(s.title || s.name || s.step || s.stage_name || '', s.desc || s.description || s.details || ''));
+        } else {
+          addCropStageInputRow('', '');
+        }
+      }
+      document.getElementById('cropModal').classList.add('active');
+    }
+
+    function closeCropModal() { 
+      document.getElementById('cropModal').classList.remove('active'); 
+      toggleNewCategoryInput(false);
+      // Clean up any unsubmitted pending local file preview
+      if (pendingUploads.crop && pendingUploads.crop.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.crop.blobUrl); } catch (_) {}
+      }
+      pendingUploads.crop = { file: null, blobUrl: null };
+      const fileInput = document.getElementById('cropFileInput');
+      if (fileInput) fileInput.value = '';
+    }
+
+    async function saveCrop(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('cropSubmitBtn');
+      const origBtnContent = submitBtn ? submitBtn.innerHTML : '';
+
+      const id = document.getElementById('cropId').value;
+      const name = document.getElementById('cropName').value.trim();
+      if (!name) {
+        showToast('অনুগ্রহ করে ফসলের নাম লিখুন');
+        return;
+      }
+      
+      // Determine final category (Existing dropdown or newly entered)
+      let cat = document.getElementById('cropCat').value.trim();
+      const newCatRow = document.getElementById('newCropCatRow');
+      const newCatInput = document.getElementById('newCropCatInput');
+      if (cat === '__new__' || (newCatInput && newCatInput.value.trim().length > 0 && newCatRow && newCatRow.style.display !== 'none')) {
+        cat = newCatInput.value.trim();
+      }
+      if (!cat || cat === '__new__') cat = 'অন্যান্য';
+
+      const season = document.getElementById('cropSeason').value.trim();
+      const soil = document.getElementById('cropSoil').value.trim();
+      const sowing = document.getElementById('cropSowing').value.trim();
+      let img = document.getElementById('cropImg').value.trim();
+
+      // Collect stages
+      const stages = [];
+      document.querySelectorAll('#cropStagesInputsContainer .crop-stage-row').forEach(row => {
+        const sName = row.querySelector('.crop-stage-name')?.value.trim() || '';
+        const sDesc = row.querySelector('.crop-stage-desc')?.value.trim() || '';
+        if (sName) {
+          stages.push({
+            stage_name: sName,
+            name: sName,
+            description: sDesc,
+            desc: sDesc,
+            irrigation: '',
+            fertilizer: ''
+          });
+        }
+      });
+
+      try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> সংরক্ষণ হচ্ছে...`;
+        }
+
+        // Step 2 (Deferred Upload): Upload image to Cloudflare R2 ONLY NOW upon final submit
+        if (pendingUploads.crop && pendingUploads.crop.file) {
+          img = await uploadFileToR2Pipeline(pendingUploads.crop.file, 'crop', 'cropUploadStatus');
+          document.getElementById('cropImg').value = img;
+        }
+
+        // Step 3 (Database Save): Save document to Firestore
+        if (db) {
+          const docRef = id ? db.collection('crops').doc(id) : db.collection('crops').doc();
+          const now = firebase.firestore.FieldValue.serverTimestamp();
+          
+          const cropPayload = {
+            title: name,
+            name_bn: name,
+            name: name,
+            category: cat,
+            season: season,
+            soil_type: soil,
+            soil: soil,
+            sowing_time: sowing,
+            sowing: sowing,
+            imageUrl: img,
+            image_url: img,
+            stages: stages,
+            updatedAt: now,
+            timestamp: now
+          };
+
+          if (!id) {
+            cropPayload.createdAt = now;
+            cropPayload.created_at = now;
+          }
+
+          await docRef.set(cropPayload, { merge: true });
+
+          const catDocId = 'cat_' + encodeURIComponent(cat.toLowerCase().replace(/\s+/g, '_'));
+          await db.collection('categories').doc(catDocId).set({
+            name: cat,
+            name_bn: cat,
+            updatedAt: now
+          }, { merge: true });
+        }
+
+        // Step 4 (Success & Cleanup): Add to local set, cleanup blob, close modal
+        categoriesSet.add(cat);
+        refreshCategoryDropdowns();
+
+        if (pendingUploads.crop && pendingUploads.crop.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.crop.blobUrl); } catch (_) {}
+        }
+        pendingUploads.crop = { file: null, blobUrl: null };
+
+        closeCropModal();
+        showToast('ফসল সফলভাবে সংরক্ষণ করা হয়েছে! নতুন ক্যাটাগরি ও ক্লাউড ছবি সহ মূল অ্যাপে সাথে সাথে লাইভ হয়েছে।');
+      } catch (err) {
+        console.error("Save Crop Error:", err);
+        showToast(formatErrorMsg(err));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origBtnContent;
+        }
+      }
+    }
+
+    async function deleteCrop(id, name) {
+      if (!confirm(`"${name || 'ফসল'}" মুছে ফেলতে চান?`)) return;
+      try {
+        if (db) await db.collection('crops').doc(id).delete();
+        showToast('ফসল সফলভাবে মুছে ফেলা হয়েছে।');
+      } catch (err) {
+        showToast(formatErrorMsg(err));
+      }
+    }
+
+    function openPestModal() {
+      document.getElementById('pestId').value = '';
+      document.getElementById('pestModalTitle').innerText = 'নতুন বালাই / রোগ যোগ করুন';
+      document.getElementById('pestName').value = '';
+      document.getElementById('pestCrop').value = '';
+      document.getElementById('pestSymptoms').value = '';
+      document.getElementById('pestOrganic').value = '';
+      document.getElementById('pestChemical').value = '';
+      document.getElementById('pestImg').value = '';
+
+      const fileInput = document.getElementById('pestFileInput');
+      if (fileInput) fileInput.value = '';
+      if (pendingUploads.pest && pendingUploads.pest.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.pest.blobUrl); } catch (_) {}
+      }
+      pendingUploads.pest = { file: null, blobUrl: null };
+
+      const preview = document.getElementById('pestImgPreviewBox');
+      if (preview) preview.style.display = 'none';
+      const status = document.getElementById('pestUploadStatus');
+      if (status) status.style.display = 'none';
+      document.getElementById('pestModal').classList.add('active');
+    }
+
+    function editPest(id) {
+      const p = pests.find(item => item.id === id);
+      if (!p) return;
+      document.getElementById('pestId').value = p.id;
+      document.getElementById('pestModalTitle').innerText = 'বালাই তথ্য সম্পাদনা করুন';
+      document.getElementById('pestName').value = p.name;
+      document.getElementById('pestCrop').value = p.crop;
+      document.getElementById('pestSymptoms').value = p.symptoms;
+      document.getElementById('pestOrganic').value = p.cure;
+      document.getElementById('pestChemical').value = p.chemical;
+      const pImg = p.img || p.imageUrl || p.image_url || '';
+      document.getElementById('pestImg').value = pImg;
+
+      const fileInput = document.getElementById('pestFileInput');
+      if (fileInput) fileInput.value = '';
+      if (pendingUploads.pest && pendingUploads.pest.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.pest.blobUrl); } catch (_) {}
+      }
+      pendingUploads.pest = { file: null, blobUrl: null };
+
+      const preview = document.getElementById('pestImgPreviewBox');
+      if (preview) {
+        if (pImg) {
+          preview.style.display = 'block';
+          const imgEl = preview.querySelector('img');
+          if (imgEl) imgEl.src = pImg;
+        } else {
+          preview.style.display = 'none';
+        }
+      }
+      const status = document.getElementById('pestUploadStatus');
+      if (status) status.style.display = 'none';
+      document.getElementById('pestModal').classList.add('active');
+    }
+
+    function closePestModal() { 
+      document.getElementById('pestModal').classList.remove('active');
+      if (pendingUploads.pest && pendingUploads.pest.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.pest.blobUrl); } catch (_) {}
+      }
+      pendingUploads.pest = { file: null, blobUrl: null };
+      const fileInput = document.getElementById('pestFileInput');
+      if (fileInput) fileInput.value = '';
+    }
+
+    async function savePest(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('pestSubmitBtn');
+      const origBtnContent = submitBtn ? submitBtn.innerHTML : '';
+
+      const id = document.getElementById('pestId').value;
+      const name = document.getElementById('pestName').value.trim();
+      const crop = document.getElementById('pestCrop').value.trim();
+      const symptoms = document.getElementById('pestSymptoms').value.trim();
+      const organic = document.getElementById('pestOrganic').value.trim();
+      const chemical = document.getElementById('pestChemical').value.trim();
+      let pestImg = document.getElementById('pestImg')?.value.trim() || '';
+
+      if (!name || !crop) {
+        showToast('বালাই ও আক্রান্ত ফসলের নাম লিখুন');
+        return;
+      }
+
+      try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> সংরক্ষণ হচ্ছে...`;
+        }
+
+        // Step 2 (Deferred Upload): Upload image to Cloudflare R2 ONLY NOW upon final submit
+        if (pendingUploads.pest && pendingUploads.pest.file) {
+          pestImg = await uploadFileToR2Pipeline(pendingUploads.pest.file, 'pest', 'pestUploadStatus');
+          const pestImgInput = document.getElementById('pestImg');
+          if (pestImgInput) pestImgInput.value = pestImg;
+        }
+
+        // Step 3 (Database Save): Save to Firestore
+        if (db) {
+          const docRef = id ? db.collection('pests_diseases').doc(id) : db.collection('pests_diseases').doc();
+          const now = firebase.firestore.FieldValue.serverTimestamp();
+          await docRef.set({
+            title: name,
+            name_bn: name,
+            crop_name_bn: crop,
+            crop_name: crop,
+            crop_id: 'crop_custom',
+            category: 'বালাই ও রোগ',
+            symptoms: symptoms,
+            solution: organic || chemical,
+            organic_cure: organic,
+            chemical_cure: chemical,
+            precaution: '',
+            imageUrl: pestImg,
+            image_url: pestImg,
+            updatedAt: now,
+            timestamp: now
+          }, { merge: true });
+        }
+
+        // Step 4 (Success & Cleanup): Revoke blob, close modal
+        if (pendingUploads.pest && pendingUploads.pest.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.pest.blobUrl); } catch (_) {}
+        }
+        pendingUploads.pest = { file: null, blobUrl: null };
+
+        closePestModal();
+        showToast('রোগ/বালাই তথ্য সফলভাবে সংরক্ষণ করা হয়েছে! মূল মোবাইল অ্যাপে সাথে সাথে সিঙ্ক হয়েছে।');
+      } catch (err) {
+        console.error("Save Pest Error:", err);
+        showToast(formatErrorMsg(err));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origBtnContent;
+        }
+      }
+    }
+
+    async function deletePest(id) {
+      if (!confirm('তথ্যটি মুছে ফেলতে চান?')) return;
+      try {
+        if (db) await db.collection('pests_diseases').doc(id).delete();
+        showToast('তথ্য মুছে ফেলা হয়েছে।');
+      } catch (err) {
+        showToast(formatErrorMsg(err));
+      }
+    }
+
+    // ==================== SEED DATABASE ====================
+    async function seedInitialDatabase() {
+      if (!db) {
+        showToast('ফায়ারবেস ডেটাবেজ সংযুক্ত নেই!');
+        return;
+      }
+      if (!confirm('ফায়ারবেস ডেটাবেজ সিড করবেন? খালি কালেকশনে প্রাথমিক ফসল, বালাই, বাজার দর ও নোটিফিকেশন যুক্ত হবে।')) return;
+
+      showToast('ডেটাবেজ সিড করা হচ্ছে... অপেক্ষা করুন।');
+      try {
+        // Sample crops
+        const sampleCrops = [
+          { id: 'crop_rice_boro', name_bn: 'বোরো ধান (BRRI Dhan-28/29/89)', category: 'দানাদার শস্য', season: 'রবি (শীতকাল)', soil_type: 'দোআঁশ ও এঁটেল মাটি', sowing_time: 'কার্তিক-অগ্রহায়ণ' },
+          { id: 'crop_potato', name_bn: 'গোল আলু (ডায়মন্ড / কার্ডিনাল)', category: 'শাকসবজি', season: 'রবি', soil_type: 'বেলে দোআঁশ মাটি', sowing_time: 'কার্তিক-অগ্রহায়ণ' },
+          { id: 'crop_brinjal', name_bn: 'বেগুন (বারি বেগুন-৮)', category: 'শাকসবজি', season: 'সারা বছর', soil_type: 'উর্বর দোআঁশ', sowing_time: 'ভাদ্র-আশ্বিন' }
+        ];
+        for (let c of sampleCrops) {
+          await db.collection('crops').doc(c.id).set(c, { merge: true });
+        }
+
+        // Sample pests
+        const samplePests = [
+          { id: 'pest_bph', name_bn: 'বাদামি গাছফড়িং (BPH)', crop_name_bn: 'ধান', crop_id: 'crop_rice_boro', symptoms: 'গাছের গোড়ায় বসে রস চুষে নেয়, গাছ খড়ের মতো শুকিয়ে যায়।', organic_cure: 'আলো ফাঁদ ব্যবহার করুন, জমির পানি সরিয়ে ২-৩ দিন শুকান।', chemical_cure: 'পাইমেট্রোজিন (চেস ৫০ ডব্লিউজি) গোড়ায় স্প্রে করুন।' },
+          { id: 'pest_late_blight', name_bn: 'আলুর নাবি ধসা (Late Blight)', crop_name_bn: 'আলু', crop_id: 'crop_potato', symptoms: 'পাতার কিনারায় ভেজা জলছাপের দাগ এবং পরে দ্রুত পাতা পচে যায়।', organic_cure: 'আক্রান্ত গাছ মাটিচাপা দিন, নিম তেলের দ্রবণ দিন।', chemical_cure: 'রিডোমিল গোল্ড ২ গ্রাম/লিটার পানিতে স্প্রে করুন।' }
+        ];
+        for (let p of samplePests) {
+          await db.collection('pests_diseases').doc(p.id).set(p, { merge: true });
+        }
+
+        // Sample Market Prices
+        const samplePrices = [
+          { id: 'price_1', crop_name: 'বোরো ধান (ব্রি-২৮)', market_name: 'মহাস্থান হাট', district: 'বগুড়া', price: 1250, retail_price: 1300, unit: 'মণ', trend: 'up', updatedAt: firebase.firestore.FieldValue.serverTimestamp() },
+          { id: 'price_2', crop_name: 'গোল আলু (ডায়মন্ড)', market_name: 'কাওরান বাজার', district: 'ঢাকা', price: 38, retail_price: 45, unit: 'কেজি', trend: 'down', updatedAt: firebase.firestore.FieldValue.serverTimestamp() },
+          { id: 'price_3', crop_name: 'টমেটো (পাকা)', market_name: 'ঝিকরগাছা হাট', district: 'যশোর', price: 60, retail_price: 75, unit: 'কেজি', trend: 'stable', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }
+        ];
+        for (let m of samplePrices) {
+          await db.collection('market_prices').doc(m.id).set(m, { merge: true });
+        }
+
+        // Sample Notifications
+        const sampleNotifs = [
+          { id: 'notif_1', title: 'কালবৈশাখী ঝড় ও ভারি বৃষ্টির সতর্কতা', message: 'আগামী ২৪ ঘণ্টায় তীব্র বাতাস ও শিলাবৃষ্টির সম্ভাবনা রয়েছে। পাকা ফসল দ্রুত ঘরে তুলুন।', type: 'weather', timestamp: firebase.firestore.FieldValue.serverTimestamp(), isSeen: false },
+          { id: 'notif_2', title: 'বোরো ধানের ব্লাস্ট রোগ প্রতিরোধ পরামর্শ', message: 'আবহাওয়ায় আর্দ্রতা বেশি থাকায় শীষ ব্লাস্টের বিরুদ্ধে ট্রাইসাইক্লাজোল স্প্রে করুন।', type: 'crop', timestamp: firebase.firestore.FieldValue.serverTimestamp(), isSeen: false }
+        ];
+        for (let n of sampleNotifs) {
+          await db.collection('notifications').doc(n.id).set(n, { merge: true });
+        }
+
+        showToast('ডেটাবেজ সফলভাবে সিড করা হয়েছে! মূল মোবাইল অ্যাপেও সাথে সাথে সিঙ্ক হয়েছে।');
+      } catch (err) {
+        showToast(formatErrorMsg(err));
+      }
+    }
+
+    // ==================== USERS & TICKETS ====================
+    function renderUsers() {
+      const uList = document.getElementById('usersList');
+      const tList = document.getElementById('ticketsList');
+      document.getElementById('stat-farmers').innerText = users.length;
+      document.getElementById('usersCountBadge').innerText = 'মোট: ' + users.length + ' জন';
+
+      if (uList) {
+        if (users.length === 0) {
+          uList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        } else {
+          uList.innerHTML = users.map(u => `
+            <div class="item-card">
+              <div>
+                <h4>${u.name}</h4>
+                <p>ফোন: ${u.phone} • এলাকা: ${u.district}</p>
+              </div>
+              <div>
+                ${(u.crops || []).map(c => `<span class="badge badge-crop">${c}</span>`).join(' ')}
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (tList) {
+        if (tickets.length === 0) {
+          tList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
+        } else {
+          tList.innerHTML = tickets.map(t => `
+            <div class="item-card" style="display: block;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span class="badge ${t.status === 'answered' ? 'badge-crop' : 'badge-weather'}">${t.status === 'answered' ? 'উত্তর দেওয়া হয়েছে' : 'পেন্ডিং / অপেক্ষারত'}</span>
+                  <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">${t.farmer} (${t.phone}) - ${t.district}</span>
+                </div>
+                <button class="btn btn-primary" style="padding: 4px 12px; font-size: 12px;" onclick="openTicketModal('${t.id}')">উত্তর দিন</button>
+              </div>
+              <h4 style="margin-top: 8px;">${t.subject}</h4>
+              <p>${t.details}</p>
+              ${t.reply ? `<div style="background: var(--primary-container); padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-size: 13px;"><strong>কর্মকর্তার পরামর্শ:</strong> ${t.reply}</div>` : ''}
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function openTicketModal(id) {
+      document.getElementById('replyTicketId').value = id;
+      document.getElementById('replyOfficer').value = '';
+      document.getElementById('replyText').value = '';
+      document.getElementById('ticketModal').classList.add('active');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticketModal').classList.remove('active');
+    }
+
+    async function saveTicketReply(e) {
+      e.preventDefault();
+      const id = document.getElementById('replyTicketId').value;
+      const officer = document.getElementById('replyOfficer').value.trim();
+      const text = document.getElementById('replyText').value.trim();
+
+      try {
+        if (db) {
+          await db.collection('support_tickets').doc(id).update({
+            status: 'answered',
+            officerName: officer,
+            officerReply: text
+          });
+        }
+        closeTicketModal();
+        showToast('পরামর্শ উত্তর সফলভাবে কৃষকের অ্যাপে পাঠানো হয়েছে!');
+      } catch (err) {
+        showToast('ত্রুটি: ' + err.message);
+      }
+    }
+
+    // Dismiss any modal on overlay outside-click (including cropDetailModal)
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+        toggleNewCategoryInput(false);
+      }
+    });
+
+    // Dismiss modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        toggleNewCategoryInput(false);
+      }
+    });
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshCategoryDropdowns();
+      initFirestoreListeners();
+      updateDistrictFilterOptions('all');
+      renderNotifications();
+      renderMarketList();
+      renderCrops();
+      renderUsers();
+    });
+  </script>
+</body>
+</html>

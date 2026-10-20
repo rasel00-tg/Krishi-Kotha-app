@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // কৃষি কথা – Krishi Kotha & Admin Control Portal Security Rules
+    // ===============================================================
+    
+    // 1. Crops Catalog (ফসল তথ্যভাণ্ডার)
+    match /crops/{cropId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 2. Pests & Diseases (রোগবালাই ও প্রতিকার)
+    match /pests_diseases/{pestId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 3. Market Prices (লাইভ বাজার দর)
+    match /market_prices/{priceId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 4. Notifications & Notices (বিজ্ঞপ্তি ও নোটিশ)
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 5. Support Tickets & Expert Consultations (কৃষক সহায়তা টিকিট)
+    match /support_tickets/{ticketId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 6. Registered Farmers & Users (ব্যবহারকারী ও কৃষক প্রোফাইল)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // 7. Community Forum & Farmer Posts (কৃষক কমিউনিটি)
+    match /community_posts/{postId} {
+      allow read: if true;
+      allow write: if true;
+      
+      match /comments/{commentId} {
+        allow read: if true;
+        allow write: if true;
+      }
+    }
+    
+    // Fallback rule for test & development mode
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

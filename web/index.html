@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E7D32">
+  <meta name="description" content="কৃষি কথা – Krishi Kotha: আধুনিক ও কৃষিবান্ধব কৃষি প্ল্যাটফর্ম (বাংলাদেশ)">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="কৃষি কথা">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+  <!-- Crisp Favicons for Browser Tab & Bookmarks -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.png">
+
+  <!-- Google Fonts Preconnect for Hind Siliguri -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <title>কৃষি কথা – Krishi Kotha</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #F8FAF7;
+      font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+    #loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #F8FAF7;
+      z-index: 9999;
+      transition: opacity 0.4s ease-out;
+    }
+    .loading-logo {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+    }
+    .spinner {
+      border: 4px solid rgba(46, 125, 50, 0.15);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border-left-color: #2E7D32;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    .loading-text {
+      color: #1E281F;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+    .loading-subtext {
+      color: #758577;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    const serviceWorkerVersion = null;
+
+    // Detect if opened directly via file:// protocol and show helpful prompt
+    if (window.location.protocol === 'file:') {
+      window.addEventListener('DOMContentLoaded', function() {
+        const warn = document.createElement('div');
+        warn.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:"Hind Siliguri",sans-serif;';
+        warn.innerHTML = `
+          <div style="max-width:520px;background:#F8FAF7;border:2px solid #2E7D32;border-radius:18px;padding:32px 24px;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+            <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+            <h2 style="color:#2E7D32;margin:0 0 10px 0;font-size:22px;">লোকালহোস্টে ওপেন করুন</h2>
+            <p style="color:#444;font-size:15px;line-height:1.6;margin:0 0 16px 0;">
+              আপনি অ্যাপটি সরাসরি ফাইল হিসেবে (<strong>file:///...</strong>) ওপেন করেছেন। ব্রাউজার সিকিউরিটি (CORS) লোকাল ফাইলে ফ্লাটার এবং ফায়ারবেস স্ক্রিপ্ট লোড হতে দেয় না।
+            </p>
+            <div style="background:#E8F5E9;border-radius:10px;padding:12px 14px;margin-bottom:18px;text-align:left;">
+              <div style="font-weight:700;color:#1B5E20;font-size:14px;margin-bottom:4px;">সঠিকভাবে চালানোর উপায়:</div>
+              <div style="font-size:13px;color:#2E7D32;">১. টার্মিনালে রান করুন: <code>flutter run -d chrome --web-port=3000</code></div>
+              <div style="font-size:13px;color:#2E7D32;margin-top:3px;">২. অথবা প্রিভিউ লিংক ব্যবহার করুন: <a href="http://localhost:8080/" style="color:#1B5E20;font-weight:700;">http://localhost:8080/</a></div>
+            </div>
+            <a href="http://localhost:8080/" style="display:inline-block;background:#2E7D32;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 3px 10px rgba(46,125,50,0.3);">
+              লোকালহোস্টে ওপেন করুন (http://localhost:8080/)
+            </a>
+          </div>
+        `;
+        document.body.appendChild(warn);
+      });
+    }
+  </script>
+  <!-- Flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <div id="loading-container">
+    <img src="favicon.png" alt="কৃষি কথা" class="loading-logo" onerror="this.style.display='none'">
+    <div class="spinner"></div>
+    <div class="loading-text">কৃষি কথা লোড হচ্ছে...</div>
+    <div class="loading-subtext">অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন</div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js and initialize engine
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            const loader = document.getElementById('loading-container');
+            if (loader) {
+              loader.style.opacity = '0';
+              setTimeout(function() {
+                loader.remove();
+              }, 400);
+            }
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161614701103",
+    "project_id": "krishikotha-app",
+    "storage_bucket": "krishikotha-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161614701103:android:5070d9d7d342e090791cda",
+        "android_client_info": {
+          "package_name": "com.krishikotha.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD08a-tSsO4UvZ3wk3JzZQPMeFMOelcK8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

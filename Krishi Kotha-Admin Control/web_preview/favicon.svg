@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2E7D32"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Emerald Outer Circle with Golden Border -->
+  <circle cx="64" cy="64" r="60" fill="#142918" stroke="url(#goldGrad)" stroke-width="4.5" filter="url(#shadow)"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="#FFD54F" stroke-width="1" stroke-dasharray="2.5 2.5" opacity="0.6"/>
+
+  <!-- Admin Shield Base -->
+  <path d="M 36 30 L 92 30 C 92 56 86 82 64 98 C 42 82 36 56 36 30 Z" fill="url(#shieldGrad)" stroke="url(#goldGrad)" stroke-width="3" filter="url(#shadow)"/>
+
+  <!-- Inner Shield Trim -->
+  <path d="M 41 35 L 87 35 C 87 56 82 77 64 91 C 46 77 41 56 41 35 Z" fill="none" stroke="#A5D6A7" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- White Seedling / Leaf Emblem -->
+  <path d="M 64 72 C 54 62 48 48 64 40 C 80 48 74 62 64 72 Z" fill="#FFFFFF"/>
+  <path d="M 64 72 L 64 44" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 64 56 C 58 53 54 48 56 44 C 60 48 62 53 64 56 Z" fill="#C8E6C9"/>
+  <path d="M 64 54 C 70 51 74 46 72 42 C 68 46 66 51 64 54 Z" fill="#C8E6C9"/>
+
+  <!-- Golden Admin Control Gear / Badge Star -->
+  <g transform="translate(86, 86)">
+    <!-- Gear circle background -->
+    <circle cx="0" cy="0" r="18" fill="#142918" stroke="url(#goldGrad)" stroke-width="2.5" filter="url(#shadow)"/>
+    <!-- 8 Cog notches -->
+    <path d="M -3 -16 L 3 -16 L 2 -12 L -2 -12 Z
+             M 12 -3 L 16 -3 L 16 3 L 12 2 Z
+             M 3 12 L 3 16 L -3 16 L -2 12 Z
+             M -16 3 L -16 -3 L -12 -2 L -12 2 Z
+             M 8 -10 L 12 -8 L 10 -5 L 7 -7 Z
+             M 10 5 L 12 8 L 8 10 L 7 7 Z
+             M -10 5 L -12 8 L -8 10 L -7 7 Z
+             M -10 -5 L -12 -8 L -8 -10 L -7 -7 Z" fill="url(#goldGrad)"/>
+    <!-- Gear Center Core -->
+    <circle cx="0" cy="0" r="10" fill="url(#goldGrad)"/>
+    <circle cx="0" cy="0" r="4.5" fill="#142918"/>
+  </g>
+</svg>
