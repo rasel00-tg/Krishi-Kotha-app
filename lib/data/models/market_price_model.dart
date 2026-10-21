@@ -30,7 +30,7 @@ class MarketPriceModel {
     required this.updatedAt,
   });
 
-  static double _parseDouble(dynamic value) {
+  static double parseDouble(dynamic value) {
     if (value == null) return 0.0;
     if (value is num) return value.toDouble();
     if (value is String) {
@@ -113,54 +113,35 @@ class MarketPriceModel {
       time = DateTime.now();
     }
 
-    // Safe String mapping supporting both camelCase and snake_case without empty-string shadowing
+    // ১. ফসলের নাম: data['crop_name'] ?? data['cropName'] ?? 'ফসল'
     final String cropName = _firstNonEmpty([
-      data['cropName'],
       data['crop_name'],
+      data['cropName'],
       data['name'],
       data['crop'],
       data['name_bn'],
       data['title'],
     ], 'ফসল');
 
+    // ২. ছবি URL: data['image_url'] ?? data['imageUrl'] ?? ''
+    final String imageUrl = _firstNonEmpty([
+      data['image_url'],
+      data['imageUrl'],
+      data['img'],
+      data['image'],
+    ], '');
+
+    // ৩. বাজারের নাম: data['market_name'] ?? data['marketName'] ?? 'স্থানীয় বাজার'
     final String marketName = _firstNonEmpty([
-      data['marketName'],
       data['market_name'],
+      data['marketName'],
       data['market'],
       data['bazar_name'],
       data['bazar'],
       data['hat'],
     ], 'স্থানীয় বাজার');
 
-    final String district = _firstNonEmpty([
-      data['district'],
-      data['district_name'],
-      data['districtName'],
-      data['division'],
-      data['location'],
-      data['jela'],
-    ], '');
-
-    final String unit = _firstNonEmpty([
-      data['unit'],
-      data['unit_name'],
-      data['unitName'],
-      data['poriman'],
-    ], 'কেজি');
-
-    final String imageUrl = _firstNonEmpty([
-      data['imageUrl'],
-      data['image_url'],
-      data['img'],
-      data['image'],
-    ], '');
-
-    final String trend = _firstNonEmpty([
-      data['trend'],
-      data['status'],
-    ], 'stable').toLowerCase();
-
-    // price: Number/int safe casting supporting both wholesale and retail variants
+    // ৪. পাইকারি দর: data['price'] != null ? '${data['price']}' : '০'
     final dynamic rawPrice = _firstNonNull([
       data['price'],
       data['wholesale_price'],
@@ -169,35 +150,28 @@ class MarketPriceModel {
       data['rate'],
       data['bazar_dor'],
     ]);
+    final String priceText = rawPrice != null ? '$rawPrice'.trim() : '০';
 
+    // ৫. খুচরা দর: (data['retail_price'] ?? data['retailPrice']) != null ? '${data['retail_price'] ?? data['retailPrice']}' : '০'
     final dynamic rawRetail = _firstNonNull([
-      data['retailPrice'],
       data['retail_price'],
+      data['retailPrice'],
       data['retail'],
       data['khuchra'],
     ]);
+    final String retailPriceText = rawRetail != null ? '$rawRetail'.trim() : '০';
 
-    final double price = _parseDouble(rawPrice);
-    final double retailPrice = _parseDouble(rawRetail);
+    // ৬. ইউনিট: data['unit']?.toString() ?? 'কেজি'
+    final String unit = (data['unit'] ?? data['unit_name'] ?? data['unitName'] ?? data['poriman'] ?? 'কেজি').toString().trim();
 
-    // Format safe string representations
-    String priceText = '০';
-    if (rawPrice != null) {
-      if (rawPrice is num) {
-        priceText = rawPrice % 1 == 0 ? rawPrice.toInt().toString() : rawPrice.toString();
-      } else {
-        priceText = rawPrice.toString().trim();
-      }
-    }
+    // ৭. জেলা: data['district']?.toString() ?? ''
+    final String district = (data['district'] ?? data['district_name'] ?? data['districtName'] ?? data['division'] ?? data['location'] ?? data['jela'] ?? '').toString().trim();
 
-    String retailPriceText = '০';
-    if (rawRetail != null) {
-      if (rawRetail is num) {
-        retailPriceText = rawRetail % 1 == 0 ? rawRetail.toInt().toString() : rawRetail.toString();
-      } else {
-        retailPriceText = rawRetail.toString().trim();
-      }
-    }
+    // ৮. ট্রেন্ড: data['trend']?.toString() ?? 'stable'
+    final String trend = (data['trend'] ?? data['status'] ?? 'stable').toString().trim().toLowerCase();
+
+    final double price = parseDouble(rawPrice);
+    final double retailPrice = parseDouble(rawRetail);
 
     return MarketPriceModel(
       id: id,
@@ -207,8 +181,8 @@ class MarketPriceModel {
       unit: unit.isNotEmpty ? unit : 'কেজি',
       price: price,
       retailPrice: retailPrice,
-      priceText: priceText,
-      retailPriceText: retailPriceText,
+      priceText: priceText.isNotEmpty ? priceText : '০',
+      retailPriceText: retailPriceText.isNotEmpty ? retailPriceText : '০',
       imageUrl: imageUrl,
       trend: trend.isNotEmpty ? trend : 'stable',
       updatedAt: time,

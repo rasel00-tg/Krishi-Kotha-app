@@ -4,6 +4,7 @@ import '../../core/responsive/responsive_layout.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_delete_dialog.dart';
 
 class NotificationsManagementScreen extends StatefulWidget {
   const NotificationsManagementScreen({super.key});
@@ -72,26 +73,14 @@ class _NotificationsManagementScreenState extends State<NotificationsManagementS
   }
 
   Future<void> _confirmDelete(String id, String title) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('নোটিফিকেশন মুছতে চান?'),
-        content: Text('"$title" নোটিফিকেশনটি কি নিশ্চিতভাবে মুছে ফেলতে চান?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('বাতিল'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    final confirmed = await AdminDeleteDialog.show(
+      context,
+      title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+      subtitle: 'এই নোটিফিকেশনটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName: 'বিজ্ঞপ্তি: $title',
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       try {
         await AdminFirestoreService.instance.deleteNotification(id);
         if (mounted) {

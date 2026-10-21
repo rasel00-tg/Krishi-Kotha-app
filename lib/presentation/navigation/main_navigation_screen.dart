@@ -54,11 +54,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
+      extendBody: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ১. মূল পেজসমূহ (Screens Body)
+          Positioned.fill(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: screens,
+            ),
+          ),
+
+          // ২. ফ্লোটিং অ্যানিমেটেড গ্র্যাডিয়েন্ট বটম নেভিগেশন বার (Stack-এর শীর্ষে সর্বোচ্চ Z-Index ও আনব্লকেবল হিট-টেস্ট)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildAnimatedGradientNavBar(),
+          ),
+        ],
       ),
-      bottomNavigationBar: _buildAnimatedGradientNavBar(),
     );
   }
 
@@ -113,7 +129,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       child: Container(
         height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
@@ -135,74 +151,80 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(navItems.length, (index) {
             final item = navItems[index];
             final isSelected = _currentIndex == index;
 
-            return GestureDetector(
-              onTap: () => _onTabSelected(index),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                padding: isSelected
-                    ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
-                    : const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: item.gradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                  color: isSelected ? null : const Color(0xFFF1F5F2),
-                  borderRadius: BorderRadius.circular(isSelected ? 24 : 50),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: item.glowColor,
-                            blurRadius: 14,
-                            offset: const Offset(0, 5),
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isSelected ? item.selectedIcon : item.unselectedIcon,
-                      size: 20,
-                      color: isSelected ? Colors.white : const Color(0xFF64748B),
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => _onTabSelected(index),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  height: 64,
+                  alignment: Alignment.center,
+                  color: Colors.transparent,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeOutCubic,
+                    padding: isSelected
+                        ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
+                        : const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? LinearGradient(
+                              colors: item.gradient,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: isSelected ? null : const Color(0xFFF1F5F2),
+                      borderRadius: BorderRadius.circular(isSelected ? 24 : 50),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: item.glowColor,
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
-                    AnimatedCrossFade(
-                      firstChild: Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child: Text(
-                          item.label,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? item.selectedIcon : item.unselectedIcon,
+                          size: 20,
+                          color: isSelected ? Colors.white : const Color(0xFF64748B),
                         ),
-                      ),
-                      secondChild: const SizedBox.shrink(),
-                      crossFadeState: isSelected
-                          ? CrossFadeState.showFirst
-                          : CrossFadeState.showSecond,
-                      duration: const Duration(milliseconds: 250),
+                        AnimatedCrossFade(
+                          firstChild: Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Text(
+                              item.label,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          secondChild: const SizedBox.shrink(),
+                          crossFadeState: isSelected
+                              ? CrossFadeState.showFirst
+                              : CrossFadeState.showSecond,
+                          duration: const Duration(milliseconds: 250),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );

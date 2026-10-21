@@ -86,7 +86,7 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'কৃষক তালিকা (Firestore লাইভ স্ট্রীম)',
+                  'কৃষক তালিকা (সরাসরি সংযুক্ত)',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
                 ),
                 StreamBuilder<List<AdminUserModel>>(

@@ -98,54 +98,144 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
   Widget build(BuildContext context) {
     final marketProvider = Provider.of<MarketPriceProvider>(context);
 
+    // ডিফল্ট ফিল্টার বাউন্ডারি বাইপাস: ইউজার নির্দিষ্ট জেলা বা বিভাগ সিলেক্ট না করলে কোনো ফিল্টারিং হবে না
+    final bool isDistrictFiltered = marketProvider.selectedDistrict.trim().isNotEmpty &&
+        marketProvider.selectedDistrict.trim() != 'সারাদেশ' &&
+        marketProvider.selectedDistrict.trim() != 'সকল বাজার / সারাদেশ' &&
+        marketProvider.selectedDistrict.trim() != 'সকল জেলা / সারাদেশ' &&
+        marketProvider.selectedDistrict.trim() != 'সকল জেলা' &&
+        marketProvider.selectedDistrict.trim() != 'সব জেলা' &&
+        marketProvider.selectedDistrict.trim() != 'all' &&
+        marketProvider.selectedDistrict.trim() != BangladeshLocationData.allDistrictsOption;
+
+    final bool isDivisionFiltered = marketProvider.selectedDivision.trim().isNotEmpty &&
+        marketProvider.selectedDivision.trim() != 'সকল বাজার / সারাদেশ' &&
+        marketProvider.selectedDivision.trim() != 'সকল জেলা / সারাদেশ' &&
+        marketProvider.selectedDivision.trim() != 'সকল বিভাগ' &&
+        marketProvider.selectedDivision.trim() != 'সারাদেশ' &&
+        marketProvider.selectedDivision.trim() != 'all';
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAF8),
-      appBar: null, // টপবার অপসারণ: ফুল-স্ক্রিন আধুনিক লুক
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // ১. আধুনিক ফুল-স্ক্রিন হেডার (স্লিক টাইটেল, সার্চ বার ও ফিল্টার)
-            _buildModernHeader(context, marketProvider),
+      backgroundColor: Colors.transparent,
+      appBar: null, // টপবার অপসারণ: ফুল-স্ক্রিন আধুনিক ডেলিভারি অ্যাপ লুক
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFE8F5E9), // শীর্ষে হালকা রিফ্রেশিং গ্রিন
+              Color(0xFFF1F8F1), // মসৃণ ট্রাঞ্জিশন
+              Color(0xFFF8FAF7), // নিচের দিকে ক্রমান্বয়ে মসৃণ অফ-হোয়াইট বা সফট লাইট
+            ],
+            stops: [0.0, 0.28, 0.65],
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // ১. আধুনিক ফুল-স্ক্রিন হেডার (স্লিক লোকেশন, সার্চ বার, ফিল্টার ও ফিচার ব্যানার)
+              _buildModernHeader(context, marketProvider),
 
             // ২. রিয়েল-টাইম লাইভ বাজার দর গ্রিড (Firestore StreamBuilder)
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('market_prices').snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData && !snapshot.hasError) {
-                    return const PremiumLoadingWidget(
-                      topic: 'বাজার দর',
-                      subtitle: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন',
+                  // ১. যদি ডেটা লোড হতে থাকে (ConnectionState.waiting), পেজের সেন্টারে রঙিন লোডিং পপ-আপ প্রদর্শন
+                  if ((snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) ||
+                      (!snapshot.hasData && !snapshot.hasError)) {
+                    return const Center(
+                      child: PremiumLoadingWidget(
+                        topic: 'বাজার দর',
+                        subtitle: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন',
+                      ),
                     );
                   }
 
-                  // লাল বক্সে স্পষ্ট এরর ডিসপ্লে (সাইলেন্ট এরর নির্মূল)
-                  if (snapshot.hasError) {
+                  // ২. ফায়ারস্টোর এরর আনমাস্কিং: সাইলেন্ট ট্র্যাপ বন্ধ করে লাল বক্সে আসল ত্রুটি প্রদর্শন
+                  if (snapshot.hasError && !snapshot.hasData) {
+                    final errString = snapshot.error.toString();
+                    final isPermissionDenied = errString.toLowerCase().contains('permission') ||
+                        errString.toLowerCase().contains('denied');
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                         child: Container(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(18.0),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFEBEE),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(color: const Color(0xFFEF5350), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFEF5350).withOpacity(0.12),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.error_outline_rounded, color: Color(0xFFC62828), size: 48),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'Firestore এরর (সাইলেন্ট এরর ডিটেক্টেড):',
-                                style: TextStyle(color: Color(0xFFC62828), fontSize: 16, fontWeight: FontWeight.bold),
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFCDD2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    isPermissionDenied ? Icons.lock_outline_rounded : Icons.error_outline_rounded,
+                                    color: const Color(0xFFC62828),
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                isPermissionDenied
+                                    ? 'ফায়ারস্টোর পারমিশন এরর (Permission Denied)'
+                                    : 'ফায়ারস্টোর সংযোগ ত্রুটি (Firestore Error)',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xFFC62828),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 8),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFFFCDD2)),
+                                ),
+                                child: Text(
+                                  errString,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Color(0xFFB71C1C),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
                               Text(
-                                '${snapshot.error}',
+                                isPermissionDenied
+                                    ? 'পরামর্শ: ফায়ারবেস কনসোলের Cloud Firestore > Rules ট্যাবে গিয়ে "allow read, write: if true;" রুলস পেস্ট করে Publish করুন।'
+                                    : 'পরামর্শ: ইন্টারনেট সংযোগ বা ফায়ারবেস রুলস সক্রিয় আছে কিনা নিশ্চিত করুন।',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  color: Color(0xFF7F0000),
+                                  fontSize: 12,
+                                  height: 1.35,
+                                ),
                               ),
                               const SizedBox(height: 14),
                               ElevatedButton.icon(
@@ -153,13 +243,14 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                                   backgroundColor: const Color(0xFFC62828),
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                                 ),
                                 onPressed: () {
                                   marketProvider.resetFilters();
                                   _searchController.clear();
                                 },
                                 icon: const Icon(Icons.refresh, size: 18),
-                                label: const Text('ফিল্টার রিসেট ও রিফ্রেশ'),
+                                label: const Text('পুনরায় লোড করুন', style: TextStyle(fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
@@ -174,6 +265,7 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                       child: EmptyStateWidget(
                         icon: Icons.store_mall_directory_outlined,
                         message: 'কোনো বাজার দর পাওয়া যায়নি',
+                        subtitle: 'বর্তমানে ডেটাবেজে কোনো বাজার দর তালিকাভুক্ত নেই',
                         action: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
@@ -194,7 +286,49 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                   final List<MarketPriceModel> allPrices = [];
                   for (final doc in docs) {
                     try {
-                      allPrices.add(MarketPriceModel.fromFirestore(doc));
+                      final raw = doc.data();
+                      final Map<String, dynamic> data = {};
+                      if (raw is Map) {
+                        raw.forEach((k, v) {
+                          if (k != null) data[k.toString()] = v;
+                        });
+                      }
+                      final String cropName = (data['cropName'] ?? data['crop_name'] ?? data['name'] ?? 'ফসল').toString();
+                      final String marketName = (data['marketName'] ?? data['market_name'] ?? data['market'] ?? 'স্থানীয় বাজার').toString();
+                      final String district = (data['district']?.toString() ?? data['location']?.toString() ?? '').trim();
+                      final String imageUrl = (data['imageUrl'] ?? data['image_url'] ?? data['image'] ?? '').toString();
+                      final String unit = (data['unit'] ?? 'কেজি').toString();
+                      final String trend = (data['trend'] ?? 'stable').toString();
+
+                      final dynamic rawPrice = data['price'];
+                      final dynamic rawRetail = data['retailPrice'] ?? data['retail_price'];
+                      final double price = MarketPriceModel.parseDouble(rawPrice);
+                      final double retailPrice = MarketPriceModel.parseDouble(rawRetail);
+                      final String priceText = rawPrice != null ? rawPrice.toString() : '০';
+                      final String retailPriceText = rawRetail != null ? rawRetail.toString() : '০';
+
+                      DateTime updatedAt = DateTime.now();
+                      final rawTime = data['updatedAt'] ?? data['updated_at'] ?? data['timestamp'];
+                      if (rawTime is Timestamp) {
+                        updatedAt = rawTime.toDate();
+                      } else if (rawTime is String) {
+                        updatedAt = DateTime.tryParse(rawTime) ?? DateTime.now();
+                      }
+
+                      allPrices.add(MarketPriceModel(
+                        id: doc.id,
+                        district: district,
+                        marketName: marketName,
+                        cropName: cropName,
+                        unit: unit,
+                        price: price,
+                        retailPrice: retailPrice,
+                        priceText: priceText,
+                        retailPriceText: retailPriceText,
+                        imageUrl: imageUrl,
+                        trend: trend,
+                        updatedAt: updatedAt,
+                      ));
                     } catch (e) {
                       debugPrint('MarketPriceModel parse error for doc ${doc.id}: $e');
                     }
@@ -209,32 +343,18 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
 
                   var filteredPrices = allPrices;
 
-                  // ৩. আনরেস্ট্রিক্টেড ডিফল্ট ভিউ ও কেবল ইউজার সিলেক্ট করলে ফিল্টারিং
-                  final selectedDivision = marketProvider.selectedDivision;
-                  if (selectedDivision.isNotEmpty &&
-                      selectedDivision != 'সকল বাজার / সারাদেশ' &&
-                      selectedDivision != 'সকল জেলা / সারাদেশ' &&
-                      selectedDivision != 'সকল বিভাগ' &&
-                      selectedDivision != 'সারাদেশ' &&
-                      selectedDivision != 'all') {
-                    final divDistricts = BangladeshLocationData.divisionDistricts[selectedDivision] ?? [];
+                  // ৩. আনরেস্ট্রিক্টেড ডিফল্ট ভিউ ও কেবল ইউজার বাছাই করলেই অ্যাপ-লেভেলে ফিল্টারিং
+                  if (isDistrictFiltered) {
+                    final targetDistrict = marketProvider.selectedDistrict.trim();
+                    filteredPrices = filteredPrices.where((m) =>
+                        _matchDistrict(m.district, targetDistrict)
+                    ).toList();
+                  } else if (isDivisionFiltered) {
+                    final targetDivision = marketProvider.selectedDivision.trim();
+                    final divDistricts = BangladeshLocationData.divisionDistricts[targetDivision] ?? [];
                     filteredPrices = filteredPrices.where((m) =>
                         divDistricts.any((d) => _matchDistrict(m.district, d)) ||
-                        _matchDistrict(m.district, selectedDivision)
-                    ).toList();
-                  }
-
-                  final selectedDistrict = marketProvider.selectedDistrict;
-                  if (selectedDistrict.isNotEmpty &&
-                      selectedDistrict != 'সারাদেশ' &&
-                      selectedDistrict != 'সকল বাজার / সারাদেশ' &&
-                      selectedDistrict != 'সকল জেলা / সারাদেশ' &&
-                      selectedDistrict != 'সকল জেলা' &&
-                      selectedDistrict != 'সব জেলা' &&
-                      selectedDistrict != 'all' &&
-                      selectedDistrict != BangladeshLocationData.allDistrictsOption) {
-                    filteredPrices = filteredPrices.where((m) =>
-                        _matchDistrict(m.district, selectedDistrict)
+                        _matchDistrict(m.district, targetDivision)
                     ).toList();
                   }
 
@@ -252,6 +372,7 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                       child: EmptyStateWidget(
                         icon: Icons.search_off_rounded,
                         message: 'কোনো বাজার দর পাওয়া যায়নি',
+                        subtitle: 'অন্য ফসল বা এলাকার নাম খুঁজে দেখতে পারেন',
                         action: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
@@ -272,10 +393,10 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                   // ৩. ২-কলামের প্রিমিয়াম প্রোডাক্ট কার্ড গ্রিড (2-Column Grid Layout)
                   return GridView.builder(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.69,
+                      childAspectRatio: 0.68,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 14,
                     ),
@@ -290,10 +411,11 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  // ১. ক্লিন আধুনিক টপ হেডার ও সার্চ অংশ (No Traditional AppBar)
+  // ১. আধুনিক হেডার ও সার্চ অংশ (লোকেশন ট্যাগ, সার্চ বার, ফিল্টার ও ফিচার ব্যানার)
   Widget _buildModernHeader(BuildContext context, MarketPriceProvider marketProvider) {
     final bool isDistrictFiltered = marketProvider.selectedDistrict.isNotEmpty &&
         marketProvider.selectedDistrict != 'সারাদেশ' &&
@@ -312,213 +434,266 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
         marketProvider.selectedDivision != 'all';
 
     final bool hasActiveFilter = isDistrictFiltered || isDivisionFiltered;
-    final String activeFilterLabel = isDistrictFiltered
-        ? marketProvider.selectedDistrict
-        : (isDivisionFiltered ? marketProvider.selectedDivision : '');
+    final String locationDisplay = isDistrictFiltered
+        ? 'নির্বাচিত বাজার: ${marketProvider.selectedDistrict}'
+        : (isDivisionFiltered
+            ? 'নির্বাচিত বিভাগ: ${marketProvider.selectedDivision}'
+            : 'সারাদেশের বাজার দর');
 
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title Bar with Market/Storefront Icon (No Notification Bell Icon)
+          // মার্জিত শীর্ষ শিরোনাম: "দৈনিক বাজার দর" এবং সাব-টাইটেল: "সারাদেশের পাইকারি ও খুচরা বাজার দর"
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // মার্কেট রিলেটেড চমৎকার আধুনিক স্টোরফ্রন্ট আইকন/ব্যাজ
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'দৈনিক বাজার দর',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1E281F),
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasActiveFilter
+                            ? locationDisplay
+                            : 'সারাদেশের পাইকারি ও খুচরা বাজার দর',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: hasActiveFilter ? const Color(0xFF2E7D32) : const Color(0xFF556B2F),
+                          fontWeight: hasActiveFilter ? FontWeight.w700 : FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (hasActiveFilter)
+                  GestureDetector(
+                    onTap: () {
+                      marketProvider.resetFilters();
+                      _searchController.clear();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFEBEE),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFFCDD2)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'রিসেট',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFC62828),
+                            ),
+                          ),
+                          SizedBox(width: 3),
+                          Icon(Icons.close_rounded, size: 14, color: Color(0xFFC62828)),
+                        ],
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // সাদা ফ্রস্টেড স্লিক সার্চবার ও পাশে ফিল্টার আইকন বাটন
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.black.withOpacity(0.06)),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF2E7D32).withOpacity(0.25),
-                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(Icons.storefront_rounded, color: Colors.white, size: 24),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) => marketProvider.setSearchQuery(val),
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF1E281F)),
+                    decoration: InputDecoration(
+                      hintText: 'ফসল বা বাজার খুঁজুন...',
+                      hintStyle: const TextStyle(fontSize: 13.5, color: Color(0xFF758577)),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF2E7D32), size: 22),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF758577)),
+                              onPressed: () {
+                                _searchController.clear();
+                                marketProvider.setSearchQuery('');
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+              ),
+              const SizedBox(width: 10),
+              // ফিল্টার আইকন বাটন
+              InkWell(
+                onTap: () => _showDistrictFilter(context, marketProvider),
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2E7D32).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.tune_rounded, size: 22, color: Colors.white),
+                      ),
+                    ),
+                    if (hasActiveFilter)
+                      Positioned(
+                        top: -3,
+                        right: -3,
+                        child: Container(
+                          width: 13,
+                          height: 13,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF9800),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // ২. হাইলাইট অফার/দর ব্যানার (Feature Banner)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2E7D32).withOpacity(0.22),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'বাজার দর',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.3,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.bolt_rounded, color: Color(0xFFFFD54F), size: 12),
+                            SizedBox(width: 3),
+                            Text(
+                              'দৈনিক লাইভ রেট',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'আজকের তাজা ফসলের দৈনিক বাজার দর',
+                      const SizedBox(height: 5),
+                      const Text(
+                        'আজকের তাজা ফসলের বাজার দর জানুন সহজেই!',
                         style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'ন্যায্য মূল্যে কেনাবেচার জন্য নির্ভরযোগ্য রিয়েল-টাইম তথ্য',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white.withOpacity(0.88),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Search Field & Square-Rounded Filter Slider Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF4F7F4),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black.withOpacity(0.05)),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) => marketProvider.setSearchQuery(val),
-                      style: const TextStyle(fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'ফসল বা বাজারের নাম খুঁজুন...',
-                        hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.primary, size: 21),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear, size: 18),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  marketProvider.setSearchQuery('');
-                                },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(width: 10),
-                // Square-rounded Filter Slider Icon Button
-                InkWell(
-                  onTap: () => _showDistrictFilter(context, marketProvider),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Icon(Icons.tune_rounded, size: 21, color: Colors.white),
-                        ),
-                      ),
-                      if (hasActiveFilter)
-                        Positioned(
-                          top: -3,
-                          right: -3,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF9800),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
-                    ],
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.storefront_rounded, color: Colors.white, size: 26),
                   ),
                 ),
               ],
             ),
           ),
 
-          // ফিল্টার সক্রিয় থাকলে তাৎক্ষণিক ভিজ্যুয়াল ব্যাজ ও ওয়ান-ট্যাপ ক্লিয়ার (চিপস সম্পূর্ণ মুছে ফেলা হয়েছে)
-          if (hasActiveFilter)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF81C784)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on, size: 14, color: AppColors.primary),
-                        const SizedBox(width: 4),
-                        Text(
-                          activeFilterLabel,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          onTap: () => marketProvider.resetFilters(),
-                          child: const Icon(Icons.close_rounded, size: 15, color: AppColors.primary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => marketProvider.resetFilters(),
-                    child: const Text('ফিল্টার রিসেট', style: TextStyle(fontSize: 12, color: AppColors.textMuted, decoration: TextDecoration.underline)),
-                  ),
-                ],
-              ),
-            )
-          else
-            const SizedBox(height: 10),
+          const SizedBox(height: 6),
         ],
       ),
     );
@@ -560,7 +735,6 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // ৪. পূর্ণাঙ্গ ও আকর্ষণীয় "বাজার দর বিস্তারিত" স্ক্রিন ওপেন
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -568,12 +742,12 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.black.withOpacity(0.05)),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.black.withOpacity(0.06), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.035),
@@ -585,41 +759,37 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Container with Floating Overlays
+              // ১. কার্ডের শীর্ষে ফসলের ছবি (Natural Aspect Ratio ও BoxFit.cover সহকারে ক্রিস্প ডিসপ্লে)
               Expanded(
                 flex: 11,
                 child: Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFF4F8F4), Color(0xFFEBF5EB)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFFF1F8F1),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       item.imageUrl.isNotEmpty
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               child: CachedNetworkImage(
                                 imageUrl: item.imageUrl,
                                 width: double.infinity,
                                 height: double.infinity,
                                 fit: BoxFit.cover,
                                 placeholder: (_, __) => const Center(
-                                  child: Icon(Icons.eco_rounded, color: AppColors.primary, size: 28),
+                                  child: Icon(Icons.eco_rounded, color: Color(0xFF2E7D32), size: 30),
                                 ),
                                 errorWidget: (_, __, ___) => const Center(
-                                  child: Icon(Icons.eco_rounded, color: AppColors.primary, size: 28),
+                                  child: Icon(Icons.eco_rounded, color: Color(0xFF2E7D32), size: 30),
                                 ),
                               ),
                             )
                           : const Center(
-                              child: Icon(Icons.eco_rounded, color: AppColors.primary, size: 36),
+                              child: Icon(Icons.eco_rounded, color: Color(0xFF2E7D32), size: 34),
                             ),
 
                       // Trend Icon Badge (Top Left)
@@ -633,7 +803,7 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withOpacity(0.08),
                                 blurRadius: 4,
                               ),
                             ],
@@ -642,15 +812,16 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                         ),
                       ),
 
-                      // Heart/Favorite Icon (Top Right)
+                      // Unit Pill Badge (Top Right)
                       Positioned(
                         top: 6,
                         right: 6,
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.black.withOpacity(0.06)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.06),
@@ -658,7 +829,14 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.favorite_border_rounded, size: 13, color: AppColors.textMuted),
+                          child: Text(
+                            displayUnit,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -666,11 +844,11 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                 ),
               ),
 
-              // Content Body
+              // ২. কার্ড কন্টেন্ট
               Expanded(
-                flex: 9,
+                flex: 10,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -678,28 +856,30 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ফসলের বাংলা নাম (বোল্ড গাঢ় ফন্টে)
                           Text(
                             item.cropName,
                             style: const TextStyle(
-                              fontSize: 15,
+                              fontSize: 14.5,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                              color: Color(0xFF1E281F),
                               height: 1.15,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
+                          // নিচে বাজারের নাম ও জেলার ছোট ব্যাজ
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, size: 11, color: AppColors.primary),
-                              const SizedBox(width: 3),
+                              const Icon(Icons.location_on_outlined, size: 11, color: Color(0xFF2E7D32)),
+                              const SizedBox(width: 2),
                               Expanded(
                                 child: Text(
                                   locationText,
                                   style: const TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.textSecondary,
+                                    color: Color(0xFF556B2F),
                                     fontWeight: FontWeight.w500,
                                   ),
                                   maxLines: 1,
@@ -711,56 +891,59 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                         ],
                       ),
 
-                      // Price & Retail Tag
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                displayPrice,
-                                style: const TextStyle(
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFF1B5E20),
-                                  letterSpacing: -0.3,
+                      // মূল মূল্য হাইলাইট: রেফারেন্সের মতো উজ্জ্বল সবুজ ক্যাপসুল ব্যাজে পাইকারি ও খুচরা দর
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Text(
+                                      displayPrice,
+                                      style: const TextStyle(
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF1B5E20),
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                    Text(
+                                      '/$displayUnit',
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF2E7D32),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '/$displayUnit',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF2E7D32),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (cleanRetail != '০')
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F8E9),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  'খুচরা $displayRetail',
-                                  style: const TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF2E7D32),
+                                if (cleanRetail != '০')
+                                  Text(
+                                    'খুচরা $displayRetail',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF388E3C),
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
+                              ],
                             ),
-                        ],
+                            Icon(trendIcon, size: 13, color: trendColor),
+                          ],
+                        ),
                       ),
                     ],
                   ),

@@ -5,6 +5,7 @@ import '../../core/responsive/responsive_layout.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_delete_dialog.dart';
 
 class MarketPricesManagementScreen extends StatefulWidget {
   const MarketPricesManagementScreen({super.key});
@@ -35,28 +36,20 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
   void _openPriceModal({AdminMarketPriceModel? existingItem}) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => _PriceEditorDialog(existingItem: existingItem),
     );
   }
 
   Future<void> _confirmDelete(String id, String cropName, String marketName) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('পণ্যটি মুছে ফেলতে চান?'),
-        content: Text('$marketName-এর "$cropName" দর তথ্যটি কি মুছে ফেলবেন?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    final confirmed = await AdminDeleteDialog.show(
+      context,
+      title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+      subtitle: 'এই বাজার দর তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName: '$marketName-এর "$cropName"',
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       try {
         await AdminFirestoreService.instance.deleteMarketPrice(id);
         if (mounted) {
@@ -846,6 +839,13 @@ class _PriceEditorDialogState extends State<_PriceEditorDialog> {
     super.dispose();
   }
 
+  static double _parseSafePrice(String value) {
+    const bnToEn = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+    final enStr = value.replaceAllMapped(RegExp(r'[০-৯]'), (m) => bnToEn[m.group(0)] ?? m.group(0)!);
+    final sanitized = enStr.replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(sanitized) ?? 0.0;
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -857,8 +857,8 @@ class _PriceEditorDialogState extends State<_PriceEditorDialog> {
         marketName: _marketNameCtrl.text.trim(),
         cropName: _cropNameCtrl.text.trim(),
         unit: _unit,
-        price: double.tryParse(_priceCtrl.text) ?? 0.0,
-        retailPrice: double.tryParse(_retailPriceCtrl.text) ?? 0.0,
+        price: _parseSafePrice(_priceCtrl.text),
+        retailPrice: _parseSafePrice(_retailPriceCtrl.text),
         trend: _trend,
         imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
       );
@@ -891,163 +891,234 @@ class _PriceEditorDialogState extends State<_PriceEditorDialog> {
   Widget build(BuildContext context) {
     final isEdit = widget.existingItem != null;
 
-    return AlertDialog(
-      title: Text(isEdit ? 'বাজার দর সম্পাদনা করুন' : 'নতুন বাজার দর যোগ করুন'),
-      content: SizedBox(
-        width: 520,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: _cropNameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'ফসলের নাম',
-                    hintText: 'পণ্যের নাম লিখুন (যেমন: ধান, আলু, পেঁয়াজ)',
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: Text(isEdit ? 'বাজার দর সম্পাদনা করুন' : 'নতুন বাজার দর যোগ করুন'),
+        content: SizedBox(
+          width: 520,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _cropNameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'ফসলের নাম',
+                      hintText: 'ফসলের নাম লিখুন',
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'ফসলের নাম আবশ্যক' : null,
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'ফসলের নাম আবশ্যক' : null,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    // Division Selector
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _division,
-                        decoration: const InputDecoration(labelText: 'বিভাগ নির্বাচন'),
-                        items: BangladeshLocations.divisionDistricts.keys
-                            .map((div) => DropdownMenuItem(value: div, child: Text(div)))
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              _division = val;
-                              _district = BangladeshLocations.divisionDistricts[val]!.first;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Cascading 64-District Selector
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _district,
-                        decoration: const InputDecoration(labelText: 'জেলা (৬৪ জেলা)'),
-                        items: (BangladeshLocations.divisionDistricts[_division] ?? BangladeshLocations.allDistricts)
-                            .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _district = val);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _marketNameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'বাজার / হাটের নাম',
-                    hintText: 'বাজারের নাম লিখুন (যেমন: কাওরান বাজার)',
-                  ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'বাজারের নাম আবশ্যক' : null,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _priceCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'পাইকারি দর (টাকা)',
-                          hintText: 'বর্তমান পাইকারি দর দিন',
-                        ),
-                        validator: (v) => v == null || v.trim().isEmpty ? 'দর আবশ্যক' : null,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _retailPriceCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'খুচরা দর (টাকা)',
-                          hintText: 'বর্তমান খুচরা দর দিন',
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      // Division Selector
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _division,
+                          decoration: const InputDecoration(labelText: 'বিভাগ নির্বাচন'),
+                          items: BangladeshLocations.divisionDistricts.keys
+                              .map((div) => DropdownMenuItem(value: div, child: Text(div)))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                _division = val;
+                                _district = BangladeshLocations.divisionDistricts[val]!.first;
+                              });
+                            }
+                          },
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _unit,
-                        decoration: const InputDecoration(labelText: 'একক'),
-                        items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _unit = val);
-                        },
+                      const SizedBox(width: 12),
+                      // Cascading 64-District Selector
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _district,
+                          decoration: const InputDecoration(labelText: 'জেলা (৬৪ জেলা)'),
+                          items: (BangladeshLocations.divisionDistricts[_division] ?? BangladeshLocations.allDistricts)
+                              .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _district = val);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: _trend,
-                  decoration: const InputDecoration(labelText: 'দরের প্রবণতা'),
-                  items: const [
-                    DropdownMenuItem(value: 'stable', child: Text('স্থিতিশীল')),
-                    DropdownMenuItem(value: 'up', child: Text('উর্ধ্বমুখী')),
-                    DropdownMenuItem(value: 'down', child: Text('নিম্নমুখী')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setState(() => _trend = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _imageCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'ফসলের ছবি (Cloudinary / ইমেজ লিংক)',
-                    hintText: 'https://res.cloudinary.com/... বা ছবির সরাসরি লিংক',
-                    prefixIcon: Icon(Icons.image_outlined, size: 20),
+                    ],
                   ),
-                  onChanged: (_) => setState(() {}),
-                ),
-                if (_imageCtrl.text.trim().isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      _imageCtrl.text.trim(),
-                      height: 120,
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _marketNameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'বাজার / হাটের নাম',
+                      hintText: 'বাজারের নাম লিখুন',
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'বাজারের নাম আবশ্যক' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _priceCtrl,
+                          keyboardType: TextInputType.text,
+                          decoration: const InputDecoration(
+                            labelText: 'পাইকারি দর (টাকা)',
+                            hintText: 'পাইকারি দর (টাকা)',
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'পাইকারি দর আবশ্যক' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _retailPriceCtrl,
+                          keyboardType: TextInputType.text,
+                          decoration: const InputDecoration(
+                            labelText: 'খুচরা দর (টাকা)',
+                            hintText: 'খুচরা দর (টাকা)',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _unit,
+                          decoration: const InputDecoration(labelText: 'একক'),
+                          items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _unit = val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _trend,
+                    decoration: const InputDecoration(labelText: 'দরের প্রবণতা'),
+                    items: const [
+                      DropdownMenuItem(value: 'stable', child: Text('স্থিতিশীল')),
+                      DropdownMenuItem(value: 'up', child: Text('উর্ধ্বমুখী')),
+                      DropdownMenuItem(value: 'down', child: Text('নিম্নমুখী')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => _trend = val);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _imageCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'ফসলের ছবি (Cloudinary / ইমেজ লিংক)',
+                      hintText: 'https://res.cloudinary.com/... বা ছবির সরাসরি লিংক',
+                      prefixIcon: const Icon(Icons.image_outlined, size: 20),
+                      suffixIcon: _imageCtrl.text.trim().isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () => setState(() => _imageCtrl.clear()),
+                              tooltip: 'ছবি মুছুন',
+                            )
+                          : null,
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  if (_imageCtrl.text.trim().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
                       width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 60,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AdminColors.primary.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Stack(
                         alignment: Alignment.center,
-                        color: Colors.grey.shade100,
-                        child: const Text('ছবি লোড করা যায়নি', style: TextStyle(color: AdminColors.textMuted, fontSize: 12)),
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              _imageCtrl.text.trim(),
+                              width: double.infinity,
+                              height: 140,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Text('ছবি লোড করা যায়নি (সঠিক URL দিন)', style: TextStyle(color: AdminColors.alertCritical, fontSize: 12)),
+                              ),
+                            ),
+                          ),
+                          // Floating Top-Left Badge
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AdminColors.primary,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle_rounded, size: 12, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text('লাইভ প্রিভিউ সক্রিয়', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Floating Top-Right Delete Button
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _imageCtrl.clear();
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AdminColors.alertCritical,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.close, size: 13, color: Colors.white),
+                                    SizedBox(width: 3),
+                                    Text('মুছুন', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
+            onPressed: _saving ? null : _save,
+            child: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন', style: const TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল')),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
-          onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন', style: const TextStyle(color: Colors.white)),
-        ),
-      ],
     );
   }
 }

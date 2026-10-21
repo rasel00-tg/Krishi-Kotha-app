@@ -4,6 +4,7 @@ import '../../core/responsive/responsive_layout.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
 import '../widgets/admin_stat_card.dart';
+import '../widgets/admin_delete_dialog.dart';
 
 class DashboardScreen extends StatelessWidget {
   final Function(int) onNavigate;
@@ -264,25 +265,14 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Future<void> _handleSeedDatabase(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('ফায়ারবেস ডেটাবেজ সিড করবেন?'),
-        content: const Text(
-          'খালি কালেকশনগুলোতে স্বয়ংক্রিয়ভাবে বাস্তবসম্মত প্রাথমিক তথ্য (ফসল, রোগবালাই, বাজার দর, নোটিফিকেশন) আপলোড করা হবে। এটি সরাসরি লাইভ ফায়ারস্টোরে সেভ হবে।',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('সিড শুরু করুন', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    final confirmed = await AdminDeleteDialog.show(
+      context,
+      title: 'ডেটাবেজ সিড করতে চান?',
+      subtitle: 'খালি কালেকশনগুলোতে স্বয়ংক্রিয়ভাবে বাস্তবসম্মত প্রাথমিক তথ্য (ফসল, রোগবালাই, বাজার দর, নোটিফিকেশন) আপলোড করা হবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName: 'প্রাথমিক ডেমো ডাটা সিডিং',
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('ডেটাবেজ সিডিং চলছে... অনুগ্রহ করে অপেক্ষা করুন।'),

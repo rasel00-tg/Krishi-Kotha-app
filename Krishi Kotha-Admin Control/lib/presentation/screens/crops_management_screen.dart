@@ -3,6 +3,7 @@ import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_delete_dialog.dart';
 
 class CropsManagementScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -54,22 +55,13 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
   }
 
   Future<void> _deleteCrop(String id, String name) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ফসল মুছতে চান?'),
-        content: Text('"$name" ফসলটি কি মুছে ফেলতে চান?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    final confirmed = await AdminDeleteDialog.show(
+      context,
+      title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+      subtitle: 'এই ফসলের তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName: 'ফসল: $name',
     );
-    if (confirmed == true) {
+    if (confirmed) {
       try {
         await AdminFirestoreService.instance.deleteCrop(id);
         if (mounted) {
@@ -92,22 +84,13 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
   }
 
   Future<void> _deletePest(String id, String name) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('রোগ/বালাই মুছতে চান?'),
-        content: Text('"$name" তথ্যটি কি মুছে ফেলতে চান?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    final confirmed = await AdminDeleteDialog.show(
+      context,
+      title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+      subtitle: 'এই রোগবালাই তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName: 'রোগ/বালাই: $name',
     );
-    if (confirmed == true) {
+    if (confirmed) {
       try {
         await AdminFirestoreService.instance.deletePest(id);
         if (mounted) {

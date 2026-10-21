@@ -103,7 +103,7 @@ class AdminHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 const Text(
-                  'Firestore লাইভ',
+                  'সিস্টেম সক্রিয়',
                   style: TextStyle(
                     color: AdminColors.primaryDark,
                     fontSize: 12,

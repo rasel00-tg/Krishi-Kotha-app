@@ -188,11 +188,14 @@ class FirestoreService {
   List<MarketPriceModel> _filterMarket(List<MarketPriceModel> list, String? district, String? searchQuery) {
     var result = list;
     if (district != null &&
-        district.isNotEmpty &&
-        district != 'সারাদেশ' &&
-        district != 'সকল জেলা / সারাদেশ' &&
-        district != 'সকল জেলা' &&
-        district != 'সব জেলা') {
+        district.trim().isNotEmpty &&
+        district.trim() != 'সারাদেশ' &&
+        district.trim() != 'সকল জেলা / সারাদেশ' &&
+        district.trim() != 'সকল বাজার / সারাদেশ' &&
+        district.trim() != 'সকল জেলা' &&
+        district.trim() != 'সব জেলা' &&
+        district.trim() != 'all' &&
+        district.trim() != BangladeshLocationData.allDistrictsOption) {
       result = result.where((m) => _matchDistrict(m.district, district)).toList();
     }
     if (searchQuery != null && searchQuery.trim().isNotEmpty) {

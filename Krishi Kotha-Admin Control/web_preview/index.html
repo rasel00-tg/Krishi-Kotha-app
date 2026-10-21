@@ -538,6 +538,142 @@
     }
 
     #toast.show { transform: translateY(0); }
+
+    /* ==================== PREMIUM DELETE CONFIRMATION MODAL ==================== */
+    .delete-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4, 18, 8, 0.62);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.22s ease-in-out;
+    }
+
+    .delete-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .delete-modal-card {
+      background: #ffffff;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 24px;
+      border: 1.2px solid rgba(220, 38, 38, 0.15);
+      padding: 30px 24px 24px 24px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.04);
+      transform: scale(0.92) translateY(10px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .delete-modal-overlay.active .delete-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .delete-modal-badge {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      background: #FEE2E2;
+      border: 1.5px solid #FECACA;
+      margin: 0 auto 18px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 20px -4px rgba(220, 38, 38, 0.2);
+    }
+
+    .delete-modal-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #1E293B;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .delete-modal-tag {
+      display: inline-block;
+      background: #F1F5F9;
+      color: #334155;
+      padding: 5px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid #E2E8F0;
+    }
+
+    .delete-modal-subtitle {
+      font-size: 13.5px;
+      color: #64748B;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .delete-modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-delete-cancel {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #F1F5F9;
+      color: #334155;
+      border: 1px solid #CBD5E1;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-delete-cancel:hover {
+      background: #E2E8F0;
+      color: #0F172A;
+      border-color: #94A3B8;
+    }
+
+    .btn-delete-confirm {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+      color: #ffffff;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-delete-confirm:hover {
+      background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%);
+      box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-delete-confirm:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -599,7 +735,7 @@
       </div>
       <div class="badge-live">
         <div class="live-dot"></div>
-        <span id="firestoreStatusText">Firestore লাইভ সিঙ্ক</span>
+        <span id="firestoreStatusText">সিস্টেম সক্রিয়</span>
       </div>
     </header>
 
@@ -870,7 +1006,7 @@
 
   <!-- Market Price Modal (No Screen Overflow, Compact 2-Col Grid, Pinned Footer) -->
   <div class="modal-overlay" id="marketModal">
-    <div class="modal-box" style="max-width: 580px; width: 92%; max-height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 580px; width: 92%; max-height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.22);">
       <!-- Pinned Modal Header -->
       <div style="padding: 16px 22px 14px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; flex-shrink: 0;">
         <h3 class="modal-title" id="marketModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
@@ -891,11 +1027,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <div class="form-group" style="margin-bottom: 0;">
               <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">ফসলের নাম <span style="color: red;">*</span></label>
-              <input id="mpCrop" class="form-control" placeholder="যেমন: আলু, পেঁয়াজ, ধান" required style="padding: 8px 12px; font-size: 13.5px;">
+              <input id="mpCrop" class="form-control" placeholder="ফসলের নাম লিখুন" required style="padding: 8px 12px; font-size: 13.5px;">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">বাজার / হাটের নাম <span style="color: red;">*</span></label>
-              <input id="mpMarket" class="form-control" placeholder="যেমন: কাওরান বাজার" required style="padding: 8px 12px; font-size: 13.5px;">
+              <input id="mpMarket" class="form-control" placeholder="বাজারের নাম লিখুন" required style="padding: 8px 12px; font-size: 13.5px;">
             </div>
           </div>
 
@@ -925,12 +1061,12 @@
           <!-- Row 3: Wholesale, Retail, Unit, Trend (Compact Multi-Col Grid) -->
           <div style="display: grid; grid-template-columns: 1.1fr 1.1fr 0.9fr 1.1fr; gap: 10px; margin-bottom: 12px;">
             <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">পাইকারি দর (৳) <span style="color: red;">*</span></label>
-              <input id="mpPrice" type="number" step="any" class="form-control" placeholder="দর দিন" required style="padding: 8px 12px; font-size: 13.5px;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">পাইকারি দর (টাকা) <span style="color: red;">*</span></label>
+              <input id="mpPrice" type="text" inputmode="decimal" class="form-control" placeholder="পাইকারি দর (টাকা)" required style="padding: 8px 12px; font-size: 13.5px;">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">খুচরা দর (৳)</label>
-              <input id="mpRetail" type="number" step="any" class="form-control" placeholder="দর দিন" style="padding: 8px 12px; font-size: 13.5px;">
+              <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">খুচরা দর (টাকা)</label>
+              <input id="mpRetail" type="text" inputmode="decimal" class="form-control" placeholder="খুচরা দর (টাকা)" style="padding: 8px 12px; font-size: 13.5px;">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label style="font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: block;">একক</label>
@@ -952,27 +1088,52 @@
             </div>
           </div>
 
-          <!-- Row 4: Image Upload Widget (Clean & Compact) -->
+          <!-- Row 4: Image Upload Widget & Live Preview Container -->
           <input type="hidden" id="mpImg">
-          <div class="form-group" style="margin-bottom: 0; background: #F8FAF7; border: 1px dashed #B0BEC5; border-radius: 10px; padding: 10px 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-weight: 600; font-size: 12.5px; color: var(--text-primary);">ফসলের ছবি আপলোড</span>
-              <span style="font-size: 11px; font-weight: 600; color: #0288D1;"><svg class="app-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudinary স্টোরেজ</span>
+          <div class="form-group" style="margin-bottom: 0; background: #F8FAF7; border: 1px dashed #B0BEC5; border-radius: 12px; padding: 12px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; font-size: 13px; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                ফসলের ছবি
+              </span>
+              <span style="font-size: 11px; font-weight: 600; color: #0288D1; display: flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Cloudinary স্টোরেজ
+              </span>
             </div>
             
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div id="mpUploadBtnWrap" style="flex: 1;">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('mpFileInput').click()" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 38px; border: 1.5px dashed #0288D1; border-radius: 8px; background: #F0F8FF; color: #0288D1; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#E1F5FE'" onmouseout="this.style.background='#F0F8FF'">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                  <span>ছবি নির্বাচন করুন</span>
-                </button>
-                <input type="file" id="mpFileInput" accept="image/*" style="display: none;" onchange="handleImagePick(this, 'market', 'mpImgPreviewBox', 'mpUploadStatus', 'mpImg')">
-              </div>
-              
-              <div id="mpImgPreviewBox" style="display: none;">
-                <div style="position: relative; display: inline-block;">
-                  <img id="mpImgPreview" src="" alt="Preview" style="height: 44px; width: 44px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-                  <button type="button" onclick="removeMarketImage()" style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.25);" title="ছবি মুছুন">✕</button>
+            <!-- Upload Button (Visible when no image is selected) -->
+            <div id="mpUploadBtnWrap">
+              <button type="button" class="btn btn-outline" onclick="document.getElementById('mpFileInput').click()" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 42px; border: 1.5px dashed #0288D1; border-radius: 10px; background: #F0F8FF; color: #0288D1; font-weight: 700; font-size: 13.5px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#E1F5FE'" onmouseout="this.style.background='#F0F8FF'">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <span>কম্পিউটার বা ডিভাইস থেকে ছবি নির্বাচন করুন</span>
+              </button>
+              <input type="file" id="mpFileInput" accept="image/*" style="display: none;" onchange="handleMarketImagePick(this)">
+            </div>
+            
+            <!-- Dedicated Live Image Preview Container (Visible after image selection) -->
+            <div id="mpImgPreviewBox" style="display: none; margin-top: 6px;">
+              <div style="position: relative; width: 100%; height: 160px; border-radius: 12px; overflow: hidden; border: 1.5px solid #C8E6C9; background: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <img id="mpImgPreview" src="" alt="Selected Preview" style="width: 100%; height: 100%; object-fit: contain; display: block; background: #F4F8F4;">
+                
+                <!-- Floating Top-Left Status Badge -->
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(27, 94, 32, 0.9); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; backdrop-filter: blur(4px); box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span id="mpPreviewBadgeText">লাইভ প্রিভিউ (চূড়ান্ত সংরক্ষণে আপলোড হবে)</span>
+                </div>
+
+                <!-- Floating Top-Right Action Buttons: Delete & Change -->
+                <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 8px;">
+                  <!-- Change Button -->
+                  <button type="button" onclick="document.getElementById('mpFileInput').click()" style="background: rgba(255,255,255,0.95); color: #0288D1; border: 1px solid #B3E5FC; border-radius: 8px; padding: 5px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.2s;" onmouseover="this.style.background='#E1F5FE'" onmouseout="this.style.background='rgba(255,255,255,0.95)'" title="অন্য ছবি নির্বাচন করুন">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <span>পরিবর্তন</span>
+                  </button>
+                  
+                  <!-- Remove / Delete Button -->
+                  <button type="button" onclick="removeMarketImage()" style="background: #D32F2F; color: #fff; border: 1.5px solid #fff; border-radius: 8px; padding: 5px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: all 0.2s;" onmouseover="this.style.background='#B71C1C'" onmouseout="this.style.background='#D32F2F'" title="ছবি মুছে ফেলুন">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>মুছুন</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1295,6 +1456,33 @@
     </div>
   </div>
 
+  <!-- Centralized Premium Delete Confirmation Modal -->
+  <div class="delete-modal-overlay" id="globalDeleteConfirmModal" onclick="handleDeleteModalBackdropClick(event)">
+    <div class="delete-modal-card" onclick="event.stopPropagation()">
+      <div class="delete-modal-badge">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      </div>
+      <h3 class="delete-modal-title" id="deleteModalTitle">আপনি কি নিশ্চিত মুছে ফেলতে চান?</h3>
+      <div class="delete-modal-tag" id="deleteModalItemTag" style="display: none;"></div>
+      <p class="delete-modal-subtitle" id="deleteModalSubtitle">এই তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?</p>
+      <div class="delete-modal-actions">
+        <button type="button" class="btn-delete-cancel" id="deleteModalCancelBtn" onclick="closeDeleteConfirmModal(false)">
+          না, বাতিল করুন
+        </button>
+        <button type="button" class="btn-delete-confirm" id="deleteModalConfirmBtn" onclick="closeDeleteConfirmModal(true)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          হ্যাঁ, মুছে ফেলুন
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast">বার্তা সফলভাবে আপডেট হয়েছে!</div>
 
@@ -1314,10 +1502,10 @@
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      document.getElementById('firestoreStatusText').innerText = 'Firestore লাইভ সিঙ্ক';
+      document.getElementById('firestoreStatusText').innerText = 'সিস্টেম সক্রিয়';
     } catch (err) {
       console.warn("Firebase initialization notice:", err);
-      document.getElementById('firestoreStatusText').innerText = 'লোকাল মোড';
+      document.getElementById('firestoreStatusText').innerText = 'অফলাইন মোড';
     }
 
     // Live Data State (Empty by default - NO Hardcoded Dummy Data)
@@ -1364,6 +1552,67 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3500);
     }
+
+    // ==================== CENTRALIZED PREMIERE DELETE CONFIRMATION ====================
+    let deleteConfirmResolve = null;
+
+    function showDeleteConfirmModal({
+      title = 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+      subtitle = 'এই তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?',
+      itemName = ''
+    } = {}) {
+      return new Promise((resolve) => {
+        deleteConfirmResolve = resolve;
+        const modal = document.getElementById('globalDeleteConfirmModal');
+        const titleEl = document.getElementById('deleteModalTitle');
+        const subtitleEl = document.getElementById('deleteModalSubtitle');
+        const itemTagEl = document.getElementById('deleteModalItemTag');
+
+        if (titleEl) titleEl.innerText = title;
+        if (subtitleEl) subtitleEl.innerText = subtitle;
+        if (itemTagEl) {
+          if (itemName && itemName.trim()) {
+            itemTagEl.innerText = itemName;
+            itemTagEl.style.display = 'inline-block';
+          } else {
+            itemTagEl.style.display = 'none';
+          }
+        }
+
+        if (modal) {
+          modal.classList.add('active');
+          const cancelBtn = document.getElementById('deleteModalCancelBtn');
+          if (cancelBtn) cancelBtn.focus();
+        }
+      });
+    }
+
+    function closeDeleteConfirmModal(result = false) {
+      const modal = document.getElementById('globalDeleteConfirmModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      if (deleteConfirmResolve) {
+        const res = deleteConfirmResolve;
+        deleteConfirmResolve = null;
+        res(result);
+      }
+    }
+
+    function handleDeleteModalBackdropClick(e) {
+      if (e.target.id === 'globalDeleteConfirmModal') {
+        closeDeleteConfirmModal(false);
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('globalDeleteConfirmModal');
+        if (modal && modal.classList.contains('active')) {
+          closeDeleteConfirmModal(false);
+        }
+      }
+    });
 
     function switchTab(tabKey) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1847,8 +2096,44 @@
       removeImageSelection('notif', 'notifFileInput', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg');
     }
 
+    function handleMarketImagePick(inputElement) {
+      const file = inputElement.files && inputElement.files[0];
+      if (!file) return;
+
+      if (pendingUploads.market && pendingUploads.market.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.market.blobUrl); } catch (_) {}
+      }
+
+      const localBlobUrl = URL.createObjectURL(file);
+      pendingUploads.market = { file: file, blobUrl: localBlobUrl };
+
+      const previewBox = document.getElementById('mpImgPreviewBox');
+      const uploadWrap = document.getElementById('mpUploadBtnWrap');
+      if (previewBox) {
+        previewBox.style.display = 'block';
+        const imgEl = document.getElementById('mpImgPreview');
+        if (imgEl) imgEl.src = localBlobUrl;
+      }
+      if (uploadWrap) {
+        uploadWrap.style.display = 'none';
+      }
+
+      const badgeText = document.getElementById('mpPreviewBadgeText');
+      if (badgeText) {
+        const kb = (file.size / 1024).toFixed(1);
+        badgeText.innerText = `লোকাল প্রিভিউ (${kb} KB) — সংরক্ষণের সময় আপলোড হবে`;
+      }
+
+      const statusEl = document.getElementById('mpUploadStatus');
+      if (statusEl) statusEl.style.display = 'none';
+    }
+
     function removeMarketImage() {
       removeImageSelection('market', 'mpFileInput', 'mpImgPreviewBox', 'mpUploadStatus', 'mpImg');
+      const uploadWrap = document.getElementById('mpUploadBtnWrap');
+      if (uploadWrap) uploadWrap.style.display = 'block';
+      const previewBox = document.getElementById('mpImgPreviewBox');
+      if (previewBox) previewBox.style.display = 'none';
     }
 
     // Cloudinary Storage Integration (Unsigned Upload Preset + Client-side Auto Compression 150KB - 300KB)
@@ -2070,12 +2355,16 @@
     }
 
     async function deleteNotification(id) {
-      if (!confirm('নোটিফিকেশনটি মুছে ফেলতে চান?')) return;
+      const confirmed = await showDeleteConfirmModal({
+        title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+        subtitle: 'এই নোটিফিকেশনটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?'
+      });
+      if (!confirmed) return;
       try {
         if (db) {
           await db.collection('notifications').doc(id).delete();
         }
-        showToast('নোটিফিকেশন মুছে ফেলা হয়েছে।');
+        showToast('নোটিফিকেশন সফলভাবে মুছে ফেলা হয়েছে।');
       } catch (err) {
         showToast('ত্রুটি: ' + err.message);
       }
@@ -2446,11 +2735,15 @@
       document.getElementById('mpImg').value = existingImg;
       if (existingImg) {
         const previewBox = document.getElementById('mpImgPreviewBox');
+        const uploadWrap = document.getElementById('mpUploadBtnWrap');
         if (previewBox) {
           previewBox.style.display = 'block';
-          const imgEl = previewBox.querySelector('img');
+          const imgEl = document.getElementById('mpImgPreview');
           if (imgEl) imgEl.src = existingImg;
         }
+        if (uploadWrap) uploadWrap.style.display = 'none';
+        const badgeText = document.getElementById('mpPreviewBadgeText');
+        if (badgeText) badgeText.innerText = 'বর্তমান সক্রিয় ছবি';
       }
 
       document.getElementById('marketModal').classList.add('active');
@@ -2470,10 +2763,14 @@
       const crop = document.getElementById('mpCrop').value.trim();
       const district = document.getElementById('mpDistrict').value.trim();
       const market = document.getElementById('mpMarket').value.trim();
-      const price = parseFloat(document.getElementById('mpPrice').value);
-      const retail = parseFloat(document.getElementById('mpRetail').value) || 0;
-      const unit = document.getElementById('mpUnit').value;
-      const trend = document.getElementById('mpTrend').value;
+
+      const bnToEn = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+      const rawPrice = document.getElementById('mpPrice').value;
+      const rawRetail = document.getElementById('mpRetail').value;
+      const cleanPrice = String(rawPrice).replace(/[০-৯]/g, d => bnToEn[d] || d).replace(/[^0-9.]/g, '');
+      const cleanRetail = String(rawRetail).replace(/[০-৯]/g, d => bnToEn[d] || d).replace(/[^0-9.]/g, '');
+      const price = parseFloat(cleanPrice);
+      const retail = parseFloat(cleanRetail) || 0;
 
       if (!crop || !market || isNaN(price)) {
         showToast('অনুগ্রহ করে পণ্যের নাম, বাজার ও পাইকারি দর পূরণ করুন।');
@@ -2529,12 +2826,16 @@
     }
 
     async function deleteMarketPrice(id) {
-      if (!confirm('দর তথ্যটি মুছে ফেলতে চান?')) return;
+      const confirmed = await showDeleteConfirmModal({
+        title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+        subtitle: 'এই বাজার দর তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?'
+      });
+      if (!confirmed) return;
       try {
         if (db) {
           await db.collection('market_prices').doc(id).delete();
         }
-        showToast('দর তথ্য মুছে ফেলা হয়েছে।');
+        showToast('বাজার দর তথ্য সফলভাবে মুছে ফেলা হয়েছে।');
       } catch (err) {
         showToast('ত্রুটি: ' + err.message);
       }
@@ -2957,7 +3258,12 @@
     }
 
     async function deleteCrop(id, name) {
-      if (!confirm(`"${name || 'ফসল'}" মুছে ফেলতে চান?`)) return;
+      const confirmed = await showDeleteConfirmModal({
+        title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+        itemName: name ? `ফসল: ${name}` : '',
+        subtitle: 'এই ফসলের তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?'
+      });
+      if (!confirmed) return;
       try {
         if (db) await db.collection('crops').doc(id).delete();
         showToast('ফসল সফলভাবে মুছে ফেলা হয়েছে।');
@@ -3109,10 +3415,14 @@
     }
 
     async function deletePest(id) {
-      if (!confirm('তথ্যটি মুছে ফেলতে চান?')) return;
+      const confirmed = await showDeleteConfirmModal({
+        title: 'আপনি কি নিশ্চিত মুছে ফেলতে চান?',
+        subtitle: 'এই রোগবালাই তথ্যটি মুছে ফেললে অ্যাপ থেকেও স্থায়ীভাবে মুছে যাবে। আপনি কি এগিয়ে যেতে চান?'
+      });
+      if (!confirmed) return;
       try {
         if (db) await db.collection('pests_diseases').doc(id).delete();
-        showToast('তথ্য মুছে ফেলা হয়েছে।');
+        showToast('রোগবালাই তথ্য সফলভাবে মুছে ফেলা হয়েছে।');
       } catch (err) {
         showToast(formatErrorMsg(err));
       }
@@ -3121,10 +3431,14 @@
     // ==================== SEED DATABASE ====================
     async function seedInitialDatabase() {
       if (!db) {
-        showToast('ফায়ারবেস ডেটাবেজ সংযুক্ত নেই!');
+        showToast('ডেটাবেজ সংযুক্ত নেই!');
         return;
       }
-      if (!confirm('ফায়ারবেস ডেটাবেজ সিড করবেন? খালি কালেকশনে প্রাথমিক ফসল, বালাই, বাজার দর ও নোটিফিকেশন যুক্ত হবে।')) return;
+      const confirmed = await showDeleteConfirmModal({
+        title: 'ডেটাবেজ সিড করতে চান?',
+        subtitle: 'খালি কালেকশনে প্রাথমিক ফসল, বালাই, বাজার দর ও নোটিফিকেশন যুক্ত হবে। আপনি কি এগিয়ে যেতে চান?'
+      });
+      if (!confirmed) return;
 
       showToast('ডেটাবেজ সিড করা হচ্ছে... অপেক্ষা করুন।');
       try {
@@ -3251,21 +3565,80 @@
       }
     }
 
-    // Dismiss any modal on overlay outside-click (including cropDetailModal)
+    // Dismiss any modal on overlay outside-click (excluding marketModal to prevent accidental form loss)
     document.addEventListener('click', (e) => {
       if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+        if (e.target.id === 'marketModal') return; // marketModal must ONLY close on clicking explicit "বাতিল" or "✕" button
         e.target.classList.remove('active');
         toggleNewCategoryInput(false);
       }
     });
 
-    // Dismiss modal on Escape key
+    // Dismiss modal on Escape key (excluding marketModal)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.modal-overlay.active').forEach(m => {
+          if (m.id !== 'marketModal') m.classList.remove('active');
+        });
         toggleNewCategoryInput(false);
       }
     });
+
+    // Setup Market Form Input Sanitizers & Prevent Accidental Auto-Close / Submit on Paste
+    function setupMarketFormPasteSanitizers() {
+      const form = document.querySelector('#marketModal form');
+      if (!form) return;
+
+      // Prevent accidental form submission on Enter key press
+      form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+          e.preventDefault();
+        }
+      });
+
+      const textInputs = ['mpCrop', 'mpMarket'];
+      textInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('paste', (e) => {
+          e.stopPropagation();
+          const pasteData = (e.clipboardData || window.clipboardData)?.getData('text');
+          if (pasteData) {
+            e.preventDefault();
+            // Sanitize by stripping newlines/carriage returns
+            const clean = pasteData.replace(/[\r\n]+/g, ' ').trim();
+            const start = input.selectionStart || 0;
+            const end = input.selectionEnd || 0;
+            const current = input.value;
+            input.value = current.substring(0, start) + clean + current.substring(end);
+            input.selectionStart = input.selectionEnd = start + clean.length;
+          }
+        });
+      });
+
+      const numberInputs = ['mpPrice', 'mpRetail'];
+      const bnToEn = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+      numberInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('paste', (e) => {
+          e.stopPropagation();
+          const pasteData = (e.clipboardData || window.clipboardData)?.getData('text');
+          if (pasteData) {
+            e.preventDefault();
+            // Convert Bengali digits, remove ৳, commas, letters, newlines
+            let clean = pasteData.replace(/[\r\n]+/g, '').trim();
+            clean = clean.replace(/[০-৯]/g, d => bnToEn[d] || d);
+            clean = clean.replace(/[^0-9.]/g, '');
+            const start = input.selectionStart || 0;
+            const end = input.selectionEnd || 0;
+            const current = input.value;
+            input.value = current.substring(0, start) + clean + current.substring(end);
+            input.selectionStart = input.selectionEnd = start + clean.length;
+          }
+        });
+      });
+    }
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
@@ -3276,6 +3649,7 @@
       renderMarketList();
       renderCrops();
       renderUsers();
+      setupMarketFormPasteSanitizers();
     });
   </script>
 </body>
