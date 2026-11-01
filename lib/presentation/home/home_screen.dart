@@ -149,38 +149,217 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(width: 6),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Weather Card Widget (Live + 3-Day Forecast) - Moved right to the top
-              const WeatherCardWidget(),
-
-              // Real-time Emergency Alert Banner from Firestore (if active)
-              EmergencyAlertBanner(firestoreService: firestoreService),
-
-              // Quick Action Services Grid (12 Essential Unique Services)
-              QuickActionGrid(
-                onNavigateTab: onNavigateTab,
-                firestoreService: firestoreService,
-                onOpenPestCatalog: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PestCatalogScreen()),
-                  );
-                },
-              ),
-
-              // Featured Farming Tips Card
-              _buildFeaturedTipCard(context),
-
-              const SizedBox(height: 16),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFF4F7FC), // আল্ট্রা-ক্লিন সফট আইস ব্লু
+              Color(0xFFEBF2FA), // পিওর অফ-হোয়াইট রিফ্রেশিং টোন
             ],
           ),
         ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // ১. ফ্লুয়িড গ্লাস স্ফিয়ার ও ভাইব্রেন্ট অ্যাকসেন্ট অর্বস (IgnorePointer ensures 0 touch obstruction)
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: true,
+                child: _buildEtherealBackgroundOrbs(context),
+              ),
+            ),
+
+            // ২. মূল কনটেন্ট লেয়ার: আবহাওয়া কার্ড শীর্ষে ফিক্সড/পিন্ড এবং নিচে মসৃণ স্ক্রল
+            SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // ফিক্সড / পিন্ড আবহাওয়া কার্ড (স্ক্রল করলেও শীর্ষে স্থির থাকবে)
+                  const WeatherCardWidget(),
+
+                  // নিচের স্ক্রলযোগ্য অংশ (আবহাওয়া কার্ডের নিচ দিয়ে স্ক্রল হবে)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 96), // Clearance for floating bottom nav
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Real-time Emergency Alert Banner from Firestore (if active)
+                          EmergencyAlertBanner(firestoreService: firestoreService),
+
+                          // Quick Action Services Grid (12 Essential Unique Services)
+                          QuickActionGrid(
+                            onNavigateTab: onNavigateTab,
+                            firestoreService: firestoreService,
+                            onOpenPestCatalog: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const PestCatalogScreen()),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // ইথারিয়াল গ্লাস স্ফিয়ার ও ভাইব্রেন্ট অ্যাকসেন্ট অর্বস আর্কিটেকচার
+  Widget _buildEtherealBackgroundOrbs(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // ১. ট্রান্সলুসেন্ট ফ্রস্টেড বড় সার্কেল (টপ-রাইট কর্নার)
+        Positioned(
+          top: -50,
+          right: -50,
+          width: 280,
+          height: 280,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFBBDEFB).withOpacity(0.35),
+                  const Color(0xFFD1C4E9).withOpacity(0.18),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.55, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // ২. ট্রান্সলুসেন্ট সফট আইস ব্লু অর্ব (টপ-লেফট)
+        Positioned(
+          top: 80,
+          left: -60,
+          width: 220,
+          height: 220,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFF90CAF9).withOpacity(0.28),
+                  const Color(0xFFE3F2FD).withOpacity(0.12),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.6, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // ৩. অ্যাকসেন্ট ভাইব্রেন্ট কোবাল্ট ব্লু অর্ব (স্ক্রিনের ডান পাশের মাঝামাঝি)
+        Positioned(
+          top: 310,
+          right: -30,
+          width: 135,
+          height: 135,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const RadialGradient(
+                center: Alignment(-0.35, -0.35),
+                radius: 0.85,
+                colors: [
+                  Color(0xFF82B1FF), // হাইলাইট গ্লো
+                  Color(0xFF2979FF), // ভাইব্রেন্ট কোবাল্ট ব্লু
+                  Color(0xFF0D47A1), // ডিপ থ্রিডি শেড
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2979FF).withOpacity(0.42),
+                  blurRadius: 42,
+                  spreadRadius: 4,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.5),
+                  blurRadius: 10,
+                  spreadRadius: -2,
+                  offset: const Offset(-4, -4),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ৪. অ্যাকসেন্ট ভাইব্রেন্ট রয়্যাল ব্লু অর্ব (বাম পাশের নিচের দিকে)
+        Positioned(
+          bottom: 140,
+          left: -35,
+          width: 125,
+          height: 125,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const RadialGradient(
+                center: Alignment(-0.3, -0.3),
+                radius: 0.85,
+                colors: [
+                  Color(0xFF90CAF9), // সফট লাইট
+                  Color(0xFF3D7BF6), // ইলেকট্রিক রয়্যাল ব্লু
+                  Color(0xFF1565C0), // ডিপ ব্লু
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3D7BF6).withOpacity(0.38),
+                  blurRadius: 36,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.45),
+                  blurRadius: 8,
+                  spreadRadius: -2,
+                  offset: const Offset(-3, -3),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ৫. সেন্টার-রাইট সফট অ্যাম্বিয়েন্ট ল্যাভেন্ডার স্ফিয়ার
+        Positioned(
+          top: 520,
+          right: 25,
+          width: 170,
+          height: 170,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFE8EAF6).withOpacity(0.30),
+                  const Color(0xFFC5CAE9).withOpacity(0.12),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.65, 1.0],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -236,57 +415,6 @@ class HomeScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('কল দিন', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeaturedTipCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.lightbulb_outline, color: AppColors.earthyGold, size: 22),
-              SizedBox(width: 8),
-              Text(
-                'আজকের গুরুত্বপূর্ণ পরামর্শ',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'ধানের জমিতে ইউরিয়া সার প্রয়োগের সময় জমিতে ছিপছিপে পানি রাখুন। প্রখর রোদ বা বৃষ্টির আগে ইউরিয়া প্রয়োগ করবেন না, এতে নাইট্রোজেনের অপচয় রোধ হবে।',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
-          ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => onNavigateTab(1),
-              child: const Text(
-                'আরও বিস্তারিত ফসল গাইড দেখুন →',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ),
           ),
         ],
       ),

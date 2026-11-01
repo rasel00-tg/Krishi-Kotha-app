@@ -12,19 +12,22 @@ class WeatherProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String get selectedDistrict => _selectedDistrict;
+  String get currentDistrict => _selectedDistrict;
 
   WeatherProvider() {
     fetchWeather(_selectedDistrict);
   }
 
   Future<void> fetchWeather(String district) async {
-    _selectedDistrict = district;
+    final clean = district.trim();
+    if (clean.isEmpty) return;
+    _selectedDistrict = clean;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _weatherInfo = await WeatherService.getWeatherForDistrict(district);
+      _weatherInfo = await WeatherService.getWeatherForDistrict(clean);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -35,8 +38,16 @@ class WeatherProvider extends ChangeNotifier {
   }
 
   void updateDistrict(String district) {
-    if (_selectedDistrict != district) {
-      fetchWeather(district);
+    if (_selectedDistrict != district.trim()) {
+      fetchWeather(district.trim());
+    }
+  }
+
+  void changeDistrict(String district) => updateDistrict(district);
+
+  void setInitialDistrict(String district) {
+    if (district.trim().isNotEmpty && _selectedDistrict != district.trim()) {
+      fetchWeather(district.trim());
     }
   }
 }

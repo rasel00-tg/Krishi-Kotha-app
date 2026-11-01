@@ -14,7 +14,9 @@ import 'crop_detail_screen.dart';
 import 'pest_catalog_screen.dart';
 
 class CropListScreen extends StatefulWidget {
-  const CropListScreen({super.key});
+  final Function(int tabIndex)? onNavigateTab;
+
+  const CropListScreen({super.key, this.onNavigateTab});
 
   static const List<String> categories = [
     AppStrings.allCrops,
@@ -523,7 +525,11 @@ class _CropListScreenState extends State<CropListScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => CropDetailScreen(crop: crop, cropData: crop.toMap()),
+                builder: (_) => CropDetailScreen(
+                  crop: crop,
+                  cropData: crop.toMap(),
+                  onNavigateTab: widget.onNavigateTab,
+                ),
                 settings: RouteSettings(arguments: crop.toMap()),
               ),
             );

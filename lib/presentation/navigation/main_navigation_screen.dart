@@ -47,7 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         onNavigateTab: _onTabSelected,
         firestoreService: _firestoreService,
       ),
-      const CropListScreen(),
+      CropListScreen(onNavigateTab: _onTabSelected),
       const MarketPriceScreen(),
       const FertilizerCalculatorScreen(),
       const AppMenuScreen(),

@@ -303,18 +303,23 @@ class QuickActionGrid extends StatelessWidget {
 
                   return InkWell(
                     onTap: item.onTap,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8E2), width: 0.9),
-                        boxShadow: const [
+                        color: Colors.white.withOpacity(0.90),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.95), width: 1.2),
+                        boxShadow: [
                           BoxShadow(
+                            color: const Color(0xFF2979FF).withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                          const BoxShadow(
                             color: Color(0x06000000),
-                            blurRadius: 5,
-                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                            offset: Offset(0, 1),
                           ),
                         ],
                       ),

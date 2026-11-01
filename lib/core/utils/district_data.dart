@@ -103,3 +103,6 @@ class BangladeshLocationData {
     'ফুলকপি ও বাঁধাকপি',
   ];
 }
+
+typedef DistrictData = BangladeshLocationData;
+

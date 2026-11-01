@@ -14,8 +14,14 @@ import 'crop_stage_detail_screen.dart';
 class CropDetailScreen extends StatelessWidget {
   final CropModel? crop;
   final Map<String, dynamic>? cropData;
+  final Function(int tabIndex)? onNavigateTab;
 
-  const CropDetailScreen({super.key, this.crop, this.cropData});
+  const CropDetailScreen({
+    super.key,
+    this.crop,
+    this.cropData,
+    this.onNavigateTab,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +72,14 @@ class CropDetailScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: const Color(0xFFF7FAF7),
           body: Stack(
+            fit: StackFit.expand,
             children: [
-          // Scrollable Content
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
+              // 1. Scrollable Content with Safe Area Padding
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Full Screen Big Hero Banner Image
@@ -377,66 +386,78 @@ class CropDetailScreen extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        // Safe bottom spacing for full-length scrolling above bottom navigation bar
+                        const SizedBox(height: 110),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Top Floating Action Buttons (Back on Left, Close (X) on Right)
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.45),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-                      onPressed: () => Navigator.pop(context),
-                      tooltip: 'পিছনে ফিরে যান',
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white30, width: 1.2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white, size: 22),
-                      onPressed: () => Navigator.pop(context),
-                      tooltip: 'বন্ধ করুন',
-                    ),
-                  ),
-                ],
               ),
-            ),
+
+              // 2. Top Floating Action Buttons (Back on Left, Close (X) on Right)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.45),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: 'পিছনে ফিরে যান',
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.55),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white30, width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 22),
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: 'বন্ধ করুন',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. Floating Animated Gradient Bottom Navigation Bar (Persistent & Active)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildAnimatedCropDetailNavBar(context),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
       },
     );
   }
@@ -1295,4 +1316,172 @@ class CropDetailScreen extends StatelessWidget {
       ],
     );
   }
+
+  // Floating Animated Gradient Bottom Navigation Bar (Persistent & Functional on Crop Detail Screen)
+  Widget _buildAnimatedCropDetailNavBar(BuildContext context) {
+    final navItems = [
+      const _CropDetailNavConfig(
+        label: AppStrings.navHome,
+        unselectedIcon: Icons.dashboard_outlined,
+        selectedIcon: Icons.dashboard_rounded,
+        gradient: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+        glowColor: Color(0x662E7D32),
+      ),
+      const _CropDetailNavConfig(
+        label: AppStrings.navCrops,
+        unselectedIcon: Icons.eco_outlined,
+        selectedIcon: Icons.eco_rounded,
+        gradient: [Color(0xFF00A86B), Color(0xFF00695C)],
+        glowColor: Color(0x6600A86B),
+      ),
+      const _CropDetailNavConfig(
+        label: AppStrings.navMarket,
+        unselectedIcon: Icons.storefront_outlined,
+        selectedIcon: Icons.storefront_rounded,
+        gradient: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+        glowColor: Color(0x662E7D32),
+      ),
+      const _CropDetailNavConfig(
+        label: AppStrings.navCalculator,
+        unselectedIcon: Icons.calculate_outlined,
+        selectedIcon: Icons.calculate_rounded,
+        gradient: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+        glowColor: Color(0x662E7D32),
+      ),
+      const _CropDetailNavConfig(
+        label: AppStrings.navMenu,
+        unselectedIcon: Icons.menu_rounded,
+        selectedIcon: Icons.menu_open_rounded,
+        gradient: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+        glowColor: Color(0x662E7D32),
+      ),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.96),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0).withOpacity(0.9),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(navItems.length, (index) {
+          final item = navItems[index];
+          final isSelected = (index == 1); // Crop tab active
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+                if (index != 1) {
+                  onNavigateTab?.call(index);
+                }
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 64,
+                alignment: Alignment.center,
+                color: Colors.transparent,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutCubic,
+                  padding: isSelected
+                      ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
+                      : const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? LinearGradient(
+                            colors: item.gradient,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isSelected ? null : const Color(0xFFF1F5F2),
+                    borderRadius: BorderRadius.circular(isSelected ? 24 : 50),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: item.glowColor,
+                              blurRadius: 14,
+                              offset: const Offset(0, 5),
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isSelected ? item.selectedIcon : item.unselectedIcon,
+                        size: 20,
+                        color: isSelected ? Colors.white : const Color(0xFF64748B),
+                      ),
+                      AnimatedCrossFade(
+                        firstChild: Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: Text(
+                            item.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        secondChild: const SizedBox.shrink(),
+                        crossFadeState: isSelected
+                            ? CrossFadeState.showFirst
+                            : CrossFadeState.showSecond,
+                        duration: const Duration(milliseconds: 250),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _CropDetailNavConfig {
+  final String label;
+  final IconData unselectedIcon;
+  final IconData selectedIcon;
+  final List<Color> gradient;
+  final Color glowColor;
+
+  const _CropDetailNavConfig({
+    required this.label,
+    required this.unselectedIcon,
+    required this.selectedIcon,
+    required this.gradient,
+    required this.glowColor,
+  });
 }
