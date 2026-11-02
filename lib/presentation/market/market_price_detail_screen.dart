@@ -4,6 +4,9 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../data/models/market_price_model.dart';
+import '../../data/services/market_favorites_service.dart';
+import '../../data/services/market_price_pdf_service.dart';
+import 'widgets/market_feedback_dialog.dart';
 
 class MarketPriceDetailScreen extends StatefulWidget {
   final MarketPriceModel item;
@@ -16,6 +19,56 @@ class MarketPriceDetailScreen extends StatefulWidget {
 
 class _MarketPriceDetailScreenState extends State<MarketPriceDetailScreen> {
   bool _isFavorite = false;
+  bool isSharing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInitialFavorite();
+  }
+
+  Future<void> _checkInitialFavorite() async {
+    await MarketFavoritesService.init();
+    if (mounted) {
+      setState(() {
+        _isFavorite = MarketFavoritesService.isFavoriteSync(widget.item.id);
+      });
+    }
+  }
+
+  Future<void> _sharePrice() async {
+    if (isSharing) return;
+    if (mounted) {
+      setState(() => isSharing = true);
+    }
+
+    try {
+      await MarketPricePdfService.shareMarketPricePdf(context, widget.item);
+    } catch (e) {
+      debugPrint('Share exception in screen: $e');
+      // অবিলম্বে সমৃদ্ধ টেক্সট ফরম্যাট ফলব্যাক দিয়ে শেয়ার শিট ওপেন করা
+      await MarketPricePdfService.shareFallbackText(widget.item);
+    } finally {
+      if (mounted) {
+        setState(() => isSharing = false);
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final bool added = await MarketFavoritesService.toggleFavorite(widget.item.id);
+    if (!mounted) return;
+    setState(() {
+      _isFavorite = added;
+    });
+    MarketFeedbackDialog.show(
+      context,
+      isAdded: added,
+      customMessage: added
+          ? 'পছন্দের তালিকায় সফলভাবে যুক্ত হয়েছে!'
+          : 'পছন্দের তালিকা থেকে সরানো হয়েছে!',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,48 +228,7 @@ class _MarketPriceDetailScreenState extends State<MarketPriceDetailScreen> {
                               Row(
                                 children: [
                                   InkWell(
-                                    onTap: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('${item.cropName} এর বাজার দর কপি করা হয়েছে'),
-                                          behavior: SnackBarBehavior.floating,
-                                          duration: const Duration(seconds: 2),
-                                        ),
-                                      );
-                                    },
-                                    borderRadius: BorderRadius.circular(14),
-                                    child: Container(
-                                      width: 42,
-                                      height: 42,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.92),
-                                        borderRadius: BorderRadius.circular(14),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.12),
-                                            blurRadius: 8,
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Center(
-                                        child: Icon(Icons.share_outlined, size: 19, color: Color(0xFF1E281F)),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _isFavorite = !_isFavorite;
-                                      });
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(_isFavorite ? 'পছন্দের তালিকায় যুক্ত হয়েছে' : 'পছন্দের তালিকা থেকে সরানো হয়েছে'),
-                                          behavior: SnackBarBehavior.floating,
-                                          duration: const Duration(seconds: 1),
-                                        ),
-                                      );
-                                    },
+                                    onTap: isSharing ? null : _sharePrice,
                                     borderRadius: BorderRadius.circular(14),
                                     child: Container(
                                       width: 42,
@@ -232,10 +244,48 @@ class _MarketPriceDetailScreenState extends State<MarketPriceDetailScreen> {
                                         ],
                                       ),
                                       child: Center(
+                                        child: isSharing
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2.2,
+                                                  color: Color(0xFF2E7D32),
+                                                ),
+                                              )
+                                            : const Icon(Icons.share_outlined, size: 19, color: Color(0xFF1E281F)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  InkWell(
+                                    onTap: _toggleFavorite,
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: _isFavorite
+                                            ? const Color(0xFFFFEBEE)
+                                            : Colors.white.withOpacity(0.92),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: _isFavorite
+                                            ? Border.all(color: const Color(0xFFFFCDD2), width: 1.2)
+                                            : null,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _isFavorite
+                                                ? const Color(0xFFE53935).withOpacity(0.2)
+                                                : Colors.black.withOpacity(0.12),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
                                         child: Icon(
                                           _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                                           size: 20,
-                                          color: _isFavorite ? Colors.red : const Color(0xFF1E281F),
+                                          color: _isFavorite ? const Color(0xFFE53935) : const Color(0xFF1E281F),
                                         ),
                                       ),
                                     ),

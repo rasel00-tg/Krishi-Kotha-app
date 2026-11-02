@@ -11,7 +11,9 @@ import '../../core/utils/district_data.dart';
 import '../../core/widgets/empty_state_widget.dart';
 import '../../core/widgets/premium_loading_widget.dart';
 import '../../data/models/market_price_model.dart';
+import '../../data/services/market_favorites_service.dart';
 import '../../providers/market_price_provider.dart';
+import 'market_favorites_screen.dart';
 import 'market_price_detail_screen.dart';
 
 class MarketPriceScreen extends StatefulWidget {
@@ -23,10 +25,12 @@ class MarketPriceScreen extends StatefulWidget {
 
 class _MarketPriceScreenState extends State<MarketPriceScreen> {
   final TextEditingController _searchController = TextEditingController();
+  List<MarketPriceModel> _lastLoadedPrices = [];
 
   @override
   void initState() {
     super.initState();
+    MarketFavoritesService.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         Provider.of<MarketPriceProvider>(context, listen: false).resetFilters();
@@ -47,10 +51,17 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
     if (cleanA.isEmpty || cleanB.isEmpty) return false;
     if (cleanA == cleanB) return true;
     if (cleanA.contains(cleanB) || cleanB.contains(cleanA)) return true;
-    // Normalize Bengali characters (র/ড়, য়/য়, ণ/ন)
-    final normA = cleanA.replaceAll('ড়', 'ড়').replaceAll('ঢ়', 'ঢ়').replaceAll('য়', 'য়').replaceAll('ণ', 'ন');
-    final normB = cleanB.replaceAll('ড়', 'ড়').replaceAll('ঢ়', 'ঢ়').replaceAll('য়', 'য়').replaceAll('ণ', 'ন');
+    // Normalize Bengali characters (র/ড়, য়/য়, ণ/ন, হসন্ত)
+    final normA = cleanA.replaceAll('ড়', 'ড়').replaceAll('ঢ়', 'ঢ়').replaceAll('য়', 'য়').replaceAll('ণ', 'ন').replaceAll('্', '');
+    final normB = cleanB.replaceAll('ড়', 'ড়').replaceAll('ঢ়', 'ঢ়').replaceAll('য়', 'য়').replaceAll('ণ', 'ন').replaceAll('্', '');
     if (normA == normB || normA.contains(normB) || normB.contains(normA)) return true;
+
+    // Strip common suffix tokens like জেলা, বিভাগ, বাজার, সদর
+    final stripA = normA.replaceAll('জেলা', '').replaceAll('বিভাগ', '').replaceAll('বাজার', '').replaceAll('সদর', '').trim();
+    final stripB = normB.replaceAll('জেলা', '').replaceAll('বিভাগ', '').replaceAll('বাজার', '').replaceAll('সদর', '').trim();
+    if (stripA.isNotEmpty && stripB.isNotEmpty) {
+      if (stripA == stripB || stripA.contains(stripB) || stripB.contains(stripA)) return true;
+    }
 
     // Cross-check Bengali and English District/Location names
     const Map<String, String> enBnMap = {
@@ -341,20 +352,25 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                     debugPrint('Sorting error: $e');
                   }
 
+                  // ক্যাশে ও ফেভারিট শিটের জন্য সাম্প্রতিক ডেটা সিঙ্ক
+                  _lastLoadedPrices = allPrices;
+
                   var filteredPrices = allPrices;
 
-                  // ৩. আনরেস্ট্রিক্টেড ডিফল্ট ভিউ ও কেবল ইউজার বাছাই করলেই অ্যাপ-লেভেলে ফিল্টারিং
+                  // ৩. আনরেস্ট্রিক্টেড ডিফল্ট ভিউ ও কেবল ইউজার বাছাই করলেই অ্যাপ-লেভেলে ফিল্টারিং (জেলা ও বাজার নাম উভয়ই চেক)
                   if (isDistrictFiltered) {
                     final targetDistrict = marketProvider.selectedDistrict.trim();
                     filteredPrices = filteredPrices.where((m) =>
-                        _matchDistrict(m.district, targetDistrict)
+                        _matchDistrict(m.district, targetDistrict) ||
+                        _matchDistrict(m.marketName, targetDistrict)
                     ).toList();
                   } else if (isDivisionFiltered) {
                     final targetDivision = marketProvider.selectedDivision.trim();
                     final divDistricts = BangladeshLocationData.divisionDistricts[targetDivision] ?? [];
                     filteredPrices = filteredPrices.where((m) =>
-                        divDistricts.any((d) => _matchDistrict(m.district, d)) ||
-                        _matchDistrict(m.district, targetDivision)
+                        divDistricts.any((d) => _matchDistrict(m.district, d) || _matchDistrict(m.marketName, d)) ||
+                        _matchDistrict(m.district, targetDivision) ||
+                        _matchDistrict(m.marketName, targetDivision)
                     ).toList();
                   }
 
@@ -556,7 +572,80 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
+              // পছন্দের তালিকা (❤️) বাটন
+              ValueListenableBuilder<List<String>>(
+                valueListenable: MarketFavoritesService.favoriteIdsNotifier,
+                builder: (context, favIds, _) {
+                  final hasFavs = favIds.isNotEmpty;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MarketFavoritesScreen(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: hasFavs ? const Color(0xFFFFF0F2) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: hasFavs ? const Color(0xFFFFCDD2) : Colors.black.withOpacity(0.06),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: hasFavs ? const Color(0xFFE53935).withOpacity(0.12) : Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              hasFavs ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 21,
+                              color: hasFavs ? const Color(0xFFE53935) : const Color(0xFF758577),
+                            ),
+                          ),
+                        ),
+                        if (hasFavs)
+                          Positioned(
+                            top: -3,
+                            right: -3,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE53935),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.white, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  BanglaNumberConverter.toBangla(favIds.length.toString()),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
               // ফিল্টার আইকন বাটন
               InkWell(
                 onTap: () => _showDistrictFilter(context, marketProvider),
@@ -1240,9 +1329,8 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                         if (modalSearch.isEmpty && tempDivision == 'সকল বাজার / সারাদেশ')
                           InkWell(
                             onTap: () {
-                              setModalState(() {
-                                tempDistrict = BangladeshLocationData.allDistrictsOption;
-                              });
+                              provider.setDistrict(BangladeshLocationData.allDistrictsOption);
+                              Navigator.pop(ctx);
                             },
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
@@ -1296,6 +1384,61 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                             ),
                           ),
 
+                        // Option to view all markets in selected division
+                        if (modalSearch.isEmpty && tempDivision != 'সকল বাজার / সারাদেশ' && tempDivision != 'সকল বিভাগ')
+                          InkWell(
+                            onTap: () {
+                              provider.setDivision(tempDivision);
+                              Navigator.pop(ctx);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFF2E7D32), width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.08),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2E7D32),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.location_city_rounded,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      '$tempDivision এর সমস্ত বাজার ও জেলা দেখুন',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1B5E20),
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF2E7D32), size: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+
                         if (displayedDistricts.isEmpty)
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 40),
@@ -1311,9 +1454,8 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                             final isCurrent = tempDistrict == d;
                             return InkWell(
                               onTap: () {
-                                setModalState(() {
-                                  tempDistrict = d;
-                                });
+                                provider.setDistrict(d);
+                                Navigator.pop(ctx);
                               },
                               borderRadius: BorderRadius.circular(14),
                               child: Container(
@@ -1399,11 +1541,9 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                         // Reset button
                         TextButton.icon(
                           onPressed: () {
-                            setModalState(() {
-                              tempDivision = 'সকল বাজার / সারাদেশ';
-                              tempDistrict = BangladeshLocationData.allDistrictsOption;
-                              modalSearch = '';
-                            });
+                            provider.resetFilters();
+                            _searchController.clear();
+                            Navigator.pop(ctx);
                           },
                           icon: const Icon(Icons.refresh_rounded, size: 18, color: AppColors.textSecondary),
                           label: const Text(
@@ -1473,6 +1613,16 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
           },
         );
       },
+    );
+  }
+
+  // ৩. পূর্ণাঙ্গ ডেডিকেটেড ফুল-স্ক্রিন ফেভারিট পেজ নেভিগেশন
+  void _openMarketFavorites(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MarketFavoritesScreen(),
+      ),
     );
   }
 }

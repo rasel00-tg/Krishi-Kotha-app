@@ -662,6 +662,43 @@
       gap: 6px;
     }
 
+    /* Smart Services Grid - 2 Columns (3 Columns on wide screens) */
+    .smart-service-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    @media (min-width: 650px) {
+      .smart-service-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .smart-service-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.2px solid rgba(255, 255, 255, 0.95);
+      border-radius: 18px;
+      padding: 13px;
+      box-shadow: 0 4px 14px rgba(41, 121, 255, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .smart-service-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(41, 121, 255, 0.12);
+      border-color: rgba(255, 255, 255, 1);
+    }
+    .smart-service-card:active {
+      transform: scale(0.97);
+    }
+
     /* Quick Action Grid - 3 Columns Responsive Grid */
     .quick-grid {
       display: grid;
@@ -1992,95 +2029,103 @@
               </div>
             </div>
 
-            <!-- Quick Action Grid (12 Essential Unique Services) -->
-            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-              <span><i class="fa-solid fa-shapes" style="color: var(--primary);"></i> প্রয়োজনীয় সেবা</span>
-              <span style="font-size: 11px; background: #E8F5E9; color: var(--primary); padding: 2px 8px; border-radius: 12px; font-weight: 700;">১২টি সেবা</span>
+            <!-- Unified Single Agri Services Grid (13 Essential Features) -->
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span><i class="fa-solid fa-shapes" style="color: var(--primary);"></i> প্রয়োজনীয় কৃষি সেবা</span>
+              <span style="font-size: 11px; background: #E8F5E9; color: var(--primary); padding: 2px 8px; border-radius: 12px; font-weight: 700;">১৩টি সেবা</span>
             </div>
-            <div class="quick-grid">
-              <!-- 1. রোগবালাই দমন -->
-              <div class="quick-card" onclick="openPestCatalogModal()">
-                <div class="quick-icon-wrap" style="background: #FCE4EC; color: #C2185B;">
-                  <i class="fa-solid fa-bug"></i>
+
+            <div class="quick-grid" style="margin-bottom: 24px;">
+              <!-- ১. চাষ ক্যালেন্ডার -->
+              <div class="quick-card" onclick="openServiceModal('calendar')">
+                <div class="quick-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
+                  <i class="fa-solid fa-calendar-days"></i>
                 </div>
-                <span>রোগবালাই দমন</span>
+                <span>চাষ ক্যালেন্ডার</span>
               </div>
-              <!-- 2. সেচ ট্র্যাকার -->
+              <!-- ২. রোগ শনাক্ত -->
+              <div class="quick-card" onclick="openDiseaseScannerModal()">
+                <div class="quick-icon-wrap" style="background: #FCE4EC; color: #D81B60;">
+                  <i class="fa-solid fa-camera-retro"></i>
+                </div>
+                <span>রোগ শনাক্ত</span>
+              </div>
+              <!-- ৩. কৃষি বিশেষজ্ঞ -->
+              <div class="quick-card" onclick="openExpertHelplineModal()">
+                <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
+                  <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <span>কৃষি বিশেষজ্ঞ</span>
+              </div>
+              <!-- ৪. কৃষি রিমাইন্ডার -->
+              <div class="quick-card" onclick="openServiceModal('agri_reminder')">
+                <div class="quick-icon-wrap" style="background: #FFF3E0; color: #E65100;">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <span>কৃষি রিমাইন্ডার</span>
+              </div>
+              <!-- ৫. বীজের তথ্য -->
+              <div class="quick-card" onclick="openServiceModal('seed_bank')">
+                <div class="quick-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
+                  <i class="fa-solid fa-seedling"></i>
+                </div>
+                <span>বীজের তথ্য</span>
+              </div>
+              <!-- ৬. কৃষি অফিস -->
+              <div class="quick-card" onclick="openServiceModal('agri_office')">
+                <div class="quick-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
+                  <i class="fa-solid fa-building-flag"></i>
+                </div>
+                <span>কৃষি অফিস</span>
+              </div>
+              <!-- ৭. সেচ ট্র্যাকার -->
               <div class="quick-card" onclick="openServiceModal('irrigation')">
                 <div class="quick-icon-wrap" style="background: #E1F5FE; color: #0288D1;">
                   <i class="fa-solid fa-droplet"></i>
                 </div>
                 <span>সেচ ট্র্যাকার</span>
               </div>
-              <!-- 3. যন্ত্রপাতি ভাড়া -->
-              <div class="quick-card" onclick="openServiceModal('machinery')">
-                <div class="quick-icon-wrap" style="background: #FFF3E0; color: #E65100;">
-                  <i class="fa-solid fa-tractor"></i>
-                </div>
-                <span>যন্ত্রপাতি ভাড়া</span>
-              </div>
-              <!-- 4. সার-বীজ ডিলার -->
+              <!-- ৮. সার-বীজ ডিলার -->
               <div class="quick-card" onclick="openServiceModal('dealers')">
                 <div class="quick-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
                   <i class="fa-solid fa-store"></i>
                 </div>
                 <span>সার-বীজ ডিলার</span>
               </div>
-              <!-- 5. কৃষি আয়-ব্যয় -->
+              <!-- ৯. কৃষি আয়-ব্যয় -->
               <div class="quick-card" onclick="openServiceModal('ledger')">
                 <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
                   <i class="fa-solid fa-book-open"></i>
                 </div>
                 <span>কৃষি আয়-ব্যয়</span>
               </div>
-              <!-- 6. ফসল ক্যালেন্ডার -->
-              <div class="quick-card" onclick="openServiceModal('calendar')">
-                <div class="quick-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
-                  <i class="fa-solid fa-calendar-days"></i>
-                </div>
-                <span>ফসল ক্যালেন্ডার</span>
-              </div>
-              <!-- 7. মাটির স্বাস্থ্য -->
+              <!-- ১০. মাটির স্বাস্থ্য -->
               <div class="quick-card" onclick="openServiceModal('soil')">
                 <div class="quick-icon-wrap" style="background: #EFEBE9; color: #6D4C41;">
                   <i class="fa-solid fa-mountain"></i>
                 </div>
                 <span>মাটির স্বাস্থ্য</span>
               </div>
-              <!-- 8. কৃষি ঋণ ও প্রণোদনা -->
-              <div class="quick-card" onclick="openServiceModal('loans')">
-                <div class="quick-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
-                  <i class="fa-solid fa-building-columns"></i>
-                </div>
-                <span>কৃষি ঋণ ও প্রণোদনা</span>
-              </div>
-              <!-- 9. পশু ও হাঁস-মুরগি -->
+              <!-- ১১. পশু ও হাঁস-মুরগি -->
               <div class="quick-card" onclick="openServiceModal('livestock')">
                 <div class="quick-icon-wrap" style="background: #FBE9E7; color: #D84315;">
                   <i class="fa-solid fa-paw"></i>
                 </div>
                 <span>পশু ও হাঁস-মুরগি</span>
               </div>
-              <!-- 10. মৎস্য চাষ -->
+              <!-- ১২. মৎস্য চাষ -->
               <div class="quick-card" onclick="openServiceModal('fisheries')">
                 <div class="quick-icon-wrap" style="background: #E0F7FA; color: #0097A7;">
                   <i class="fa-solid fa-fish"></i>
                 </div>
                 <span>মৎস্য চাষ</span>
               </div>
-              <!-- 11. ফসল সংরক্ষণ -->
+              <!-- ১৩. ফসল সংরক্ষণ -->
               <div class="quick-card" onclick="openServiceModal('cold_storage')">
                 <div class="quick-icon-wrap" style="background: #D7CCC8; color: #5D4037;">
                   <i class="fa-solid fa-boxes-stacked"></i>
                 </div>
                 <span>ফসল সংরক্ষণ</span>
-              </div>
-              <!-- 12. আধুনিক প্রযুক্তি -->
-              <div class="quick-card" onclick="openServiceModal('modern_tech')">
-                <div class="quick-icon-wrap" style="background: #FFFDE7; color: #F57F17;">
-                  <i class="fa-solid fa-lightbulb"></i>
-                </div>
-                <span>আধুনিক প্রযুক্তি</span>
               </div>
             </div>
 
@@ -2152,12 +2197,18 @@
                 </div>
               </div>
 
-              <!-- Sleek Frosted Search Bar & Square Filter Button -->
-              <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+              <!-- Sleek Frosted Search Bar, Favorites Button & Filter Button -->
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
                 <div style="flex: 1; position: relative; display: flex; align-items: center;">
                   <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; color: #2E7D32; font-size: 15px; pointer-events: none;"></i>
                   <input type="text" id="marketSearchInput" oninput="filterMarketPrices()" placeholder="ফসল বা বাজার খুঁজুন..." style="width: 100%; height: 46px; border-radius: 16px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.06); padding-left: 40px; padding-right: 14px; font-size: 13.5px; outline: none; transition: all 0.2s; color: #1E281F; box-shadow: 0 4px 12px rgba(0,0,0,0.03);" onfocus="this.style.borderColor='#2E7D32'; this.style.boxShadow='0 4px 14px rgba(46,125,50,0.15)'" onblur="this.style.borderColor='rgba(0,0,0,0.06)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)'">
                 </div>
+                <!-- Favorites Button (❤️) -->
+                <button type="button" id="marketFavoritesBtn" onclick="openMarketFavoritesModal()" style="position: relative; width: 46px; height: 46px; border-radius: 16px; background: #FFFFFF; color: #758577; border: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='none'" title="পছন্দের তালিকা">
+                  <i class="fa-solid fa-heart" id="marketFavoritesBtnIcon" style="font-size: 18px; color: #758577;"></i>
+                  <span id="marketFavoritesBadge" style="display: none; position: absolute; top: -3px; right: -3px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #E53935; color: #fff; font-size: 10px; font-weight: bold; border: 1.5px solid #fff; align-items: center; justify-content: center;">0</span>
+                </button>
+                <!-- Filter Button -->
                 <button type="button" id="marketFilterBtn" onclick="openMarketDistrictModal()" style="position: relative; width: 46px; height: 46px; border-radius: 16px; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.3); transition: transform 0.15s; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='none'" title="জেলা / বাজার ফিল্টার">
                   <i class="fa-solid fa-sliders" style="font-size: 18px;"></i>
                   <span id="marketFilterBadge" style="display: none; position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; border-radius: 50%; background: #FF9800; border: 2px solid #fff;"></span>
@@ -2192,55 +2243,63 @@
 
           <!-- TAB 3: SMART FERTILIZER CALCULATOR -->
           <div class="tab-pane" id="tab-calc" style="padding-bottom: 120px;">
-            <!-- 1. Smart Input Glassmorphic Card -->
-            <div class="calc-box" style="background: #fff; border-radius: 22px; border: 1.2px solid #E2E8F0; padding: 20px; box-shadow: 0 8px 24px rgba(46, 125, 50, 0.08); margin-bottom: 20px;">
-              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
-                <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #2E7D32, #1B5E20); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(46,125,50,0.3);">
-                  <i class="fa-solid fa-calculator"></i>
-                </div>
-                <div>
-                  <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px 0;">সুষম সার সুপারিশ ক্যালকুলেটর</h3>
-                  <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">ফসল ও জমির মাপে সারের বৈজ্ঞানিক সঠিক হিসাব</p>
-                </div>
+            <!-- Modern Top Headline Section (Single Primary Header with Real Logo) -->
+            <div style="display: flex; align-items: center; gap: 12px; padding: 14px 4px 18px 4px;">
+              <div style="background: #fff; border: 1.2px solid #E0E8E1; border-radius: 14px; padding: 4px; box-shadow: 0 4px 10px rgba(46,125,50,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <img src="pnglogo.png" style="width: 38px; height: 38px; object-fit: contain;" alt="কৃষি কথা লোগো" onerror="this.onerror=null; this.outerHTML='<div style=\'width:38px;height:38px;border-radius:12px;background:#2E7D32;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;\'><i class=\'fa-solid fa-leaf\'></i></div>';" />
               </div>
+              <div>
+                <h2 style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin: 0 0 2px 0; letter-spacing: -0.3px;">কৃষি ও সার ক্যালকুলেটর</h2>
+                <p style="font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.35;">আপনার জমির সঠিক মাপে প্রয়োজনীয় সারের সঠিক হিসাব জানুন</p>
+              </div>
+            </div>
 
-              <!-- Crop selection -->
+            <!-- 1. Smart Input Glassmorphic Card (Category-First Flow) -->
+            <div class="calc-box" style="background: #fff; border-radius: 22px; border: 1.2px solid #E2E8F0; padding: 20px; box-shadow: 0 8px 24px rgba(46, 125, 50, 0.08); margin-bottom: 20px;">
+              <!-- Category selection -->
               <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label" style="font-size: 13.5px; font-weight: 700; color: #2C3E50; margin-bottom: 6px; display: block;">ফসল নির্বাচন করুন</label>
+                <label class="form-label" style="font-size: 13.5px; font-weight: 700; color: #2C3E50; margin-bottom: 6px; display: block;">ফসলের ক্যাটাগরি</label>
                 <div style="position: relative;">
-                  <i class="fa-solid fa-seedling" style="position: absolute; left: 14px; top: 14px; color: var(--primary); font-size: 16px;"></i>
-                  <select class="form-select" id="calcCropSelect" onchange="calculateFertilizer()" style="padding-left: 40px; font-size: 14.5px; font-weight: 700; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;">
-                    <option value="বোরো ধান">বোরো ধান (উফশী ও হাইব্রিড)</option>
-                    <option value="আমন ধান">রোপা আমন ধান</option>
-                    <option value="আউশ ধান">আউশ ধান</option>
-                    <option value="গোল আলু">গোল আলু (ডায়মন্ড / কার্ডিনাল)</option>
-                    <option value="ভুট্টা">হাইব্রিড ভুট্টা</option>
-                    <option value="গম">গম (বারি গম-২৮/৩৩)</option>
-                    <option value="টমেটো">টমেটো (উফশী ও হাইব্রিড)</option>
-                    <option value="বেগুন">বেগুন (গোল ও লম্বা)</option>
-                    <option value="সরিষা">সরিষা (বারি সরিষা-১৪/১৭)</option>
-                    <option value="মরিচ">মরিচ (উন্নত জাত)</option>
-                    <option value="পেঁয়াজ">পেঁয়াজ (তাহেরপুরী/বারি-১)</option>
-                    <option value="পাট">তোষা পাট</option>
+                  <i class="fa-solid fa-layer-group" style="position: absolute; left: 14px; top: 14px; color: var(--primary); font-size: 16px;"></i>
+                  <select class="form-select" id="calcCategorySelect" onchange="onCalcCategoryChange()" style="padding-left: 40px; font-size: 14.5px; font-weight: 700; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;">
+                    <option value="" disabled selected>ক্যাটাগরি নির্বাচন করুন</option>
+                    <option value="ধান ও খাদ্যশস্য">ধান ও খাদ্যশস্য</option>
+                    <option value="ডালজাতীয় ফসল">ডালজাতীয় ফসল</option>
+                    <option value="তেলজাতীয় ফসল">তেলজাতীয় ফসল</option>
+                    <option value="সবজি জাতীয় ফসল">সবজি জাতীয় ফসল</option>
+                    <option value="মসলা জাতীয় ফসল">মসলা জাতীয় ফসল</option>
+                    <option value="আঁশ ও অর্থকরী ফসল">আঁশ ও অর্থকরী ফসল</option>
+                    <option value="ফল ও বাগান">ফল ও বাগান</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Land Area and Unit Selector -->
-              <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; margin-bottom: 14px;">
+              <!-- Crop selection (Empty placeholder initially, dynamically populated) -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" style="font-size: 13.5px; font-weight: 700; color: #2C3E50; margin-bottom: 6px; display: block;">ফসল নির্বাচন করুন</label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-seedling" style="position: absolute; left: 14px; top: 14px; color: var(--primary); font-size: 16px;"></i>
+                  <select class="form-select" id="calcCropSelect" style="padding-left: 40px; font-size: 14.5px; font-weight: 700; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;">
+                    <option value="" disabled selected>প্রথমে ক্যাটাগরি নির্বাচন করুন</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Land Area and Unit Selector (Empty initially) -->
+              <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; margin-bottom: 20px;">
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 13.5px; font-weight: 700; color: #2C3E50; margin-bottom: 6px; display: block;">জমির পরিমাণ</label>
                   <div style="position: relative;">
                     <i class="fa-solid fa-ruler-combined" style="position: absolute; left: 14px; top: 14px; color: var(--primary); font-size: 15px;"></i>
-                    <input type="number" class="form-input" id="calcAreaInput" value="10" oninput="calculateFertilizer()" style="padding-left: 38px; font-size: 16px; font-weight: 800; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;" placeholder="১০">
+                    <input type="number" class="form-input" id="calcAreaInput" value="" style="padding-left: 38px; font-size: 16px; font-weight: 800; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;" placeholder="জমির পরিমাণ লিখুন">
                   </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 13.5px; font-weight: 700; color: #2C3E50; margin-bottom: 6px; display: block;">পরিমাপক একক</label>
                   <div style="position: relative;">
                     <i class="fa-solid fa-vector-square" style="position: absolute; left: 14px; top: 14px; color: var(--primary); font-size: 15px;"></i>
-                    <select class="form-select" id="calcUnitSelect" onchange="calculateFertilizer()" style="padding-left: 38px; font-size: 13.5px; font-weight: 700; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;">
-                      <option value="1">শতক / শতাংশ</option>
+                    <select class="form-select" id="calcUnitSelect" style="padding-left: 38px; font-size: 13.5px; font-weight: 700; border-radius: 14px; background: #F8FAF7; border: 1px solid #E0E8E1; height: 46px;">
+                      <option value="1" selected>শতক / শতাংশ</option>
                       <option value="1.65">কাঠা (১.৬৫ শতক)</option>
                       <option value="33">বিঘা (৩৩ শতক)</option>
                       <option value="100">একর (১০০ শতক)</option>
@@ -2250,87 +2309,102 @@
                 </div>
               </div>
 
-              <!-- Quick Increment Chips -->
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
-                <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">দ্রুত যোগ:</span>
-                <button type="button" class="increment-btn" onclick="addArea(1)" style="padding: 5px 10px; border-radius: 10px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--primary-dark); font-weight: 700; font-size: 12px; cursor: pointer;">+১</button>
-                <button type="button" class="increment-btn" onclick="addArea(5)" style="padding: 5px 10px; border-radius: 10px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--primary-dark); font-weight: 700; font-size: 12px; cursor: pointer;">+৫</button>
-                <button type="button" class="increment-btn" onclick="addArea(10)" style="padding: 5px 10px; border-radius: 10px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--primary-dark); font-weight: 700; font-size: 12px; cursor: pointer;">+১০</button>
-                <button type="button" class="increment-btn" onclick="addArea(33)" style="padding: 5px 10px; border-radius: 10px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--primary-dark); font-weight: 700; font-size: 12px; cursor: pointer;">+৩৩ (১ বিঘা)</button>
-                <button type="button" class="increment-btn" onclick="addArea(100)" style="padding: 5px 10px; border-radius: 10px; background: #E8F5E9; border: 1px solid #C8E6C9; color: var(--primary-dark); font-weight: 700; font-size: 12px; cursor: pointer;">+১০০ (১ একর)</button>
-              </div>
-
               <!-- "হিসাব করুন" অ্যাকশন বাটন -->
-              <button type="button" onclick="calculateFertilizer(true)" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.35); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                <i class="fa-solid fa-bolt" style="color: #FFD54F;"></i>
+              <button type="button" onclick="handleFertilizerCalculate()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: #fff; border: none; border-radius: 16px; font-size: 15.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.35); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fa-solid fa-bolt" style="color: #FFD54F; font-size: 17px;"></i>
                 <span>সারের সঠিক পরিমাণ হিসাব করুন</span>
               </button>
             </div>
 
-            <!-- 2. Result Section -->
-            <div id="calcResultsSection">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 16.5px; font-weight: 800; color: var(--text-primary);">
-                  <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
-                  <span>প্রয়োজনীয় সারের সঠিক হিসাব</span>
+            <!-- ৩. হিসাব করার আগের ভিউ: গাইড ও সতর্কতা কার্ডসমূহ -->
+            <!-- কীভাবে হিসাব করবেন? -->
+            <div style="background: #fff; border-radius: 20px; border: 1.2px solid #C8E6C9; padding: 18px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(46,125,50,0.04);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <div style="width: 32px; height: 32px; border-radius: 10px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px;">
+                  <i class="fa-solid fa-circle-question"></i>
                 </div>
-                <div id="calcLandSummaryTag" style="background: #E8F5E9; color: var(--primary-dark); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; border: 1px solid #C8E6C9;">
-                  মোট জমি: ১০ শতক
+                <h4 style="font-size: 15.5px; font-weight: 800; color: var(--primary-dark); margin: 0;">কীভাবে হিসাব করবেন?</h4>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <span style="width: 24px; height: 24px; border-radius: 7px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;">১</span>
+                  <span style="font-size: 13px; font-weight: 600; color: #37474F; line-height: 1.4;">প্রথমে আপনার ফসলের ক্যাটাগরি ও ফসল নির্বাচন করুন।</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <span style="width: 24px; height: 24px; border-radius: 7px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;">২</span>
+                  <span style="font-size: 13px; font-weight: 600; color: #37474F; line-height: 1.4;">আপনার জমির একক (শতক, কাঠা বা বিঘা) ও সঠিক পরিমাপ লিখুন।</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <span style="width: 24px; height: 24px; border-radius: 7px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;">৩</span>
+                  <span style="font-size: 13px; font-weight: 600; color: #37474F; line-height: 1.4;">"সারের সঠিক পরিমাণ হিসাব করুন" বাটনে চাপুন।</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- সার প্রয়োগ ও স্বাস্থ্য ঝুঁকির পূর্ণাঙ্গ সতর্কতা -->
+            <div style="background: #fff; border-radius: 22px; border: 1.3px solid #FFCC80; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(230,81,0,0.06);">
+              <!-- হেডার -->
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #E65100, #BF360C); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; box-shadow: 0 3px 8px rgba(230,81,0,0.3); flex-shrink: 0;">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <h4 style="font-size: 15.5px; font-weight: 800; color: #BF360C; margin: 0 0 2px 0;">সার প্রয়োগ ও স্বাস্থ্য ঝুঁকির পূর্ণাঙ্গ সতর্কতা</h4>
+                  <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">কৃষক ভাইদের স্বাস্থ্য সুরক্ষা ও জরুরি প্রাথমিক চিকিৎসা নির্দেশিকা</p>
                 </div>
               </div>
 
-              <!-- Estimated Cost Summary Card -->
-              <div id="calcCostSummaryCard" style="background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); border: 1.2px solid #A5D6A7; border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(46,125,50,0.06);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 800; color: #1B5E20;">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>আনুমানিক সম্ভাব্য সার খরচ</span>
+              <!-- সেকশন ১: সাধারণ সতর্কতা -->
+              <div style="background: #FFFBEA; border-radius: 14px; border: 1px solid #FFE082; padding: 12px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                  <i class="fa-solid fa-circle-exclamation" style="color: #E65100; font-size: 14px;"></i>
+                  <span style="font-size: 13.5px; font-weight: 800; color: #E65100;">সাধারণ সতর্কতা</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #5D4037; line-height: 1.45;">
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                    <span>অতিরিক্ত সার প্রয়োগ থেকে বিরত থাকুন; অতিরিক্ত রাসায়নিক সার মাটির গঠন ও উর্বরতা নষ্ট করে।</span>
                   </div>
-                  <span style="background: #fff; border: 1px solid #A5D6A7; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">ভর্তুকিমূল্য অনুযায়ী</span>
-                </div>
-                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;">
-                  <span id="calcTotalCostValue" style="font-size: 26px; font-weight: 900; color: #1B5E20; letter-spacing: -0.5px;">৳ ৭২০</span>
-                  <span style="font-size: 13px; font-weight: 600; color: #388E3C;">টাকা (আনুমানিক মোট)</span>
-                </div>
-                <div style="font-size: 11.5px; color: #558B2F; line-height: 1.35;">
-                  * সরকারি নির্ধারিত বিসিআইসি ডিলার বিক্রয়মূল্য অনুযায়ী আনুমানিক ব্যয়। বাজারভেদে কিছুটা তারতম্য হতে পারে।
-                </div>
-              </div>
-
-              <!-- Individual Fertilizer Breakdown Cards -->
-              <div id="fertilizerCardsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                <!-- Cards will be dynamically rendered -->
-              </div>
-
-              <!-- 3. Application Timeline Guide Card -->
-              <div style="background: #fff; border-radius: 20px; border: 1px solid #E2E8F0; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
-                  <i class="fa-solid fa-timeline" style="color: var(--primary);"></i>
-                  <span>সার প্রয়োগের সঠিক সময়সূচি ও নিয়ম</span>
-                </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 16px 0;">সঠিক সময়ে সার দিলে প্রতিটি দানার সর্বোত্তম কার্যকারিতা পাওয়া যায়</p>
-                <div id="calcTimelineStepsContainer">
-                  <!-- Steps rendered dynamically -->
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                    <span>কড়া রোদ বা বৃষ্টির দিনে জমিতে ইউরিয়া সার ছিটাবেন না।</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                    <span>রাসায়নিক সারের পাশাপাশি নিয়মিত জমিতে কম্পোস্ট বা জৈব সার প্রয়োগ করুন।</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- 4. Farmer Safety Advice Card -->
-              <div style="background: #FFFBEA; border: 1.2px solid #FFE082; border-radius: 18px; padding: 16px; margin-bottom: 24px;">
-                <div style="display: flex; align-items: center; gap: 8px; color: #E65100; font-size: 15px; font-weight: 800; margin-bottom: 10px;">
-                  <i class="fa-regular fa-lightbulb" style="font-size: 18px;"></i>
-                  <span>সার প্রয়োগের বিশেষ সতর্কতা ও পরামর্শ</span>
+              <!-- সেকশন ২: স্বাস্থ্য ঝুঁকি ও জরুরি প্রাথমিক চিকিৎসা -->
+              <div style="background: #FFF5F5; border-radius: 14px; border: 1px solid #FFCDD2; padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                  <i class="fa-solid fa-notes-medical" style="color: #C62828; font-size: 15px;"></i>
+                  <span style="font-size: 13.5px; font-weight: 800; color: #C62828;">স্বাস্থ্য ঝুঁকি ও জরুরি প্রাথমিক চিকিৎসা</span>
                 </div>
-                <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #5D4037; line-height: 1.55;">
-                  <li>প্রখর কড়া রোদ বা ভারী বৃষ্টির আগে জমিতে সার ছিটাবেন না, এতে সারের কার্যকারিতা নষ্ট হয়।</li>
-                  <li>শিশিরভেজা পাতায় ইউরিয়া সার ছিটাবেন না; জমিতে হালকা ছিপছিপে রস অবস্থায় দিন।</li>
-                  <li>ইউরিয়া সার সবসময় কিস্তিতে উপরিপ্রয়োগ করুন, একবারে দিলে মাটিতে অপচয় হয়।</li>
-                  <li>টিএসপি, জিপসাম ও দস্তা সার সবসময় জমি তৈরির শেষ চাষে মাটির নিচে দিন।</li>
-                </ul>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45;">
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #D32F2F; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span style="color: #455A64;"><strong style="color: #D32F2F;">পেটে বা মুখে গেলে:</strong> রাসায়নিক সার (বিশেষ করে ইউরিয়া, ডিএপি বা দস্তা) ভুলবশত মুখে বা পেটে চলে গেলে বমি করানোর চেষ্টা করবেন না; তৎক্ষণাৎ প্রচুর পরিষ্কার পানি পান করান এবং দ্রুত নিকটস্থ স্বাস্থ্য কমপ্লেক্স বা চিকিৎসকের কাছে নিয়ে যান।</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #C2185B; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-eye-dropper"></i></span>
+                    <span style="color: #455A64;"><strong style="color: #C2185B;">চোখ ও ত্বকের সংস্পর্শে এলে:</strong> সার ছিটানোর সময় চোখে বা ক্ষতস্থানে লাগলে কমপক্ষে ১৫ মিনিট পরিষ্কার ঠান্ডা পানির ঝাপটা দিন এবং সাবান দিয়ে হাত-পা ভালো করে ধুয়ে ফেলুন।</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #1976D2; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-mask-face"></i></span>
+                    <span style="color: #455A64;"><strong style="color: #1976D2;">সার ছিটানোর সময় সতর্কতা:</strong> খালি গায়ে বা খালি হাতে সার ছিটানো নিষেধ; মাস্ক, গ্লাভস ও ফুল হাতা পোশাক ব্যবহার করুন।</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #E65100; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-paw"></i></span>
+                    <span style="color: #455A64;"><strong style="color: #E65100;">শিশু ও গবাদি পশু থেকে সুরক্ষা:</strong> সার সবসময় শুষ্ক ও নিরাপদ স্থানে শিশুদের নাগালের বাইরে রাখুন এবং জমিতে সার ছিটানোর পর কয়েকদিন গবাদি পশু চড়ানো থেকে বিরত থাকুন।</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- 5. Safe Area Spacer for Floating Menu Bar -->
-            <div style="height: 100px; width: 100%;"></div>
+            <div style="height: 120px; width: 100%;"></div>
           </div>
 
           <!-- TAB 4: APP MENU -->
@@ -2624,6 +2698,220 @@
           </div>
         </div>
 
+        <!-- MODAL: MARKET FAVORITES FULL SCREEN PAGE -->
+        <div class="modal-overlay crop-fullscreen-modal" id="marketFavoritesModal" style="z-index: 100001;">
+          <div class="crop-fullscreen-sheet" style="display: flex; flex-direction: column; background: #F8FAF7;">
+            <!-- Top Header & Branding -->
+            <div style="position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 14px 18px 12px 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button type="button" onclick="closeModal('marketFavoritesModal')" style="width: 38px; height: 38px; border-radius: 12px; background: #F1F5F2; border: 1px solid rgba(0,0,0,0.06); color: #1E281F; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#E8EFEA'" onmouseout="this.style.background='#F1F5F2'" title="ফিরে যান">
+                    <i class="fa-solid fa-arrow-left"></i>
+                  </button>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="pnglogo.png" style="height: 38px; width: 38px; object-fit: contain;" alt="কৃষি কথা লোগো" onerror="this.onerror=null; this.outerHTML='<div style=\'width:34px;height:34px;border-radius:10px;background:#2E7D32;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;\'><i class=\'fa-solid fa-seedling\'></i></div>';" />
+                    <div>
+                      <span style="font-size: 11px; font-weight: 800; color: #2E7D32; text-transform: uppercase; letter-spacing: 0.5px;">কৃষি কথা – KRISHI KOTHA</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="marketFavoritesTopBadge" style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; background: #FFF0F2; border: 1px solid #FFCDD2; font-size: 12px; font-weight: 700; color: #C62828;">
+                  <i class="fa-solid fa-heart" style="font-size: 11px; color: #E53935;"></i>
+                  <span id="marketFavoritesCountText">০ টি ফসল</span>
+                </div>
+              </div>
+              <div>
+                <h2 style="font-size: 19px; font-weight: 900; color: #1E281F; margin: 0 0 3px 0; letter-spacing: -0.3px;">আপনার ফেভারিট করা ফসলের বাজার দর</h2>
+                <p id="marketFavoritesSubtitle" style="font-size: 12.5px; color: #556B2F; font-weight: 500; margin: 0; line-height: 1.35;">প্রয়োজনে দ্রুত দেখার জন্য আপনার সংরক্ষিত ফসলের তালিকা</p>
+              </div>
+            </div>
+
+            <!-- Scrollable Body Content -->
+            <div style="padding: 16px 16px 40px 16px; overflow-y: auto; flex: 1;" id="marketFavoritesListContainer">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: CALCULATOR VALIDATION ALERT POPUP -->
+        <div class="modal-overlay" id="calcValidationAlertModal" style="z-index: 1000005; align-items: center; justify-content: center; background: rgba(0,0,0,0.52); backdrop-filter: blur(4px);">
+          <div style="background: #fff; border-radius: 24px; padding: 26px 22px; width: 88%; max-width: 360px; text-align: center; box-shadow: 0 16px 36px rgba(0,0,0,0.22); animation: scaleUp 0.22s ease;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; background: #FFF3E0; border: 1.5px solid #FFB74D; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: #E65100; font-size: 26px;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 8px 0;">তথ্য অসম্পূর্ণ</h3>
+            <p style="font-size: 14px; color: #5D4037; margin: 0 0 22px 0; line-height: 1.45; font-weight: 500;">অনুগ্রহ করে সবকটি নির্দিষ্ট ঘর সঠিকভাবে পূরণ করুন</p>
+            <button type="button" onclick="closeModal('calcValidationAlertModal')" style="width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">ঠিক আছে</button>
+          </div>
+        </div>
+
+        <!-- MODAL: FERTILIZER CALCULATION RESULT (Dedicated Full Screen Page) -->
+        <div class="modal-overlay crop-fullscreen-modal" id="fertilizerResultModal" style="z-index: 100002;">
+          <div class="crop-fullscreen-sheet" style="display: flex; flex-direction: column; background: #F7FAF7;">
+            <!-- Top Header & Branding -->
+            <div style="position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(10px); border-bottom: 1px solid #EAEAEA; padding: 12px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px;">
+              <button type="button" onclick="closeModal('fertilizerResultModal')" style="width: 36px; height: 36px; border-radius: 12px; background: #F1F8F1; border: 1px solid #C8E6C9; color: var(--primary-dark); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="ফিরে যান">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <img src="pnglogo.png" style="height: 38px; width: 38px; object-fit: contain;" alt="কৃষি কথা লোগো" onerror="this.onerror=null; this.outerHTML='<div style=\'width:36px;height:36px;border-radius:10px;background:#2E7D32;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;\'><i class=\'fa-solid fa-leaf\'></i></div>';" />
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px 0;">আপনার জমির সারের সঠিক হিসাব</h3>
+                <p style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin: 0;">কৃষি গবেষণা ইনস্টিটিউট ও বার্ক নির্দেশিকা ভিত্তিক</p>
+              </div>
+            </div>
+
+            <!-- Scrollable Body Content -->
+            <div style="flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch;">
+              <!-- Summary Card (Category, Crop & Land Area) -->
+              <div style="background: #fff; border-radius: 16px; border: 1px solid #E2E8F0; padding: 14px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(46,125,50,0.04);">
+                <div id="calcModalCategoryBadge" style="display: none; background: #FFF8E1; border: 1px solid #FFE082; border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; align-items: center; gap: 6px; width: fit-content;">
+                  <i class="fa-solid fa-layer-group" style="color: #F57F17; font-size: 13px;"></i>
+                  <span id="calcModalCategoryText" style="font-size: 12px; font-weight: 700; color: #E65100;"></span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div style="background: #F1F8F1; border: 1px solid #C8E6C9; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-seedling" style="color: var(--primary); font-size: 16px;"></i>
+                    <div>
+                      <div style="font-size: 11px; color: var(--text-secondary);">নির্বাচিত ফসল</div>
+                      <div id="calcModalCropName" style="font-size: 14px; font-weight: 800; color: var(--primary-dark);">বোরো ধান</div>
+                    </div>
+                  </div>
+                  <div style="background: #E3F2FD; border: 1px solid #BBDEFB; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-ruler-combined" style="color: #1976D2; font-size: 16px;"></i>
+                    <div>
+                      <div style="font-size: 11px; color: #546E7A;">জমির পরিমাণ</div>
+                      <div id="calcModalLandArea" style="font-size: 14px; font-weight: 800; color: #0D47A1;">১০ শতক</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estimated Cost Summary Card -->
+              <div id="calcCostSummaryCard" style="background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); border: 1.2px solid #A5D6A7; border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(46,125,50,0.06);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 800; color: #1B5E20;">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>আনুমানিক সম্ভাব্য সার খরচ</span>
+                  </div>
+                  <span style="background: #fff; border: 1px solid #A5D6A7; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">ভর্তুকিমূল্য অনুযায়ী</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;">
+                  <span id="calcTotalCostValue" style="font-size: 26px; font-weight: 900; color: #1B5E20; letter-spacing: -0.5px;">৳ ০</span>
+                  <span style="font-size: 13px; font-weight: 600; color: #388E3C;">টাকা (আনুমানিক মোট)</span>
+                </div>
+                <div style="font-size: 11.5px; color: #558B2F; line-height: 1.35;">
+                  * সরকারি নির্ধারিত বিসিআইসি ডিলার বিক্রয়মূল্য অনুযায়ী আনুমানিক ব্যয় প্রাক্কলন। বাজারভেদে কিছুটা তারতম্য হতে পারে।
+                </div>
+              </div>
+
+              <!-- Section title -->
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">
+                <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+                <span>সারের তালিকা ও নির্দিষ্ট পরিমাণ</span>
+              </div>
+
+              <!-- Individual Fertilizer Breakdown Cards -->
+              <div id="fertilizerCardsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <!-- Cards will be dynamically rendered -->
+              </div>
+
+              <!-- Application Timeline Guide Card -->
+              <div style="background: #fff; border-radius: 20px; border: 1px solid #E2E8F0; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                  <i class="fa-solid fa-timeline" style="color: var(--primary);"></i>
+                  <span>সার প্রয়োগের সঠিক সময়সূচি ও নিয়ম</span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 16px 0;">সঠিক সময়ে সার দিলে প্রতিটি দানার সর্বোত্তম কার্যকারিতা পাওয়া যায়</p>
+                <div id="calcTimelineStepsContainer">
+                  <!-- Steps rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- সার প্রয়োগ ও স্বাস্থ্য ঝুঁকির পূর্ণাঙ্গ সতর্কতা -->
+              <div style="background: #fff; border-radius: 22px; border: 1.3px solid #FFCC80; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(230,81,0,0.06);">
+                <!-- হেডার -->
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #E65100, #BF360C); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; box-shadow: 0 3px 8px rgba(230,81,0,0.3); flex-shrink: 0;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 15.5px; font-weight: 800; color: #BF360C; margin: 0 0 2px 0;">সার প্রয়োগ ও স্বাস্থ্য ঝুঁকির পূর্ণাঙ্গ সতর্কতা</h4>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">কৃষক ভাইদের স্বাস্থ্য সুরক্ষা ও জরুরি প্রাথমিক চিকিৎসা নির্দেশিকা</p>
+                  </div>
+                </div>
+
+                <!-- সেকশন ১: সাধারণ সতর্কতা -->
+                <div style="background: #FFFBEA; border-radius: 14px; border: 1px solid #FFE082; padding: 12px; margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                    <i class="fa-solid fa-circle-exclamation" style="color: #E65100; font-size: 14px;"></i>
+                    <span style="font-size: 13.5px; font-weight: 800; color: #E65100;">সাধারণ সতর্কতা</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #5D4037; line-height: 1.45;">
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                      <span>অতিরিক্ত সার প্রয়োগ থেকে বিরত থাকুন; অতিরিক্ত রাসায়নিক সার মাটির গঠন ও উর্বরতা নষ্ট করে।</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                      <span>কড়া রোদ বা বৃষ্টির দিনে জমিতে ইউরিয়া সার ছিটাবেন না।</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <i class="fa-solid fa-circle-check" style="color: #FFA000; font-size: 13px; margin-top: 3px;"></i>
+                      <span>রাসায়নিক সারের পাশাপাশি নিয়মিত জমিতে কম্পোস্ট বা জৈব সার প্রয়োগ করুন।</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- সেকশন ২: স্বাস্থ্য ঝুঁকি ও জরুরি প্রাথমিক চিকিৎসা -->
+                <div style="background: #FFF5F5; border-radius: 14px; border: 1px solid #FFCDD2; padding: 12px;">
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                    <i class="fa-solid fa-notes-medical" style="color: #C62828; font-size: 15px;"></i>
+                    <span style="font-size: 13.5px; font-weight: 800; color: #C62828;">স্বাস্থ্য ঝুঁকি ও জরুরি প্রাথমিক চিকিৎসা</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45;">
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <span style="color: #D32F2F; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                      <span style="color: #455A64;"><strong style="color: #D32F2F;">পেটে বা মুখে গেলে:</strong> রাসায়নিক সার (বিশেষ করে ইউরিয়া, ডিএপি বা দস্তা) ভুলবশত মুখে বা পেটে চলে গেলে বমি করানোর চেষ্টা করবেন না; তৎক্ষণাৎ প্রচুর পরিষ্কার পানি পান করান এবং দ্রুত নিকটস্থ স্বাস্থ্য কমপ্লেক্স বা চিকিৎসকের কাছে নিয়ে যান।</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <span style="color: #C2185B; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-eye-dropper"></i></span>
+                      <span style="color: #455A64;"><strong style="color: #C2185B;">চোখ ও ত্বকের সংস্পর্শে এলে:</strong> সার ছিটানোর সময় চোখে বা ক্ষতস্থানে লাগলে কমপক্ষে ১৫ মিনিট পরিষ্কার ঠান্ডা পানির ঝাপটা দিন এবং সাবান দিয়ে হাত-পা ভালো করে ধুয়ে ফেলুন।</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <span style="color: #1976D2; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-mask-face"></i></span>
+                      <span style="color: #455A64;"><strong style="color: #1976D2;">সার ছিটানোর সময় সতর্কতা:</strong> খালি গায়ে বা খালি হাতে সার ছিটানো নিষেধ; মাস্ক, গ্লাভস ও ফুল হাতা পোশাক ব্যবহার করুন।</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 8px;">
+                      <span style="color: #E65100; font-size: 13px; margin-top: 1px;"><i class="fa-solid fa-paw"></i></span>
+                      <span style="color: #455A64;"><strong style="color: #E65100;">শিশু ও গবাদি পশু থেকে সুরক্ষা:</strong> সার সবসময় শুষ্ক ও নিরাপদ স্থানে শিশুদের নাগালের বাইরে রাখুন এবং জমিতে সার ছিটানোর পর কয়েকদিন গবাদি পশু চড়ানো থেকে বিরত থাকুন।</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action button: Edit inputs or recalculate -->
+              <button type="button" onclick="closeModal('fertilizerResultModal')" style="width: 100%; padding: 14px; background: #fff; border: 1.5px solid var(--primary); color: var(--primary); border-radius: 16px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(46,125,50,0.08); margin-bottom: 16px;">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>নতুন জমির হিসাব বা পরিবর্তন করুন</span>
+              </button>
+
+              <!-- Safe Area Spacer for Floating Menu Bar -->
+              <div style="height: 120px; width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: MARKET FEEDBACK ANIMATED POPUP -->
+        <div id="marketFeedbackModal" style="display: none; position: fixed; inset: 0; z-index: 1000000; background: rgba(0,0,0,0.42); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; transition: opacity 0.25s ease;">
+          <div id="marketFeedbackCard" style="width: 280px; background: rgba(255,255,255,0.96); border-radius: 26px; padding: 24px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.22); border: 1.5px solid #FFCDD2; text-align: center; transform: scale(0.9); transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div id="marketFeedbackIconContainer" style="width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #FFF0F2, #FFCDD2); margin: 0 auto 14px auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px rgba(229,57,53,0.22);">
+              <i id="marketFeedbackIcon" class="fa-solid fa-heart" style="font-size: 32px; color: #E53935;"></i>
+            </div>
+            <h3 id="marketFeedbackTitle" style="font-size: 18px; font-weight: 900; color: #B71C1C; margin: 0 0 6px 0;">যুক্ত হয়েছে!</h3>
+            <p id="marketFeedbackMessage" style="font-size: 13.5px; font-weight: 600; color: #4A5568; margin: 0; line-height: 1.4;">পছন্দের তালিকায় সফলভাবে যুক্ত হয়েছে!</p>
+          </div>
+        </div>
+
         <!-- MODAL: MARKET DISTRICT FILTER SHEET -->
         <div class="modal-overlay" id="marketDistrictModal" style="z-index: 100001;" onclick="if(event.target === this) closeModal('marketDistrictModal')">
           <div class="bottom-sheet" style="max-height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 28px 28px 0 0; background: #fff;">
@@ -2836,6 +3124,59 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- MODAL: LEAF DISEASE SCANNER -->
+        <div class="modal-overlay" id="diseaseScannerModal">
+          <div class="bottom-sheet" style="max-width: 550px;">
+            <div class="modal-title">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-camera-retro" style="color: #D81B60;"></i>
+                <span style="font-weight: 700;">ছবি দিয়ে রোগ শনাক্তকরণ</span>
+              </div>
+              <button class="close-modal-btn" onclick="closeModal('diseaseScannerModal')">&times;</button>
+            </div>
+            <div style="padding: 10px 0;">
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">গাছের আক্রান্ত পাতা বা কাণ্ডের স্পষ্ট ছবি তুলে অথবা গ্যালারি থেকে দিয়ে রোগ ও সমাধান জানুন।</p>
+              
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div onclick="simulateDiseaseScan()" style="background: #F8FAF7; border: 1px solid #E0E8E1; border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F8FAF7'">
+                  <div style="width: 42px; height: 42px; border-radius: 12px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-camera"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">ক্যামেরা দিয়ে ছবি তুলুন</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">লাইভ ক্যামেরা দিয়ে আক্রান্ত পাতার সরাসরি ছবি ক্যাপচার করুন</div>
+                  </div>
+                  <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+                </div>
+
+                <div onclick="simulateDiseaseScan()" style="background: #F8FAF7; border: 1px solid #E0E8E1; border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#E1F5FE'" onmouseout="this.style.background='#F8FAF7'">
+                  <div style="width: 42px; height: 42px; border-radius: 12px; background: #E1F5FE; color: #0288D1; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-images"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">গ্যালারি থেকে ছবি দিন</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">মোবাইলের গ্যালারি থেকে পূর্বে তোলা ছবি আপলোড করুন</div>
+                  </div>
+                  <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+                </div>
+
+                <div onclick="closeModal('diseaseScannerModal'); openPestCatalogModal();" style="background: #F8FAF7; border: 1px solid #E0E8E1; border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#F3E5F5'" onmouseout="this.style.background='#F8FAF7'">
+                  <div style="width: 42px; height: 42px; border-radius: 12px; background: #F3E5F5; color: #7B1FA2; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-book-medical"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">রোগবালাই ক্যাটালগ ও দমন নির্দেশিকা</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">সকল ফসলের পরিচিত রোগ, লক্ষণ ও অনুমোদিত সমাধান দেখুন</div>
+                  </div>
+                  <i class="fa-solid fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- MODAL: AGRI SERVICE DETAIL -->
         <div class="modal-overlay" id="serviceModal">
           <div class="bottom-sheet" style="max-width: 550px; max-height: 85vh; overflow-y: auto;">
@@ -2955,11 +3296,11 @@
         isLedger: true
       },
       calendar: {
-        title: 'বীজ রোপণ ও ফসল ক্যালেন্ডার',
+        title: 'ফসল চাষ ক্যালেন্ডার',
         icon: '<i class="fa-solid fa-calendar-days" style="color: #7B1FA2;"></i>',
         color: '#7B1FA2',
         bg: '#F3E5F5',
-        subtitle: 'বাংলা ঋতু ও মাস অনুযায়ী রবি ও খরিপ ফসল আবাদের সময়সূচি',
+        subtitle: 'কোন মাসে কোন ফসল লাগাবেন ও পরিচর্যার সঠিক সময়',
         sections: [
           {
             title: 'রবি মৌসুম (কার্তিক - ফাল্গুন / অক্টোবর - মার্চ)',
@@ -2983,6 +3324,102 @@
               'প্রধান ফসল: রোপা আমন ধান (ব্রি ধান-৪৯, ৮৭, স্বর্ণা ইত্যাদি), নাবী পাট।',
               'শাকসবজি: লাউ, চালকুমড়া, বরবটি এবং শীতের আগাম সবজির চারা তৈরি।',
               'চারা রোপণ সময়: শ্রাবণ মাসের মধ্যে রোপণ শেষ করা উত্তম।'
+            ]
+          }
+        ]
+      },
+      agri_reminder: {
+        title: 'কৃষি রিমাইন্ডার ও নোটিফিকেশন',
+        icon: '<i class="fa-solid fa-bell" style="color: #E65100;"></i>',
+        color: '#E65100',
+        bg: '#FFF3E0',
+        subtitle: 'সার, সেচ ও কীটনাশক প্রয়োগের স্বয়ংক্রিয় নোটিফিকেশন',
+        sections: [
+          {
+            title: 'সার প্রয়োগ ও টপ-ড্রেসিং রিমাইন্ডার',
+            items: [
+              'ইউরিয়া প্রথম কিস্তি: চারা রোপণের ১৫-২০ দিন পর (কুশি গজানোর সময়)।',
+              'ইউরিয়া দ্বিতীয় কিস্তি: রোপণের ৩০-৩৫ দিন পর (সর্বোচ্চ কুশি পর্যায়ে)।',
+              'ইউরিয়া শেষ কিস্তি ও পটাশ: কাইচ থোড় আসার ৫-৭ দিন পূর্বে পুষ্টি জোগান দিতে হবে।'
+            ]
+          },
+          {
+            title: 'সেচ ও আর্দ্রতা সতর্কতা অ্যালার্ট',
+            items: [
+              'মাটিতে রসের টান পড়লে অ্যাপ থেকে স্বয়ংক্রিয় সেচ নোটিফিকেশন প্রদান করা হয়।',
+              'বৃষ্টিপাতের সম্ভাবনা থাকলে সেচ স্থগিত রাখার সতর্কতা অ্যালার্ম বাজবে।',
+              'ফসল ভেদে (গম, আলু, ভুট্টা) নির্দিষ্ট ক্রান্তিকালীন সেচের তারিখ ক্যালেন্ডারে চিহ্নিত রাখুন।'
+            ]
+          },
+          {
+            title: 'বালাইনাশক ও স্প্রে সতর্কবার্তা',
+            items: [
+              'আবহাওয়ায় কুয়াশা ও মেঘলা ভাব থাকলে ব্লাইট বা ছত্রাকের আগাম স্প্রে রিমাইন্ডার পান।',
+              'কীটনাশক প্রয়োগের পর ফসল তোলার অপেক্ষমান সময়কাল (PHI) শেষ না হওয়া পর্যন্ত ফসল তোলার অ্যালার্ট বন্ধ রাখুন।'
+            ]
+          }
+        ]
+      },
+      seed_bank: {
+        title: 'বীজের তথ্যভান্ডার ও জাত পরিচিতি',
+        icon: '<i class="fa-solid fa-seedling" style="color: #2E7D32;"></i>',
+        color: '#2E7D32',
+        bg: '#E8F5E9',
+        subtitle: 'উন্নত জাতের বীজ ও তার বৈশিষ্ট্য পরিচিতি',
+        sections: [
+          {
+            title: 'উন্নত ও প্রত্যায়িত জাতের বীজ তালিকা',
+            items: [
+              'উফশী ও হাইব্রিড ধান: ব্রি ধান-২৮, ব্রি ধান-২৯, ব্রি ধান-৮৯, ব্রি ধান-৯২ ও বিনা ধান-২৫।',
+              'গম ও ভুট্টা: বারি গম-৩৩ (ব্লাস্ট প্রতিরোধী), হাইব্রিড ভুট্টা ডন-১১১ ও পায়োনিয়ার জাত।',
+              'আলু ও মসলা: ডায়মন্ড, কার্ডিনাল, বারি পেঁয়াজ-১, তাহেরপুরী জাত ও বারি আদা-২।'
+            ]
+          },
+          {
+            title: 'বীজ শোধন ও অঙ্কুরোদগম পরীক্ষা',
+            items: [
+              'বীজ শোধন: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন বা প্রোভেক্স মিশিয়ে ছায়ায় শুকিয়ে নিন।',
+              'অঙ্কুরোদগম পরীক্ষা: ১০০টি বীজ ভেজা কাপড়ে রেখে ৩ দিন পর গুনে শতকরা হার বের করুন (ন্যূনতম ৮০% হওয়া আবশ্যক)।'
+            ]
+          },
+          {
+            title: 'বীজ সংরক্ষণ ও ড্রাম ব্যবস্থাপনার নিয়ম',
+            items: [
+              'বীজ রোদে ভালোভাবে শুকিয়ে আর্দ্রতা ১০-১২ শতাংশের নিচে নামিয়ে আনুন।',
+              'বায়ুরোধী প্লাস্টিক ড্রাম বা মটকায় শুকনো নিমপাতা বা ছাই দিয়ে বীজ পূর্ণ করে মুখ শক্ত করে বাঁধুন।'
+            ]
+          }
+        ]
+      },
+      agri_office: {
+        title: 'কৃষি অফিস খুঁজুন ও সহায়তা',
+        icon: '<i class="fa-solid fa-building-flag" style="color: #1565C0;"></i>',
+        color: '#1565C0',
+        bg: '#E3F2FD',
+        subtitle: 'নিকটস্থ উপজেলা কৃষি অফিস ও কর্মকর্তার যোগাযোগ নম্বর',
+        sections: [
+          {
+            title: 'উপজেলা কৃষি অফিস ও মাঠ কর্মকর্তা নেটওয়ার্ক',
+            items: [
+              'প্রতি উপজেলায় কৃষি সম্প্রসারণ অধিদপ্তর (DAE)-এর আওতাধীন উপজেলা কৃষি অফিস কৃষকদের সার্বক্ষণিক সেবা দেয়।',
+              'উপজেলা কৃষি কর্মকর্তা (UAO) ও অতিরিক্ত কৃষি কর্মকর্তা প্রশাসনিক ও প্রযুক্তিগত দিকনির্দেশনা দেন।',
+              'প্রতি ইউনিয়নে ব্লকভিত্তিক উপসহকারী কৃষি কর্মকর্তা (SAAO) সরাসরি কৃষকের জমিতে গিয়ে পরামর্শ দেন।'
+            ]
+          },
+          {
+            title: 'জরুরি জাতীয় কৃষি হটলাইন ও ডিজিটাল সেবা',
+            items: [
+              'কৃষি কল সেন্টার: ১৬১২৩ (যেকোনো মোবাইল অপারেটর থেকে কর্মদিবসে সকাল ৯টা - বিকাল ৫টা)।',
+              'সরকারি সেবা তথ্য বাতায়ন: ৩৩৩ (সার্বক্ষণিক নাগরিক সহায়তা ও দুর্যোগ বার্তা)।',
+              'কৃষি তথ্য সার্ভিস (AIS) পোর্টাল: www.ais.gov.bd এবং কৃষি বাতায়ন: krishi.gov.bd।'
+            ]
+          },
+          {
+            title: 'কৃষি অফিসের মাধ্যমে প্রাপ্ত সরকারি সুবিধাসমূহ',
+            items: [
+              'বিনামূল্যে সরকারি কৃষি প্রণোদনার সার ও উন্নত জাতের বীজ বিতরণ কর্মসূচি।',
+              'আধুনিক কৃষি যন্ত্রপাতি ক্রয়ে ৫০-৭০ শতাংশ সরকারি ভর্তুকির আবেদন গ্রহণ।',
+              'মাটি পরীক্ষা, কৃষক প্রশিক্ষণ এবং ফসল বীমা ও কৃষি ঋণের প্রত্যয়নপত্র সেবা।'
             ]
           }
         ]
@@ -3245,6 +3682,22 @@
       }
     }
 
+    function openDiseaseScannerModal() {
+      openModal('diseaseScannerModal');
+    }
+
+    function openExpertHelplineModal() {
+      openModal('helplineModal');
+    }
+
+    function simulateDiseaseScan() {
+      closeModal('diseaseScannerModal');
+      setTimeout(() => {
+        alert('পাতার নমুনা স্ক্যান সম্পন্ন হয়েছে!\nশনাক্তকৃত রোগ: আলুর আগাম ধসা (Early Blight)\nপ্রস্তাবিত প্রতিকার ও সমাধান দেখতে রোগবালাই ক্যাটালগ খুলুন।');
+        openPestCatalogModal();
+      }, 350);
+    }
+
     // Numbers in Bangla
     function toBangla(val) {
       const bDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯','.' : '.'};
@@ -3262,10 +3715,14 @@
       closeModal('pestDetailModal');
       closeModal('districtPickerModal');
       closeModal('marketDistrictModal');
+      closeModal('marketFavoritesModal');
       closeModal('newPostModal');
       closeModal('profileModal');
       closeModal('settingsModal');
       closeModal('helplineModal');
+      closeModal('diseaseScannerModal');
+      closeModal('fertilizerResultModal');
+      closeModal('calcValidationAlertModal');
 
       document.querySelectorAll('.tab-pane').forEach((el, i) => {
         el.classList.toggle('active', i === index);
@@ -3273,10 +3730,10 @@
       document.querySelectorAll('.nav-item').forEach((el, i) => {
         el.classList.toggle('active', i === index);
       });
-      // Hide top bar when on Crops tab (index === 1), Market tab (index === 2), or Menu tab (index === 4)
+      // Hide top bar when on Crops tab (index === 1), Market tab (index === 2), Calculator tab (index === 3), or Menu tab (index === 4)
       const topBar = document.getElementById('mainAppBar');
       if (topBar) {
-        topBar.style.display = (index === 1 || index === 2 || index === 4) ? 'none' : 'flex';
+        topBar.style.display = (index === 1 || index === 2 || index === 3 || index === 4) ? 'none' : 'flex';
       }
       if (index === 1) {
         if (cropsData && cropsData.length > 0) {
@@ -3297,7 +3754,7 @@
         }
       }
       if (index === 3) {
-        calculateFertilizer(false);
+        // Tab 3: Fertilizer Calculator (clean inputs preserved)
       }
     }
 
@@ -3784,6 +4241,7 @@
 
     // Render Market Prices in 2-Column Responsive Modern Grid
     function renderMarketPrices(list) {
+      updateMarketFavoritesBadge();
       const c = document.getElementById('marketPricesContainer');
       if (!c) return;
       if (!list || !list.length) {
@@ -3882,6 +4340,623 @@
       }).join('');
     }
 
+    // Local Cache Favorites Management for Market Prices (Strict Unique ID)
+    function getMarketFavorites() {
+      try {
+        const raw = localStorage.getItem('market_favorite_ids');
+        const arr = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(arr)) return [];
+        return Array.from(new Set(arr.map(x => String(x).trim()).filter(Boolean)));
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function isMarketFavorite(id) {
+      const cleanId = String(id).trim();
+      if (!cleanId) return false;
+      const favs = getMarketFavorites();
+      return favs.includes(cleanId);
+    }
+
+    let marketFeedbackTimer = null;
+    function showMarketFeedbackPopup(isAdded, customMsg) {
+      const modal = document.getElementById('marketFeedbackModal');
+      const card = document.getElementById('marketFeedbackCard');
+      const iconContainer = document.getElementById('marketFeedbackIconContainer');
+      const icon = document.getElementById('marketFeedbackIcon');
+      const title = document.getElementById('marketFeedbackTitle');
+      const message = document.getElementById('marketFeedbackMessage');
+      if (!modal || !card) return;
+
+      if (marketFeedbackTimer) {
+        clearTimeout(marketFeedbackTimer);
+        marketFeedbackTimer = null;
+      }
+
+      if (isAdded) {
+        if (iconContainer) {
+          iconContainer.style.background = 'linear-gradient(135deg, #FFF0F2, #FFCDD2)';
+          iconContainer.style.boxShadow = '0 8px 18px rgba(229,57,53,0.22)';
+        }
+        if (icon) {
+          icon.className = 'fa-solid fa-heart';
+          icon.style.color = '#E53935';
+        }
+        if (title) {
+          title.innerText = 'যুক্ত হয়েছে!';
+          title.style.color = '#B71C1C';
+        }
+        if (message) {
+          message.innerText = customMsg || 'পছন্দের তালিকায় সফলভাবে যুক্ত হয়েছে!';
+        }
+        card.style.borderColor = '#FFCDD2';
+      } else {
+        if (iconContainer) {
+          iconContainer.style.background = 'linear-gradient(135deg, #F5F5F5, #EEEEEE)';
+          iconContainer.style.boxShadow = '0 8px 18px rgba(0,0,0,0.06)';
+        }
+        if (icon) {
+          icon.className = 'fa-regular fa-trash-can';
+          icon.style.color = '#555555';
+        }
+        if (title) {
+          title.innerText = 'সরানো হয়েছে';
+          title.style.color = '#37474F';
+        }
+        if (message) {
+          message.innerText = customMsg || 'পছন্দের তালিকা থেকে সরানো হয়েছে!';
+        }
+        card.style.borderColor = '#E0E0E0';
+      }
+
+      modal.style.display = 'flex';
+      modal.style.opacity = '0';
+      card.style.transform = 'scale(0.85)';
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+      }, 10);
+
+      // ১.৫ সেকেন্ড পর স্বয়ংক্রিয়ভাবে অদৃশ্য
+      marketFeedbackTimer = setTimeout(() => {
+        modal.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          modal.style.display = 'none';
+        }, 250);
+      }, 1500);
+    }
+
+    function toggleMarketFavoriteId(id, e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      const cleanId = String(id).trim();
+      if (!cleanId) return false;
+
+      let favs = getMarketFavorites();
+      let isAdded = false;
+
+      // স্ট্রিক্ট ইউনিকনেস ভ্যালিডেশন
+      if (favs.includes(cleanId)) {
+        favs = favs.filter(x => x !== cleanId);
+        isAdded = false;
+      } else {
+        favs.push(cleanId);
+        isAdded = true;
+      }
+
+      favs = Array.from(new Set(favs));
+      try {
+        localStorage.setItem('market_favorite_ids', JSON.stringify(favs));
+      } catch (err) {
+        console.error(err);
+      }
+
+      updateMarketFavoritesBadge();
+      renderMarketFavoritesList();
+
+      // সেন্ট্রালাইজড অ্যানিমেটেড ফিডব্যাক প্রদর্শন
+      showMarketFeedbackPopup(isAdded);
+
+      // বিস্তারিত পেজের বাটন ও আইকন আপডেট
+      const detailHeart = document.getElementById('marketDetailFavIcon');
+      const detailBtn = document.getElementById('marketDetailFavBtn');
+      if (detailHeart) {
+        if (isAdded) {
+          detailHeart.className = 'fa-solid fa-heart';
+          detailHeart.style.color = '#E53935';
+          if (detailBtn) {
+            detailBtn.style.background = '#FFF0F2';
+            detailBtn.style.border = '1px solid #FFCDD2';
+          }
+        } else {
+          detailHeart.className = 'fa-regular fa-heart';
+          detailHeart.style.color = '#1E281F';
+          if (detailBtn) {
+            detailBtn.style.background = 'rgba(255,255,255,0.92)';
+            detailBtn.style.border = 'none';
+          }
+        }
+      }
+      return isAdded;
+    }
+
+    function updateMarketFavoritesBadge() {
+      const favs = getMarketFavorites();
+      const badge = document.getElementById('marketFavoritesBadge');
+      const btn = document.getElementById('marketFavoritesBtn');
+      const icon = document.getElementById('marketFavoritesBtnIcon');
+      const countText = document.getElementById('marketFavoritesCountText');
+
+      if (badge) {
+        if (favs.length > 0) {
+          badge.innerText = toBangla(favs.length);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+      if (countText) {
+        countText.innerText = `${toBangla(favs.length)} টি ফসল`;
+      }
+      if (btn && icon) {
+        if (favs.length > 0) {
+          btn.style.background = '#FFF0F2';
+          btn.style.borderColor = '#FFCDD2';
+          icon.style.color = '#E53935';
+        } else {
+          btn.style.background = '#FFFFFF';
+          btn.style.borderColor = 'rgba(0,0,0,0.06)';
+          icon.style.color = '#758577';
+        }
+      }
+    }
+
+    function openMarketFavoritesModal() {
+      updateMarketFavoritesBadge();
+      renderMarketFavoritesList();
+      openModal('marketFavoritesModal');
+    }
+
+    function renderMarketFavoritesList() {
+      const container = document.getElementById('marketFavoritesListContainer');
+      const subtitle = document.getElementById('marketFavoritesSubtitle');
+      if (!container) return;
+
+      const favIds = getMarketFavorites();
+      if (subtitle) {
+        subtitle.innerText = 'প্রয়োজনে দ্রুত দেখার জন্য আপনার সংরক্ষিত ফসলের তালিকা';
+      }
+
+      if (favIds.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 24px; color: #758577;">
+            <div style="width: 84px; height: 84px; border-radius: 50%; background: #FFF0F2; color: #E53935; display: inline-flex; align-items: center; justify-content: center; font-size: 38px; margin-bottom: 20px; border: 1.5px solid #FFCDD2; box-shadow: 0 8px 20px rgba(229,57,53,0.12);">
+              <i class="fa-regular fa-heart"></i>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 800; color: #1E281F; margin: 0 0 8px 0;">আপনার পছন্দের তালিকায় কোনো ফসল যুক্ত নেই</h3>
+            <p style="font-size: 13.5px; color: #758577; margin: 0 0 24px 0; line-height: 1.5;">
+              বাজার দর পেজে যেকোনো ফসলের পাশের হার্ট আইকনে ট্যাপ করে আপনার পছন্দের ফসল এখানে যুক্ত করতে পারেন।
+            </p>
+            <button onclick="closeModal('marketFavoritesModal')" style="padding: 10px 22px; border-radius: 12px; background: #2E7D32; color: #fff; font-size: 13.5px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
+              <i class="fa-solid fa-store" style="margin-right: 6px;"></i> বাজার দর দেখুন
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const favoriteItems = marketPrices.filter(p => favIds.includes(String(p.id).trim()));
+
+      if (favoriteItems.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: #758577;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 30px; color: #2E7D32; margin-bottom: 14px;"></i>
+            <p style="font-size: 14px; font-weight: 600; margin: 0;">সংরক্ষিত ফসলগুলো লোড হচ্ছে...</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = favoriteItems.map(item => {
+        const cropName = item.crop || item.crop_name || item.name || 'ফসল';
+        const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : '০';
+        const displayPrice = `৳${toBangla(priceVal)}`;
+        const retailNum = (item.retail !== undefined && item.retail !== null && item.retail !== '' && item.retail !== 0 && item.retail !== '0') ? item.retail : null;
+        const retailDisplay = retailNum ? `৳${toBangla(retailNum)}` : '';
+        const marketName = item.market || item.market_name || 'স্থানীয় বাজার';
+        const districtName = item.district || '';
+        const locationText = districtName ? `${marketName}, ${districtName}` : marketName;
+        const unitVal = item.unit || 'কেজি';
+        const imgUrl = item.img || item.image_url || '';
+
+        return `
+          <div onclick="closeModal('marketFavoritesModal'); openMarketDetail('${item.id}');" style="background: #FFFFFF; border: 1px solid rgba(0,0,0,0.06); border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.03);" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)'">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <div style="width: 62px; height: 62px; border-radius: 14px; overflow: hidden; background: #F1F8F1; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                ${imgUrl ? `
+                  <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#2E7D32;font-size:24px;\\'><i class=\\'fa-solid fa-seedling\\'></i></div>';" />
+                ` : `
+                  <i class="fa-solid fa-seedling" style="color: #2E7D32; font-size: 26px;"></i>
+                `}
+              </div>
+              <div style="min-width: 0;">
+                <h4 style="font-size: 15.5px; font-weight: 800; color: #1E281F; margin: 0 0 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${cropName}</h4>
+                <div style="font-size: 12px; color: #556B2F; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #2E7D32;"></i>
+                  <span>${locationText}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 12px; background: #E8F5E9; color: #1B5E20; font-weight: 800; padding: 2px 8px; border-radius: 6px;">
+                    পাইকারি: ${displayPrice} <span style="font-size: 10.5px; font-weight: 600; color: #2E7D32;">/${unitVal}</span>
+                  </span>
+                  ${retailDisplay ? `
+                    <span style="font-size: 12px; background: #F1F5F9; color: #334155; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                      খুচরা: ${retailDisplay} <span style="font-size: 10.5px; font-weight: 500; color: #64748B;">/${unitVal}</span>
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+            <!-- সরাসরি মুছুন / রিমুভ (Trash) বাটন -->
+            <button onclick="toggleMarketFavoriteId('${item.id}', event)" style="width: 38px; height: 38px; border-radius: 12px; background: #FFF0F2; border: 1px solid #FFCDD2; color: #E53935; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 10px; transition: all 0.2s;" onmouseover="this.style.background='#FFEBEE'" onmouseout="this.style.background='#FFF0F2'" title="মুছুন / পছন্দের তালিকা থেকে সরান">
+              <i class="fa-regular fa-trash-can" style="font-size: 15px;"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // অফিশিয়াল বাজার দর রিপোর্ট PDF জেনারেট ও শেয়ার
+    function shareMarketPrice(id, btn) {
+      let item = marketPrices.find(m => String(m.id) === String(id));
+      if (!item) {
+        const idx = parseInt(String(id).replace('market_', ''));
+        if (!isNaN(idx) && marketPrices[idx]) item = marketPrices[idx];
+      }
+      if (!item) return;
+
+      const shareBtn = btn || document.getElementById('marketDetailShareBtn');
+      const origHtml = shareBtn ? shareBtn.innerHTML : '';
+      if (shareBtn) {
+        shareBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="font-size: 15px; color: #2E7D32;"></i>';
+        shareBtn.disabled = true;
+      }
+
+      const cropName = item.crop || item.crop_name || item.name || 'ফসল';
+      const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : '০';
+      const retailNum = (item.retail !== undefined && item.retail !== null && item.retail !== '' && item.retail !== 0 && item.retail !== '0') ? item.retail : null;
+      const unitVal = item.unit || 'কেজি';
+      const marketName = item.market || item.market_name || 'স্থানীয় বাজার';
+      const districtName = item.district || item.division || 'সারাদেশ';
+      const location = districtName ? `${marketName}, ${districtName}` : marketName;
+      const dateVal = item.date || 'আজকের দর';
+      const imgUrl = item.img || item.image_url || '';
+
+      const trendKey = String(item.trend || 'stable').trim().toLowerCase();
+      let trendText = 'দর স্থিতিশীল রয়েছে';
+      let trendColor = '#2E7D32';
+      if (trendKey === 'up') {
+        trendText = 'দর ঊর্ধ্বমুখী (মূল্য বৃদ্ধি)';
+        trendColor = '#C62828';
+      } else if (trendKey === 'down') {
+        trendText = 'দর নিম্নমুখী (মূল্য হ্রাস)';
+        trendColor = '#1565C0';
+      }
+
+      showToast(`${cropName} এর অফিশিয়াল বাজার দর রিপোর্ট প্রস্তুত হচ্ছে...`);
+
+      // প্রিন্টযোগ্য অফিশিয়াল PDF রিপোর্ট উইন্ডো
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        if (shareBtn) {
+          shareBtn.innerHTML = origHtml;
+          shareBtn.disabled = false;
+        }
+        const retailStr = retailNum ? `খুচরা দর: ৳${toBangla(retailNum)} / ${unitVal}\n` : '';
+        const fallbackText = `[কৃষি কথা – বাজার দর রিপোর্ট]\nফসল: ${cropName}\nপাইকারি দর: ৳${toBangla(priceVal)} / ${unitVal}\n${retailStr}বাজার: ${location}\nঅবস্থা: ${trendText}\nসর্বশেষ আপডেট: ${dateVal}\n\nকৃষি কথা অ্যাপ থেকে শেয়ার করা হয়েছে।`;
+        if (navigator.share) {
+          navigator.share({
+            title: `কৃষি কথা – ${cropName} এর বাজার দর রিপোর্ট`,
+            text: fallbackText
+          }).catch(() => {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(fallbackText);
+          showToast(`${cropName} এর বাজার দর বিবরণ কপি করা হয়েছে!`);
+        } else {
+          alert(fallbackText);
+        }
+        return;
+      }
+
+      if (shareBtn) {
+        setTimeout(() => {
+          shareBtn.innerHTML = origHtml;
+          shareBtn.disabled = false;
+        }, 1200);
+      }
+
+      const reportHtml = `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>কৃষি কথা – ${cropName} বাজার দর রিপোর্ট</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800&display=swap');
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      margin: 0;
+      padding: 32px 40px;
+      color: #1E281F;
+      background: #FFFFFF;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 2.5px solid #2E7D32;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #2E7D32;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      color: #1B5E20;
+    }
+    .brand p {
+      margin: 2px 0 0 0;
+      font-size: 11px;
+      color: #4A5568;
+    }
+    .report-meta {
+      text-align: right;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #E8F5E9;
+      color: #1B5E20;
+      font-weight: 700;
+      font-size: 11px;
+      border: 1px solid #A5D6A7;
+    }
+    .hero {
+      margin-top: 18px;
+      padding: 16px;
+      background: #F9FBF9;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .crop-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid #C8E6C9;
+      background: #E8F5E9;
+    }
+    .hero-info h2 {
+      margin: 0 0 4px 0;
+      font-size: 24px;
+      color: #1E281F;
+      font-weight: 800;
+    }
+    .hero-info p {
+      margin: 3px 0;
+      font-size: 13px;
+      color: #4A5568;
+    }
+    .prices-grid {
+      display: flex;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .price-box {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      background: #F0FDF4;
+      border: 1.2px solid #86EFAC;
+    }
+    .price-box.retail {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+    }
+    .price-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #166534;
+      margin-bottom: 4px;
+    }
+    .price-box.retail .price-label {
+      color: #334155;
+    }
+    .price-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #15803D;
+    }
+    .price-box.retail .price-val {
+      color: #1E293B;
+    }
+    .table-section {
+      margin-top: 16px;
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table-section td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #E2E8F0;
+      font-size: 12px;
+    }
+    .table-section tr:nth-child(even) {
+      background: #FAFAFA;
+    }
+    .advisory {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      color: #92400E;
+    }
+    .advisory h4 {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .advisory ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 12px;
+      color: #451A03;
+    }
+    .footer {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1.2px solid #E2E8F0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #64748B;
+    }
+    @media print {
+      body { padding: 10mm; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 16px; padding: 10px 14px; background: #E8F5E9; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-weight: 700; color: #1B5E20;">বাজার দর অফিশিয়াল রিপোর্ট তৈরি হয়েছে</span>
+    <button onclick="window.print()" style="background: #2E7D32; color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+      PDF ডাউনলোড বা প্রিন্ট করুন
+    </button>
+  </div>
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">🌱</div>
+      <div>
+        <h1>কৃষি কথা – Krishi Kotha</h1>
+        <p>দৈনিক বাজার দর অফিশিয়াল বুলেটিন ও পরামর্শ</p>
+      </div>
+    </div>
+    <div class="report-meta">
+      <div class="badge">বাজার দর রিপোর্ট</div>
+      <div style="font-size: 10.5px; color: #64748B; margin-top: 4px;">ইস্যু তারিখ: ${new Date().toLocaleDateString('bn-BD')}</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    ${imgUrl ? `<img class="crop-img" src="${imgUrl}" alt="${cropName}" onerror="this.style.display='none'" />` : ''}
+    <div class="hero-info">
+      <h2>${cropName}</h2>
+      <p><strong>বাজার ও মোকাম:</strong> ${location}</p>
+      <p><strong>সর্বশেষ আপডেট:</strong> ${dateVal}</p>
+      <p><strong>বাজার ট্রেন্ড:</strong> <span style="font-weight:700; color:${trendColor};">${trendText}</span></p>
+    </div>
+  </div>
+
+  <div class="prices-grid">
+    <div class="price-box">
+      <div class="price-label">পাইকারি বাজার দর</div>
+      <div class="price-val">৳ ${toBangla(priceVal)} <span style="font-size: 13px; font-weight: 600; color: #374151;">/ ${unitVal}</span></div>
+      <div style="font-size: 10.5px; color: #4B5563; margin-top: 2px;">মোকাম ও পাইকারি আড়ত মূল্য</div>
+    </div>
+    <div class="price-box retail">
+      <div class="price-label">খুচরা বাজার দর</div>
+      <div class="price-val">${retailNum ? `৳ ${toBangla(retailNum)} <span style="font-size: 13px; font-weight: 600; color: #374151;">/ ${unitVal}</span>` : 'বাজারভেদে প্রযোজ্য'}</div>
+      <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">স্থানীয় খুচরা বাজার আনুমানিক দর</div>
+    </div>
+  </div>
+
+  <table class="table-section">
+    <tr>
+      <td style="font-weight: 700; width: 25%;">পণ্যের নাম:</td>
+      <td style="width: 25%;">${cropName}</td>
+      <td style="font-weight: 700; width: 25%;">পরিমাপের একক:</td>
+      <td style="width: 25%;">${unitVal}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700;">পাইকারি মোকাম:</td>
+      <td>${marketName}</td>
+      <td style="font-weight: 700;">জেলা / অঞ্চল:</td>
+      <td>${districtName}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700;">বাজার অবস্থা:</td>
+      <td>${trendText}</td>
+      <td style="font-weight: 700;">হালনাগাদ সময়:</td>
+      <td>${dateVal}</td>
+    </tr>
+  </table>
+
+  <div class="advisory">
+    <h4>কৃষক ও ব্যবসায়ীদের জন্য বাজার বিশ্লেষণ ও পরামর্শ:</h4>
+    <ul>
+      <li>ফসল সংগ্রহের পর সঠিকভাবে গ্রেডিং ও বাছাই করুন; ভালো মানের ফসলে সর্বোচ্চ পাইকারি দর নিশ্চিত হয়।</li>
+      <li>দূরবর্তী মোকামে পাঠানোর পূর্বে পরিবহন খরচ ও স্থানীয় সরবরাহ যাচাই করুন।</li>
+      <li>পচনশীল ফসলের ক্ষেত্রে সঠিক বায়ু চলাচলযুক্ত প্যাকেজিং ব্যবহার করে ক্ষতি কমান।</li>
+      <li>সরাসরি আড়তদার ও পাইকারদের সঙ্গে যোগাযোগ করে মধ্যস্বত্বভোগীদের অতিরিক্ত কমিশন পরিহার করুন।</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div>তথ্যসূত্র: কৃষি কথা কেন্দ্রীয় বাজার পর্যবেক্ষণ ও স্থানীয় কৃষিবাজার</div>
+      <div>সতর্কতা: পরিবহন খরচ ও আবহাওয়াভেদে দর কিছুটা পরিবর্তিত হতে পারে।</div>
+    </div>
+    <div style="text-align: right;">
+      <strong style="color: #1B5E20; font-size: 11px;">কৃষি কথা – কৃষকের ডিজিটাল সহায়তাকারী</strong><br>
+      সবুজ বিপ্লবের বিশ্বস্ত সঙ্গী
+    </div>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      window.print();
+    }, 400);
+  <\/script>
+</body>
+</html>
+      `;
+
+      printWindow.document.open();
+      printWindow.document.write(reportHtml);
+      printWindow.document.close();
+    }
+
     // Toggle favorite icon on card
     function toggleMarketFavorite(btn) {
       const icon = btn.querySelector('i');
@@ -3907,6 +4982,7 @@
       }
       if (!item) return;
 
+      const isFav = isMarketFavorite(item.id);
       const cropName = item.crop || item.crop_name || item.name || 'ফসল';
       const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? item.price : '০';
       const displayPrice = `৳${toBangla(priceVal)}`;
@@ -3961,11 +5037,11 @@
                 বাজার দর বিস্তারিত
               </div>
               <div style="display: flex; gap: 8px;">
-                <button onclick="navigator.clipboard ? navigator.clipboard.writeText('${cropName}: পাইকারি ${displayPrice}/${unitVal}, ${locationText}') : null; alert('${cropName} এর বাজার দর কপি করা হয়েছে');" style="width: 40px; height: 40px; border-radius: 14px; background: rgba(255,255,255,0.92); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #1E281F; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" title="শেয়ার করুন">
+                <button id="marketDetailShareBtn" onclick="shareMarketPrice('${item.id}', this);" style="width: 40px; height: 40px; border-radius: 14px; background: rgba(255,255,255,0.92); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #1E281F; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" title="শেয়ার করুন">
                   <i class="fa-solid fa-share-nodes" style="font-size: 15px;"></i>
                 </button>
-                <button onclick="toggleMarketFavorite(this)" style="width: 40px; height: 40px; border-radius: 14px; background: rgba(255,255,255,0.92); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #1E281F; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" title="পছন্দ করুন">
-                  <i class="fa-regular fa-heart" style="font-size: 15px;"></i>
+                <button id="marketDetailFavBtn" onclick="toggleMarketFavoriteId('${item.id}', event);" style="width: 40px; height: 40px; border-radius: 14px; background: ${isFav ? '#FFF0F2' : 'rgba(255,255,255,0.92)'}; border: ${isFav ? '1px solid #FFCDD2' : 'none'}; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #1E281F; box-shadow: 0 4px 10px ${isFav ? 'rgba(229,57,53,0.2)' : 'rgba(0,0,0,0.15)'};" title="পছন্দ করুন">
+                  <i id="marketDetailFavIcon" class="${isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}" style="font-size: 16px; color: ${isFav ? '#E53935' : '#1E281F'};"></i>
                 </button>
               </div>
             </div>
@@ -4121,17 +5197,44 @@
     }
 
     function onModalDistrictSelect(dist) {
-      modalSelectedDistrict = dist;
-      renderModalDistrictList();
+      if (dist === 'all' || dist === 'সকল বাজার / সারাদেশ' || dist === 'সকল জেলা' || dist === 'সারাদেশ') {
+        activeDistrict = 'all';
+        activeDivision = 'all';
+      } else {
+        activeDistrict = dist;
+        let foundDiv = null;
+        for (const [div, list] of Object.entries(BD_LOCATIONS_MAP)) {
+          if (list.includes(dist) || list.some(d => matchDistrictStr(d, dist))) {
+            foundDiv = div;
+            break;
+          }
+        }
+        if (foundDiv) activeDivision = foundDiv;
+      }
+      closeModal('marketDistrictModal');
+      updateMarketFilterUI();
+      filterMarketPrices();
+    }
+
+    function onModalDivisionSelectAll(div) {
+      activeDivision = div;
+      activeDistrict = 'all';
+      closeModal('marketDistrictModal');
+      updateMarketFilterUI();
+      filterMarketPrices();
     }
 
     function resetMarketDistrictModal() {
+      activeDistrict = 'all';
+      activeDivision = 'all';
       modalSelectedDivision = 'all';
       modalSelectedDistrict = 'all';
       modalSearchQuery = '';
       const input = document.getElementById('modalDistrictSearchInput');
       if (input) input.value = '';
-      renderMarketDistrictModalContent();
+      closeModal('marketDistrictModal');
+      updateMarketFilterUI();
+      filterMarketPrices();
     }
 
     function applyMarketDistrictModal() {
@@ -4139,9 +5242,8 @@
 
       if (modalSelectedDistrict && modalSelectedDistrict !== 'all' && modalSelectedDistrict !== 'সকল বাজার / সারাদেশ' && modalSelectedDistrict !== 'সকল জেলা') {
         activeDistrict = modalSelectedDistrict;
-        // Find which division this district belongs to
         for (const [div, list] of Object.entries(BD_LOCATIONS_MAP)) {
-          if (list.includes(modalSelectedDistrict)) {
+          if (list.includes(modalSelectedDistrict) || list.some(d => matchDistrictStr(d, modalSelectedDistrict))) {
             activeDivision = div;
             break;
           }
@@ -4259,6 +5361,24 @@
         `;
       }
 
+      // Division All Markets Option Card
+      if (!modalSearchQuery && !isAllDiv) {
+        html += `
+          <div onclick="onModalDivisionSelectAll('${modalSelectedDivision}')" style="background: #E8F5E9; border: 1.5px solid #2E7D32; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(46,125,50,0.08);" onmouseover="this.style.boxShadow='0 4px 10px rgba(46,125,50,0.18)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(46,125,50,0.08)'">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                <i class="fa-solid fa-city"></i>
+              </div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 800; color: #1B5E20; margin: 0;">${modalSelectedDivision} এর সমস্ত বাজার ও জেলা দেখুন</h4>
+                <p style="font-size: 11px; color: #4A5B4C; margin: 2px 0 0 0;">এই বিভাগের সব জেলার দর একসাথে দেখুন</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-right" style="color: #2E7D32; font-size: 14px;"></i>
+          </div>
+        `;
+      }
+
       if (!districts.length) {
         html += `
           <div style="text-align: center; padding: 36px 16px; color: #758577;">
@@ -4270,7 +5390,7 @@
         html += `
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
             ${districts.map(d => {
-              const isSelected = (modalSelectedDistrict === d);
+              const isSelected = (activeDistrict === d);
               return `
                 <div onclick="onModalDistrictSelect('${d}')" style="background: ${isSelected ? '#E8F5E9' : '#FFFFFF'}; border: 1.5px solid ${isSelected ? '#2E7D32' : 'rgba(0,0,0,0.06)'}; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: ${isSelected ? '0 3px 8px rgba(46,125,50,0.15)' : '0 2px 4px rgba(0,0,0,0.02)'};" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
                   <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
@@ -4298,8 +5418,8 @@
       }
       const selEl = document.getElementById('modalDistrictSelectedTitle');
       if (selEl) {
-        selEl.innerText = (modalSelectedDistrict && modalSelectedDistrict !== 'all' && modalSelectedDistrict !== 'সকল বাজার / সারাদেশ')
-          ? `নির্বাচিত: ${modalSelectedDistrict}`
+        selEl.innerText = (activeDistrict && activeDistrict !== 'all' && activeDistrict !== 'সকল বাজার / সারাদেশ')
+          ? `নির্বাচিত: ${activeDistrict}`
           : '';
       }
     }
@@ -4322,10 +5442,17 @@
       if (!cleanA || !cleanB) return false;
       if (cleanA === cleanB) return true;
       if (cleanA.includes(cleanB) || cleanB.includes(cleanA)) return true;
-      const norm = str => String(str).replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়').replace(/য়/g, 'য়').replace(/ণ/g, 'ন').trim().toLowerCase();
+      const norm = str => String(str).replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়').replace(/য়/g, 'য়').replace(/ণ/g, 'ন').replace(/্/g, '').trim().toLowerCase();
       const normA = norm(cleanA);
       const normB = norm(cleanB);
       if (normA === normB || normA.includes(normB) || normB.includes(normA)) return true;
+
+      const stripA = normA.replace(/জেলা|বিভাগ|বাজার|সদর/g, '').trim();
+      const stripB = normB.replace(/জেলা|বিভাগ|বাজার|সদর/g, '').trim();
+      if (stripA && stripB) {
+        if (stripA === stripB || stripA.includes(stripB) || stripB.includes(stripA)) return true;
+      }
+
       const enBn = {
         "cox's bazar": "কক্সবাজার", "coxsbazar": "কক্সবাজার", "teknaf": "কক্সবাজার",
         "dhaka": "ঢাকা", "bogra": "বগুড়া", "bogura": "বগুড়া",
@@ -4394,11 +5521,11 @@
     }
 
     function onMarketDistrictSelect(dist) {
-      activeDistrict = dist;
       if (dist !== 'all' && dist !== 'সকল জেলা / সারাদেশ' && dist !== 'সকল জেলা' && dist !== 'সকল বাজার / সারাদেশ' && dist !== 'সারাদেশ') {
+        activeDistrict = dist;
         let foundDiv = null;
         for (const [div, list] of Object.entries(BD_LOCATIONS_MAP)) {
-          if (list.some(d => matchDistrictStr(d, dist))) {
+          if (list.includes(dist) || list.some(d => matchDistrictStr(d, dist))) {
             foundDiv = div;
             break;
           }
@@ -4427,22 +5554,31 @@
       const query = document.getElementById('marketSearchInput') ? document.getElementById('marketSearchInput').value.trim().toLowerCase() : '';
       let filtered = [...marketPrices];
 
-      // 1. Division filter (only if specific division selected)
-      if (activeDivision !== 'all' && activeDivision !== 'সকল জেলা / সারাদেশ' && activeDivision !== 'সকল বিভাগ') {
+      // 1. Division filter (checks both district and market name)
+      if (activeDivision !== 'all' && activeDivision !== 'সকল জেলা / সারাদেশ' && activeDivision !== 'সকল বিভাগ' && activeDivision !== 'সকল বাজার / সারাদেশ' && activeDivision !== 'সারাদেশ') {
         const divDistricts = BD_LOCATIONS_MAP[activeDivision] || [];
-        filtered = filtered.filter(m => divDistricts.some(d => matchDistrictStr(d, m.district)));
+        filtered = filtered.filter(m =>
+          divDistricts.some(d => matchDistrictStr(d, m.district) || matchDistrictStr(d, m.market)) ||
+          matchDistrictStr(activeDivision, m.district) ||
+          matchDistrictStr(activeDivision, m.market)
+        );
       }
 
-      // 2. Specific District filter (only if specific district selected)
-      if (activeDistrict !== 'all' && activeDistrict !== 'সকল জেলা / সারাদেশ' && activeDistrict !== 'সকল জেলা' && activeDistrict !== 'সারাদেশ') {
-        filtered = filtered.filter(m => matchDistrictStr(m.district, activeDistrict));
+      // 2. Specific District filter (checks both district and market name)
+      if (activeDistrict !== 'all' && activeDistrict !== 'সকল জেলা / সারাদেশ' && activeDistrict !== 'সকল জেলা' && activeDistrict !== 'সারাদেশ' && activeDistrict !== 'সকল বাজার / সারাদেশ') {
+        filtered = filtered.filter(m =>
+          matchDistrictStr(m.district, activeDistrict) ||
+          matchDistrictStr(m.market, activeDistrict)
+        );
       }
 
       // 3. Search Query
       if (query) {
         filtered = filtered.filter(m =>
           (m.crop && m.crop.toLowerCase().includes(query)) ||
+          (m.crop_name && m.crop_name.toLowerCase().includes(query)) ||
           (m.market && m.market.toLowerCase().includes(query)) ||
+          (m.market_name && m.market_name.toLowerCase().includes(query)) ||
           (m.district && m.district.toLowerCase().includes(query))
         );
       }
@@ -4450,8 +5586,34 @@
       renderMarketPrices(filtered);
     }
 
+    // Crop Categories & Dynamic Crop Lists (7 Categories, 78 Crops)
+    const CROP_CATEGORIES = {
+      'ধান ও খাদ্যশস্য': ['আমন ধান', 'বোরো ধান', 'আউশ ধান', 'গম', 'ভুট্টা', 'কাউন', 'চিনা'],
+      'ডালজাতীয় ফসল': ['মসুর', 'মুগ', 'মাসকলাই', 'খেসারি', 'ছোলা', 'মটর', 'অড়হর'],
+      'তেলজাতীয় ফসল': ['সরিষা', 'তিল', 'সূর্যমুখী', 'চিনাবাদাম', 'সয়াবিন', 'তিসি'],
+      'সবজি জাতীয় ফসল': ['আলু', 'মিষ্টি আলু', 'বেগুন', 'টমেটো', 'মরিচ', 'শসা', 'করলা', 'লাউ', 'মিষ্টিকুমড়া', 'চালকুমড়া', 'ঝিঙা', 'চিচিঙ্গা', 'ধুন্দল', 'পটোল', 'ঢেঁড়স', 'বরবটি', 'শিম', 'ফুলকপি', 'বাঁধাকপি', 'ব্রকলি', 'গাজর', 'মূলা', 'পেঁয়াজ', 'রসুন', 'আদা', 'হলুদ', 'কচু', 'ওল', 'ক্যাপসিকাম', 'তরমুজ', 'বাঙ্গি'],
+      'মসলা জাতীয় ফসল': ['ধনিয়া', 'জিরা', 'মেথি', 'কালোজিরা', 'মৌরি'],
+      'আঁশ ও অর্থকরী ফসল': ['পাট', 'তুলা', 'কেনাফ', 'মেস্তা', 'আখ', 'তামাক', 'পান', 'রাবার'],
+      'ফল ও বাগান': ['আম', 'কাঁঠাল', 'লিচু', 'পেয়ারা', 'পেঁপে', 'কলা', 'আনারস', 'মাল্টা', 'কমলা', 'লেবু', 'ড্রাগন ফল', 'জাম', 'কুল', 'নারকেল']
+    };
+
+    function onCalcCategoryChange() {
+      const cat = document.getElementById('calcCategorySelect').value;
+      const cropSelect = document.getElementById('calcCropSelect');
+      cropSelect.innerHTML = '<option value="" disabled selected>ফসলের নাম নির্বাচন করুন</option>';
+      const crops = CROP_CATEGORIES[cat] || [];
+      crops.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        cropSelect.appendChild(opt);
+      });
+      cropSelect.value = '';
+    }
+
     // Smart Fertilizer Calculation Logic
     function calculateFertilizer(scroll = false) {
+      const cat = document.getElementById('calcCategorySelect').value;
       const crop = document.getElementById('calcCropSelect').value;
       const area = parseFloat(document.getElementById('calcAreaInput').value) || 0;
       const unitMultiplier = parseFloat(document.getElementById('calcUnitSelect').value) || 1;
@@ -4551,6 +5713,120 @@
             time: 'রোপণের ৪৫-৫০ দিন পর',
             ferts: ['বাকি ইউরিয়া ও অবশিষ্ট ৫০% পটাশ'],
             desc: 'ফল তোলার পর গাছে সজীবতা ফেরাতে এই কিস্তি দিন।'
+          }
+        ];
+      } else if (cat === 'ডালজাতীয় ফসল') {
+        ureaRate = 0.40; tspRate = 0.50; mopRate = 0.35; gypsumRate = 0.30; zincRate = 0.02; compostRate = 10;
+        timeline = [
+          {
+            title: '১. জমি তৈরির শেষ চাষে (সম্পূর্ণ সার)',
+            time: 'বপনের পূর্বে',
+            ferts: ['সম্পূর্ণ ইউরিয়া, টিএসপি, পটাশ, জিপসাম ও জৈব সার'],
+            desc: 'ডালজাতীয় ফসলে রাইজোবিয়াম ব্যাকটেরিয়া বাতাস থেকে নাইট্রোজেন সংবন্ধন করে, তাই অতিরিক্ত ইউরিয়া দরকার হয় না।'
+          },
+          {
+            title: '২. ফুল আসার পূর্বে পর্যবেক্ষণ',
+            time: 'বপনের ২৫-৩০ দিন পর',
+            ferts: ['প্রয়োজনে হালকা অনুখাদ্য বা বোরন স্প্রে'],
+            desc: 'গাছের বৃদ্ধি স্বাভাবিক থাকলে মাটিতে আর কোনো সার দেওয়ার প্রয়োজন নেই।'
+          }
+        ];
+      } else if (cat === 'তেলজাতীয় ফসল') {
+        ureaRate = 0.85; tspRate = 0.70; mopRate = 0.50; gypsumRate = 0.60; zincRate = 0.035; compostRate = 15;
+        timeline = [
+          {
+            title: '১. জমি তৈরির শেষ চাষে',
+            time: 'বপনের পূর্বে',
+            ferts: ['৫০% ইউরিয়া, সম্পূর্ণ টিএসপি, সম্পূর্ণ পটাশ, সম্পূর্ণ জিপসাম'],
+            desc: 'তেলজাতীয় ফসলে দানায় তেলের পরিমাণ বাড়াতে জিপসাম (সালফার) অত্যন্ত জরুরি।'
+          },
+          {
+            title: '২. প্রথম সেচের সময় উপরিপ্রয়োগ',
+            time: 'বপনের ২০-২৫ দিন পর (ফুল আসার পূর্বে)',
+            ferts: ['অবশিষ্ট ৫০% ইউরিয়া'],
+            desc: 'সার উপরিপ্রয়োগের পর সেচ দিন এবং জমিতে পানি জমতে দেবেন না।'
+          }
+        ];
+      } else if (cat === 'মসলা জাতীয় ফসল') {
+        ureaRate = 0.95; tspRate = 0.75; mopRate = 0.70; gypsumRate = 0.45; zincRate = 0.03; compostRate = 18;
+        timeline = [
+          {
+            title: '১. জমি তৈরির শেষ চাষে',
+            time: 'বপন বা লাগানোর পূর্বে',
+            ferts: ['সম্পূর্ণ টিএসপি, সম্পূর্ণ জিপসাম, ৫০% পটাশ, সম্পূর্ণ কম্পোস্ট'],
+            desc: 'মসলা ফসলের শিকড় অগভীর হওয়ায় মাটির উপরিভাগের সাথে সার ভালোভাবে মেশান।'
+          },
+          {
+            title: '২. প্রথম উপরিপ্রয়োগ',
+            time: 'গাছ গজানোর ২৫-৩০ দিন পর',
+            ferts: ['৫০% ইউরিয়া'],
+            desc: 'নিড়ানি দিয়ে আগাছা পরিষ্কারের পর সার প্রয়োগ করুন।'
+          },
+          {
+            title: '৩. দ্বিতীয় উপরিপ্রয়োগ',
+            time: '৫০-৫৫ দিন পর',
+            ferts: ['অবশিষ্ট ৫০% ইউরিয়া ও অবশিষ্ট ৫০% পটাশ'],
+            desc: 'মসলার গন্ধ ও গুটি পুষ্ট হতে পটাশ সহায়তা করে।'
+          }
+        ];
+      } else if (cat === 'আঁশ ও অর্থকরী ফসল') {
+        ureaRate = 1.30; tspRate = 0.65; mopRate = 0.75; gypsumRate = 0.40; zincRate = 0.03; compostRate = 15;
+        timeline = [
+          {
+            title: '১. জমি তৈরিতে বেসাল ডোজ',
+            time: 'বপনের সময়',
+            ferts: ['সম্পূর্ণ টিএসপি, জিপসাম এবং ৫০% পটাশ'],
+            desc: 'মাটিতে মিশিয়ে দিন যাতে চারা গজানোর সাথে সাথে পুষ্টি পায়।'
+          },
+          {
+            title: '২. প্রথম কিস্তি উপরিপ্রয়োগ',
+            time: 'বপনের ২০-২৫ দিন পর (ঘন চারা পাতলাকরণের পর)',
+            ferts: ['৫০% ইউরিয়া'],
+            desc: 'আগাছা নিড়ানোর পর আর্দ্র মাটিতে ছিটিয়ে দিন।'
+          },
+          {
+            title: '৩. দ্বিতীয় কিস্তি উপরিপ্রয়োগ',
+            time: 'বপনের ৪০-৪৫ দিন পর',
+            ferts: ['অবশিষ্ট ৫০% ইউরিয়া ও অবশিষ্ট ৫০% পটাশ'],
+            desc: 'গাছের দ্রুত বাড়-বাড়তি ও দীর্ঘ আঁশের জন্য এই কিস্তি জরুরি।'
+          }
+        ];
+      } else if (cat === 'ফল ও বাগান') {
+        ureaRate = 1.40; tspRate = 0.90; mopRate = 1.00; gypsumRate = 0.50; zincRate = 0.05; compostRate = 30;
+        timeline = [
+          {
+            title: '১. বর্ষার পূর্বে (প্রথম কিস্তি)',
+            time: 'মে - জুন মাস',
+            ferts: ['৫০% ইউরিয়া, ৫০% টিএসপি, ৫০% পটাশ, ৫০% কম্পোস্ট'],
+            desc: 'গাছের গোড়া থেকে ১-২ মিটার দূরে রিং নালা তৈরি করে সার দিয়ে মাটি চাপা দিন।'
+          },
+          {
+            title: '২. বর্ষার শেষে (দ্বিতীয় কিস্তি)',
+            time: 'সেপ্টেম্বর - অক্টোবর মাস',
+            ferts: ['অবশিষ্ট ৫০% সারসমূহ ও জিপসাম, জিঙ্ক'],
+            desc: 'ফল সংগ্রহের পর গাছের শক্তি ফিরিয়ে আনতে এবং নতুন কুঁড়ির জন্য।'
+          }
+        ];
+      } else if (cat === 'সবজি জাতীয় ফসল') {
+        ureaRate = 1.20; tspRate = 0.85; mopRate = 0.90; gypsumRate = 0.40; zincRate = 0.04; compostRate = 22;
+        timeline = [
+          {
+            title: '১. বেড তৈরির শেষ চাষে',
+            time: 'চারা রোপণের পূর্বে',
+            ferts: ['সম্পূর্ণ টিএসপি, জিপসাম, ৫০% পটাশ ও সম্পূর্ণ কম্পোস্ট'],
+            desc: 'মাটিতে ভালোভাবে মিশিয়ে বেড সমতল করুন।'
+          },
+          {
+            title: '২. প্রথম কিস্তি উপরিপ্রয়োগ',
+            time: 'রোপণের ১৫-২০ দিন পর',
+            ferts: ['৫০% ইউরিয়া'],
+            desc: 'গাছের গোড়া থেকে সামান্য দূরে রিং আকারে দিয়ে সেচ দিন।'
+          },
+          {
+            title: '৩. দ্বিতীয় কিস্তি উপরিপ্রয়োগ',
+            time: 'ফুল ও ফল ধরার সময় (৩৫-৪০ দিন পর)',
+            ferts: ['অবশিষ্ট ৫০% ইউরিয়া ও অবশিষ্ট ৫০% পটাশ'],
+            desc: 'ফলন ও সতেজতা বজায় রাখতে এই কিস্তি দিন।'
           }
         ];
       } else if (crop.includes('সরিষা') || crop.includes('গম')) {
@@ -4706,17 +5982,47 @@
       }
 
       if (scroll) {
-        const resSec = document.getElementById('calcResultsSection');
+        const resSec = document.getElementById('fertilizerCardsList');
         if (resSec) {
           resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
     }
 
+    // Validation check and open dedicated full-screen result page
+    function handleFertilizerCalculate() {
+      const cat = document.getElementById('calcCategorySelect').value;
+      const crop = document.getElementById('calcCropSelect').value;
+      const areaInput = (document.getElementById('calcAreaInput').value || '').trim();
+      const area = parseFloat(areaInput) || 0;
+
+      if (!cat || !crop || !areaInput || area <= 0) {
+        openModal('calcValidationAlertModal');
+        return;
+      }
+
+      // Update Modal Header Summary badges
+      const unitText = document.getElementById('calcUnitSelect').options[document.getElementById('calcUnitSelect').selectedIndex].text;
+      const cropEl = document.getElementById('calcModalCropName');
+      const areaEl = document.getElementById('calcModalLandArea');
+      const catBadge = document.getElementById('calcModalCategoryBadge');
+      const catText = document.getElementById('calcModalCategoryText');
+
+      if (catBadge && catText) {
+        catText.innerText = `ক্যাটাগরি: ${cat}`;
+        catBadge.style.display = 'flex';
+      }
+      if (cropEl) cropEl.innerText = crop;
+      if (areaEl) areaEl.innerText = `${toBangla(area)} ${unitText.split(' ')[0]}`;
+
+      calculateFertilizer(false);
+      openModal('fertilizerResultModal');
+    }
+
     function addArea(num) {
       const input = document.getElementById('calcAreaInput');
-      input.value = (parseFloat(input.value) || 0) + num;
-      calculateFertilizer(false);
+      const current = parseFloat(input.value) || 0;
+      input.value = current + num;
     }
 
     // Community Posts Logic
@@ -6334,7 +7640,6 @@
     window.onload = function() {
       showInitialLoaders();
       fetchMarketViaRest();
-      calculateFertilizer();
       renderCommunityPosts();
       updateNotificationBadge();
       initFirestoreLiveSync();

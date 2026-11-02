@@ -856,7 +856,7 @@ class _PriceEditorDialogState extends State<_PriceEditorDialog> {
         district: _district,
         marketName: _marketNameCtrl.text.trim(),
         cropName: _cropNameCtrl.text.trim(),
-        unit: _unit,
+        unit: _unit.trim().isNotEmpty ? _unit.trim() : 'কেজি',
         price: _parseSafePrice(_priceCtrl.text),
         retailPrice: _parseSafePrice(_retailPriceCtrl.text),
         trend: _trend,

@@ -240,7 +240,7 @@ class AdminFirestoreService {
         'marketName': marketName,
         'crop_name': cropName,
         'cropName': cropName,
-        'unit': unit,
+        'unit': unit.trim().isNotEmpty ? unit.trim() : 'কেজি',
         'price': price,
         'retail_price': retailPrice,
         'retailPrice': retailPrice,

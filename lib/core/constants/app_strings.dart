@@ -42,13 +42,23 @@ class AppStrings {
   static const String emergencyAlerts = 'জরুরি কৃষি সতর্কবার্তা';
   static const String quickServices = 'প্রয়োজনীয় সেবা';
 
-  // Quick Action Grid (12 Essential Services)
+  // Quick Action Grid (Smart Services & Essential Services)
   static const String quickCropGuide = 'ফসলের গাইডলাইন';
   static const String quickMarketPrice = 'লাইভ বাজার দর';
   static const String quickFertilizerCalc = 'সার ক্যালকুলেটর';
   static const String quickPestGuide = 'রোগবালাই দমন';
   static const String quickExpertHelp = 'বিশেষজ্ঞ পরামর্শ';
   static const String quickForum = 'কমিউনিটি ফোরাম';
+
+  // Smart Services (6 New Features)
+  static const String smartAgriServices = 'স্মার্ট কৃষি সেবা';
+  static const String otherAgriServices = 'অন্যান্য প্রয়োজনীয় সেবা';
+  static const String serviceCropCalendarSmart = 'ফসল চাষ ক্যালেন্ডার';
+  static const String serviceDiseaseScanner = 'ছবি দিয়ে রোগ শনাক্ত';
+  static const String serviceAgriExpert = 'কৃষি বিশেষজ্ঞ';
+  static const String serviceAgriReminder = 'কৃষি রিমাইন্ডার';
+  static const String serviceSeedBank = 'বীজের তথ্যভান্ডার';
+  static const String serviceAgriOffice = 'কৃষি অফিস খুঁজুন';
 
   static const String servicePestDiagnosis = 'রোগবালাই দমন';
   static const String serviceSmartIrrigation = 'সেচ ট্র্যাকার';

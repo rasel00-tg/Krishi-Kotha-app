@@ -230,7 +230,7 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
       case 'ledger':
         return 'বীজ, সার, সেচ ও ফসলের বিক্রির ডিজিটাল লাভ-লোকসান হিসাব';
       case 'calendar':
-        return 'বাংলা ঋতু ও মাস অনুযায়ী রবি ও খরিপ ফসল আবাদের সময়সূচি';
+        return 'কোন মাসে কোন ফসল লাগাবেন ও পরিচর্যার সঠিক সময়';
       case 'soil':
         return 'মাটির ধরন ও বৈশিষ্ট্য অনুযায়ী সঠিক ফসল নির্বাচন ও ল্যাব তথ্য';
       case 'loans':
@@ -243,6 +243,12 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
         return 'আলু, পেঁয়াজ ও শস্য দীর্ঘদিন সঠিক পদ্ধতিতে সংরক্ষণের নিয়ম';
       case 'modern_tech':
         return 'মালচিং, সৌর সেচ পাম্প ও ফেরোমোন ফাঁদ দিয়ে বিষমুক্ত চাষ';
+      case 'agri_reminder':
+        return 'সার, সেচ ও কীটনাশক প্রয়োগের স্বয়ংক্রিয় নোটিফিকেশন ও অ্যালার্ট';
+      case 'seed_bank':
+        return 'উন্নত জাতের প্রত্যয়িত বীজ, অঙ্কুরোদগম ও বীজ শোধন নির্দেশিকা';
+      case 'agri_office':
+        return 'নিকটস্থ উপজেলা কৃষি অফিস ও কৃষি সম্প্রসারণ অধিদপ্তর নেটওয়ার্ক';
       default:
         return 'আধুনিক কৃষি সেবার নির্ভরযোগ্য নির্দেশিকা';
     }
@@ -272,6 +278,12 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
         return _buildColdStorageContent();
       case 'modern_tech':
         return _buildModernTechContent();
+      case 'agri_reminder':
+        return _buildReminderContent();
+      case 'seed_bank':
+        return _buildSeedBankContent();
+      case 'agri_office':
+        return _buildAgriOfficeContent();
       default:
         return _buildGeneralContent();
     }
@@ -779,6 +791,123 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
           items: const [
             'বিদ্যুৎ বিল বা ডিজেলের খরচ ছাড়াই সারাদিন নিরবচ্ছিন্ন সেচ পাওয়া যায়।',
             'কৃষি ড্রোন দিয়ে এক একর জমিতে মাত্র ৫-১০ মিনিটে নিখুঁত বালাইনাশক স্প্রে করা সম্ভব।',
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 12. AGRI REMINDER
+  Widget _buildReminderContent() {
+    return Column(
+      children: [
+        _buildInfoCard(
+          title: 'সার প্রয়োগ ও টপ-ড্রেসিং রিমাইন্ডার',
+          icon: Icons.notifications_active_rounded,
+          color: const Color(0xFFE65100),
+          items: const [
+            'ইউরিয়া প্রথম কিস্তি: চারা রোপণের ১৫-২০ দিন পর (কুশি গজানোর সময়)।',
+            'ইউরিয়া দ্বিতীয় কিস্তি: রোপণের ৩০-৩৫ দিন পর (সর্বোচ্চ কুশি পর্যায়ে)।',
+            'ইউরিয়া শেষ কিস্তি ও পটাশ: কাইচ থোড় আসার ৫-৭ দিন পূর্বে পুষ্টি জোগান দিতে হবে।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'সেচ ও আর্দ্রতা সতর্কতা অ্যালার্ট',
+          icon: Icons.water_drop_rounded,
+          color: const Color(0xFF0288D1),
+          items: const [
+            'মাটিতে রসের টান পড়লে অ্যাপ থেকে স্বয়ংক্রিয় সেচ নোটিফিকেশন প্রদান করা হয়।',
+            'বৃষ্টিপাতের সম্ভাবনা থাকলে সেচ স্থগিত রাখার সতর্কতা অ্যালার্ম বাজবে।',
+            'ফসল ভেদে (গম, আলু, ভুট্টা) নির্দিষ্ট ক্রান্তিকালীন সেচের তারিখ ক্যালেন্ডারে চিহ্নিত রাখুন।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'বালাইনাশক ও স্প্রে সতর্কবার্তা',
+          icon: Icons.alarm_on_rounded,
+          color: const Color(0xFF2E7D32),
+          items: const [
+            'আবহাওয়ায় কুয়াশা ও মেঘলা ভাব থাকলে ব্লাইট বা ছত্রাকের আগাম স্প্রে রিমাইন্ডার পান।',
+            'কীটনাশক প্রয়োগের পর ফসল তোলার অপেক্ষমান সময়কাল (PHI) শেষ না হওয়া পর্যন্ত ফসল তোলার অ্যালার্ট বন্ধ রাখুন।',
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 13. SEED BANK
+  Widget _buildSeedBankContent() {
+    return Column(
+      children: [
+        _buildInfoCard(
+          title: 'উন্নত ও প্রত্যায়িত জাতের বীজ পরিচিতি',
+          icon: Icons.spa_rounded,
+          color: const Color(0xFF2E7D32),
+          items: const [
+            'উফশী ও হাইব্রিড ধান: ব্রি ধান-২৮, ব্রি ধান-২৯, ব্রি ধান-৮৯, ব্রি ধান-৯২ ও বিনা ধান-২৫।',
+            'গম ও ভুট্টা: বারি গম-৩৩ (ব্লাস্ট প্রতিরোধী), হাইব্রিড ভুট্টা ডন-১১১ ও পায়োনিয়ার জাত।',
+            'আলু ও মসলা: ডায়মন্ড, কার্ডিনাল, বারি পেঁয়াজ-১, তাহেরপুরী জাত ও বারি আদা-২।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'বীজ শোধন ও অঙ্কুরোদগম পরীক্ষা',
+          icon: Icons.verified_rounded,
+          color: const Color(0xFF1565C0),
+          items: const [
+            'বীজ শোধন: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন বা প্রোভেক্স মিশিয়ে ছায়ায় শুকিয়ে নিন।',
+            'অঙ্কুরোদগম পরীক্ষা: ১০০টি বীজ ভেজা কাপড়ে রেখে ৩ দিন পর গুনে শতকরা হার বের করুন (ন্যূনতম ৮০% হওয়া আবশ্যক)।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'বীজ সংরক্ষণ ও ড্রাম ব্যবস্থাপনার নিয়ম',
+          icon: Icons.inventory_2_rounded,
+          color: const Color(0xFF6D4C41),
+          items: const [
+            'বীজ রোদে ভালোভাবে শুকিয়ে আর্দ্রতা ১০-১২ শতাংশের নিচে নামিয়ে আনুন।',
+            'বায়ুরোধী প্লাস্টিক ড্রাম বা মটকায় শুকনো নিমপাতা বা ছাই দিয়ে বীজ পূর্ণ করে মুখ শক্ত করে বাঁধুন।',
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 14. AGRI OFFICE
+  Widget _buildAgriOfficeContent() {
+    return Column(
+      children: [
+        _buildInfoCard(
+          title: 'উপজেলা কৃষি অফিস ও মাঠ কর্মকর্তা নেটওয়ার্ক',
+          icon: Icons.location_city_rounded,
+          color: const Color(0xFF1565C0),
+          items: const [
+            'প্রতি উপজেলায় কৃষি সম্প্রসারণ অধিদপ্তর (DAE)-এর আওতাধীন উপজেলা কৃষি অফিস কৃষকদের সার্বক্ষণিক সেবা দেয়।',
+            'উপজেলা কৃষি কর্মকর্তা (UAO) ও অতিরিক্ত কৃষি কর্মকর্তা প্রশাসনিক ও প্রযুক্তিগত দিকনির্দেশনা দেন।',
+            'প্রতি ইউনিয়নে ব্লকভিত্তিক উপসহকারী কৃষি কর্মকর্তা (SAAO) সরাসরি কৃষকের জমিতে গিয়ে পরামর্শ দেন।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'জরুরি জাতীয় কৃষি হটলাইন ও ডিজিটাল সেবা',
+          icon: Icons.phone_in_talk_rounded,
+          color: const Color(0xFF00897B),
+          items: const [
+            'কৃষি কল সেন্টার: ১৬১২৩ (যেকোনো মোবাইল অপারেটর থেকে কর্মদিবসে সকাল ৯টা - বিকাল ৫টা)।',
+            'সরকারি সেবা তথ্য বাতায়ন: ৩৩৩ (সার্বক্ষণিক নাগরিক সহায়তা ও দুর্যোগ বার্তা)।',
+            'কৃষি তথ্য সার্ভিস (AIS) পোর্টাল: www.ais.gov.bd এবং কৃষি বাতায়ন: krishi.gov.bd।',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          title: 'কৃষি অফিসের মাধ্যমে প্রাপ্ত সরকারি সুবিধাসমূহ',
+          icon: Icons.workspace_premium_rounded,
+          color: const Color(0xFFE65100),
+          items: const [
+            'বিনামূল্যে সরকারি কৃষি প্রণোদনার সার ও উন্নত জাতের বীজ বিতরণ কর্মসূচি।',
+            'আধুনিক কৃষি যন্ত্রপাতি ক্রয়ে ৫০-৭০ শতাংশ সরকারি ভর্তুকির আবেদন গ্রহণ।',
+            'মাটি পরীক্ষা, কৃষক প্রশিক্ষণ এবং ফসল বীমা ও কৃষি ঋণের প্রত্যয়নপত্র সেবা।',
           ],
         ),
       ],

@@ -62,6 +62,7 @@ class FertilizerTimelineStep {
 }
 
 class FertilizerCalculatorProvider extends ChangeNotifier {
+  String? _selectedCategory;
   String _selectedCrop = 'বোরো ধান';
   String _selectedUnit = 'শতক / শতাংশ';
   double _landArea = 10.0;
@@ -70,6 +71,7 @@ class FertilizerCalculatorProvider extends ChangeNotifier {
   List<String> _safetyTips = [];
   String _applicationGuidelines = '';
 
+  String? get selectedCategory => _selectedCategory;
   String get selectedCrop => _selectedCrop;
   String get selectedUnit => _selectedUnit;
   double get landArea => _landArea;
@@ -86,20 +88,125 @@ class FertilizerCalculatorProvider extends ChangeNotifier {
     return total;
   }
 
-  final List<String> supportedCrops = [
-    'বোরো ধান',
-    'আমন ধান',
-    'আউশ ধান',
-    'গোল আলু',
-    'ভুট্টা',
-    'গম',
-    'সরিষা',
-    'মরিচ',
-    'টমেটো',
-    'বেগুন',
-    'পেঁয়াজ',
-    'পাট',
+  static const Map<String, List<String>> cropCategories = {
+    'ধান ও খাদ্যশস্য': [
+      'আমন ধান',
+      'বোরো ধান',
+      'আউশ ধান',
+      'গম',
+      'ভুট্টা',
+      'কাউন',
+      'চিনা',
+    ],
+    'ডালজাতীয় ফসল': [
+      'মসুর',
+      'মুগ',
+      'মাসকলাই',
+      'খেসারি',
+      'ছোলা',
+      'মটর',
+      'অড়হর',
+    ],
+    'তেলজাতীয় ফসল': [
+      'সরিষা',
+      'তিল',
+      'সূর্যমুখী',
+      'চিনাবাদাম',
+      'সয়াবিন',
+      'তিসি',
+    ],
+    'সবজি জাতীয় ফসল': [
+      'আলু',
+      'মিষ্টি আলু',
+      'বেগুন',
+      'টমেটো',
+      'মরিচ',
+      'শসা',
+      'করলা',
+      'লাউ',
+      'মিষ্টিকুমড়া',
+      'চালকুমড়া',
+      'ঝিঙা',
+      'চিচিঙ্গা',
+      'ধুন্দল',
+      'পটোল',
+      'ঢেঁড়স',
+      'বরবটি',
+      'শিম',
+      'ফুলকপি',
+      'বাঁধাকপি',
+      'ব্রকলি',
+      'গাজর',
+      'মূলা',
+      'পেঁয়াজ',
+      'রসুন',
+      'আদা',
+      'হলুদ',
+      'কচু',
+      'ওল',
+      'ক্যাপসিকাম',
+      'তরমুজ',
+      'বাঙ্গি',
+    ],
+    'মসলা জাতীয় ফসল': [
+      'ধনিয়া',
+      'জিরা',
+      'মেথি',
+      'কালোজিরা',
+      'মৌরি',
+    ],
+    'আঁশ ও অর্থকরী ফসল': [
+      'পাট',
+      'তুলা',
+      'কেনাফ',
+      'মেস্তা',
+      'আখ',
+      'তামাক',
+      'পান',
+      'রাবার',
+    ],
+    'ফল ও বাগান': [
+      'আম',
+      'কাঁঠাল',
+      'লিচু',
+      'পেয়ারা',
+      'পেঁপে',
+      'কলা',
+      'আনারস',
+      'মাল্টা',
+      'কমলা',
+      'লেবু',
+      'ড্রাগন ফল',
+      'জাম',
+      'কুল',
+      'নারকেল',
+    ],
+  };
+
+  static const List<String> supportedCategories = [
+    'ধান ও খাদ্যশস্য',
+    'ডালজাতীয় ফসল',
+    'তেলজাতীয় ফসল',
+    'সবজি জাতীয় ফসল',
+    'মসলা জাতীয় ফসল',
+    'আঁশ ও অর্থকরী ফসল',
+    'ফল ও বাগান',
   ];
+
+  static List<String> get allCrops {
+    final list = <String>[];
+    for (final crops in cropCategories.values) {
+      list.addAll(crops);
+    }
+    return list;
+  }
+
+  List<String> get supportedCrops {
+    if (_selectedCategory != null && cropCategories.containsKey(_selectedCategory)) {
+      return cropCategories[_selectedCategory]!;
+    }
+    return allCrops;
+  }
 
   final List<String> supportedUnits = [
     'শতক / শতাংশ',
@@ -111,6 +218,11 @@ class FertilizerCalculatorProvider extends ChangeNotifier {
 
   FertilizerCalculatorProvider() {
     calculate();
+  }
+
+  void setCategory(String? category) {
+    _selectedCategory = category;
+    notifyListeners();
   }
 
   void setCrop(String crop) {
@@ -356,6 +468,8 @@ class FertilizerCalculatorProvider extends ChangeNotifier {
         _applicationGuidelines = 'আমন ধানে বেশি মাত্রায় ইউরিয়া দিলে রোগ ও পোকার আক্রমণ বাড়ে। নিয়মমাফিক ৩ কিস্তিতে দিন।';
         break;
 
+      case 'আলু':
+      case 'মিষ্টি আলু':
       case 'গোল আলু':
         _results = [
           FertilizerResult(
@@ -615,91 +729,493 @@ class FertilizerCalculatorProvider extends ChangeNotifier {
         break;
 
       default:
-        _results = [
-          FertilizerResult(
-            nameBn: 'ইউরিয়া (Urea)',
-            englishName: 'Nitrogen (N)',
-            amountKg: decimals * 1.0,
-            pricePerKg: 27.0,
-            primaryColor: const Color(0xFF1B5E20),
-            bgColor: const Color(0xFFE8F5E9),
-            icon: Icons.grain_rounded,
-            role: 'গাছের দৈহিক বৃদ্ধি ও পাতা সবুজ রাখা।',
-            applicationStage: '২-৩ কিস্তিতে উপরিপ্রয়োগ',
-          ),
-          FertilizerResult(
-            nameBn: 'টিএসপি / ডিএপি',
-            englishName: 'Phosphorus (P)',
-            amountKg: decimals * 0.60,
-            pricePerKg: 22.0,
-            primaryColor: const Color(0xFFE65100),
-            bgColor: const Color(0xFFFFF3E0),
-            icon: Icons.hub_rounded,
-            role: 'শিকড় বিস্তার ও কাণ্ড মজবুত করা।',
-            applicationStage: 'জমি তৈরির শেষ চাষে পুরোটা দিন',
-          ),
-          FertilizerResult(
-            nameBn: 'এমওপি / পটাশ (MoP)',
-            englishName: 'Potassium (K)',
-            amountKg: decimals * 0.50,
-            pricePerKg: 20.0,
-            primaryColor: const Color(0xFF0288D1),
-            bgColor: const Color(0xFFE1F5FE),
-            icon: Icons.shield_rounded,
-            role: 'রোগ প্রতিরোধ ক্ষমতা ও ফলন বাড়ানো।',
-            applicationStage: 'শেষ চাষে এবং বৃদ্ধির মাঝামাঝি সময়ে',
-          ),
-          FertilizerResult(
-            nameBn: 'জিপসাম (Gypsum)',
-            englishName: 'Sulphur (S)',
-            amountKg: decimals * 0.35,
-            pricePerKg: 12.0,
-            primaryColor: const Color(0xFF6A1B9A),
-            bgColor: const Color(0xFFF3E5F5),
-            icon: Icons.bubble_chart_rounded,
-            role: 'সালফারের ঘাটতি পূরণ ও ফসল সতেজ রাখা।',
-            applicationStage: 'জমি তৈরিতে দিন',
-          ),
-          FertilizerResult(
-            nameBn: 'জৈব সার',
-            englishName: 'Compost',
-            amountKg: decimals * 15.0,
-            pricePerKg: 8.0,
-            primaryColor: const Color(0xFF5D4037),
-            bgColor: const Color(0xFFEFEBE9),
-            icon: Icons.yard_rounded,
-            role: 'মাটির উর্বরতা ও স্বাস্থ্য বৃদ্ধি।',
-            applicationStage: 'জমি তৈরির শুরুতে চাষে দিন',
-          ),
-        ];
+        final cat = _selectedCategory ?? cropCategories.entries
+            .firstWhere(
+              (entry) => entry.value.contains(_selectedCrop),
+              orElse: () => const MapEntry('', []),
+            )
+            .key;
 
-        _timelineSteps = [
-          const FertilizerTimelineStep(
-            stageTitle: '১. জমি তৈরির সময়',
-            timing: 'বপন বা রোপণের পূর্বে',
-            fertilizers: ['সম্পূর্ণ টিএসপি', 'সম্পূর্ণ জিপসাম', '৫০% পটাশ'],
-            instructions: 'মাটির সাথে ভালোভাবে মিশিয়ে চাষ দিন।',
-            icon: Icons.landscape_rounded,
-            color: Color(0xFF2E7D32),
-          ),
-          const FertilizerTimelineStep(
-            stageTitle: '২. ফসলের প্রাথমিক বৃদ্ধি পর্যায়ে',
-            timing: '২০-২৫ দিন বয়সে',
-            fertilizers: ['ইউরিয়া সারের প্রথম কিস্তি'],
-            instructions: 'হালকা রসে আগাছা নিড়ানোর পর দিন।',
-            icon: Icons.grass_rounded,
-            color: Color(0xFF1B5E20),
-          ),
-          const FertilizerTimelineStep(
-            stageTitle: '৩. ফুল ও দানা আসার সময়',
-            timing: '৪০-৫০ দিন বয়সে',
-            fertilizers: ['বাকি ইউরিয়া ও অবশিষ্ট পটাশ'],
-            instructions: 'গাছের খাদ্য সঞ্চয়ের জন্য এই কিস্তি দিন।',
-            icon: Icons.eco_rounded,
-            color: Color(0xFF0288D1),
-          ),
-        ];
-        _applicationGuidelines = 'মাটি পরীক্ষা করে সার দিলে অপচয় কমে ও ফলন সর্বোচ্চ পাওয়া যায়। রাসায়নিকের পাশাপাশি সবসময় জৈব সার ব্যবহার করুন।';
+        if (cat == 'ডালজাতীয় ফসল') {
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N) 46%',
+              amountKg: decimals * 0.40,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'প্রাথমিক বৃদ্ধি ও নডিউল সক্রিয়করণ। ডালজাতীয় ফসলে অতিরিক্ত ইউরিয়া ফুল কমিয়ে দেয়।',
+              applicationStage: 'জমি তৈরির শেষ চাষে পুরোটা দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P) 46%',
+              amountKg: decimals * 0.70,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'শিকড়ে নাইট্রোজেন সংবন্ধনকারী নডিউল বৃদ্ধি ও মজবুত কাণ্ড তৈরি।',
+              applicationStage: 'জমি তৈরির শেষ চাষে মাটির নিচে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K) 60%',
+              amountKg: decimals * 0.45,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'ডালের দানা পুষ্ট করা ও খরা/রোগবালাই সহনশীলতা বৃদ্ধি।',
+              applicationStage: 'জমি তৈরিতে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম (Gypsum)',
+              englishName: 'Sulphur (S)',
+              amountKg: decimals * 0.35,
+              pricePerKg: 12.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'প্রোটিন গঠন ও গুণগত মান বৃদ্ধি।',
+              applicationStage: 'জমি তৈরিতে মাটির সাথে মেশান',
+            ),
+            FertilizerResult(
+              nameBn: 'জৈব সার / ভার্মিকম্পোস্ট',
+              englishName: 'Organic Compost',
+              amountKg: decimals * 15.0,
+              pricePerKg: 8.0,
+              primaryColor: const Color(0xFF5D4037),
+              bgColor: const Color(0xFFEFEBE9),
+              icon: Icons.yard_rounded,
+              role: 'মাটির উর্বরতা বৃদ্ধি ও ব্যাকটেরিয়া বিস্তার।',
+              applicationStage: 'প্রথম চাষের সময় দিন',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. জমি তৈরির শেষ চাষে (Basal Dose)',
+              timing: 'বীজ বপনের পূর্বে',
+              fertilizers: ['সম্পূর্ণ ইউরিয়া', 'সম্পূর্ণ টিএসপি', 'সম্পূর্ণ পটাশ', 'সম্পূর্ণ জিপসাম ও জৈব সার'],
+              instructions: 'সমস্ত রাসায়নিক ও জৈব সার কাদার সাথে ভালোভাবে মিশিয়ে দিন। ডাল ফসলে সাধারণত উপরিপ্রয়োগের প্রয়োজন হয় না।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. ফুল ফোটার পূর্বে (প্রয়োজনীয় পরিচর্যা)',
+              timing: 'বপনের ২৫-৩০ দিন পর',
+              fertilizers: ['অনুখাদ্য / বোরণ স্প্রে (প্রয়োজনে)'],
+              instructions: 'গাছের বৃদ্ধি স্বাভাবিক থাকলে বাড়তি সার দেওয়া লাগবে না; মাটি শুকিয়ে গেলে হালকা সেচ দিন।',
+              icon: Icons.eco_rounded,
+              color: Color(0xFF0288D1),
+            ),
+          ];
+          _applicationGuidelines = 'ডাল ফসলে শিকড়ে প্রাকৃতিকভাবে গুটি তৈরি হয়ে নাইট্রোজেন জমা হয়, তাই অতিরিক্ত ইউরিয়া পরিহার করুন।';
+        } else if (cat == 'তেলজাতীয় ফসল') {
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N) 46%',
+              amountKg: decimals * 0.90,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'দ্রুত দৈহিক বৃদ্ধি ও শাখা-প্রশাখা বিস্তার।',
+              applicationStage: 'অর্ধেক শেষ চাষে ও বাকি অর্ধেক গাছে ফুল আসার পূর্বে উপরিপ্রয়োগ',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P)',
+              amountKg: decimals * 0.70,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'শিকড় মজবুত ও প্রচুর ফুল ধরা।',
+              applicationStage: 'জমি তৈরির শেষ চাষে পুরোটা দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K)',
+              amountKg: decimals * 0.50,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'দানায় তেলের পরিমাণ বৃদ্ধি ও রোগ প্রতিরোধ।',
+              applicationStage: 'শেষ চাষে পুরোটা দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম (Gypsum)',
+              englishName: 'Sulphur (S)',
+              amountKg: decimals * 0.65,
+              pricePerKg: 12.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'তেলজাতীয় ফসলে সালফার তেলের ঘনত্ব ও উৎপাদন উল্লেখযোগ্যভাবে বাড়ায়।',
+              applicationStage: 'জমি তৈরির শেষ চাষে মাটির নিচে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জিঙ্ক সালফেট / দস্তা',
+              englishName: 'Zinc (Zn)',
+              amountKg: decimals * 0.04,
+              pricePerKg: 200.0,
+              primaryColor: const Color(0xFF00897B),
+              bgColor: const Color(0xFFE0F2F1),
+              icon: Icons.flare_rounded,
+              role: 'দানা চিটা হওয়া রোধ ও ফলন বৃদ্ধি।',
+              applicationStage: 'শেষ চাষে দিন',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. জমি তৈরির শেষ চাষে',
+              timing: 'বপনের পূর্বে',
+              fertilizers: ['৫০% ইউরিয়া', 'সম্পূর্ণ টিএসপি', 'সম্পূর্ণ পটাশ', 'সম্পূর্ণ জিপসাম ও জিঙ্ক'],
+              instructions: 'মাটির সাথে ভালোভাবে মিশিয়ে সমান করুন।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. উপরিপ্রয়োগ (ফুল আসার প্রাক্কালে)',
+              timing: 'বপনের ২৫-৩০ দিন পর',
+              fertilizers: ['বাকি ৫০% ইউরিয়া'],
+              instructions: 'হালকা সেচ দিয়ে জমিতে ছিপছিপে রসে ইউরিয়া ছিটিয়ে দিন।',
+              icon: Icons.grass_rounded,
+              color: Color(0xFF1B5E20),
+            ),
+          ];
+          _applicationGuidelines = 'তেল ফসলে জিপসাম (সালফার) বাদ দেওয়া যাবে না; এতে তেলের শতকরা হার কমে যায়।';
+        } else if (cat == 'মসলা জাতীয় ফসল') {
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N)',
+              amountKg: decimals * 0.85,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'মসলা গাছের সুষম বৃদ্ধি ও পাতা সতেজ রাখা।',
+              applicationStage: '২ কিস্তিতে প্রয়োগ (শেষ চাষে অর্ধেক, ৩০ দিনে বাকি অর্ধেক)',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P)',
+              amountKg: decimals * 0.65,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'শিকড় বিস্তার ও গন্ধ-স্বাদ বৃদ্ধি।',
+              applicationStage: 'শেষ চাষে পুরোটা দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K)',
+              amountKg: decimals * 0.50,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'মসলার গুণগত মান রক্ষা ও রোগ প্রতিরোধ।',
+              applicationStage: 'শেষ চাষে প্রয়োগ',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম (Gypsum)',
+              englishName: 'Sulphur (S)',
+              amountKg: decimals * 0.40,
+              pricePerKg: 12.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'সালফারের ঘাটতি পূরণ।',
+              applicationStage: 'জমি তৈরিতে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জৈব সার',
+              englishName: 'Compost',
+              amountKg: decimals * 18.0,
+              pricePerKg: 8.0,
+              primaryColor: const Color(0xFF5D4037),
+              bgColor: const Color(0xFFEFEBE9),
+              icon: Icons.yard_rounded,
+              role: 'মাটির গঠন উন্নত রাখা।',
+              applicationStage: 'প্রথম চাষের সময় মাটির সাথে মেশান',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. জমি তৈরির সময়',
+              timing: 'বপন বা চারা রোপণের পূর্বে',
+              fertilizers: ['৫০% ইউরিয়া', 'সম্পূর্ণ টিএসপি', 'সম্পূর্ণ পটাশ', 'সম্পূর্ণ জিপসাম ও জৈব সার'],
+              instructions: 'মাটির নিচে ভালো করে মিশিয়ে দিন।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. কিস্তি উপরিপ্রয়োগ',
+              timing: 'রোপণ/বপনের ৩০-৩৫ দিন পর',
+              fertilizers: ['বাকি ৫০% ইউরিয়া'],
+              instructions: 'আগাছা পরিষ্কার করে জমিতে রস থাকা অবস্থায় ছিটিয়ে দিন।',
+              icon: Icons.grass_rounded,
+              color: Color(0xFF1B5E20),
+            ),
+          ];
+          _applicationGuidelines = 'মসলা ফসলে পানি নিষ্কাশন ব্যবস্থা ভালো রাখা জরুরি। গোড়ায় পানি জমতে দেবেন না।';
+        } else if (cat == 'ফল ও বাগান') {
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N)',
+              amountKg: decimals * 1.10,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'গাছের নতুন ডালপালা গজানো ও পাতা সবুজ রাখা।',
+              applicationStage: 'বছরজুড়ে ২-৩ কিস্তিতে (বর্ষার আগে ও পরে)',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P)',
+              amountKg: decimals * 0.75,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'শিকড় মজবুত ও প্রচুর মুকুল/ফুল ধরা।',
+              applicationStage: 'বর্ষার শুরুতে এবং বর্ষার শেষে রিং নালার মধ্যে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K)',
+              amountKg: decimals * 1.10,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'ফলের আকার বড় করা, মিষ্টতা বৃদ্ধি ও ফল ঝরে পড়া রোধ।',
+              applicationStage: 'ফুল আসার আগে ও ফল বৃদ্ধির সময়',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম ও বোরণ',
+              englishName: 'Sulphur & Boron',
+              amountKg: decimals * 0.40,
+              pricePerKg: 15.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'ফল ফাটা রোগ প্রতিরোধ ও সুষম পুষ্টি।',
+              applicationStage: 'গাছের গোড়ায় বৃত্তাকারে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জৈব সার / ভার্মিকম্পোস্ট',
+              englishName: 'Organic Compost',
+              amountKg: decimals * 30.0,
+              pricePerKg: 8.0,
+              primaryColor: const Color(0xFF5D4037),
+              bgColor: const Color(0xFFEFEBE9),
+              icon: Icons.yard_rounded,
+              role: 'গাছের দীর্ঘমেয়াদী পুষ্টি সরবরাহ ও মাটির আর্দ্রতা রক্ষা।',
+              applicationStage: 'বর্ষার আগে ও শীতের শুরুতে দিন',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. বর্ষার শুরুতে (প্রথম কিস্তি)',
+              timing: 'মে-জুন মাসে',
+              fertilizers: ['৫০% ইউরিয়া', '৫০% টিএসপি', '৫০% পটাশ', 'সম্পূর্ণ জৈব সার'],
+              instructions: 'গাছের গোড়া থেকে ১-২ হাত দূরে গোল নালা কেটে সার দিয়ে মাটি চাপা দিন ও সেচ দিন।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. বর্ষার শেষে (দ্বিতীয় কিস্তি)',
+              timing: 'সেপ্টেম্বর-অক্টোবর মাসে',
+              fertilizers: ['অবশিষ্ট ৫০% ইউরিয়া, টিএসপি, পটাশ ও বোরণ'],
+              instructions: 'ফল তোলার পর গাছের ক্লান্তি দূর করতে ও পরবর্তী মুকুলের জন্য এ কিস্তি দিন।',
+              icon: Icons.eco_rounded,
+              color: Color(0xFF0288D1),
+            ),
+          ];
+          _applicationGuidelines = 'ফল গাছে কখনোই কাণ্ডের সাথে সরাসরি সার দেবেন না। ছাউনি বরাবর মাটির নিচে রিং পদ্ধতিতে দিন।';
+        } else if (cat == 'আঁশ ও অর্থকরী ফসল') {
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N)',
+              amountKg: decimals * 1.40,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'দ্রুত দৈহিক বৃদ্ধি, কাণ্ড লম্বা ও মোটা করা।',
+              applicationStage: '৩ কিস্তিতে উপরিপ্রয়োগ',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P)',
+              amountKg: decimals * 0.80,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'মজবুত শিকড় ও কাণ্ড গঠন।',
+              applicationStage: 'জমি তৈরিতে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K)',
+              amountKg: decimals * 0.85,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'আঁশের দৃঢ়তা ও চিনির পরিমাণ বৃদ্ধি।',
+              applicationStage: 'অর্ধেক জমি তৈরিতে, বাকি অর্ধেক বৃদ্ধির সময়',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম (Gypsum)',
+              englishName: 'Sulphur (S)',
+              amountKg: decimals * 0.45,
+              pricePerKg: 12.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'সালফারের পুষ্টি সরবরাহ।',
+              applicationStage: 'জমি তৈরিতে মাটির সাথে মেশান',
+            ),
+            FertilizerResult(
+              nameBn: 'জৈব সার',
+              englishName: 'Compost',
+              amountKg: decimals * 20.0,
+              pricePerKg: 8.0,
+              primaryColor: const Color(0xFF5D4037),
+              bgColor: const Color(0xFFEFEBE9),
+              icon: Icons.yard_rounded,
+              role: 'মাটির উর্বরতা বৃদ্ধি।',
+              applicationStage: 'প্রথম চাষে দিন',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. জমি তৈরির শেষ চাষে',
+              timing: 'বপন বা চারা লাগানোর পূর্বে',
+              fertilizers: ['সম্পূর্ণ টিএসপি', 'সম্পূর্ণ জিপসাম', '১/৩ ইউরিয়া', '৫০% পটাশ'],
+              instructions: 'মাটিতে ভালোভাবে মিশিয়ে দিন।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. প্রথম কিস্তি উপরিপ্রয়োগ',
+              timing: '৩০-৪০ দিন পর',
+              fertilizers: ['১/৩ ইউরিয়া'],
+              instructions: 'আগাছা নিড়ানোর পর সেচ দিয়ে জমিতে রস থাকা অবস্থায় দিন।',
+              icon: Icons.grass_rounded,
+              color: Color(0xFF1B5E20),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '৩. দ্বিতীয় কিস্তি উপরিপ্রয়োগ',
+              timing: '৬০-৭০ দিন পর',
+              fertilizers: ['বাকি ১/৩ ইউরিয়া ও অবশিষ্ট ৫০% পটাশ'],
+              instructions: 'গাছের গোড়ায় মাটি তুলে দিয়ে সেচ দিন।',
+              icon: Icons.eco_rounded,
+              color: Color(0xFF0288D1),
+            ),
+          ];
+          _applicationGuidelines = 'অর্থকরী ফসলে ইউরিয়ার পাশাপাশি পটাশ সার সময়মতো দিলে ফলন ও গুণগত মান সর্বোচ্চ হয়।';
+        } else {
+          // General / Vegetables default
+          _results = [
+            FertilizerResult(
+              nameBn: 'ইউরিয়া (Urea)',
+              englishName: 'Nitrogen (N)',
+              amountKg: decimals * 1.15,
+              pricePerKg: 27.0,
+              primaryColor: const Color(0xFF1B5E20),
+              bgColor: const Color(0xFFE8F5E9),
+              icon: Icons.grain_rounded,
+              role: 'গাছের দৈহিক বৃদ্ধি ও পাতা সবুজ রাখা।',
+              applicationStage: '২-৩ কিস্তিতে উপরিপ্রয়োগ',
+            ),
+            FertilizerResult(
+              nameBn: 'টিএসপি / ডিএপি',
+              englishName: 'Phosphorus (P)',
+              amountKg: decimals * 0.70,
+              pricePerKg: 22.0,
+              primaryColor: const Color(0xFFE65100),
+              bgColor: const Color(0xFFFFF3E0),
+              icon: Icons.hub_rounded,
+              role: 'শিকড় বিস্তার ও কাণ্ড মজবুত করা।',
+              applicationStage: 'জমি তৈরির শেষ চাষে পুরোটা দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'এমওপি / পটাশ (MoP)',
+              englishName: 'Potassium (K)',
+              amountKg: decimals * 0.65,
+              pricePerKg: 20.0,
+              primaryColor: const Color(0xFF0288D1),
+              bgColor: const Color(0xFFE1F5FE),
+              icon: Icons.shield_rounded,
+              role: 'রোগ প্রতিরোধ ক্ষমতা ও ফলন বাড়ানো।',
+              applicationStage: 'শেষ চাষে এবং বৃদ্ধির মাঝামাঝি সময়ে',
+            ),
+            FertilizerResult(
+              nameBn: 'জিপসাম (Gypsum)',
+              englishName: 'Sulphur (S)',
+              amountKg: decimals * 0.40,
+              pricePerKg: 12.0,
+              primaryColor: const Color(0xFF6A1B9A),
+              bgColor: const Color(0xFFF3E5F5),
+              icon: Icons.bubble_chart_rounded,
+              role: 'সালফারের ঘাটতি পূরণ ও ফসল সতেজ রাখা।',
+              applicationStage: 'জমি তৈরিতে দিন',
+            ),
+            FertilizerResult(
+              nameBn: 'জৈব সার',
+              englishName: 'Compost',
+              amountKg: decimals * 18.0,
+              pricePerKg: 8.0,
+              primaryColor: const Color(0xFF5D4037),
+              bgColor: const Color(0xFFEFEBE9),
+              icon: Icons.yard_rounded,
+              role: 'মাটির উর্বরতা ও স্বাস্থ্য বৃদ্ধি।',
+              applicationStage: 'জমি তৈরির শুরুতে চাষে দিন',
+            ),
+          ];
+          _timelineSteps = [
+            const FertilizerTimelineStep(
+              stageTitle: '১. জমি তৈরির সময়',
+              timing: 'বপন বা রোপণের পূর্বে',
+              fertilizers: ['সম্পূর্ণ টিএসপি', 'সম্পূর্ণ জিপসাম', '৫০% পটাশ'],
+              instructions: 'মাটির সাথে ভালোভাবে মিশিয়ে চাষ দিন।',
+              icon: Icons.landscape_rounded,
+              color: Color(0xFF2E7D32),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '২. ফসলের প্রাথমিক বৃদ্ধি পর্যায়ে',
+              timing: '২০-২৫ দিন বয়সে',
+              fertilizers: ['ইউরিয়া সারের প্রথম কিস্তি'],
+              instructions: 'হালকা রসে আগাছা নিড়ানোর পর দিন।',
+              icon: Icons.grass_rounded,
+              color: Color(0xFF1B5E20),
+            ),
+            const FertilizerTimelineStep(
+              stageTitle: '৩. ফুল ও ফল আসার সময়',
+              timing: '৪০-৫০ দিন বয়সে',
+              fertilizers: ['বাকি ইউরিয়া ও অবশিষ্ট পটাশ'],
+              instructions: 'গাছের খাদ্য সঞ্চয়ের জন্য এই কিস্তি দিন।',
+              icon: Icons.eco_rounded,
+              color: Color(0xFF0288D1),
+            ),
+          ];
+          _applicationGuidelines = 'মাটি পরীক্ষা করে সার দিলে অপচয় কমে ও ফলন সর্বোচ্চ পাওয়া যায়। রাসায়নিকের পাশাপাশি সবসময় জৈব সার ব্যবহার করুন।';
+        }
         break;
     }
 

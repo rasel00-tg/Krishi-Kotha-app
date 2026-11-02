@@ -185,7 +185,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 96), // Clearance for floating bottom nav
+                      padding: const EdgeInsets.only(bottom: 110), // Clearance for floating bottom nav
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

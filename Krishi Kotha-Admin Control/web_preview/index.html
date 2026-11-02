@@ -2772,6 +2772,13 @@
       const price = parseFloat(cleanPrice);
       const retail = parseFloat(cleanRetail) || 0;
 
+      // ইউনিট ও ট্রেন্ড ভেরিয়েবল সঠিকভাবে ডিফাইন ও বাইন্ড করা
+      const unitEl = document.getElementById('mpUnit');
+      const unit = (unitEl && unitEl.value && unitEl.value.trim()) ? unitEl.value.trim() : 'কেজি';
+
+      const trendEl = document.getElementById('mpTrend');
+      const trend = (trendEl && trendEl.value && trendEl.value.trim()) ? trendEl.value.trim() : 'stable';
+
       if (!crop || !market || isNaN(price)) {
         showToast('অনুগ্রহ করে পণ্যের নাম, বাজার ও পাইকারি দর পূরণ করুন।');
         return;
@@ -2801,8 +2808,8 @@
             price: price,
             retail_price: retail,
             retailPrice: retail,
-            unit: unit,
-            trend: trend,
+            unit: (unit && unit.trim()) ? unit.trim() : 'কেজি',
+            trend: (trend && trend.trim()) ? trend.trim() : 'stable',
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           };
 
