@@ -60,8 +60,14 @@ while ($listener.IsListening) {
         if ($localPath -eq "/" -or [string]::IsNullOrWhiteSpace($localPath)) {
             $filePath = Join-Path $webDir "index.html"
         } else {
-            $cleaned = $localPath.TrimStart('/')
+            $cleaned = [System.Uri]::UnescapeDataString($localPath.TrimStart('/'))
             $filePath = Join-Path $webDir $cleaned
+            if (-not (Test-Path $filePath -PathType Leaf)) {
+                $parentAssets = Join-Path (Split-Path $webDir -Parent) $cleaned
+                if (Test-Path $parentAssets -PathType Leaf) {
+                    $filePath = $parentAssets
+                }
+            }
         }
 
         if (Test-Path $filePath -PathType Leaf) {
@@ -73,6 +79,8 @@ while ($listener.IsListening) {
                 $response.ContentType = "text/css; charset=utf-8"
             } elseif ($filePath.EndsWith(".js")) {
                 $response.ContentType = "application/javascript; charset=utf-8"
+            } elseif ($filePath.EndsWith(".json")) {
+                $response.ContentType = "application/json; charset=utf-8"
             } elseif ($filePath.EndsWith(".png")) {
                 $response.ContentType = "image/png"
             } elseif ($filePath.EndsWith(".jpg") -or $filePath.EndsWith(".jpeg")) {

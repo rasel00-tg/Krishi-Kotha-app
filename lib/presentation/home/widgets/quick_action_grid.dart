@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/bangla_number_converter.dart';
 import '../../../data/services/firestore_service.dart';
 import '../agri_service_detail_screen.dart';
 import '../../support/expert_helpline_screen.dart';
+import '../../crops/disease_detection_screen.dart';
 
 class QuickActionItem {
   final String id;
@@ -88,19 +90,20 @@ class QuickActionGrid extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFCE4EC),
-                    borderRadius: BorderRadius.circular(13),
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
                   ),
                   child: const Icon(
                     Icons.document_scanner_rounded,
-                    color: Color(0xFFD81B60),
-                    size: 24,
+                    color: Color(0xFF2E7D32),
+                    size: 26,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +111,7 @@ class QuickActionGrid extends StatelessWidget {
                       Text(
                         'ছবি দিয়ে রোগ শনাক্তকরণ',
                         style: TextStyle(
-                          fontSize: 16.5,
+                          fontSize: 17,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
                         ),
@@ -136,7 +139,10 @@ class QuickActionGrid extends StatelessWidget {
               subtitle: 'আক্রান্ত গাছের পাতা ও কাণ্ডের সরাসরি ছবি তুলুন',
               onTap: () {
                 Navigator.pop(ctx);
-                _showScanProcessingDialog(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DiseaseDetectionScreen(initialSource: ImageSource.camera)),
+                );
               },
             ),
             const SizedBox(height: 10),
@@ -149,7 +155,10 @@ class QuickActionGrid extends StatelessWidget {
               subtitle: 'আগে তুলে রাখা ছবি নির্বাচন করে তাৎক্ষণিক রোগ জানুন',
               onTap: () {
                 Navigator.pop(ctx);
-                _showScanProcessingDialog(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DiseaseDetectionScreen(initialSource: ImageSource.gallery)),
+                );
               },
             ),
             const SizedBox(height: 10),
@@ -246,13 +255,13 @@ class QuickActionGrid extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: const Color(0xFFFCE4EC),
+                color: const Color(0xFFE8F5E9),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF8BBD0), width: 1.5),
+                border: Border.all(color: const Color(0xFFA5D6A7), width: 1.5),
               ),
               child: const Icon(
                 Icons.check_circle_rounded,
-                color: Color(0xFFD81B60),
+                color: Color(0xFF2E7D32),
                 size: 30,
               ),
             ),
@@ -296,7 +305,7 @@ class QuickActionGrid extends StatelessWidget {
                       onOpenPestCatalog();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD81B60),
+                      backgroundColor: const Color(0xFF2E7D32),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 11),
@@ -313,9 +322,153 @@ class QuickActionGrid extends StatelessWidget {
     );
   }
 
+  // ১. "রোগ শনাক্ত" স্পেশাল হরাইজন্টাল ব্যানার কার্ড (Full-Width Banner Card)
+  Widget _buildDiseaseScannerBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFE8F5E9), // সফট এমারেল্ড গ্রিন
+            Color(0xFFF1F8E9), // ন্যাচারাল ফ্রেশ টোন
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFC8E6C9),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2E7D32).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          const BoxShadow(
+            color: Color(0x06000000),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DiseaseDetectionScreen()),
+            );
+          },
+          borderRadius: BorderRadius.circular(18),
+          splashColor: const Color(0xFF2E7D32).withOpacity(0.12),
+          highlightColor: const Color(0xFF2E7D32).withOpacity(0.06),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // বাম পাশে: আধুনিক স্ক্যানার ও পাতার বড় প্রিমিয়াম আইকন
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2E7D32).withOpacity(0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: const [
+                      Icon(
+                        Icons.document_scanner_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        child: Icon(
+                          Icons.eco_rounded,
+                          color: Color(0xFFA5D6A7),
+                          size: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // মাঝখানে টেক্সট ও ফায়ার ব্যাজ
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'রোগ শনাক্ত 🔥',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1B5E20),
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'আক্রান্ত গাছের পাতার ছবি তুলে তাৎক্ষণিক সঠিক রোগ ও প্রতিকার জানুন',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF37474F),
+                          height: 1.3,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // ডান পাশে: স্লিক অ্যারো বাটন
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // হোম পেজের সমস্ত সেবা — শতভাগ একীভূত ইউনিফাইড তালিকা
+    // ২. অবশিষ্ট সেবাগুলোর মার্জিত আইকন গ্রিড তালিকা ("রোগ শনাক্ত" ব্যানার কার্ডে যাওয়ার পর বাকি ১২টি সেবা)
     final List<QuickActionItem> items = [
       // ১. চাষ ক্যালেন্ডার
       QuickActionItem(
@@ -333,16 +486,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFF3E5F5),
         ),
       ),
-      // ২. রোগ শনাক্ত
-      QuickActionItem(
-        id: 'disease_scanner',
-        title: 'রোগ শনাক্ত',
-        icon: Icons.document_scanner_rounded,
-        color: const Color(0xFFD81B60),
-        bgColor: const Color(0xFFFCE4EC),
-        onTap: () => _showDiseaseScannerSheet(context),
-      ),
-      // ৩. কৃষি বিশেষজ্ঞ
+      // ২. কৃষি বিশেষজ্ঞ
       QuickActionItem(
         id: 'agri_expert',
         title: 'কৃষি বিশেষজ্ঞ',
@@ -356,7 +500,7 @@ class QuickActionGrid extends StatelessWidget {
           );
         },
       ),
-      // ৪. কৃষি রিমাইন্ডার
+      // ৩. কৃষি রিমাইন্ডার
       QuickActionItem(
         id: 'agri_reminder',
         title: 'কৃষি রিমাইন্ডার',
@@ -372,7 +516,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFFFF3E0),
         ),
       ),
-      // ৫. বীজের তথ্য
+      // ৪. বীজের তথ্য
       QuickActionItem(
         id: 'seed_bank',
         title: 'বীজের তথ্য',
@@ -388,7 +532,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE8F5E9),
         ),
       ),
-      // ৬. কৃষি অফিস
+      // ৫. কৃষি অফিস
       QuickActionItem(
         id: 'agri_office',
         title: 'কৃষি অফিস',
@@ -404,7 +548,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE3F2FD),
         ),
       ),
-      // ৭. সেচ ট্র্যাকার
+      // ৬. সেচ ট্র্যাকার
       QuickActionItem(
         id: 'irrigation',
         title: AppStrings.serviceSmartIrrigation,
@@ -420,7 +564,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE1F5FE),
         ),
       ),
-      // ৮. সার-বীজ ডিলার
+      // ৭. সার-বীজ ডিলার
       QuickActionItem(
         id: 'dealers',
         title: AppStrings.serviceInputDealers,
@@ -436,7 +580,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE8F5E9),
         ),
       ),
-      // ৯. কৃষি আয়-ব্যয়
+      // ৮. কৃষি আয়-ব্যয়
       QuickActionItem(
         id: 'ledger',
         title: AppStrings.serviceFarmLedger,
@@ -452,7 +596,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE0F2F1),
         ),
       ),
-      // ১০. মাটির স্বাস্থ্য
+      // ৯. মাটির স্বাস্থ্য
       QuickActionItem(
         id: 'soil',
         title: AppStrings.serviceSoilHealth,
@@ -468,7 +612,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFEFEBE9),
         ),
       ),
-      // ১১. পশু ও হাঁস-মুরগি
+      // ১০. পশু ও হাঁস-মুরগি
       QuickActionItem(
         id: 'livestock',
         title: AppStrings.serviceLivestock,
@@ -484,7 +628,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFFBE9E7),
         ),
       ),
-      // ১২. মৎস্য চাষ
+      // ১১. মৎস্য চাষ
       QuickActionItem(
         id: 'fisheries',
         title: AppStrings.serviceFisheries,
@@ -500,7 +644,7 @@ class QuickActionGrid extends StatelessWidget {
           bgColor: const Color(0xFFE0F7FA),
         ),
       ),
-      // ১৩. ফসল সংরক্ষণ
+      // ১২. ফসল সংরক্ষণ
       QuickActionItem(
         id: 'cold_storage',
         title: AppStrings.serviceColdStorage,
@@ -523,7 +667,7 @@ class QuickActionGrid extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // একক ইউনিফাইড সার্ভিস হেডার
+          // একক সার্ভিস হেডার
           Row(
             children: [
               const Icon(Icons.apps_rounded, color: AppColors.primary, size: 20),
@@ -544,7 +688,7 @@ class QuickActionGrid extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${BanglaNumberConverter.toBangla(items.length.toString())}টি সেবা',
+                  '${BanglaNumberConverter.toBangla((items.length + 1).toString())}টি সেবা',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -556,7 +700,12 @@ class QuickActionGrid extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ১০০% একীভূত কম্প্যাক্ট ইউনিফাইড গ্রিড (৩ বা ৪ কলাম)
+          // ১. "রোগ শনাক্ত" স্পেশাল ব্যানার কার্ড (Full-Width Horizontal Banner Card)
+          _buildDiseaseScannerBanner(context),
+
+          const SizedBox(height: 14),
+
+          // ২. অবশিষ্ট সেবাগুলোর ৩-কলাম মার্জিত আইকন গ্রিড (১২টি সেবা)
           LayoutBuilder(
             builder: (context, constraints) {
               final crossAxisCount = constraints.maxWidth > 550 ? 4 : 3;
