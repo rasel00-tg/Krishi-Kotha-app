@@ -55,26 +55,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     return Scaffold(
       extendBody: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ১. মূল পেজসমূহ (Screens Body)
-          Positioned.fill(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: screens,
-            ),
-          ),
-
-          // ২. ফ্লোটিং অ্যানিমেটেড গ্র্যাডিয়েন্ট বটম নেভিগেশন বার (Stack-এর শীর্ষে সর্বোচ্চ Z-Index ও আনব্লকেবল হিট-টেস্ট)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildAnimatedGradientNavBar(),
-          ),
-        ],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: screens,
       ),
+      bottomNavigationBar: _buildAnimatedGradientNavBar(),
     );
   }
 
@@ -117,18 +102,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     ];
 
-    return Container(
-      color: Colors.transparent,
-      padding: EdgeInsets.only(
-        left: 12,
-        right: 12,
-        bottom: MediaQuery.of(context).padding.bottom > 0
-            ? MediaQuery.of(context).padding.bottom + 4
-            : 12,
-        top: 6,
-      ),
-      child: Container(
-        height: 64,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 12,
+          right: 12,
+          bottom: MediaQuery.of(context).padding.bottom > 0
+              ? MediaQuery.of(context).padding.bottom + 4
+              : 12,
+          top: 6,
+        ),
+        child: Container(
+          height: 64,
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: Colors.white,

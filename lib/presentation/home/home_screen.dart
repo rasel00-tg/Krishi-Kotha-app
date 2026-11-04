@@ -162,57 +162,43 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // ১. ফ্লুয়িড গ্লাস স্ফিয়ার ও ভাইব্রেন্ট অ্যাকসেন্ট অর্বস (IgnorePointer ensures 0 touch obstruction)
-            Positioned.fill(
-              child: IgnorePointer(
-                ignoring: true,
-                child: _buildEtherealBackgroundOrbs(context),
-              ),
-            ),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // ফিক্সড / পিন্ড আবহাওয়া কার্ড (স্ক্রল করলেও শীর্ষে স্থির থাকবে)
+              const WeatherCardWidget(),
 
-            // ২. মূল কনটেন্ট লেয়ার: আবহাওয়া কার্ড শীর্ষে ফিক্সড/পিন্ড এবং নিচে মসৃণ স্ক্রল
-            SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  // ফিক্সড / পিন্ড আবহাওয়া কার্ড (স্ক্রল করলেও শীর্ষে স্থির থাকবে)
-                  const WeatherCardWidget(),
+              // নিচের স্ক্রলযোগ্য অংশ (আবহাওয়া কার্ডের নিচ দিয়ে স্ক্রল হবে)
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 110), // Clearance for floating bottom nav
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Real-time Emergency Alert Banner from Firestore (if active)
+                      EmergencyAlertBanner(firestoreService: firestoreService),
 
-                  // নিচের স্ক্রলযোগ্য অংশ (আবহাওয়া কার্ডের নিচ দিয়ে স্ক্রল হবে)
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 110), // Clearance for floating bottom nav
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Real-time Emergency Alert Banner from Firestore (if active)
-                          EmergencyAlertBanner(firestoreService: firestoreService),
-
-                          // Quick Action Services Grid (12 Essential Unique Services)
-                          QuickActionGrid(
-                            onNavigateTab: onNavigateTab,
-                            firestoreService: firestoreService,
-                            onOpenPestCatalog: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const PestCatalogScreen()),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 16),
-                        ],
+                      // Quick Action Services Grid (12 Essential Unique Services)
+                      QuickActionGrid(
+                        onNavigateTab: onNavigateTab,
+                        firestoreService: firestoreService,
+                        onOpenPestCatalog: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const PestCatalogScreen()),
+                          );
+                        },
                       ),
-                    ),
+
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
