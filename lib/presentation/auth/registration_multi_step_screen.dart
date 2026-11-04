@@ -760,3 +760,4 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     );
   }
 }
+

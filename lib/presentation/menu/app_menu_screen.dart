@@ -21,6 +21,15 @@ class AppMenuScreen extends StatelessWidget {
     final user = authProvider.user;
     final bool isLoggedIn = authProvider.isLoggedIn;
 
+    // ১. মেনু ট্যাবে কন্ডিশনাল অথ গেটওয়ে (Authentication Gateway for Menu Tab):
+    // ব্যবহারকারী যদি লগইন অবস্থায় না থাকেন (Guest State):
+    // মেনু পেজটি সম্পূর্ণ লক থাকবে এবং কোনো মেনু আইটেম প্রদর্শিত হবে না।
+    // সরাসরি রেফারেন্স ছবির আধুনিক লগইন স্ক্রিন প্রদর্শিত হবে।
+    // লগইন সফল হওয়া মাত্রই স্বয়ংক্রিয়ভাবে পূর্ণাঙ্গ মেনু পেজে প্রবেশ করবে।
+    if (!isLoggedIn) {
+      return const PhoneLoginScreen(isGatewayForMenu: true);
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
       // No topbar in Menu screen as requested
@@ -32,11 +41,8 @@ class AppMenuScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ================= CONDITIONAL PROFILE CARD OR LOGIN PROMPT =================
-              if (isLoggedIn)
-                _buildLargeProfileCard(context, user)
-              else
-                _buildLoginPromptCard(context),
+              // ================= REDESIGNED LARGE PROFILE CARD (FIRESTORE STREAMBUILDER) =================
+              _buildLargeProfileCard(context, user),
 
               const SizedBox(height: 22),
 

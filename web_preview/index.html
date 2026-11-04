@@ -2694,128 +2694,184 @@
 
       <!-- TAB 4: APP MENU -->
       <div class="tab-pane" id="tab-menu">
-        <!-- Redesigned Large Centered Farmer Profile Card (Logged-in User) -->
-        <div class="menu-profile-card" id="webMenuProfileCard">
-          <div class="menu-avatar-badge">
-            <span id="menuAvatarChar">ম</span>
-            <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
+        <!-- 1. AUTHORIZED FULL MENU VIEW (Shown only when logged in) -->
+        <div id="webMenuAuthorizedContainer" style="display: none;">
+          <!-- Redesigned Large Centered Farmer Profile Card -->
+          <div class="menu-profile-card" id="webMenuProfileCard">
+            <div class="menu-avatar-badge">
+              <span id="menuAvatarChar">ম</span>
+              <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
+            </div>
+            <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম</h3>
+            <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
           </div>
-          <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম</h3>
-          <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
+
+          <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
+          <div class="menu-category-title">ব্যবহারকারী ও অ্যাকাউন্ট</div>
+          <div class="menu-group-card">
+            <div class="menu-item-row" onclick="openProfileModal()">
+              <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
+                <i class="fa-regular fa-user"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">প্রোফাইল (Profile)</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">আপনার তথ্য ও জেলা নির্বাচন</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Category: নোটিফিকেশন ও বার্তা -->
+          <div class="menu-category-title">নোটিফিকেশন ও বার্তা</div>
+          <div class="menu-group-card">
+            <div class="menu-item-row" onclick="openNotificationsPage()">
+              <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">নোটিফিকেশন (Notifications)</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">জরুরি বার্তা ও সতর্কতা</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Category 2: পছন্দ ও সেটিংস (PREFERENCES) -->
+          <div class="menu-category-title">পছন্দ ও সেটিংস</div>
+          <div class="menu-group-card">
+            <div class="menu-item-row" onclick="openSettingsModal()">
+              <div class="menu-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
+                <i class="fa-solid fa-gear"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সেটিংস (Settings)</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">অ্যাপ সেটিংস ও ভাষা</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Category 3: সহায়তা ও নিয়মাবলী (SUPPORT & LEGAL) -->
+          <div class="menu-category-title">সহায়তা ও নিয়মাবলী</div>
+          <div class="menu-group-card">
+            <div class="menu-item-row" onclick="openHelplineModal()">
+              <div class="menu-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
+                <i class="fa-solid fa-headset"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ (Support &
+                  Contact)</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">কৃষি হেল্পলাইন ও সহায়তা</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-item-row" onclick="openPrivacyPage()">
+              <div class="menu-icon-wrap" style="background: #FFF3E0; color: #E65100;">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Category 4: লগআউট বাটন (Sleek Logout Button) -->
+          <div class="menu-group-card" id="webMenuLogoutRow" style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
+            <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
+              <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </div>
+              <div class="menu-item-text">
+                <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
+                <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন</p>
+              </div>
+              <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
+            </div>
+          </div>
+
+          <!-- App Branding Footer -->
+          <div style="text-align: center; margin: 32px 0 20px 0;">
+            <div
+              style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+              <img src="pnglogo.png" style="width: 100%; height: 100%; object-fit: cover;" alt="কৃষি কথা লোগো">
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary);">কৃষি কথা – Krishi Kotha</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ
+              ১.০.০</p>
+          </div>
         </div>
 
-        <!-- Attractive Login/Sign-up Prompt Card (Guest User) -->
-        <div id="webMenuLoginPromptCard" onclick="openAuthModal('login')" style="display: none; background: #fff; border-radius: 20px; border: 1.2px solid var(--primary-light); padding: 18px 20px; box-shadow: 0 4px 16px rgba(46,125,50,0.08); cursor: pointer; margin-bottom: 22px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--primary-container); border: 2px solid var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-size: 26px; flex-shrink: 0;">
+        <!-- 2. GUEST AUTH GATEWAY (Locked Menu View - Reference-styled Login UI) -->
+        <div id="webMenuGuestGateway" style="display: none; padding: 12px 4px 30px 4px;">
+          <!-- Top Greeting -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: 0.2px;">স্বাগতম!</h2>
+            <p style="font-size: 14px; color: var(--text-secondary); margin: 0; font-weight: 500;">চালিয়ে যেতে লগইন করুন</p>
+          </div>
+
+          <!-- Center Brand Logo & Name -->
+          <div style="text-align: center; margin-bottom: 22px;">
+            <div style="width: 78px; height: 78px; border-radius: 50%; background: var(--primary-container); border: 2.5px solid var(--primary-light); margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(46,125,50,0.14);">
+              <img src="pnglogo.png" style="width: 48px; height: 48px; object-fit: contain;" alt="কৃষি কথা লোগো">
+            </div>
+            <h3 style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 0;">কৃষি কথা</h3>
+          </div>
+
+          <!-- Modern Login Card -->
+          <div style="background: white; border-radius: 24px; border: 1px solid #E2E8E2; padding: 22px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px;">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              <!-- Identifier Field -->
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                  <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="ইমেইল বা মোবাইল নম্বর দিন..." style="width: 100%; box-sizing: border-box; padding: 12px 40px 12px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-family: inherit;">
+                  <i class="fa-solid fa-circle-check" id="gatewayLoginCheckmark" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #2E7D32; font-size: 18px; display: none;"></i>
+                </div>
+              </div>
+
+              <!-- Password Field -->
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পাসওয়ার্ড *</label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                  <input type="password" id="gatewayLoginPass" placeholder="পাসওয়ার্ড লিখুন..." style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-family: inherit;">
+                  <i class="fa-solid fa-eye" id="toggleGatewayPassIcon" onclick="togglePassVisibility('gatewayLoginPass', 'toggleGatewayPassIcon')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
+                </div>
+              </div>
+
+              <!-- Remember Me & Forgot Password Row -->
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer; margin: 0;">
+                  <input type="checkbox" id="gatewayRememberMe" checked style="accent-color: var(--primary); width: 16px; height: 16px;">
+                  <span>মনে রাখুন</span>
+                </label>
+                <a href="javascript:void(0)" onclick="openAuthModal('forgot')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
+              </div>
+
+              <!-- Sign In Button -->
+              <button type="button" onclick="executeGatewayLogin()" style="width: 100%; padding: 13px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32); margin-top: 4px;">
+                <span>লগইন করুন</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- New Account Creation Section -->
+          <div style="text-align: center;">
+            <p style="font-size: 13.5px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">একাউন্ট নেই?</p>
+            <button type="button" onclick="openAuthModal('regStep1')" style="width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid var(--primary); background: white; color: var(--primary); font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
               <i class="fa-solid fa-user-plus"></i>
-            </div>
-            <div style="flex: 1;">
-              <h3 style="font-size: 16.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px 0;">লগইন বা একাউন্ট খুলুন</h3>
-              <p style="font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.35;">স্মার্ট কৃষির সকল সুবিধা পেতে সাইন ইন বা নিবন্ধন করুন</p>
-            </div>
-            <div style="padding: 8px 16px; border-radius: 20px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(46,125,50,0.25);">
-              <span>লগইন</span>
-              <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-            </div>
+              <span>নতুন একাউন্ট তৈরি করুন</span>
+            </button>
           </div>
-        </div>
 
-        <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
-        <div class="menu-category-title">ব্যবহারকারী ও অ্যাকাউন্ট</div>
-        <div class="menu-group-card">
-          <div class="menu-item-row" onclick="openProfileModal()">
-            <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
-              <i class="fa-regular fa-user"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">প্রোফাইল (Profile)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">আপনার তথ্য ও জেলা নির্বাচন</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">কৃষি তথ্য সার্ভিস (AIS) ও কৃষি সম্প্রসারণ অধিদপ্তর সমর্থিত</p>
           </div>
-        </div>
-
-        <!-- Category: নোটিফিকেশন ও বার্তা -->
-        <div class="menu-category-title">নোটিফিকেশন ও বার্তা</div>
-        <div class="menu-group-card">
-          <div class="menu-item-row" onclick="openNotificationsPage()">
-            <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
-              <i class="fa-solid fa-bell"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">নোটিফিকেশন (Notifications)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">জরুরি বার্তা ও সতর্কতা</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
-          </div>
-        </div>
-
-        <!-- Category 2: পছন্দ ও সেটিংস (PREFERENCES) -->
-        <div class="menu-category-title">পছন্দ ও সেটিংস</div>
-        <div class="menu-group-card">
-          <div class="menu-item-row" onclick="openSettingsModal()">
-            <div class="menu-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
-              <i class="fa-solid fa-gear"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সেটিংস (Settings)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">অ্যাপ সেটিংস ও ভাষা</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
-          </div>
-        </div>
-
-        <!-- Category 3: সহায়তা ও নিয়মাবলী (SUPPORT & LEGAL) -->
-        <div class="menu-category-title">সহায়তা ও নিয়মাবলী</div>
-        <div class="menu-group-card">
-          <div class="menu-item-row" onclick="openHelplineModal()">
-            <div class="menu-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
-              <i class="fa-solid fa-headset"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ (Support &
-                Contact)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">কৃষি হেল্পলাইন ও সহায়তা</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
-          </div>
-          <div class="menu-divider"></div>
-          <div class="menu-item-row" onclick="openPrivacyPage()">
-            <div class="menu-icon-wrap" style="background: #FFF3E0; color: #E65100;">
-              <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
-          </div>
-        </div>
-
-        <!-- Category 4: লগআউট বাটন (Sleek Logout Button - Logged in only) -->
-        <div class="menu-group-card" id="webMenuLogoutRow" style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
-          <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
-            <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
-              <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
-              <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন</p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
-          </div>
-        </div>
-
-        <!-- App Branding Footer -->
-        <div style="text-align: center; margin: 32px 0 20px 0;">
-          <div
-            style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
-            <img src="pnglogo.png" style="width: 100%; height: 100%; object-fit: cover;" alt="কৃষি কথা লোগো">
-          </div>
-          <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary);">কৃষি কথা – Krishi Kotha</h4>
-          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ
-            ১.০.০</p>
         </div>
       </div>
 
@@ -6243,6 +6299,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (index === 3) {
         // Tab 3: Fertilizer Calculator (clean inputs preserved)
       }
+      if (index === 4) {
+        // Tab 4: Menu Gateway / Full Menu state
+        updateWebProfileHeader();
+      }
     }
 
     // Crops Data & View State
@@ -8897,6 +8957,78 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       showToast('আপনার ইমেইলে একটি অফিসিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে।');
     }
 
+    function onGatewayIdInput(val) {
+      const text = (val || '').trim();
+      const checkmark = document.getElementById('gatewayLoginCheckmark');
+      if (!checkmark) return;
+
+      const isEmail = text.includes('@') && text.includes('.');
+      const cleanPhone = text.replace(/[^0-9]/g, '');
+      const isPhone = (cleanPhone.length === 11 && cleanPhone.startsWith('01')) ||
+                      (cleanPhone.length === 13 && cleanPhone.startsWith('8801')) ||
+                      cleanPhone.length >= 10;
+
+      if (isEmail || isPhone) {
+        checkmark.style.display = 'inline-block';
+      } else {
+        checkmark.style.display = 'none';
+      }
+    }
+
+    async function executeGatewayLogin() {
+      const identifier = (document.getElementById('gatewayLoginId')?.value || '').trim();
+      const pass = (document.getElementById('gatewayLoginPass')?.value || '');
+      const rememberMe = document.getElementById('gatewayRememberMe')?.checked ?? true;
+
+      if (!identifier) {
+        showToast('অনুগ্রহ করে ইমেইল বা মোবাইল নম্বর লিখুন');
+        return;
+      }
+      if (!pass) {
+        showToast('অনুগ্রহ করে পাসওয়ার্ড লিখুন');
+        return;
+      }
+
+      if (rememberMe) {
+        localStorage.setItem('krishi_kotha_remembered_identifier', identifier);
+      } else {
+        localStorage.removeItem('krishi_kotha_remembered_identifier');
+      }
+
+      const isEmail = identifier.includes('@');
+      let foundUser = null;
+
+      if (!isEmail) {
+        const cleanPhone = identifier.replace(/[^0-9]/g, '');
+        if (window.firebase && firebase.firestore) {
+          try {
+            const snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if (snap && !snap.empty) {
+              foundUser = snap.docs[0].data();
+              foundUser.uid = snap.docs[0].id;
+            }
+          } catch (_) {}
+        }
+      }
+
+      const user = foundUser || {
+        uid: 'user_' + Date.now(),
+        name: isEmail ? identifier.split('@')[0] : 'মো: আব্দুল করিম',
+        email: isEmail ? identifier.toLowerCase() : (foundUser ? foundUser.email : 'user@krishikotha.com'),
+        phone: isEmail ? '০১৭১১-২২৩৩৪৪' : identifier,
+        district: foundUser?.district || 'বগুড়া',
+        upazila: foundUser?.upazila || 'শেরপুর',
+        village: foundUser?.village || '',
+        occupation: foundUser?.occupation || 'কৃষক',
+        preferred_crops: foundUser?.preferred_crops || ['বোরো ধান', 'আলু'],
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      updateWebProfileHeader();
+      showToast('স্বাগতম! সফলভাবে লগইন সম্পন্ন হয়েছে।');
+    }
+
     function openProfileModal() {
       if (!isWebUserLoggedIn()) {
         openAuthModal('login');
@@ -8929,23 +9061,20 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       } catch (_) {}
       localStorage.removeItem('krishi_kotha_cached_user');
       showToast('সফলভাবে লগআউট সম্পন্ন হয়েছে');
-      switchTab(0);
       updateWebProfileHeader();
     }
 
     function updateWebProfileHeader() {
-      const profileCard = document.getElementById('webMenuProfileCard');
-      const loginPromptCard = document.getElementById('webMenuLoginPromptCard');
-      const logoutRow = document.getElementById('webMenuLogoutRow');
+      const authContainer = document.getElementById('webMenuAuthorizedContainer');
+      const guestGateway = document.getElementById('webMenuGuestGateway');
       const uName = document.getElementById('menuUserName');
       const uSub = document.getElementById('menuUserSub');
       const uChar = document.getElementById('menuAvatarChar');
 
       const loggedIn = isWebUserLoggedIn();
       if (loggedIn) {
-        if (profileCard) profileCard.style.display = 'block';
-        if (loginPromptCard) loginPromptCard.style.display = 'none';
-        if (logoutRow) logoutRow.style.display = 'block';
+        if (authContainer) authContainer.style.display = 'block';
+        if (guestGateway) guestGateway.style.display = 'none';
 
         const cached = localStorage.getItem('krishi_kotha_cached_user');
         if (cached) {
@@ -8962,9 +9091,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           } catch (_) {}
         }
       } else {
-        if (profileCard) profileCard.style.display = 'none';
-        if (loginPromptCard) loginPromptCard.style.display = 'block';
-        if (logoutRow) logoutRow.style.display = 'none';
+        if (authContainer) authContainer.style.display = 'none';
+        if (guestGateway) guestGateway.style.display = 'block';
+
+        // Pre-fill remembered identifier if available
+        const savedId = localStorage.getItem('krishi_kotha_remembered_identifier');
+        const idInp = document.getElementById('gatewayLoginId');
+        if (savedId && idInp && !idInp.value) {
+          idInp.value = savedId;
+          onGatewayIdInput(savedId);
+        }
       }
     }
 
