@@ -885,9 +885,9 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
     try {
       final XFile? picked = await _picker.pickImage(
         source: source,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 75,
       );
 
       if (picked != null) {

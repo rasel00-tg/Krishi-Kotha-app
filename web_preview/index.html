@@ -4689,6 +4689,21 @@
       }
     }
 
+    // ডুয়াল ডাটাবেজ: লগইন ইউজারের জন্য ক্লাউড ফায়ারস্টোর (Firestore StreamBuilder সমতুল্য)
+    function savePrescriptionToUserFirestore(userId, prescription) {
+      if (!userId || !prescription) return;
+      try {
+        if (typeof db !== 'undefined' && db) {
+          db.collection('users').doc(userId).collection('krishimate_history').doc(prescription.id).set(prescription, { merge: true })
+            .catch(err => console.warn('Firestore user history sync note:', err));
+          db.collection('disease_prescriptions').doc(prescription.id).set(prescription, { merge: true })
+            .catch(err => console.warn('Firestore global history sync note:', err));
+        }
+      } catch (e) {
+        console.warn('Firestore save error:', e);
+      }
+    }
+
     loadWebHistoryFromStorage();
 
     // ঋতুভিত্তিক ও দৈনিক ৪টি স্মার্ট শর্টকাট প্রশ্ন জেনারেটর (রবি, খরিফ-১, খরিফ-২)
@@ -5467,6 +5482,42 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           return;
         }
 
+        // ২. সফল যাচাইয়ের পর ছবি থাকলে ক্লাউডফ্লেয়ার আর২-তে আপলোড (Cloudflare R2 Bucket Upload)
+        if (webSelectedDiseaseFile) {
+          try {
+            const uploadRes = await fetch(`/api/upload-r2?filename=krishimate_${Date.now()}.jpg`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': webSelectedDiseaseFile.type || 'image/jpeg',
+                'x-filename': `krishimate_${Date.now()}.jpg`
+              },
+              body: webSelectedDiseaseFile
+            });
+            if (uploadRes.ok) {
+              const upJson = await uploadRes.json();
+              if (upJson.publicUrl) {
+                newPrescription.user_image_thumb = upJson.publicUrl;
+                newPrescription.imageUrl = upJson.publicUrl;
+              }
+            }
+          } catch (upErr) {
+            console.warn('Cloudflare R2 upload note:', upErr);
+          }
+        }
+
+        // ১. ডুয়াল ডাটাবেজ আর্কিটেকচার (Guest vs Logged-in User):
+        const loggedUserStr = localStorage.getItem('krishi_kotha_cached_user');
+        let loggedUser = null;
+        try {
+          if (loggedUserStr) loggedUser = JSON.parse(loggedUserStr);
+        } catch (_) {}
+
+        if (loggedUser && loggedUser.uid && !loggedUser.uid.startsWith('guest_')) {
+          newPrescription.user_id = loggedUser.uid;
+          savePrescriptionToUserFirestore(loggedUser.uid, newPrescription);
+        }
+
+        // সম্পূর্ণ হিস্ট্রি লোকাল ক্যাশে সংরক্ষণ
         webPrescriptionHistory.unshift(newPrescription);
         saveWebHistoryToStorage();
 

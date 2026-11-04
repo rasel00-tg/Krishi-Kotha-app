@@ -68,6 +68,50 @@ class DiseaseDiagnosisResult {
     this.notPlantImageMessage,
   });
 
+  DiseaseDiagnosisResult copyWith({
+    String? id,
+    String? plantName,
+    String? diseaseName,
+    String? confidence,
+    int? confidencePercentage,
+    List<String>? causesAndSymptoms,
+    List<String>? organicCures,
+    List<ChemicalCureItem>? chemicalCures,
+    List<String>? precautionAndCare,
+    String? emergencyWarning,
+    String? userSymptoms,
+    String? localImagePath,
+    String? imageUrl,
+    DateTime? createdAt,
+    bool? expertVerified,
+    bool? isNonAgri,
+    String? nonAgriMessage,
+    bool? isNotPlantImage,
+    String? notPlantImageMessage,
+  }) {
+    return DiseaseDiagnosisResult(
+      id: id ?? this.id,
+      plantName: plantName ?? this.plantName,
+      diseaseName: diseaseName ?? this.diseaseName,
+      confidence: confidence ?? this.confidence,
+      confidencePercentage: confidencePercentage ?? this.confidencePercentage,
+      causesAndSymptoms: causesAndSymptoms ?? this.causesAndSymptoms,
+      organicCures: organicCures ?? this.organicCures,
+      chemicalCures: chemicalCures ?? this.chemicalCures,
+      precautionAndCare: precautionAndCare ?? this.precautionAndCare,
+      emergencyWarning: emergencyWarning ?? this.emergencyWarning,
+      userSymptoms: userSymptoms ?? this.userSymptoms,
+      localImagePath: localImagePath ?? this.localImagePath,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      expertVerified: expertVerified ?? this.expertVerified,
+      isNonAgri: isNonAgri ?? this.isNonAgri,
+      nonAgriMessage: nonAgriMessage ?? this.nonAgriMessage,
+      isNotPlantImage: isNotPlantImage ?? this.isNotPlantImage,
+      notPlantImageMessage: notPlantImageMessage ?? this.notPlantImageMessage,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

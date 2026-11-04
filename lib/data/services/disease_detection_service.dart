@@ -4,11 +4,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/disease_diagnosis_result.dart';
 import '../../core/utils/bangla_number_converter.dart';
+import 'r2_storage_service.dart';
 
 /// KrishiMate AI স্মার্ট উদ্ভিদ রোগ বিশেষজ্ঞ সার্ভিস
 /// (নিরাপদ ব্যাকএন্ড সার্ভিস আর্কিটেকচার)
@@ -45,6 +47,26 @@ class DiseaseDetectionService {
   static final List<DiseaseDiagnosisResult> _localCache = [];
   static final StreamController<List<DiseaseDiagnosisResult>> _cacheStreamController =
       StreamController<List<DiseaseDiagnosisResult>>.broadcast();
+
+  /// ব্যবহারকারীর লগইন আইডি সংগ্রহ (লগইন থাকলে UID, গেস্ট হলে null)
+  static Future<String?> getLoggedInUserId() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null && !currentUser.isAnonymous) {
+        return currentUser.uid;
+      }
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('krishi_kotha_cached_user');
+      if (userJson != null) {
+        final map = jsonDecode(userJson) as Map<String, dynamic>;
+        final uid = map['uid'] as String?;
+        if (uid != null && !uid.startsWith('guest_')) {
+          return uid;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
 
   /// প্রশ্নটি কৃষি/উদ্ভিদ বিষয়ক কিনা যাচাই (Smart Agro Domain Validation: Prevent False Rejections)
   static bool isAgroQuestion(String queryText, {bool hasImage = false}) {
@@ -166,7 +188,7 @@ class DiseaseDetectionService {
 
     // ১. প্রথমে প্রাইমারি ইঞ্জিন দিয়ে চেষ্টা করা হবে
     try {
-      final result = await _callExpertEngine(
+      var result = await _callExpertEngine(
         engineId: _primaryEngineId,
         imageBytes: rawBytes,
         mimeType: detectedMime,
@@ -174,21 +196,55 @@ class DiseaseDetectionService {
         localImagePath: imageFile?.path,
       );
 
-      // সফল হলে ফায়ারবেসে সংরক্ষণ এবং স্ট্রিমে পুশ
-      await _persistDiagnosis(result);
+      // ৩. কঠোর শর্তযুক্ত ফিল্টারিং: উদ্ভিদহীন ছবি বা অ-কৃষি প্রশ্নে কোনো R2 আপলোড বা ডেটাবেজ সেভ হবে না
+      if (!result.isNotPlantImage && !result.isNonAgri) {
+        // ২. সফল যাচাইয়ের পর ছবি থাকলে ক্লাউডফ্লেয়ার আর২-তে আপলোড ও URL সংযোজন
+        if (rawBytes != null && rawBytes.isNotEmpty) {
+          try {
+            final optimizedBytes = R2StorageService.optimizeImageBytes(rawBytes);
+            final r2PublicUrl = await R2StorageService.uploadPlantImage(
+              bytes: optimizedBytes,
+              fileName: imageFile?.name ?? 'leaf_sample.jpg',
+              contentType: detectedMime,
+            );
+            result = result.copyWith(imageUrl: r2PublicUrl);
+          } catch (uploadError) {
+            debugPrint('Cloudflare R2 background upload note: $uploadError');
+          }
+        }
+
+        // ডুয়াল আর্কিটেকচারে হিস্ট্রি সংরক্ষণ (Guest: Local, Logged-in: Firestore)
+        await _persistDiagnosis(result);
+      }
+
       return result;
     } catch (primaryError) {
       // ২. প্রাইমারি মডেলে সমস্যা হলে অল্টারনেটিভ ফলব্যাক ইঞ্জিন দিয়ে চেষ্টা
       for (final fallbackEngine in _fallbackEngineIds) {
         try {
-          final result = await _callExpertEngine(
+          var result = await _callExpertEngine(
             engineId: fallbackEngine,
             imageBytes: rawBytes,
             mimeType: detectedMime,
             symptomsText: symptomsText,
             localImagePath: imageFile?.path,
           );
-          await _persistDiagnosis(result);
+
+          if (!result.isNotPlantImage && !result.isNonAgri) {
+            if (rawBytes != null && rawBytes.isNotEmpty) {
+              try {
+                final optimizedBytes = R2StorageService.optimizeImageBytes(rawBytes);
+                final r2PublicUrl = await R2StorageService.uploadPlantImage(
+                  bytes: optimizedBytes,
+                  fileName: imageFile?.name ?? 'leaf_sample.jpg',
+                  contentType: detectedMime,
+                );
+                result = result.copyWith(imageUrl: r2PublicUrl);
+              } catch (_) {}
+            }
+            await _persistDiagnosis(result);
+          }
+
           return result;
         } catch (_) {
           continue;
@@ -200,7 +256,9 @@ class DiseaseDetectionService {
         symptomsText: symptomsText,
         localImagePath: imageFile?.path,
       );
-      await _persistDiagnosis(fallbackResult);
+      if (!fallbackResult.isNotPlantImage && !fallbackResult.isNonAgri) {
+        await _persistDiagnosis(fallbackResult);
+      }
       return fallbackResult;
     }
   }
@@ -667,39 +725,60 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     );
   }
 
-  /// লোকাল ক্যাশ ও ফায়ারবেসে হিস্ট্রি ডেটা সংরক্ষণ (Requirement 1 & 3: ফিল্টারিং)
+  /// লোকাল ক্যাশ ও ফায়ারবেসে হিস্ট্রি ডেটা সংরক্ষণ (ডুয়াল ডাটাবেজ আর্কিটেকচার: Guest vs Logged-in)
   Future<void> _persistDiagnosis(DiseaseDiagnosisResult result) async {
     // ১. শর্তাধীন ফিল্টারিং: কৃষিবহির্ভূত প্রশ্ন ও উদ্ভিদহীন ছবির ফলাফল কোনো অবস্থাতেই হিস্ট্রিতে সেভ করা যাবে না
     if (result.isNonAgri || result.isNotPlantImage) {
       return;
     }
 
-    // ২. লোকাল মেমোরি ক্যাশে সর্বাগ্রে যুক্ত
+    // ২. লোকাল মেমোরি ক্যাশে সর্বাগ্রে যুক্ত (তাত্ক্ষণিক UI রেসপন্সের জন্য)
     _localCache.removeWhere((item) => item.id == result.id);
     _localCache.insert(0, result);
     _cacheStreamController.add(List.unmodifiable(_localCache));
 
-    // ৩. SharedPreferences-এ স্থায়ীভাবে লোকাল ক্যাশ সংরক্ষণ
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonList = _localCache.map((e) => jsonEncode(e.toMap())).toList();
-      await prefs.setStringList(_prefCacheKey, jsonList);
-    } catch (_) {}
+    final userId = await getLoggedInUserId();
 
-    // ৪. ফায়ারবেস ক্লাউডে সংরক্ষণ (রিয়েল-টাইম ডিসপ্লের জন্য)
+    // ৩. ডুয়াল স্টোরেজ কন্ডিশন:
+    // (ক) যদি ব্যবহারকারী লগইন অবস্থায় না থাকেন (Guest User):
+    //     - শুধুমাত্র লোকাল ক্যাশে (SharedPreferences) সম্পূর্ণ রেকর্ড সংরক্ষণ
+    if (userId == null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final jsonList = _localCache.map((e) => jsonEncode(e.toMap())).toList();
+        await prefs.setStringList(_prefCacheKey, jsonList);
+      } catch (_) {}
+      return;
+    }
+
+    // (খ) যদি ব্যবহারকারী একাউন্ট লগইন করা অবস্থায় থাকেন:
+    //     - সরাসরি ক্লাউড ফায়ারস্টোরে (Firestore) নির্দিষ্ট ইউজারের অধীনে: users/{userId}/krishimate_history/{docId}
     try {
       final map = result.toFirestoreMap();
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        map['user_id'] = currentUser.uid;
-      }
+      map['user_id'] = userId;
+
+      // ১. নির্দিষ্ট ইউজারের সাব-কালেকশন
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('krishimate_history')
+          .doc(result.id)
+          .set(map, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
+
+      // ২. ক্রস-ডিভাইস রিয়েল-টাইম ডিসপ্লে এবং ব্যাকআপের জন্য মূল কালেকশন
       await _firestore
           .collection(_collectionName)
           .doc(result.id)
           .set(map, SetOptions(merge: true))
           .timeout(const Duration(seconds: 5));
-    } catch (_) {
-      // অফলাইন মোডে থাকলে ফায়ারবেস ব্যর্থ হলেও লোকাল ক্যাশ থেকে চলবে
+
+      // ৩. অফলাইন মোডে তাৎক্ষণিক লোডের জন্য লোকাল ক্যাশ আপডেট
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = _localCache.map((e) => jsonEncode(e.toMap())).toList();
+      await prefs.setStringList(_prefCacheKey, jsonList);
+    } catch (e) {
+      debugPrint('Firestore history persist note: $e');
     }
   }
 
@@ -774,51 +853,97 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     return false;
   }
 
-  /// রিয়েল-টাইম Firestore StreamBuilder স্ট্রীম (শর্ত: নন-এগ্রি ও উদ্ভিদহীন ছবি সম্পূর্ণ ফিল্টার্ড)
-  Stream<List<DiseaseDiagnosisResult>> getRecentPrescriptionsStream({int limit = 15}) {
-    return _firestore
-        .collection(_collectionName)
-        .orderBy('created_at', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((snapshot) {
-          final items = snapshot.docs
-              .map((doc) => DiseaseDiagnosisResult.fromFirestore(doc))
-              .where((doc) => !doc.isNonAgri && !doc.isNotPlantImage)
-              .toList();
-          // ক্লাউড ডেটা দিয়ে লোকাল ক্যাশ সিঙ্ক
-          for (final item in items) {
-            if (!_localCache.any((cached) => cached.id == item.id)) {
-              _localCache.add(item);
+  /// রিয়েল-টাইম Firestore StreamBuilder স্ট্রীম (Guest vs Logged-in Dual Stream)
+  Stream<List<DiseaseDiagnosisResult>> getRecentPrescriptionsStream({int limit = 50}) async* {
+    // ১. প্রাথমিক ক্যাশড ডেটা সাথে সাথে প্রদর্শন (Instant UI Load)
+    final initialFiltered = _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+    if (initialFiltered.isNotEmpty) {
+      yield initialFiltered;
+    }
+
+    final userId = await getLoggedInUserId();
+
+    if (userId != null) {
+      // ২. লগইন ইউজারের ক্ষেত্রে সরাসরি ক্লাউড ফায়ারস্টোর users/{userId}/krishimate_history স্ট্রিম
+      yield* _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('krishimate_history')
+          .orderBy('created_at', descending: true)
+          .limit(limit)
+          .snapshots()
+          .map((snapshot) {
+            final items = snapshot.docs
+                .map((doc) => DiseaseDiagnosisResult.fromFirestore(doc))
+                .where((doc) => !doc.isNonAgri && !doc.isNotPlantImage)
+                .toList();
+
+            for (final item in items) {
+              if (!_localCache.any((cached) => cached.id == item.id)) {
+                _localCache.add(item);
+              }
             }
-          }
-          final filteredCache = _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
-          return items.isNotEmpty ? items : filteredCache;
-        })
-        .handleError((_) => _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList());
+            return items.isNotEmpty
+                ? items
+                : _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+          })
+          .handleError((_) => _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList());
+    } else {
+      // ৩. গেস্ট ইউজারের ক্ষেত্রে লোকাল ক্যাশ স্ট্রীম (SharedPreferences)
+      yield* _cacheStreamController.stream.map((list) {
+        return list.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+      });
+    }
   }
 
   /// নির্দিষ্ট প্রেসক্রিপশনের লাইভ ডকুমেন্ট স্ট্রীম (Firestore StreamBuilder)
-  Stream<DiseaseDiagnosisResult?> getPrescriptionLiveStream(String id) {
-    return _firestore.collection(_collectionName).doc(id).snapshots().map((doc) {
-      if (doc.exists) {
-        return DiseaseDiagnosisResult.fromFirestore(doc);
-      }
-      try {
-        return _localCache.firstWhere((e) => e.id == id);
-      } catch (_) {
-        return null;
-      }
-    }).handleError((_) {
-      try {
-        return _localCache.firstWhere((e) => e.id == id);
-      } catch (_) {
-        return null;
-      }
-    });
+  Stream<DiseaseDiagnosisResult?> getPrescriptionLiveStream(String id) async* {
+    final userId = await getLoggedInUserId();
+    if (userId != null) {
+      yield* _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('krishimate_history')
+          .doc(id)
+          .snapshots()
+          .map((doc) {
+            if (doc.exists) {
+              return DiseaseDiagnosisResult.fromFirestore(doc);
+            }
+            try {
+              return _localCache.firstWhere((e) => e.id == id);
+            } catch (_) {
+              return null;
+            }
+          })
+          .handleError((_) {
+            try {
+              return _localCache.firstWhere((e) => e.id == id);
+            } catch (_) {
+              return null;
+            }
+          });
+    } else {
+      yield* _firestore.collection(_collectionName).doc(id).snapshots().map((doc) {
+        if (doc.exists) {
+          return DiseaseDiagnosisResult.fromFirestore(doc);
+        }
+        try {
+          return _localCache.firstWhere((e) => e.id == id);
+        } catch (_) {
+          return null;
+        }
+      }).handleError((_) {
+        try {
+          return _localCache.firstWhere((e) => e.id == id);
+        } catch (_) {
+          return null;
+        }
+      });
+    }
   }
 
-  /// হিস্ট্রি আইটেম মুছে ফেলা
+  /// হিস্ট্রি আইটেম মুছে ফেলা (SharedPreferences ও Firestore থেকে)
   Future<void> deletePrescription(String id) async {
     _localCache.removeWhere((item) => item.id == id);
     _cacheStreamController.add(List.unmodifiable(_localCache));
@@ -827,6 +952,18 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
       final jsonList = _localCache.map((e) => jsonEncode(e.toMap())).toList();
       await prefs.setStringList(_prefCacheKey, jsonList);
     } catch (_) {}
+
+    final userId = await getLoggedInUserId();
+    if (userId != null) {
+      try {
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('krishimate_history')
+            .doc(id)
+            .delete();
+      } catch (_) {}
+    }
     try {
       await _firestore.collection(_collectionName).doc(id).delete();
     } catch (_) {}
