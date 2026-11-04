@@ -23,6 +23,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setUser(UserModel user) async {
+    _user = user;
+    _isLoading = false;
+    _errorMessage = null;
+    await _authService.cacheUser(user);
+    notifyListeners();
+  }
+
   AuthProvider() {
     _initUser();
   }

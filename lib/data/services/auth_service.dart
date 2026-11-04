@@ -190,6 +190,11 @@ class AuthService {
     _currentUser = updated;
   }
 
+  Future<void> cacheUser(UserModel user) async {
+    await _cacheUser(user);
+    _currentUser = user;
+  }
+
   Future<void> _cacheUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     final map = {

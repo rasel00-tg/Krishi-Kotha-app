@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/district_data.dart';
 import '../../core/widgets/app_warning_dialog.dart';
+import '../../data/models/user_model.dart';
+import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 
@@ -31,6 +35,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
   String _selectedOccupation = 'কৃষক';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   final List<String> _occupations = [
     'কৃষক',
@@ -80,157 +85,201 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     final email = _emailController.text.trim().toLowerCase();
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
+    final district = _selectedDistrict?.trim() ?? '';
+    final upazila = _selectedUpazila?.trim() ?? '';
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    // ১. জিমেইল ভ্যালিডেশন ডায়ালগ
-    if (email.isEmpty) {
+    // ১. যেকোনো ফিল্ড ফাঁকা থাকলে সতর্কবার্তা
+    if (email.isEmpty ||
+        phone.isEmpty ||
+        name.isEmpty ||
+        district.isEmpty ||
+        upazila.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       showAppWarningDialog(
         context,
-        message: 'অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!',
-      );
-      return;
-    }
-    if (!email.endsWith('@gmail.com') ||
-        !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', caseSensitive: false).hasMatch(email)) {
-      showAppWarningDialog(
-        context,
-        message: 'শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!',
+        message: 'অনুগ্রহ করে সব তথ্য পূরণ করুন!',
       );
       return;
     }
 
-    // ২. মোবাইল নম্বর ভ্যালিডেশন ডায়ালগ
+    // ২. মোবাইল নম্বর ভ্যালিডেশন ডায়ালগ (১১ ডিজিট ও ০১ দিয়ে শুরু)
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanPhone.length != 11 || !cleanPhone.startsWith('01')) {
       showAppWarningDialog(
         context,
-        message: 'অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!',
+        message: 'অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!',
       );
       return;
     }
 
-    // ৩. নাম ভ্যালিডেশন ডায়ালগ
-    if (name.isEmpty) {
-      showAppWarningDialog(
-        context,
-        message: 'অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন!',
-      );
-      return;
-    }
-
-    // ৪. জেলা ভ্যালিডেশন ডায়ালগ
-    if (_selectedDistrict == null || _selectedDistrict!.trim().isEmpty) {
-      showAppWarningDialog(
-        context,
-        message: 'অনুগ্রহ করে আপনার জেলা নির্বাচন করুন!',
-      );
-      return;
-    }
-
-    // ৫. উপজেলা ভ্যালিডেশন ডায়ালগ
-    if (_selectedUpazila == null || _selectedUpazila!.trim().isEmpty) {
-      showAppWarningDialog(
-        context,
-        message: 'অনুগ্রহ করে আপনার উপজেলা নির্বাচন করুন!',
-      );
-      return;
-    }
-
-    // ৬. পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
+    // ৩. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে
     if (password.length < 6) {
       showAppWarningDialog(
         context,
-        message: 'পাসওয়ার্ড কমপক্ষে ৬ সংখ্যার বা অক্ষরের হতে হবে!',
+        message: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!',
       );
       return;
     }
 
-    // ৭. কনফার্ম পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
+    // ৪. পাসওয়ার্ড দুটি না মিললে সতর্কবার্তা
     if (password != confirmPassword) {
       showAppWarningDialog(
         context,
-        message: 'পাসওয়ার্ড এবং পাসওয়ার্ড নিশ্চিতকরণ মিলছে না!',
+        message: 'পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!',
       );
       return;
     }
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.registerWithEmailAndPassword(
-      email: email,
-      password: password,
-      phone: phone,
-      name: name,
-      district: _selectedDistrict!,
-      upazila: _selectedUpazila!,
-      village: '',
-      occupation: _selectedOccupation,
-    );
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (!mounted) return;
+    try {
+      // Step 1: Duplicate check in Cloud Firestore users collection
+      if (FirebaseService.isFirebaseInitialized) {
+        final phoneQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('phone', isEqualTo: cleanPhone)
+            .limit(1)
+            .get();
 
-    if (success) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 55,
-                height: 55,
-                child: Image.asset('assets/icons/pnglogo.png', fit: BoxFit.contain),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'অভিনন্দন!',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। "কৃষি কথা"-এ আপনাকে স্বাগতম!',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14.5, color: AppColors.textPrimary, height: 1.4),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 4)),
-                      (route) => false,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('এগিয়ে যান', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
+        if (phoneQuery.docs.isNotEmpty) {
+          if (!mounted) return;
+          showAppWarningDialog(
+            context,
+            message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
+          );
+          return;
+        }
+
+        final altPhone = '+88$cleanPhone';
+        final altPhoneQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('phone', isEqualTo: altPhone)
+            .limit(1)
+            .get();
+
+        if (altPhoneQuery.docs.isNotEmpty) {
+          if (!mounted) return;
+          showAppWarningDialog(
+            context,
+            message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
+          );
+          return;
+        }
+      }
+
+      // Step 2: FirebaseAuth createUserWithEmailAndPassword
+      UserCredential? credential;
+      if (FirebaseService.isFirebaseInitialized) {
+        credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } else {
+        throw Exception('ফায়ারবেস সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+      }
+
+      final firebaseUser = credential.user;
+      if (firebaseUser == null) {
+        throw Exception('ব্যবহারকারী তৈরি করা সম্ভব হয়নি। আবার চেষ্টা করুন।');
+      }
+
+      try {
+        await firebaseUser.updateDisplayName(name);
+      } catch (_) {}
+
+      // Step 3: Save profile in users/{uid} via .set()
+      final userModel = UserModel(
+        uid: firebaseUser.uid,
+        name: name,
+        email: email,
+        phone: cleanPhone,
+        district: district,
+        upazila: upazila,
+        village: '',
+        occupation: _selectedOccupation,
+        preferredCrops: [],
+        createdAt: DateTime.now(),
       );
-    } else {
+
+      await FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid).set({
+        'uid': firebaseUser.uid,
+        'name': name,
+        'email': email,
+        'phone': cleanPhone,
+        'district': district,
+        'upazila': upazila,
+        'village': '',
+        'occupation': _selectedOccupation,
+        'preferredCrops': <String>[],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Update AuthProvider and local storage cache
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.setUser(userModel);
+
+      if (!mounted) return;
+
+      // Step 4: Success Popup & Redirection
+      showAppSuccessDialog(
+        context,
+        title: 'অভিনন্দন!',
+        message: 'আপনার একাউন্ট সফলভাবে তৈরি হয়েছে।',
+        autoDismiss: false,
+        onConfirm: () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const MainNavigationScreen(initialIndex: 4),
+            ),
+            (route) => false,
+          );
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = 'এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!';
+          break;
+        case 'weak-password':
+          errorMessage = 'পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!';
+          break;
+        case 'invalid-email':
+          errorMessage = 'জিমেইল এড্রেসটি সঠিক নয়!';
+          break;
+        default:
+          errorMessage = 'একাউন্ট তৈরিতে সমস্যা হয়েছে: ${e.message ?? e.code}';
+          break;
+      }
       showAppWarningDialog(
         context,
-        message: authProvider.errorMessage ?? 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        message: errorMessage,
       );
+    } catch (e) {
+      if (!mounted) return;
+      final errorText = e.toString().replaceFirst('Exception: ', '');
+      showAppWarningDialog(
+        context,
+        message: errorText.isNotEmpty ? errorText : 'একাউন্ট তৈরিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -710,13 +759,13 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: authProvider.isLoading ? null : _submitRegistration,
+                    onPressed: _isLoading ? null : _submitRegistration,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: authProvider.isLoading
+                    child: _isLoading
                         ? const SizedBox(
                             width: 22,
                             height: 22,

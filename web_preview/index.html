@@ -3243,7 +3243,7 @@
             </div>
 
             <!-- Submit Button: একাউন্ট তৈরি করুন -->
-            <button type="button" onclick="executeFullRegistration()" style="width: 100%; height: 48px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32); margin-top: 5px;">
+            <button type="button" id="btnFullRegSubmit" onclick="executeFullRegistration()" style="width: 100%; height: 48px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32); margin-top: 5px;">
               <i class="fa-solid fa-circle-check"></i>
               <span>একাউন্ট তৈরি করুন</span>
             </button>
@@ -9075,113 +9075,132 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const pass = (document.getElementById('fullRegPassword')?.value || '');
       const confirmPass = (document.getElementById('fullRegConfirmPassword')?.value || '');
 
-      if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
-        showWarningDialog('অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!');
+      // ১. যেকোনো ফিল্ড ফাঁকা থাকলে সেন্ট্রাল লোগো সতর্কবার্তা
+      if (!email || !phone || !name || !district || !upazila || !pass || !confirmPass) {
+        showWarningDialog('অনুগ্রহ করে সব তথ্য পূরণ করুন!');
         return;
       }
+
+      // ২. মোবাইল নম্বর ভ্যালিডেশন (১১ ডিজিট ও ০১ দিয়ে শুরু)
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
-        showWarningDialog('অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!');
+        showWarningDialog('অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!');
         return;
       }
-      if (!name) {
-        showWarningDialog('অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন!');
+
+      // ৩. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে
+      if (pass.length < 6) {
+        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
         return;
       }
-      if (!district) {
-        showWarningDialog('অনুগ্রহ করে আপনার জেলা নির্বাচন করুন!');
-        return;
-      }
-      if (!upazila) {
-        showWarningDialog('অনুগ্রহ করে আপনার উপজেলা নির্বাচন করুন!');
-        return;
-      }
-      if (!pass || pass.length < 6) {
-        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ সংখ্যার বা অক্ষরের হতে হবে!');
-        return;
-      }
+
+      // ৪. পাসওয়ার্ড দুটি না মিললে সতর্কবার্তা
       if (pass !== confirmPass) {
-        showWarningDialog('পাসওয়ার্ড এবং পাসওয়ার্ড নিশ্চিতকরণ মিলছে না!');
+        showWarningDialog('পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!');
         return;
       }
 
-      // ১. ক্লাউড ফায়ারস্টোরে ডুপ্লিকেট জিমেইল বা মোবাইল নম্বর চেক (Single Account Policy)
-      if (window.firebase && firebase.firestore) {
-        try {
-          const emailSnap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
-          if (emailSnap && !emailSnap.empty) {
-            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
-            return;
-          }
-
-          const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
-          if (phoneSnap && !phoneSnap.empty) {
-            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
-            return;
-          }
-          const altPhone = '+88' + cleanPhone;
-          const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
-          if (altPhoneSnap && !altPhoneSnap.empty) {
-            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
-            return;
-          }
-        } catch (checkErr) {
-          console.warn('Firestore duplicate check notice:', checkErr);
-        }
+      const btn = document.getElementById('btnFullRegSubmit');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>অপেক্ষা করুন...</span>';
       }
-
-      let uid = 'user_' + Date.now();
-
-      // ২. ফায়ারবেস অথেন্টিকেশন দিয়ে অ্যাকাউন্ট তৈরি
-      if (window.firebase && firebase.auth) {
-        try {
-          const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
-          if (cred && cred.user) {
-            uid = cred.user.uid;
-            try {
-              await cred.user.updateProfile({ displayName: name });
-            } catch (_) {}
-          }
-        } catch (authErr) {
-          if (authErr.code === 'auth/email-already-in-use') {
-            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
-            return;
-          } else if (authErr.code === 'auth/weak-password') {
-            showWarningDialog('পাসওয়ার্ডটি অন্তত ৬ অক্ষরের বা আরও শক্তিশালী হতে হবে।');
-            return;
-          } else {
-            showWarningDialog(authErr.message || 'রেজিস্ট্রেশন সম্পন্ন করা যায়নি।');
-            return;
-          }
-        }
-      }
-
-      const user = {
-        uid: uid,
-        name: name,
-        email: email,
-        phone: cleanPhone,
-        district: district,
-        upazila: upazila,
-        village: '',
-        occupation: occupation,
-        preferred_crops: ['বোরো ধান', 'আলু'],
-        createdAt: new Date().toISOString()
-      };
 
       try {
+        // Step 1: Duplicate check in Cloud Firestore users collection
         if (window.firebase && firebase.firestore) {
-          await firebase.firestore().collection('users').doc(uid).set(user);
+          try {
+            const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if (phoneSnap && !phoneSnap.empty) {
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!');
+              return;
+            }
+            const altPhone = '+88' + cleanPhone;
+            const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+            if (altPhoneSnap && !altPhoneSnap.empty) {
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!');
+              return;
+            }
+          } catch (checkErr) {
+            console.warn('Firestore duplicate check notice:', checkErr);
+          }
         }
-      } catch (err) {
-        console.warn('Firestore register notice:', err);
-      }
 
-      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
-      closeRegistrationPage();
-      closeModal('authModal');
-      updateWebProfileHeader();
-      showWarningDialog('আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। "কৃষি কথা"-এ আপনাকে স্বাগতম!', 'অভিনন্দন!');
+        let uid = 'user_' + Date.now();
+
+        // Step 2: FirebaseAuth createUserWithEmailAndPassword
+        if (window.firebase && firebase.auth) {
+          try {
+            const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+            if (cred && cred.user) {
+              uid = cred.user.uid;
+              try {
+                await cred.user.updateProfile({ displayName: name });
+              } catch (_) {}
+            }
+          } catch (authErr) {
+            if (authErr.code === 'auth/email-already-in-use') {
+              showWarningDialog('এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+              return;
+            } else if (authErr.code === 'auth/weak-password') {
+              showWarningDialog('পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!');
+              return;
+            } else if (authErr.code === 'auth/invalid-email') {
+              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!');
+              return;
+            } else {
+              showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (authErr.message || authErr.code));
+              return;
+            }
+          }
+        }
+
+        // Step 3: Save user document to Firestore users collection
+        const user = {
+          uid: uid,
+          name: name,
+          email: email,
+          phone: cleanPhone,
+          district: district,
+          upazila: upazila,
+          village: '',
+          occupation: occupation,
+          preferred_crops: ['বোরো ধান', 'আলু'],
+          createdAt: (window.firebase && firebase.firestore && firebase.firestore.FieldValue)
+            ? firebase.firestore.FieldValue.serverTimestamp()
+            : new Date().toISOString()
+        };
+
+        try {
+          if (window.firebase && firebase.firestore) {
+            await firebase.firestore().collection('users').doc(uid).set(user);
+          }
+        } catch (err) {
+          console.warn('Firestore register notice:', err);
+        }
+
+        // Cache user profile and update UI
+        localStorage.setItem('krishi_kotha_cached_user', JSON.stringify({
+          ...user,
+          createdAt: new Date().toISOString()
+        }));
+
+        closeRegistrationPage();
+        closeModal('authModal');
+        updateWebProfileHeader();
+
+        // Step 4: Success Popup & Redirection to Menu Screen
+        showSuccessDialog('অভিনন্দন!', 'আপনার একাউন্ট সফলভাবে তৈরি হয়েছে।', () => {
+          setTab('menu');
+        });
+      } catch (globalErr) {
+        showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (globalErr.message || globalErr));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>একাউন্ট তৈরি করুন</span>';
+        }
+      }
     }
 
     async function executeFullForgotPassword() {
