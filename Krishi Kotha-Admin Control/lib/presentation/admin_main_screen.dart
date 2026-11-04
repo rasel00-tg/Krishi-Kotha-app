@@ -8,6 +8,7 @@ import 'screens/notifications_management_screen.dart';
 import 'screens/market_prices_management_screen.dart';
 import 'screens/crops_management_screen.dart';
 import 'screens/users_feedback_screen.dart';
+import 'screens/krishimate_ai_reporting_screen.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -27,6 +28,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
     'রোগবালাই ও দমন গাইড (Pests & Diseases)',
     'কৃষক ও সহায়তা টিকিট মনিটরিং',
+    'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
   ];
 
   void _onNavigate(int index) {
@@ -50,6 +52,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         return const CropsManagementScreen(initialTabIndex: 1);
       case 5:
         return const UsersFeedbackScreen();
+      case 6:
+        return const KrishiMateAiReportingScreen();
       default:
         return DashboardScreen(onNavigate: _onNavigate);
     }

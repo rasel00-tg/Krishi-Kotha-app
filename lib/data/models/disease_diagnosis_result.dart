@@ -45,6 +45,9 @@ class DiseaseDiagnosisResult {
   final String? nonAgriMessage;
   final bool isNotPlantImage;
   final String? notPlantImageMessage;
+  final bool isDeletedByUser;
+  final String? userPhone;
+  final String? userName;
 
   const DiseaseDiagnosisResult({
     required this.id,
@@ -66,6 +69,9 @@ class DiseaseDiagnosisResult {
     this.nonAgriMessage,
     this.isNotPlantImage = false,
     this.notPlantImageMessage,
+    this.isDeletedByUser = false,
+    this.userPhone,
+    this.userName,
   });
 
   DiseaseDiagnosisResult copyWith({
@@ -88,6 +94,9 @@ class DiseaseDiagnosisResult {
     String? nonAgriMessage,
     bool? isNotPlantImage,
     String? notPlantImageMessage,
+    bool? isDeletedByUser,
+    String? userPhone,
+    String? userName,
   }) {
     return DiseaseDiagnosisResult(
       id: id ?? this.id,
@@ -109,6 +118,9 @@ class DiseaseDiagnosisResult {
       nonAgriMessage: nonAgriMessage ?? this.nonAgriMessage,
       isNotPlantImage: isNotPlantImage ?? this.isNotPlantImage,
       notPlantImageMessage: notPlantImageMessage ?? this.notPlantImageMessage,
+      isDeletedByUser: isDeletedByUser ?? this.isDeletedByUser,
+      userPhone: userPhone ?? this.userPhone,
+      userName: userName ?? this.userName,
     );
   }
 
@@ -133,6 +145,9 @@ class DiseaseDiagnosisResult {
       'non_agri_message': nonAgriMessage,
       'is_not_plant_image': isNotPlantImage,
       'not_plant_image_message': notPlantImageMessage,
+      'isDeletedByUser': isDeletedByUser,
+      'user_phone': userPhone,
+      'user_name': userName,
     };
   }
 
@@ -205,6 +220,9 @@ class DiseaseDiagnosisResult {
           (map['is_not_plant_image'] == true
               ? 'আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।'
               : null),
+      isDeletedByUser: map['isDeletedByUser'] as bool? ?? (map['is_deleted_by_user'] as bool? ?? false),
+      userPhone: map['user_phone']?.toString(),
+      userName: map['user_name']?.toString(),
     );
   }
 

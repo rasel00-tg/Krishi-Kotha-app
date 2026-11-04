@@ -121,6 +121,12 @@ class AdminSidebar extends StatelessWidget {
                   label: 'কৃষক ও সহায়তা',
                   subtitle: 'ব্যবহারকারী ও ফিডব্যাক',
                 ),
+                _buildMenuItem(
+                  index: 6,
+                  icon: Icons.smart_toy_rounded,
+                  label: 'KrishiMate AI',
+                  subtitle: 'এআই প্রেসক্রিপশন ও হিস্ট্রি',
+                ),
               ],
             ),
           ),

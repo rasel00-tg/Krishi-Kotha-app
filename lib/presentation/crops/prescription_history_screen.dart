@@ -145,6 +145,83 @@ class _PrescriptionHistoryScreenState extends State<PrescriptionHistoryScreen> {
     );
   }
 
+  /// ১. সফট-ডিলিট কনফার্মেশন ডায়ালগ ও অ্যাকশন
+  Future<bool> _confirmDeletePrescription(BuildContext context, DiseaseDiagnosisResult item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_outline_rounded, color: Color(0xFFD32F2F), size: 24),
+            SizedBox(width: 8),
+            Text(
+              'হিস্ট্রি মুছে ফেলুন',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFFD32F2F),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'আপনি কি "${item.plantName} - ${item.diseaseName}" প্রেসক্রিপশনটি হিস্ট্রি থেকে মুছে ফেলতে চান? এটি আপনার তালিকা থেকে লুকানো থাকবে।',
+          style: const TextStyle(
+            fontSize: 13.5,
+            color: Color(0xFF455A64),
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'বাতিল',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              elevation: 0,
+            ),
+            child: const Text(
+              'মুছে ফেলুন',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await DiseaseDetectionService.instance.deletePrescription(item.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('প্রেসক্রিপশনটি সফলভাবে তালিকা থেকে মুছে ফেলা হয়েছে।'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
   String _formatBanglaDate(DateTime date) {
     const months = [
       '',
@@ -228,109 +305,160 @@ class _PrescriptionHistoryScreenState extends State<PrescriptionHistoryScreen> {
                               ? item.causesAndSymptoms.first
                               : (item.organicCures.isNotEmpty ? item.organicCures.first : item.diseaseName));
 
-                      return Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF2E7D32).withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => DiseasePrescriptionResultScreen(result: item),
-                                ),
-                              );
-                            },
+                      return Dismissible(
+                        key: ValueKey('presc_${item.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFEBEE),
                             borderRadius: BorderRadius.circular(16),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // তারিখ ও তীর
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF558B2F)),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            _formatBanglaDate(item.createdAt),
+                            border: Border.all(color: const Color(0xFFFFCDD2), width: 1.2),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.delete_sweep_rounded, color: Color(0xFFD32F2F), size: 24),
+                              SizedBox(width: 6),
+                              Text(
+                                'মুছে ফেলুন',
+                                style: TextStyle(
+                                  color: Color(0xFFD32F2F),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        confirmDismiss: (direction) async {
+                          return await _confirmDeletePrescription(context, item);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2E7D32).withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => DiseasePrescriptionResultScreen(result: item),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // তারিখ, ডিলিট বাটন ও তীর
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF558B2F)),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              _formatBanglaDate(item.createdAt),
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF558B2F),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // ১. সফট-ডিলিট অ্যাকশন বাটন
+                                            InkWell(
+                                              onTap: () => _confirmDeletePrescription(context, item),
+                                              borderRadius: BorderRadius.circular(20),
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(4.0),
+                                                child: Icon(
+                                                  Icons.delete_outline_rounded,
+                                                  size: 17,
+                                                  color: Color(0xFFE57373),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Color(0xFF81C784)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    // ফসলের নাম
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE8F5E9),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: const Color(0xFFA5D6A7), width: 0.8),
+                                          ),
+                                          child: Text(
+                                            item.plantName,
                                             style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF558B2F),
-                                              fontWeight: FontWeight.w600,
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF1B5E20),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Color(0xFF81C784)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-
-                                  // ফসলের নাম
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE8F5E9),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(color: const Color(0xFFA5D6A7), width: 0.8),
                                         ),
-                                        child: Text(
-                                          item.plantName,
-                                          style: const TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF1B5E20),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            item.diseaseName,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF1B5E20),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          item.diseaseName,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF1B5E20),
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-
-                                  // সমস্যার সংক্ষিপ্ত বিবরণ
-                                  Text(
-                                    summary,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF37474F),
-                                      height: 1.35,
+                                      ],
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                                    const SizedBox(height: 6),
+
+                                    // সমস্যার সংক্ষিপ্ত বিবরণ
+                                    Text(
+                                      summary,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF37474F),
+                                        height: 1.35,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

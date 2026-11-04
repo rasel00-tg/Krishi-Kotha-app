@@ -715,6 +715,10 @@
         <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/><path d="M21 16v2a3 3 0 0 1-3 3h-5"/></svg>
         <span>কৃষক ও সহায়তা টিকিট</span>
       </li>
+      <li class="menu-item" onclick="switchTab('krishimate-ai')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M9 11h.01"/><path d="M15 11h.01"/><path d="M11 15h2"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg>
+        <span>KrishiMate AI</span>
+      </li>
     </ul>
 
     <div class="sidebar-footer">
@@ -1001,6 +1005,127 @@
         </div>
       </div>
 
+      <!-- ================= TAB 7: KRISHIMATE AI ================= -->
+      <div id="tab-krishimate-ai" class="tab-content">
+        <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
+          <div>
+            <h2>KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড</h2>
+            <p>কৃষকদের আপলোডকৃত উদ্ভিদের রোগ নির্ণয়, ক্লাউড প্রেসক্রিপশন ও হিস্ট্রি ব্যবহারের রিয়েল-টাইম তদারকি ও রিপোর্টিং।</p>
+          </div>
+          <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M9 11h.01"/><path d="M15 11h.01"/><path d="M11 15h2"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg>
+          </div>
+        </div>
+
+        <!-- ৩. শীর্ষ অ্যানালিটিক্স মেট্রিক কার্ড (Today's Total Success Metric) -->
+        <div class="metrics-grid" style="margin-bottom: 24px;">
+          <div class="stat-card" style="border-left: 4px solid #2E7D32;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">আজকের সফল প্রশ্ন</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kmTodaySuccessCount" style="color: #1B5E20; margin-top: 8px;">০ টি</div>
+            <div class="stat-sub" style="color: #2E7D32; font-weight: 600;">আজ রাত ১২:০০ টা থেকে এআই সফল সমাধান</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">মোট প্রেসক্রিপশন</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M9 11h.01"/><path d="M15 11h.01"/><path d="M11 15h2"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kmTotalCount">০ টি</div>
+            <div class="stat-sub">সর্বমোট এগ্রো প্যাথোলজি কিউরি</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">সক্রিয় প্রেসক্রিপশন</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E0F2F1; display: flex; align-items: center; justify-content: center; color: #00796B;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c0-4 1.5-7.5 4-10"/><path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kmActiveCount">০ টি</div>
+            <div class="stat-sub">ব্যবহারকারীদের হিস্ট্রিতে দৃশ্যমান</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">ডিলিটকৃত হিস্ট্রি</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #C62828;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kmDeletedCount" style="color: #C62828;">০ টি</div>
+            <div class="stat-sub" style="color: #C62828;">ব্যবহারকারী অ্যাপ থেকে মুছে ফেলেছেন</div>
+          </div>
+        </div>
+
+        <!-- ৫. স্মার্ট ইউজার ফিল্টারিং ও সার্চ বার (Smart User Filtering & Search Bar) -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 14px 18px;">
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="position: relative; flex: 1;">
+              <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary);" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="kmSearchInput" oninput="filterKrishiMateList()" placeholder="ব্যবহারকারীর মোবাইল নম্বর বা ইমেইল দিয়ে খুঁজুন..." class="form-control" style="padding-left: 40px; height: 44px; font-size: 13.5px; border-radius: 10px;">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="resetKrishiMateSearch()" style="height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 18px; border-radius: 10px; font-weight: 700;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>রিসেট</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ৪. সম্পূর্ণ প্রশ্নোত্তর তালিকা ও ডেটা-টেবিল (Full Questions & Answers List) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>KrishiMate AI হিস্ট্রি ও প্রেসক্রিপশন লগ</h3>
+            <span class="badge badge-crop" id="kmTableCountBadge">মোট: ০ টি</span>
+          </div>
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th style="padding: 12px 14px; text-align: left;">তারিখ ও সময়</th>
+                  <th style="padding: 12px 14px; text-align: left;">ব্যবহারকারীর তথ্য</th>
+                  <th style="padding: 12px 14px; text-align: left;">ফসলের নাম</th>
+                  <th style="padding: 12px 14px; text-align: left;">শনাক্তকৃত রোগ</th>
+                  <th style="padding: 12px 14px; text-align: left;">স্ট্যাটাস ব্যাজ</th>
+                  <th style="padding: 12px 14px; text-align: center;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="kmTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ৪. KrishiMate AI Prescription Detail Modal -->
+  <div class="modal-overlay" id="kmDetailModal">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 720px; width: 92%; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.25);">
+      <!-- Pinned Header -->
+      <div style="padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; flex-shrink: 0;">
+        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M9 11h.01"/><path d="M15 11h.01"/><path d="M11 15h2"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg>
+          <span>KrishiMate AI প্রেসক্রিপশন বিস্তারিত</span>
+        </h3>
+        <button type="button" onclick="closeKmDetailModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1;">✕</button>
+      </div>
+      <!-- Scrollable Body -->
+      <div id="kmDetailModalBody" style="overflow-y: auto; padding: 20px 22px; flex: 1;">
+        <!-- Injected via JavaScript -->
+      </div>
+      <!-- Pinned Footer -->
+      <div style="padding: 12px 22px; border-top: 1px solid var(--border); background: #FAFDF9; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" onclick="closeKmDetailModal()" style="padding: 8px 24px; border-radius: 8px;">বন্ধ করুন</button>
+      </div>
     </div>
   </div>
 
@@ -1515,6 +1640,7 @@
     let pests = [];
     let users = [];
     let tickets = [];
+    let krishiMateList = [];
 
     // ==================== ROCK-SOLID INLINE SVG ICONS (IMMUNE TO FONT FAILURES) ====================
     const ICONS = {
@@ -1627,11 +1753,12 @@
         'market': 'বাজার দর ইনপুট ও আপডেট',
         'crops': 'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
         'pests': 'রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)',
-        'users': 'কৃষক ও সহায়তা টিকিট মনিটরিং'
+        'users': 'কৃষক ও সহায়তা টিকিট মনিটরিং',
+        'krishimate-ai': 'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড'
       };
       document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
 
-      const keys = ['dashboard', 'notifications', 'market', 'crops', 'pests', 'users'];
+      const keys = ['dashboard', 'notifications', 'market', 'crops', 'pests', 'users', 'krishimate-ai'];
       const idx = keys.indexOf(tabKey);
       if (idx >= 0) {
         document.querySelectorAll('.menu-item')[idx].classList.add('active');
@@ -1823,6 +1950,37 @@
         });
         renderUsers();
       }, err => console.error("Tickets stream error:", err));
+
+      // 7. KrishiMate AI Listener (Stream from disease_prescriptions)
+      try {
+        db.collection('disease_prescriptions').onSnapshot(snapshot => {
+          krishiMateList = [];
+          snapshot.forEach(doc => {
+            const d = doc.data() || {};
+            krishiMateList.push({
+              id: doc.id,
+              ...d
+            });
+          });
+          // Sort by created_at desc
+          krishiMateList.sort((a, b) => {
+            const getMs = (x) => {
+              const ts = x.created_at || x.createdAt;
+              if (!ts) return 0;
+              if (ts.toMillis) return ts.toMillis();
+              if (ts.seconds) return ts.seconds * 1000;
+              return new Date(ts).getTime() || 0;
+            };
+            return getMs(b) - getMs(a);
+          });
+          renderKrishiMateDashboard();
+        }, err => {
+          console.warn("KrishiMate stream note:", err);
+          renderKrishiMateDashboard();
+        });
+      } catch (kmErr) {
+        console.warn("KrishiMate listener init error:", kmErr);
+      }
     }
 
     function formatTime(timestamp) {
@@ -3487,6 +3645,47 @@
           await db.collection('notifications').doc(n.id).set(n, { merge: true });
         }
 
+        // Sample KrishiMate AI Prescriptions
+        const samplePrescriptions = [
+          {
+            id: 'presc_seed_1',
+            plant_name: 'ধান গাছ',
+            disease_name: 'ধানের ব্লাস্ট রোগ (Rice Blast)',
+            confidence: '৯৫%',
+            confidence_percentage: 95,
+            user_phone: '০১৭১২৩৪৫৬৭৮',
+            user_name: 'আব্দুল করিম',
+            user_email: 'abdul.karim@gmail.com',
+            user_query: 'ধানের পাতায় চোখের মতো ডিম্বাকৃতির দাগ তৈরি হয়েছে এবং শীষ সাদা হয়ে চিটা হয়ে যাচ্ছে।',
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            isDeletedByUser: false,
+            causes_and_symptoms: ['পাতায় বাদামী প্রান্তযুক্ত ডিম্বাকৃতি দাগ', 'ম্যাগনাপরথে ওরাইজি ছত্রাকের দ্রুত বিস্তার'],
+            organic_cures: ['জমিতে অতিরিক্ত ইউরিয়া সার প্রয়োগ বন্ধ রাখুন', 'পটাশ সার দুই কিস্তিতে বৃদ্ধি করে প্রয়োগ করুন'],
+            chemical_cures: [{ name: 'ট্রাইসাইক্লাজোল ৭৫% ডব্লিউপি (যেমন ট্রপার)', dosage: 'প্রতি লিটার পানিতে ০.৮ গ্রাম', instruction: 'বিকেলের দিকে সমস্ত গাছে স্প্রে করুন' }],
+            precaution_and_care: ['অনুমোদিত রোগ প্রতিরোধী জাত চাষ করুন', 'বীজ শোধন করুন']
+          },
+          {
+            id: 'presc_seed_2',
+            plant_name: 'বেগুন গাছ',
+            disease_name: 'বেগুনের ডগা ও ফল ছিদ্রকারী পোকা',
+            confidence: '৯২%',
+            confidence_percentage: 92,
+            user_phone: '০১৮৯৮৭৬৫৪৩২',
+            user_name: 'মো: রফিকুল ইসলাম',
+            user_email: 'rafiqul.agro@gmail.com',
+            user_query: 'কচি ডগা নেতিয়ে শুকিয়ে পড়েছে ও ফল ছিদ্র করে ভেতরে পোকা ঢুকে রয়েছে।',
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            isDeletedByUser: true,
+            causes_and_symptoms: ['কচি ডগা নুয়ে পড়া ও আক্রান্ত ফলের গায়ে পোকার বিষ্ঠা থাকা'],
+            organic_cures: ['আক্রান্ত ডগা ও ফল হাত দিয়ে তুলে মাটিতে পুঁতে ফেলুন', 'সেক্স ফেরোমোন ফাঁদ ব্যবহার করুন'],
+            chemical_cures: [{ name: 'এমামেকটিন বেনজোয়েট ৫% এসজি', dosage: 'প্রতি লিটার পানিতে ১ গ্রাম', instruction: '১৫ দিন অন্তর স্প্রে করুন' }],
+            precaution_and_care: ['ক্ষেত সার্বক্ষণিক পরিচ্ছন্ন রাখুন']
+          }
+        ];
+        for (let p of samplePrescriptions) {
+          await db.collection('disease_prescriptions').doc(p.id).set(p, { merge: true });
+        }
+
         showToast('ডেটাবেজ সফলভাবে সিড করা হয়েছে! মূল মোবাইল অ্যাপেও সাথে সাথে সিঙ্ক হয়েছে।');
       } catch (err) {
         showToast(formatErrorMsg(err));
@@ -3647,6 +3846,316 @@
       });
     }
 
+    // ==================== KRISHIMATE AI FUNCTIONS ====================
+    let kmSearchQuery = '';
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderKrishiMateDashboard() {
+      // If live list is initially empty, provide demo items for immediate rich display
+      if (krishiMateList.length === 0) {
+        krishiMateList = [
+          {
+            id: 'presc_init_1',
+            plant_name: 'ধান গাছ',
+            disease_name: 'ধানের ব্লাস্ট রোগ (Rice Blast)',
+            confidence: '৯৫%',
+            confidence_percentage: 95,
+            user_phone: '০১৭৫০০০০০০০',
+            user_name: 'আব্দুল করিম',
+            user_email: 'karim.agro@gmail.com',
+            user_query: 'ধানের পাতায় বাদামী দাগ ও গ্রীবা ব্লাস্টের আক্রমণ।',
+            created_at: new Date().toISOString(),
+            isDeletedByUser: false,
+            causes_and_symptoms: ['পাতায় বাদামী প্রান্তযুক্ত ডিম্বাকৃতি দাগ', 'ম্যাগনাপরথে ওরাইজি ছত্রাকের দ্রুত বিস্তার'],
+            organic_cures: ['জমিতে অতিরিক্ত ইউরিয়া সার প্রয়োগ বন্ধ রাখুন', 'পটাশ সার বৃদ্ধি করে প্রয়োগ করুন'],
+            chemical_cures: [{ name: 'ট্রাইসাইক্লাজোল ৭৫% ডব্লিউপি (যেমন ট্রপার)', dosage: 'প্রতি লিটার পানিতে ০.৮ গ্রাম', instruction: 'বিকেলের দিকে সমস্ত গাছে স্প্রে করুন' }],
+            precaution_and_care: ['অনুমোদিত রোগ প্রতিরোধী জাত চাষ করুন', 'বীজ শোধন করুন']
+          },
+          {
+            id: 'presc_init_2',
+            plant_name: 'বেগুন গাছ',
+            disease_name: 'বেগুনের ডগা ও ফল ছিদ্রকারী পোকা',
+            confidence: '৯২%',
+            confidence_percentage: 92,
+            user_phone: '০১৮৬০০০০০০০',
+            user_name: 'মো: রফিকুল ইসলাম',
+            user_email: 'rafiqul.farmer@gmail.com',
+            user_query: 'কচি ডগা নুয়ে পড়া ও আক্রান্ত ফলে পোকার বিষ্ঠা থাকা।',
+            created_at: new Date(Date.now() - 3600000).toISOString(),
+            isDeletedByUser: true,
+            causes_and_symptoms: ['কচি ডগা নুয়ে পড়া ও ফল ছিদ্রকারী কীড়া'],
+            organic_cures: ['আক্রান্ত ডগা ও ফল তুলে নষ্ট করে ফেলুন', 'সেক্স ফেরোমোন ফাঁদ ব্যবহার করুন'],
+            chemical_cures: [{ name: 'এমামেকটিন বেনজোয়েট ৫% এসজি', dosage: 'প্রতি লিটার পানিতে ১ গ্রাম', instruction: '১৫ দিন অন্তর স্প্রে করুন' }],
+            precaution_and_care: ['ক্ষেত সার্বক্ষণিক পরিচ্ছন্ন রাখুন']
+          }
+        ];
+      }
+
+      // 1. Calculate Today's Successful Questions (Today from 00:00:00, exclude non-agri / invalid images)
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+
+      const todaySuccessList = krishiMateList.filter(item => {
+        const isNonAgri = item.is_non_agri === true || item.isNonAgri === true;
+        const isNotPlant = item.is_not_plant_image === true || item.isNotPlantImage === true;
+        if (isNonAgri || isNotPlant) return false;
+
+        const ts = item.created_at || item.createdAt;
+        let ms = 0;
+        if (ts) {
+          if (ts.toMillis) ms = ts.toMillis();
+          else if (ts.seconds) ms = ts.seconds * 1000;
+          else ms = new Date(ts).getTime() || 0;
+        }
+        return ms >= startOfToday;
+      });
+
+      const todaySuccessCount = todaySuccessList.length;
+      const totalCount = krishiMateList.length;
+      const deletedCount = krishiMateList.filter(item => item.isDeletedByUser === true).length;
+      const activeCount = totalCount - deletedCount;
+
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      const toBn = (num) => String(num).replace(/[0-9]/g, d => bnDigits[d]);
+
+      const todayEl = document.getElementById('kmTodaySuccessCount');
+      if (todayEl) todayEl.innerText = toBn(todaySuccessCount) + ' টি';
+
+      const totalEl = document.getElementById('kmTotalCount');
+      if (totalEl) totalEl.innerText = toBn(totalCount) + ' টি';
+
+      const activeEl = document.getElementById('kmActiveCount');
+      if (activeEl) activeEl.innerText = toBn(activeCount) + ' টি';
+
+      const delEl = document.getElementById('kmDeletedCount');
+      if (delEl) delEl.innerText = toBn(deletedCount) + ' টি';
+
+      filterKrishiMateList();
+    }
+
+    function filterKrishiMateList() {
+      const input = document.getElementById('kmSearchInput');
+      kmSearchQuery = input ? input.value.trim().toLowerCase() : '';
+
+      const filtered = krishiMateList.filter(item => {
+        if (!kmSearchQuery) return true;
+        const phone = (item.user_phone || '').toLowerCase();
+        const email = (item.user_email || '').toLowerCase();
+        const name = (item.user_name || '').toLowerCase();
+        const crop = (item.plant_name || '').toLowerCase();
+        const disease = (item.disease_name || '').toLowerCase();
+        return phone.includes(kmSearchQuery) || email.includes(kmSearchQuery) || name.includes(kmSearchQuery) || crop.includes(kmSearchQuery) || disease.includes(kmSearchQuery);
+      });
+
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      const toBn = (num) => String(num).replace(/[0-9]/g, d => bnDigits[d]);
+
+      const badge = document.getElementById('kmTableCountBadge');
+      if (badge) badge.innerText = 'মোট: ' + toBn(filtered.length) + ' টি';
+
+      const tbody = document.getElementById('kmTableBody');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px 14px; color: var(--text-muted);">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" style="display: block; margin: 0 auto 8px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              ${kmSearchQuery ? 'এই নম্বরে বা তথ্যে কোনো হিস্ট্রি পাওয়া যায়নি' : 'এখনও কোনো প্রেসক্রিপশন হিস্ট্রি রেকর্ড পাওয়া যায়নি'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const isDeleted = item.isDeletedByUser === true;
+        const plant = item.plant_name || 'অজ্ঞাত ফসল';
+        const disease = item.disease_name || 'অজ্ঞাত রোগ';
+        const phone = item.user_phone || 'গেস্ট ইউজার';
+        const email = item.user_email || '';
+        const timeStr = formatBanglaFullDateTime(item.created_at || item.createdAt);
+
+        const statusBadge = isDeleted
+          ? `<span style="background: #FFEBEE; color: #C62828; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #FFCDD2; display: inline-flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #D32F2F;"></span>ব্যবহারকারী কর্তৃক ডিলিটকৃত</span>`
+          : `<span style="background: #E8F5E9; color: #1B5E20; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #A5D6A7; display: inline-flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #2E7D32;"></span>সক্রিয়</span>`;
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px 14px; font-size: 12.5px; color: var(--text-primary);">${timeStr}</td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 600; font-size: 13px; color: var(--text-primary);">${escapeHtml(phone)}</div>
+              ${email ? `<div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(email)}</div>` : ''}
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 700;">
+                ${escapeHtml(plant)}
+              </span>
+            </td>
+            <td style="padding: 12px 14px; font-weight: 600; font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${escapeHtml(disease)}
+            </td>
+            <td style="padding: 12px 14px;">
+              ${statusBadge}
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <button type="button" class="btn btn-primary" onclick="openKmDetailModal('${item.id}')" style="padding: 6px 12px; font-size: 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>বিস্তারিত দেখুন</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function resetKrishiMateSearch() {
+      const input = document.getElementById('kmSearchInput');
+      if (input) input.value = '';
+      kmSearchQuery = '';
+      filterKrishiMateList();
+    }
+
+    function openKmDetailModal(id) {
+      const item = krishiMateList.find(x => x.id === id);
+      if (!item) return;
+
+      const body = document.getElementById('kmDetailModalBody');
+      if (!body) return;
+
+      const isDeleted = item.isDeletedByUser === true;
+      const plant = item.plant_name || 'অজ্ঞাত ফসল';
+      const disease = item.disease_name || 'অজ্ঞাত রোগ';
+      const phone = item.user_phone || 'গেস্ট ইউজার';
+      const email = item.user_email || '';
+      const name = item.user_name || '';
+      const query = item.user_query || item.user_symptoms || 'কোনো লক্ষণ উল্লেখ নেই';
+      const img = item.imageUrl || item.image_url || item.user_image_thumb;
+      const conf = item.confidence || `${item.confidence_percentage || 0}%`;
+      const timeStr = formatBanglaFullDateTime(item.created_at || item.createdAt);
+
+      const causes = Array.isArray(item.causes_and_symptoms) ? item.causes_and_symptoms : [];
+      const organic = Array.isArray(item.organic_cures) ? item.organic_cures : [];
+      const chemicals = Array.isArray(item.chemical_cures) ? item.chemical_cures : [];
+      const precautions = Array.isArray(item.precaution_and_care) ? item.precaution_and_care : [];
+
+      body.innerHTML = `
+        <!-- User & Status Banner -->
+        <div style="background: ${isDeleted ? '#FFEBEE' : '#E8F5E9'}; border: 1px solid ${isDeleted ? '#FFCDD2' : '#C8E6C9'}; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${isDeleted ? '#D32F2F' : '#2E7D32'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            ${isDeleted ? '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>' : '<path d="m9 11 3 3L22 4"/><circle cx="12" cy="12" r="10"/>'}
+          </svg>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">
+              ব্যবহারকারী: ${name ? escapeHtml(name) + ' (' + escapeHtml(phone) + ')' : escapeHtml(phone)} ${email ? ' | ' + escapeHtml(email) : ''}
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: ${isDeleted ? '#C62828' : '#1B5E20'}; margin-top: 2px;">
+              ${isDeleted ? 'স্ট্যাটাস: ব্যবহারকারী কর্তৃক ডিলিটকৃত (ইউজার অ্যাপের দৃশ্যমান তালিকা থেকে সরানো, ক্লাউড ব্যাকআপে সংরক্ষিত)' : 'স্ট্যাটাস: সক্রিয় (ব্যবহারকারীর হিস্ট্রি তালিকায় বিদ্যমান)'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Crop & Disease Card -->
+        <div style="background: #F1F8E9; border: 1px solid #A5D6A7; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+            <span style="background: #2E7D32; color: white; padding: 3px 10px; border-radius: 6px; font-size: 13px; font-weight: 700;">${escapeHtml(plant)}</span>
+            <span style="background: white; color: #2E7D32; border: 1px solid #2E7D32; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">নির্ভুলতা: ${escapeHtml(conf)}</span>
+            <span style="margin-left: auto; font-size: 12px; color: var(--text-muted);">${timeStr}</span>
+          </div>
+          <div style="font-size: 18px; font-weight: 800; color: #1B5E20;">${escapeHtml(disease)}</div>
+        </div>
+
+        <!-- User Query / Symptoms -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">কৃষকের জিজ্ঞাসা / লক্ষণসমূহ:</div>
+          <div style="background: #F8F9FA; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; color: #37474F; line-height: 1.45;">
+            ${escapeHtml(query)}
+          </div>
+        </div>
+
+        <!-- Cloudflare R2 Uploaded Plant Image -->
+        ${img ? `
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>ক্লাউডফ্লেয়ার R2-তে সংরক্ষিত আক্রান্ত উদ্ভিদের ছবি:</span>
+              <span style="font-size: 11px; background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Cloudflare R2</span>
+            </div>
+            <div style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #000; text-align: center;">
+              <img src="${img}" alt="Plant Sample" style="max-height: 260px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'padding: 30px; color: #9E9E9E; background: #FAFAFA;\'>ছবি লোড করা সম্ভব হয়নি</div>';">
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Causes & Symptoms -->
+        ${causes.length > 0 ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">রোগের কারণ ও লক্ষণ:</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #455A64; line-height: 1.5;">
+              ${causes.map(c => `<li style="margin-bottom: 4px;">${escapeHtml(c)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Organic Remedies -->
+        ${organic.length > 0 ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: #2E7D32; margin-bottom: 6px;">জৈব ও প্রাকৃতিক প্রতিকার:</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #2E7D32; line-height: 1.5;">
+              ${organic.map(o => `<li style="margin-bottom: 4px;">${escapeHtml(o)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Chemical Cures -->
+        ${chemicals.length > 0 ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: #C62828; margin-bottom: 6px;">রাসায়নিক সমাধান ও সঠিক মাত্রা:</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${chemicals.map(ch => {
+                if (typeof ch === 'object' && ch !== null) {
+                  return `
+                    <div style="background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 8px; padding: 10px;">
+                      <div style="font-weight: 700; font-size: 13px; color: #E65100;">${escapeHtml(ch.name || '')}</div>
+                      ${ch.dosage ? `<div style="font-size: 12px; color: #5D4037; margin-top: 2px;"><strong>মাত্রা:</strong> ${escapeHtml(ch.dosage)}</div>` : ''}
+                      ${ch.instruction ? `<div style="font-size: 12px; color: #757575; margin-top: 2px;"><strong>প্রয়োগ:</strong> ${escapeHtml(ch.instruction)}</div>` : ''}
+                    </div>
+                  `;
+                }
+                return `<div style="font-size: 13px; color: #C62828;">• ${escapeHtml(String(ch))}</div>`;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Precautions & Care -->
+        ${precautions.length > 0 ? `
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সতর্কতা ও ভবিষ্যত যত্ন:</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #455A64; line-height: 1.5;">
+              ${precautions.map(p => `<li style="margin-bottom: 4px;">${escapeHtml(p)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+      `;
+
+      const modal = document.getElementById('kmDetailModal');
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeKmDetailModal() {
+      const modal = document.getElementById('kmDetailModal');
+      if (modal) modal.classList.remove('active');
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       refreshCategoryDropdowns();
@@ -3656,6 +4165,7 @@
       renderMarketList();
       renderCrops();
       renderUsers();
+      renderKrishiMateDashboard();
       setupMarketFormPasteSanitizers();
     });
   </script>

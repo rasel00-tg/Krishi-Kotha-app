@@ -4971,7 +4971,9 @@
       const container = document.getElementById('diseaseHistoryFullList');
       if (!container) return;
 
-      if (!webPrescriptionHistory || webPrescriptionHistory.length === 0) {
+      const activeList = (webPrescriptionHistory || []).filter(item => !item.isDeletedByUser);
+
+      if (activeList.length === 0) {
         container.innerHTML = `
           <div style="text-align: center; padding: 60px 20px; font-size: 16px; font-weight: 700; color: var(--text-secondary);">
             পূর্বে কোনো হিস্ট্রি পাওয়া যায়নি
@@ -4980,14 +4982,19 @@
         return;
       }
 
-      container.innerHTML = webPrescriptionHistory.map((item) => `
+      container.innerHTML = activeList.map((item) => `
         <div onclick="openHistoryItemDetails('${item.id}')" style="background: white; border: 1.2px solid #C8E6C9; border-radius: 16px; padding: 12px; margin-bottom: 8px; width: 100%; box-sizing: border-box; box-shadow: 0 3px 8px rgba(46,125,50,0.05); cursor: pointer; transition: transform 0.15s ease;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #558B2F; font-weight: 600;">
               <i class="fa-regular fa-calendar" style="font-size: 12px;"></i>
               <span>${item.date || 'আজ, ০৪ নভেম্বর ২০২৬'}</span>
             </div>
-            <i class="fa-solid fa-chevron-right" style="font-size: 12px; color: #81C784;"></i>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" onclick="event.stopPropagation(); deleteWebPrescription('${item.id}')" title="হিস্ট্রি মুছে ফেলুন" style="background: none; border: none; color: #E57373; cursor: pointer; padding: 4px; font-size: 14px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <i class="fa-solid fa-chevron-right" style="font-size: 12px; color: #81C784;"></i>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
             <span style="font-size: 11.5px; font-weight: 800; color: #1B5E20; background: #E8F5E9; padding: 2px 8px; border-radius: 6px; border: 0.8px solid #A5D6A7;">
@@ -5002,6 +5009,38 @@
           </div>
         </div>
       `).join('');
+    }
+
+    async function deleteWebPrescription(id) {
+      if (!confirm('আপনি কি এই প্রেসক্রিপশনটি হিস্ট্রি থেকে মুছে ফেলতে চান? এটি আর আপনার তালিকায় প্রদর্শিত হবে না।')) return;
+      const target = webPrescriptionHistory.find(x => x.id === id);
+      if (target) {
+        target.isDeletedByUser = true;
+      }
+      saveWebHistoryToStorage();
+      renderWebPrescriptionHistory();
+
+      try {
+        const loggedUserStr = localStorage.getItem('krishi_kotha_cached_user');
+        let uid = null;
+        if (loggedUserStr) {
+          const u = JSON.parse(loggedUserStr);
+          if (u && u.uid && !u.uid.startsWith('guest_')) uid = u.uid;
+        }
+        if (window.firebase && firebase.firestore) {
+          const db = firebase.firestore();
+          if (uid) {
+            await db.collection('users').doc(uid).collection('krishimate_history').doc(id).set({
+              isDeletedByUser: true
+            }, { merge: true });
+          }
+          await db.collection('disease_prescriptions').doc(id).set({
+            isDeletedByUser: true
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.warn('Soft delete cloud sync note:', e);
+      }
     }
 
     function openHistoryItemDetails(id) {

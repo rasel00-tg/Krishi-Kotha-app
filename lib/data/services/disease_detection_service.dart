@@ -126,8 +126,8 @@ class DiseaseDetectionService {
         try {
           final map = jsonDecode(jsonStr) as Map<String, dynamic>;
           final item = DiseaseDiagnosisResult.fromMap(map);
-          // কৃষিবহির্ভূত বা উদ্ভিদহীন ছবির কথোপকথন ক্যাশে সেভ হবে না
-          if (item.isNonAgri || item.isNotPlantImage) continue;
+          // কৃষিবহির্ভূত বা উদ্ভিদহীন ছবি কিংবা ব্যবহারকারী কর্তৃক ডিলিটকৃত ক্যাশে লোড হবে না
+          if (item.isNonAgri || item.isNotPlantImage || item.isDeletedByUser) continue;
           if (!_localCache.any((x) => x.id == item.id)) {
             _localCache.add(item);
           }
@@ -756,6 +756,37 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     try {
       final map = result.toFirestoreMap();
       map['user_id'] = userId;
+      map['isDeletedByUser'] = false;
+
+      // ব্যবহারকারীর ফোন ও নাম সংরক্ষণ (এডমিন রিপোর্টিং ও ফিল্টারিংয়ের জন্য)
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        if (currentUser.phoneNumber?.isNotEmpty == true) {
+          map['user_phone'] = currentUser.phoneNumber;
+        }
+        if (currentUser.email?.isNotEmpty == true) {
+          map['user_email'] = currentUser.email;
+        }
+        if (currentUser.displayName?.isNotEmpty == true) {
+          map['user_name'] = currentUser.displayName;
+        }
+      }
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('krishi_kotha_cached_user');
+      if (userJson != null) {
+        try {
+          final uMap = jsonDecode(userJson) as Map<String, dynamic>;
+          if (map['user_phone'] == null || (map['user_phone'] as String).isEmpty) {
+            map['user_phone'] = uMap['phone'] ?? '';
+          }
+          if (map['user_name'] == null || (map['user_name'] as String).isEmpty) {
+            map['user_name'] = uMap['name'] ?? '';
+          }
+        } catch (_) {}
+      }
+      if (map['user_phone'] == null || (map['user_phone'] as String).isEmpty) {
+        map['user_phone'] = 'গেস্ট ইউজার';
+      }
 
       // ১. নির্দিষ্ট ইউজারের সাব-কালেকশন
       await _firestore
@@ -774,7 +805,6 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
           .timeout(const Duration(seconds: 5));
 
       // ৩. অফলাইন মোডে তাৎক্ষণিক লোডের জন্য লোকাল ক্যাশ আপডেট
-      final prefs = await SharedPreferences.getInstance();
       final jsonList = _localCache.map((e) => jsonEncode(e.toMap())).toList();
       await prefs.setStringList(_prefCacheKey, jsonList);
     } catch (e) {
@@ -855,8 +885,10 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
 
   /// রিয়েল-টাইম Firestore StreamBuilder স্ট্রীম (Guest vs Logged-in Dual Stream)
   Stream<List<DiseaseDiagnosisResult>> getRecentPrescriptionsStream({int limit = 50}) async* {
-    // ১. প্রাথমিক ক্যাশড ডেটা সাথে সাথে প্রদর্শন (Instant UI Load)
-    final initialFiltered = _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+    // ১. প্রাথমিক ক্যাশড ডেটা সাথে সাথে প্রদর্শন (Instant UI Load - ফিল্টার: সক্রিয় রেকর্ড)
+    final initialFiltered = _localCache
+        .where((e) => !e.isNonAgri && !e.isNotPlantImage && !e.isDeletedByUser)
+        .toList();
     if (initialFiltered.isNotEmpty) {
       yield initialFiltered;
     }
@@ -865,6 +897,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
 
     if (userId != null) {
       // ২. লগইন ইউজারের ক্ষেত্রে সরাসরি ক্লাউড ফায়ারস্টোর users/{userId}/krishimate_history স্ট্রিম
+      // কুয়েরিতে শুধুমাত্র isDeletedByUser == false এমন রেকর্ডগুলোই ব্যবহারকারীর সামনে দৃশ্যমান থাকবে
       yield* _firestore
           .collection('users')
           .doc(userId)
@@ -875,7 +908,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
           .map((snapshot) {
             final items = snapshot.docs
                 .map((doc) => DiseaseDiagnosisResult.fromFirestore(doc))
-                .where((doc) => !doc.isNonAgri && !doc.isNotPlantImage)
+                .where((doc) => !doc.isNonAgri && !doc.isNotPlantImage && !doc.isDeletedByUser)
                 .toList();
 
             for (final item in items) {
@@ -885,13 +918,19 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
             }
             return items.isNotEmpty
                 ? items
-                : _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+                : _localCache
+                    .where((e) => !e.isNonAgri && !e.isNotPlantImage && !e.isDeletedByUser)
+                    .toList();
           })
-          .handleError((_) => _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList());
+          .handleError((_) => _localCache
+              .where((e) => !e.isNonAgri && !e.isNotPlantImage && !e.isDeletedByUser)
+              .toList());
     } else {
       // ৩. গেস্ট ইউজারের ক্ষেত্রে লোকাল ক্যাশ স্ট্রীম (SharedPreferences)
       yield* _cacheStreamController.stream.map((list) {
-        return list.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
+        return list
+            .where((e) => !e.isNonAgri && !e.isNotPlantImage && !e.isDeletedByUser)
+            .toList();
       });
     }
   }
@@ -943,8 +982,10 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     }
   }
 
-  /// হিস্ট্রি আইটেম মুছে ফেলা (SharedPreferences ও Firestore থেকে)
+  /// হিস্ট্রি আইটেম সফট-ডিলিট আর্কিটেকচার (Soft-Delete in User App & Local Cache)
+  /// ডেটাবেজ থেকে স্থায়ীভাবে মোছা নিষিদ্ধ; ফায়ারস্টোরে isDeletedByUser: true সেট হবে
   Future<void> deletePrescription(String id) async {
+    // ১. লোকাল ক্যাশ ও রিয়েল-টাইম মেমোরি থেকে সরিয়ে নেওয়া
     _localCache.removeWhere((item) => item.id == id);
     _cacheStreamController.add(List.unmodifiable(_localCache));
     try {
@@ -954,6 +995,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     } catch (_) {}
 
     final userId = await getLoggedInUserId();
+    // ২. ফায়ারস্টোরে সফট-ডিলিট ফ্ল্যাগ আপডেট: isDeletedByUser = true (পার্মানেন্ট ডিলিট সম্পূর্ণ নিষিদ্ধ)
     if (userId != null) {
       try {
         await _firestore
@@ -961,11 +1003,14 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
             .doc(userId)
             .collection('krishimate_history')
             .doc(id)
-            .delete();
+            .set({'isDeletedByUser': true}, SetOptions(merge: true));
       } catch (_) {}
     }
     try {
-      await _firestore.collection(_collectionName).doc(id).delete();
+      await _firestore
+          .collection(_collectionName)
+          .doc(id)
+          .set({'isDeletedByUser': true}, SetOptions(merge: true));
     } catch (_) {}
   }
 }
