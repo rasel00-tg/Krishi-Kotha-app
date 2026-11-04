@@ -18,16 +18,16 @@ class RegistrationMultiStepScreen extends StatefulWidget {
 class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // ৮টি প্রয়োজনীয় ইনপুট কন্ট্রোলার
+  // প্রয়োজনীয় ইনপুট কন্ট্রোলার
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _upazilaController = TextEditingController(text: 'সদর');
-  final TextEditingController _villageController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  String _selectedDistrict = 'বগুড়া';
+  String? _selectedDistrict; // ডিফল্ট কোনো জেলা সিলেক্ট থাকবে না
+  String? _selectedUpazila;  // জেলা সিলেক্ট হলে তবেই সক্রিয় হবে
+  List<String> _upazilaOptions = [];
   String _selectedOccupation = 'কৃষক';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -43,15 +43,17 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
 
   // ফিক্সড ও অপরিবর্তনশীল ফন্ট স্টাইল (টাইপিংয়ের সময় কোনো ঝাঁকুনি বা আকার পরিবর্তন হবে না)
   static const TextStyle _inputTextStyle = TextStyle(
-    fontSize: 15.0,
-    height: 1.2,
-    fontWeight: FontWeight.normal,
+    fontFamily: 'Roboto',
+    fontSize: 16.0,
+    height: 1.25,
+    fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
   );
 
   static const StrutStyle _inputStrutStyle = StrutStyle(
-    fontSize: 15.0,
-    height: 1.2,
+    fontFamily: 'Roboto',
+    fontSize: 16.0,
+    height: 1.25,
     forceStrutHeight: true,
   );
 
@@ -60,21 +62,24 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     _emailController.dispose();
     _phoneController.dispose();
     _nameController.dispose();
-    _upazilaController.dispose();
-    _villageController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _onDistrictChanged(String? val) {
+    if (val == null) return;
+    setState(() {
+      _selectedDistrict = val;
+      _selectedUpazila = null; // জেলা পরিবর্তন হলে আগের উপজেলা রিসেট
+      _upazilaOptions = BangladeshLocationData.getUpazilas(val);
+    });
   }
 
   Future<void> _submitRegistration() async {
     final email = _emailController.text.trim().toLowerCase();
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
-    final district = _selectedDistrict;
-    final upazila = _upazilaController.text.trim().isEmpty ? 'সদর' : _upazilaController.text.trim();
-    final village = _villageController.text.trim();
-    final occupation = _selectedOccupation;
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
@@ -114,7 +119,25 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       return;
     }
 
-    // ৪. পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
+    // ৪. জেলা ভ্যালিডেশন ডায়ালগ
+    if (_selectedDistrict == null || _selectedDistrict!.trim().isEmpty) {
+      showAppWarningDialog(
+        context,
+        message: 'অনুগ্রহ করে আপনার জেলা নির্বাচন করুন!',
+      );
+      return;
+    }
+
+    // ৫. উপজেলা ভ্যালিডেশন ডায়ালগ
+    if (_selectedUpazila == null || _selectedUpazila!.trim().isEmpty) {
+      showAppWarningDialog(
+        context,
+        message: 'অনুগ্রহ করে আপনার উপজেলা নির্বাচন করুন!',
+      );
+      return;
+    }
+
+    // ৬. পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
     if (password.length < 6) {
       showAppWarningDialog(
         context,
@@ -123,7 +146,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       return;
     }
 
-    // ৫. কনফার্ম পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
+    // ৭. কনফার্ম পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
     if (password != confirmPassword) {
       showAppWarningDialog(
         context,
@@ -138,10 +161,10 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       password: password,
       phone: phone,
       name: name,
-      district: district,
-      upazila: upazila,
-      village: village,
-      occupation: occupation,
+      district: _selectedDistrict!,
+      upazila: _selectedUpazila!,
+      village: '',
+      occupation: _selectedOccupation,
     );
 
     if (!mounted) return;
@@ -220,12 +243,10 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
           ),
         ),
         backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
+        elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
-          tooltip: 'ফিরে যান',
         ),
       ),
       body: SafeArea(
@@ -238,31 +259,31 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ================= ১. লোগো (NO CONTAINER, NO BORDER, NO SHADOW) =================
+                // ================= ১. লোগো ও হেডার =================
                 Center(
                   child: SizedBox(
-                    width: 80,
-                    height: 80,
+                    width: 75,
+                    height: 75,
                     child: Image.asset(
                       'assets/icons/pnglogo.png',
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.eco_rounded,
-                        size: 70,
+                        size: 65,
                         color: AppColors.primary,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
 
                 // অ্যাপের নাম: "কৃষি কথা"
                 const Center(
                   child: Text(
                     'কৃষি কথা',
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 21,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primaryDark,
                       letterSpacing: 0.3,
@@ -270,28 +291,28 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
 
                 const Center(
                   child: Text(
                     'সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12.5,
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
 
-                // ================= ২. সমস্ত ৮টি ফিল্ড ধারাবাহিকভাবে দৃশ্যমান (FULL-SCREEN EDGE-TO-EDGE) =================
-                // ১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক)
+                // ================= ২. সমস্ত ফিল্ডসমূহ (কমপ্যাক্ট ১২-১৪px স্পেসিং সহ ফুল-স্ক্রিন) =================
+                // ১. জিমেইল এড্রেস (সহজ ও পরিচ্ছন্ন লেবেল)
                 const Text(
-                  '১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) *',
+                  'জিমেইল এড্রেস *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -303,9 +324,15 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'example@gmail.com',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 15.0,
+                      color: AppColors.textMuted,
+                      height: 1.25,
+                      fontWeight: FontWeight.normal,
+                    ),
                     prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -321,14 +348,14 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
-                // ২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু)
+                // ২. মোবাইল নম্বর
                 const Text(
-                  '২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু) *',
+                  'মোবাইল নম্বর (১১ ডিজিট) *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
@@ -341,9 +368,15 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: '01XXXXXXXXX',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 15.0,
+                      color: AppColors.textMuted,
+                      height: 1.25,
+                      fontWeight: FontWeight.normal,
+                    ),
                     prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 22),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -359,14 +392,14 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
                 // ৩. পূর্ণ নাম
                 const Text(
-                  '৩. পূর্ণ নাম *',
+                  'পূর্ণ নাম *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _nameController,
                   style: _inputTextStyle,
@@ -374,9 +407,15 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'আপনার পূর্ণ নাম লিখুন',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 15.0,
+                      color: AppColors.textMuted,
+                      height: 1.25,
+                      fontWeight: FontWeight.normal,
+                    ),
                     prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.primary, size: 22),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -392,9 +431,9 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
-                // ৪ ও ৫. জেলা ও উপজেলা (সমান্তরাল গ্রিড)
+                // ৪ ও ৫. জেলা ও উপজেলা (ডায়নামিক ডিপেন্ডেন্ট ড্রপডাউন)
                 Row(
                   children: [
                     // ৪. জেলা নির্বাচন
@@ -403,13 +442,24 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '৪. জেলা *',
+                            'জেলা *',
                             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 5),
                           DropdownButtonFormField<String>(
                             value: _selectedDistrict,
                             style: _inputTextStyle,
+                            isExpanded: true,
+                            hint: const Text(
+                              'জেলা নির্বাচন করুন',
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 13.5,
+                                color: AppColors.textMuted,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
                             decoration: InputDecoration(
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -427,35 +477,48 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                               ),
                             ),
                             items: DistrictData.districts.map((d) {
-                              return DropdownMenuItem(value: d, child: Text(d, style: _inputTextStyle));
+                              return DropdownMenuItem(
+                                value: d,
+                                child: Text(
+                                  d,
+                                  style: _inputTextStyle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
                             }).toList(),
-                            onChanged: (val) {
-                              if (val != null) setState(() => _selectedDistrict = val);
-                            },
+                            onChanged: _onDistrictChanged,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // ৫. উপজেলা / থানা
+                    const SizedBox(width: 10),
+                    // ৫. উপজেলা নির্বাচন (জেলা সিলেক্ট হওয়ার পর সক্রিয়)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '৫. উপজেলা *',
+                            'উপজেলা *',
                             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                           ),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: _upazilaController,
+                          const SizedBox(height: 5),
+                          DropdownButtonFormField<String>(
+                            value: _selectedUpazila,
                             style: _inputTextStyle,
-                            strutStyle: _inputStrutStyle,
+                            isExpanded: true,
+                            hint: Text(
+                              _selectedDistrict == null ? 'আগে জেলা বাছুন' : 'উপজেলা নির্বাচন করুন',
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 13.5,
+                                color: AppColors.textMuted,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
                             decoration: InputDecoration(
                               isDense: true,
-                              hintText: 'উপজেলা',
-                              hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
                                 borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -469,6 +532,21 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                                 borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
                               ),
                             ),
+                            items: _upazilaOptions.map((upz) {
+                              return DropdownMenuItem(
+                                value: upz,
+                                child: Text(
+                                  upz,
+                                  style: _inputTextStyle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: _selectedDistrict == null
+                                ? null
+                                : (val) {
+                                    if (val != null) setState(() => _selectedUpazila = val);
+                                  },
                           ),
                         ],
                       ),
@@ -476,21 +554,21 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
                 // ৬. পেশা / ক্যাটাগরি
                 const Text(
-                  '৬. পেশা / ক্যাটাগরি *',
+                  'পেশা / ক্যাটাগরি *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 DropdownButtonFormField<String>(
                   value: _selectedOccupation,
                   style: _inputTextStyle,
                   decoration: InputDecoration(
                     isDense: true,
                     prefixIcon: const Icon(Icons.work_outline_rounded, color: AppColors.primary, size: 22),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -512,23 +590,30 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
-                // ৭. নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)
+                // ৭. নতুন পাসওয়ার্ড
                 const Text(
-                  '৭. নতুন পাসওয়ার্ড (কমপক্ষে ৬ ডিজিট/অক্ষর) *',
+                  'নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর) *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  keyboardType: TextInputType.visiblePassword,
                   style: _inputTextStyle,
                   strutStyle: _inputStrutStyle,
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'পাসওয়ার্ড নির্ধারণ করুন...',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 15.0,
+                      color: AppColors.textMuted,
+                      height: 1.25,
+                      fontWeight: FontWeight.normal,
+                    ),
                     prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 22),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -538,7 +623,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -554,23 +639,30 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
 
                 // ৮. পাসওয়ার্ড নিশ্চিত করুন (কনফার্ম পাসওয়ার্ড)
                 const Text(
-                  '৮. পাসওয়ার্ড নিশ্চিত করুন (কনফার্ম পাসওয়ার্ড) *',
+                  'পাসওয়ার্ড নিশ্চিত করুন *',
                   style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
+                  keyboardType: TextInputType.visiblePassword,
                   style: _inputTextStyle,
                   strutStyle: _inputStrutStyle,
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'একই পাসওয়ার্ড পুনরায় লিখুন...',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 15.0,
+                      color: AppColors.textMuted,
+                      height: 1.25,
+                      fontWeight: FontWeight.normal,
+                    ),
                     prefixIcon: const Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 22),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -580,7 +672,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                       ),
                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -596,12 +688,12 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 18),
 
                 // নিচে স্পষ্ট ও চওড়া "একাউন্ট তৈরি করুন" সাবমিট বাটন
                 Container(
                   width: double.infinity,
-                  height: 50,
+                  height: 48,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
@@ -648,25 +740,25 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 10),
 
                 // Back to Login Prompt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'ইতিমধ্যে অ্যাকাউন্ট আছে?',
+                      'ইতিমধ্যে অ্যাকাউন্ট আছে? ',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13.5,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
                       child: const Text(
                         'লগইন করুন',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),
@@ -674,7 +766,8 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+
+                const SizedBox(height: 16),
               ],
             ),
           ),

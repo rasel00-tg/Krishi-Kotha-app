@@ -42,15 +42,17 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
   // Constant font styling to fix font stability & jumping
   static const TextStyle _inputTextStyle = TextStyle(
-    fontSize: 15.0,
-    height: 1.2,
-    fontWeight: FontWeight.normal,
+    fontFamily: 'Roboto',
+    fontSize: 16.0,
+    height: 1.25,
+    fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
   );
 
   static const StrutStyle _inputStrutStyle = StrutStyle(
-    fontSize: 15.0,
-    height: 1.2,
+    fontFamily: 'Roboto',
+    fontSize: 16.0,
+    height: 1.25,
     forceStrutHeight: true,
   );
 
@@ -445,8 +447,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                             isDense: true,
                             hintText: _loginTabIndex == 0 ? 'example@gmail.com' : '01XXXXXXXXX',
                             hintStyle: const TextStyle(
-                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontSize: 15.0,
                               color: AppColors.textMuted,
+                              height: 1.25,
                               fontWeight: FontWeight.normal,
                             ),
                             prefixIcon: Icon(
@@ -464,7 +468,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                     ),
                                   )
                                 : null,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -515,14 +519,18 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          keyboardType: TextInputType.visiblePassword,
                           style: _inputTextStyle,
                           strutStyle: _inputStrutStyle,
                           decoration: InputDecoration(
                             isDense: true,
                             hintText: 'পাসওয়ার্ড লিখুন...',
                             hintStyle: const TextStyle(
-                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontSize: 15.0,
                               color: AppColors.textMuted,
+                              height: 1.25,
+                              fontWeight: FontWeight.normal,
                             ),
                             prefixIcon: const Icon(
                               Icons.lock_outline_rounded,
@@ -537,7 +545,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
