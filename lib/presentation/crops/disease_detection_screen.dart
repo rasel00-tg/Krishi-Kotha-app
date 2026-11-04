@@ -359,6 +359,77 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
     );
   }
 
+  // ৩. কঠোর কৃষি প্রশ্ন যাচাই ও তাৎক্ষণিক পপ-আপ অ্যালার্ট (Strict Agro Validation Dialog)
+  void _showUnauthorizedQueryDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        elevation: 8,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEBEE),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFCDD2), width: 1.5),
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD32F2F), size: 40),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'অননুমোদিত প্রশ্ন!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFC62828),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "এটি গ্রহণযোগ্য প্রশ্ন নয়। 'কৃষি কথা' অ্যাপের এই সেবাটি শুধুমাত্র আপনার ফসল, গাছপালা ও উদ্ভিদের যাবতীয় রোগবালাই ও কৃষি সমস্যার সমাধানের জন্য নিবেদিত। অনুগ্রহ করে কৃষি বিষয়ক প্রশ্ন করার জন্য বিনীত অনুরোধ করা হচ্ছে।",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: Color(0xFF424242),
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD32F2F),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'ঠিক আছে',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ওয়ান-টাইম ওয়েলকাম অনবোর্ডিং পপ-আপ লজিক (SharedPreferences)
   Future<void> _checkFirstTimeWelcome() async {
     try {
@@ -800,6 +871,17 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
 
     FocusScope.of(context).unfocus();
 
+    final queryText = _textController.text.trim();
+    final hasImage = _selectedImage != null || (_webImageBytes != null && _webImageBytes!.isNotEmpty);
+
+    if (!hasImage && queryText.isEmpty) return;
+
+    // ৩. কঠোর কৃষি প্রশ্ন যাচাই: ১০০% কৃষি, ফসল, বালাই বা উদ্ভিদ সম্পর্কিত হতে হবে
+    if (!DiseaseDetectionService.isAgroQuestion(queryText, hasImage: hasImage)) {
+      _showUnauthorizedQueryDialog();
+      return;
+    }
+
     _thinkingMessages = _buildContextualThinkingMessages();
 
     setState(() {
@@ -828,18 +910,16 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
 
       _messageTimer?.cancel();
 
-      // ২. প্রশ্নটি কৃষিবহির্ভূত হলে রেট লিমিট ট্র্যাকিং এবং ১ ঘণ্টার লক হ্যান্ডলিং
+      // ৩. কঠোর কৃষি প্রশ্ন যাচাই: কোনো প্রকার অ-কৃষি উত্তর বা চ্যাট বাবল তৈরি নিষিদ্ধ
       if (result.isNonAgri) {
-        final newlyLocked = await DiseaseDetectionService.instance.recordOffTopicAndCheckLock();
-        if (newlyLocked && mounted) {
+        if (mounted) {
           setState(() {
-            _isChatLocked = true;
-            _lockRemainingMinutes = 60;
+            _currentPhase = DiseasePhase.idle;
           });
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _showLockoutNoticeDialog();
-          });
+          _morphController.reverse();
+          _showUnauthorizedQueryDialog();
         }
+        return;
       }
 
       if (mounted) {
@@ -893,6 +973,8 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final topPadding = MediaQuery.paddingOf(context).top;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = bottomInset > 0;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -915,7 +997,7 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
             bottom: false,
             child: Column(
               children: [
-                // ১. পরিচ্ছন্ন মিনিমাল শীর্ষ বার (শুধুমাত্র ব্যাক ও হিস্ট্রি আইকন)
+                // ১. পরিচ্ছন্ন মিনিমাল শীর্ষ বার (হিস্ট্রি মোডে শুধুমাত্র ব্যাক ও টাইটেল, হিস্ট্রি আইকন লুপ নেই)
                 _buildTopHeader(topPadding),
 
                 // মধ্যবর্তী ফ্লুইড ট্রান্সিশন অঞ্চল
@@ -941,15 +1023,15 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
             ),
           ),
 
-          // ১. অদৃশ্য ইনপুট ক্যাপসুল বার সমাধান: মূল স্ক্রিনের Stack-এর ভেতরে Positioned উইজেট হিসেবে সরাসরি নিচে ফিক্সড দৃশ্যমান
+          // ১. এআই ইনপুট বার উপরে তোলা: ফিক্সড বটম মেনুবারের উচ্চতা বিবেচনা করে ৯৬dp ওপরে এবং কিবোর্ড খুললে কিবোর্ডের ১০dp ওপরে ফ্লোটিং
           if (_currentPhase == DiseasePhase.idle)
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: isKeyboardOpen ? 10.0 : 96.0,
               child: SafeArea(
                 top: false,
-                bottom: true,
+                bottom: !isKeyboardOpen,
                 child: _buildFrostedInputCapsule(),
               ),
             ),
@@ -958,8 +1040,10 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
     );
   }
 
-  // ১. পরিচ্ছন্ন মিনিমাল শীর্ষ বার (Clean Minimal Top Bar: শুধুমাত্র ব্যাক ও হিস্ট্রি আইকন, কোনো লোগো বা টেক্সট নেই)
+  // ১. পরিচ্ছন্ন মিনিমাল শীর্ষ বার (Clean Minimal Top Bar: আনফোল্ড বা রেজাল্ট ভিউতে হিস্ট্রি আইকন সম্পূর্ণ অপসারিত)
   Widget _buildTopHeader(double topPadding) {
+    final isUnfolded = _currentPhase == DiseasePhase.unfolded;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -974,27 +1058,48 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // একদম বাম পাশে পরিচ্ছন্ন ব্যাক বাটন
+          // একদম বাম পাশে পরিচ্ছন্ন ব্যাক বাটন (রেজাল্ট ভিউতে _resetToIdle আর আইডল ভিউতে Navigator.maybePop)
           IconButton(
             tooltip: 'ফিরে যান',
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 22),
-            onPressed: () => Navigator.pop(context),
-          ),
-          // মাঝের সম্পূর্ণ অংশ পরিষ্কার ও ফাঁকা
-          const Spacer(),
-          // একদম ডান পাশে আলাদা হিস্ট্রি আইকন বাটন
-          IconButton(
-            tooltip: 'হিস্ট্রি',
-            icon: const Icon(Icons.history_rounded, color: Color(0xFF2E7D32), size: 26),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PrescriptionHistoryScreen()),
-              );
+              if (isUnfolded) {
+                _resetToIdle();
+              } else {
+                Navigator.maybePop(context);
+              }
             },
           ),
+          if (isUnfolded) ...[
+            const SizedBox(width: 4),
+            const Expanded(
+              child: Text(
+                'KrishiMate AI পরামর্শ ও সমাধান',
+                style: TextStyle(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1B5E20),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ] else ...[
+            const Spacer(),
+          ],
+          // একদম ডান পাশে হিস্ট্রি আইকন বাটন: রেজাল্ট বা বিস্তারিত ভিউতে হিস্ট্রি আইকন থাকবে না
+          if (!isUnfolded)
+            IconButton(
+              tooltip: 'হিস্ট্রি',
+              icon: const Icon(Icons.history_rounded, color: Color(0xFF2E7D32), size: 26),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrescriptionHistoryScreen()),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -1006,7 +1111,7 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 12, bottom: 120),
+      padding: const EdgeInsets.only(left: 10, right: 10, top: 12, bottom: 180),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -1307,6 +1412,7 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // ১. বাম পাশে ক্যামেরা আইকন
                     Material(
@@ -1352,11 +1458,15 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
                     ),
                     const SizedBox(width: 8),
 
-                    // মাঝে সেন্ট্রাল টেক্সট ইনপুট ফিল্ড: "ফসলের সমস্যা বা প্রশ্ন লিখুন..."
+                    // মাঝে সেন্ট্রাল টেক্সট ইনপুট ফিল্ড: অটো-এক্সপ্যান্ডিং ৪ লাইন পর্যন্ত (4-Line Auto Grow)
                     Expanded(
                       child: TextField(
                         controller: _textController,
                         enabled: !_isChatLocked,
+                        minLines: 1,
+                        maxLines: 4,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
                         style: TextStyle(
                           fontSize: 13.5,
                           color: _isChatLocked ? Colors.grey.shade600 : AppColors.textPrimary,
@@ -1371,10 +1481,9 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
                             color: _isChatLocked ? Colors.red.shade300 : const Color(0xFF8D99AE),
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                           isDense: true,
                         ),
-                        onSubmitted: (_) => _isChatLocked ? _showLockoutNoticeDialog() : _launchThinkingAndAnalysis(),
                       ),
                     ),
 
@@ -1577,28 +1686,28 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
             opacity: opacity,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              // ৪. নিচে ফিক্সড বটম মেনুবারের উচ্চতা অনুযায়ী পর্যাপ্ত সেফ স্পেস (bottom: 110px) বহাল, ওয়াইড এজ-টু-এজ ভিউ
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 120),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFFC8E6C9), width: 1.4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.12),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+              // ৩. বাইরের অপ্রয়োজনীয় বক্স/ফ্রেম দূর ও হরিজন্টাল ৮.০ এজ-টু-এজ মার্জিন (Edge-to-Edge Margins)
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0).copyWith(bottom: 120.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ২. রেজাল্ট কার্ডের উপরে KrishiMate AI অ্যানিমেটেড ব্র্যান্ড লোগো ও হেডার
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2E7D32).withOpacity(0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ২. রেজাল্ট কার্ডের উপরে KrishiMate AI অ্যানিমেটেড ব্র্যান্ড লোগো ও হেডার
-                    Row(
+                    child: Row(
                       children: [
                         Lottie.asset(
                           'assets/animation/AI chatbot.json',
@@ -1640,10 +1749,9 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
                         ),
                       ],
                     ),
+                  ),
 
-                    const SizedBox(height: 14),
-                    const Divider(color: Color(0xFFE8F5E9), height: 1.2),
-                    const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
                     // ৩. কঠোর কৃষি ফিল্টার হ্যান্ডলিং (Strict Domain Filter)
                     if (result.isNonAgri) ...[
@@ -1706,7 +1814,6 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
                     ),
                   ],
                 ),
-              ),
             ),
           ),
         );

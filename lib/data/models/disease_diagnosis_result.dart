@@ -79,11 +79,17 @@ class DiseaseDiagnosisResult {
       'user_symptoms': userSymptoms,
       'local_image_path': localImagePath,
       'image_url': imageUrl,
-      'created_at': Timestamp.fromDate(createdAt),
+      'created_at': createdAt.toIso8601String(),
       'expert_verified': expertVerified,
       'is_non_agri': isNonAgri,
       'non_agri_message': nonAgriMessage,
     };
+  }
+
+  Map<String, dynamic> toFirestoreMap() {
+    final map = toMap();
+    map['created_at'] = Timestamp.fromDate(createdAt);
+    return map;
   }
 
   factory DiseaseDiagnosisResult.fromMap(Map<String, dynamic> map, [String? docId]) {

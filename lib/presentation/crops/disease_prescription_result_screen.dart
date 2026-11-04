@@ -6,6 +6,8 @@ import '../../data/models/disease_diagnosis_result.dart';
 import '../../data/services/disease_detection_service.dart';
 import '../../data/services/prescription_pdf_service.dart';
 
+/// ২. বিস্তারিত পেজ (No Container, Full Screen Plain View)
+/// সম্পূর্ণ পরিষ্কার, এজ-টু-এজ স্ক্রিন ফিট এবং পড়া সহজ ডিজাইন
 class DiseasePrescriptionResultScreen extends StatelessWidget {
   final DiseaseDiagnosisResult result;
 
@@ -13,11 +15,16 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // প্রযুক্তিগত শর্ত: Firestore StreamBuilder বজায় রাখা হয়েছে
     return StreamBuilder<DiseaseDiagnosisResult?>(
       stream: DiseaseDetectionService.instance.getPrescriptionLiveStream(result.id),
       initialData: result,
       builder: (context, snapshot) {
-        final data = snapshot.data ?? result;
+        // ১. হিস্ট্রি থেকে পূর্ণাঙ্গ ডেটা লোড: লাইভ আপডেট পাওয়া গেলে তা ব্যবহার করবে, অন্যথায় পাস হওয়া মডেল
+        final live = snapshot.data;
+        final data = (live != null && (live.causesAndSymptoms.isNotEmpty || live.organicCures.isNotEmpty || live.chemicalCures.isNotEmpty))
+            ? live
+            : result;
 
         return Scaffold(
           backgroundColor: const Color(0xFFF9FBF9),
@@ -26,14 +33,14 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
             elevation: 0.5,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.maybePop(context),
             ),
             title: const Text(
               'KrishiMate AI পরামর্শ ও সমাধান',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: Color(0xFF1B5E20),
               ),
             ),
             actions: [
@@ -52,157 +59,25 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
           ),
           body: Stack(
             children: [
-              // মূল স্ক্রলেবল কনটেন্ট (ফুল-উইথ রেসপনসিভ এজ-টু-এজ ভিউ, নিচে ১২০px প্যাডিং)
+              // ফুল স্ক্রিন এজ-টু-এজ প্লেইন ভিউ (কোনো জটিল নেস্টেড বক্স ফ্রেম বা সাইড কন্টেইনার নেই)
               SingleChildScrollView(
-                padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 10.0, bottom: 120.0),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 12.0).copyWith(bottom: 110.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (data.isNonAgri) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFDE7),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFFFFF59D), width: 1.2),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.info_outline_rounded, color: Color(0xFFF57F17), size: 22),
-                                SizedBox(width: 8),
-                                Text(
-                                  'শুধুমাত্র কৃষি ও উদ্ভিদ সংরক্ষণ সেবা',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFFE65100),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              data.nonAgriMessage ??
-                                  "প্রিয় কৃষক ভাই, 'কৃষি কথা' অ্যাপের এই সেবাটি শুধুমাত্র আপনার ফসল, শাকসবজি, ফলমূল ও উদ্ভিদের যাবতীয় রোগবালাই শনাক্তকরণ ও কৃষি পরামর্শ প্রদানের জন্য তৈরি করা হয়েছে। অনুগ্রহ করে আপনার ফসলের কোনো সমস্যা বা আক্রান্ত পাতার ছবি ও লক্ষণ নিয়ে প্রশ্ন করুন। আমরা আপনাকে সঠিক সমাধান দিতে সদা প্রস্তুত।",
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF4E342E),
-                                height: 1.45,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ] else ...[
-                      // ৩.১ আপনার প্রশ্ন / লক্ষণ
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F8E9),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.help_outline_rounded, size: 17, color: Color(0xFF2E7D32)),
-                                SizedBox(width: 7),
-                                Text(
-                                  'আপনার প্রশ্ন / লক্ষণ:',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1B5E20),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              data.userSymptoms?.isNotEmpty == true
-                                  ? data.userSymptoms!
-                                  : (data.localImagePath != null ? 'আক্রান্ত পাতার ছবি সংযুক্ত করে পরামর্শ চাওয়া হয়েছিল।' : 'লক্ষণ বিশ্লেষণ'),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF2E3D2F),
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    // ১. ব্যবহারকারীর সম্পূর্ণ প্রশ্ন ("আপনার প্রশ্ন:")
+                    _buildUserQuestionSection(data),
 
-                      // ৩.২ KrishiMate AI এর বিশ্লেষণ ও পরামর্শ
-                      _buildSectionHeader(
-                        icon: Icons.psychology_rounded,
-                        iconColor: const Color(0xFF2E7D32),
-                        title: 'KrishiMate AI এর বিশ্লেষণ ও পরামর্শ:',
-                      ),
-                      const SizedBox(height: 10),
+                    const SizedBox(height: 18),
 
-                      // ১. শীর্ষ রোগ ও ফসলের ওভারভিউ কার্ড
-                      _buildHeroDiseaseCard(data),
-
-                      const SizedBox(height: 18),
-
-                      // ২. রোগের কারণ ও লক্ষণসমূহ
-                      _buildSectionHeader(
-                        icon: Icons.checklist_rounded,
-                        iconColor: const Color(0xFF0288D1),
-                        title: 'রোগের কারণ ও দৃশ্যমান লক্ষণসমূহ',
-                      ),
-                      const SizedBox(height: 8),
-                      _buildCausesAndSymptomsCard(data),
-
-                      const SizedBox(height: 20),
-
-                      // ৩. জরুরি চিকিৎসা ও প্রতিকার
-                      _buildSectionHeader(
-                        icon: Icons.medical_services_rounded,
-                        iconColor: const Color(0xFF2E7D32),
-                        title: 'জরুরি চিকিৎসা ও প্রতিকার',
-                      ),
-                      const SizedBox(height: 8),
-
-                      // ৩.১ জৈব ও প্রাকৃতিক প্রতিকার (ঘরোয়া সহজ সমাধান)
-                      _buildOrganicCuresCard(data),
-
-                      const SizedBox(height: 12),
-
-                      // ৩.২ সঠিক রাসায়নিক কীটনাশক/ছত্রাকনাশক ও প্রয়োগের অনুপাত
-                      _buildChemicalCuresCard(data),
-
-                      const SizedBox(height: 20),
-
-                      // ৪. ভবিষ্যৎ সুরক্ষায় করণীয় ও পরিচর্যা টিপস
-                      _buildSectionHeader(
-                        icon: Icons.shield_rounded,
-                        iconColor: const Color(0xFF7B1FA2),
-                        title: 'ভবিষ্যৎ সুরক্ষায় করণীয় ও পরিচর্যা টিপস',
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPrecautionCard(data),
-
-                      if (data.emergencyWarning != null && data.emergencyWarning!.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _buildEmergencyWarningCard(data.emergencyWarning!),
-                      ],
-                    ],
+                    // ২. KrishiMate AI এর সম্পূর্ণ উত্তর ("KrishiMate AI এর পরামর্শ:")
+                    _buildAiAdviceSection(data),
                   ],
                 ),
               ),
 
-              // ৫. পেজের নিচে ফিক্সড "প্রেসক্রিপশন ডাউনলোড / শেয়ার করুন" এবং "নতুন করে শনাক্ত করুন" বাটন
+              // পেজের নিচে ফিক্সড অ্যাকশন বার (নতুন করে শনাক্ত ও পরামর্শ ডাউনলোড/শেয়ার)
               _buildFixedBottomActionBar(context, data),
             ],
           ),
@@ -211,452 +86,417 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
     );
   }
 
-  // ১. শীর্ষ রোগ ও ফসলের ওভারভিউ কার্ড
-  Widget _buildHeroDiseaseCard(DiseaseDiagnosisResult data) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE8F5E9), Color(0xFFF1F8E9)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // যদি ছবি থাকে তবে থাম্বনেইল
-              if (data.localImagePath != null && File(data.localImagePath!).existsSync()) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.file(
-                    File(data.localImagePath!),
-                    width: 70,
-                    height: 70,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 14),
-              ] else ...[
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF2E7D32).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.eco_rounded, color: Colors.white, size: 30),
-                ),
-                const SizedBox(width: 14),
-              ],
+  /// ১. ব্যবহারকারীর সম্পূর্ণ প্রশ্ন সেকশন ("আপনার প্রশ্ন:")
+  Widget _buildUserQuestionSection(DiseaseDiagnosisResult data) {
+    final queryText = data.userSymptoms?.isNotEmpty == true
+        ? data.userSymptoms!
+        : (data.causesAndSymptoms.isNotEmpty
+            ? data.causesAndSymptoms.first
+            : data.diseaseName);
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'আক্রান্ত ফসল: ${data.plantName}',
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      data.diseaseName,
-                      style: const TextStyle(
-                        fontSize: 17.5,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1B5E20),
-                        height: 1.25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    final hasLocalImage = data.localImagePath != null &&
+        data.localImagePath!.isNotEmpty &&
+        File(data.localImagePath!).existsSync();
 
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFC8E6C9)),
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              // নির্ভুলতার মাত্রা
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFA5D6A7)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.verified_rounded, color: Color(0xFF2E7D32), size: 16),
-                    const SizedBox(width: 5),
-                    Text(
-                      'সম্ভাব্য নির্ভুলতা: ${data.confidence}',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1B5E20),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              const Text(
-                'ভেরিফাইড ডিজিটাল প্রেসক্রিপশন',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF388E3C),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // সেকশন হেডার উইজেট
-  Widget _buildSectionHeader({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-  }) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: iconColor, size: 19),
-        const SizedBox(width: 8),
+        // শিরোনাম: "আপনার প্রশ্ন:"
+        const Row(
+          children: [
+            Icon(Icons.help_outline_rounded, color: Color(0xFF2E7D32), size: 20),
+            SizedBox(width: 8),
+            Text(
+              'আপনার প্রশ্ন:',
+              style: TextStyle(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B5E20),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // সম্পূর্ণ টেক্সট (বড়, চওড়া ও সহজে পড়ার মতো)
         Text(
-          title,
+          queryText,
           style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF263238),
+            height: 1.45,
           ),
         ),
+
+        // ছবি থাকলে ফুল প্রিভিউ
+        if (hasLocalImage) ...[
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Image.file(
+              File(data.localImagePath!),
+              width: double.infinity,
+              maxHeight: 280,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ] else if (data.imageUrl != null && data.imageUrl!.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Image.network(
+              data.imageUrl!,
+              width: double.infinity,
+              maxHeight: 280,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox(),
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 14),
+        const Divider(color: Color(0xFFE0E0E0), height: 1.2),
       ],
     );
   }
 
-  // ২. রোগের কারণ ও লক্ষণ কার্ড
-  Widget _buildCausesAndSymptomsCard(DiseaseDiagnosisResult data) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  /// ২. KrishiMate AI এর সম্পূর্ণ উত্তর সেকশন ("KrishiMate AI এর পরামর্শ:")
+  Widget _buildAiAdviceSection(DiseaseDiagnosisResult data) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // শিরোনাম: "KrishiMate AI এর পরামর্শ:"
+        const Row(
+          children: [
+            Icon(Icons.psychology_rounded, color: Color(0xFF2E7D32), size: 22),
+            SizedBox(width: 8),
+            Text(
+              'KrishiMate AI এর পরামর্শ:',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B5E20),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // ফসলের নাম ও চিহ্নিত রোগ ব্যানার (Edge-to-Edge Plain View)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFE8F5E9), Color(0xFFF1F8E9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: data.causesAndSymptoms.map((point) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'আক্রান্ত ফসল: ${data.plantName}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'নির্ভুলতা: ${data.confidence}',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                data.diseaseName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1B5E20),
+                  height: 1.25,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // ১. প্রধান লক্ষণ ও ক্ষতির মাত্রা
+        if (data.causesAndSymptoms.isNotEmpty) ...[
+          const Row(
+            children: [
+              Icon(Icons.checklist_rounded, size: 18, color: Color(0xFF0288D1)),
+              SizedBox(width: 8),
+              Text(
+                'প্রধান লক্ষণ ও ক্ষতির মাত্রা:',
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0288D1),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ...data.causesAndSymptoms.map((point) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
-                  padding: EdgeInsets.only(top: 4.0),
-                  child: Icon(Icons.lens, size: 6, color: Color(0xFF0288D1)),
+                  padding: EdgeInsets.only(top: 6.0),
+                  child: Icon(Icons.circle, size: 6, color: Color(0xFF0288D1)),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     point,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.5,
                       color: Color(0xFF37474F),
-                      height: 1.35,
+                      height: 1.4,
                     ),
                   ),
                 ),
               ],
             ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+          )),
+          const SizedBox(height: 14),
+        ],
 
-  // ৩.১ জৈব ও প্রাকৃতিক প্রতিকার (ঘরোয়া সহজ সমাধান)
-  Widget _buildOrganicCuresCard(DiseaseDiagnosisResult data) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F8E9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFC5E1A5), width: 1.2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        // ২. তাৎক্ষণিক জৈব সমাধান (ঘরোয়া উপায়)
+        if (data.organicCures.isNotEmpty) ...[
           const Row(
             children: [
-              Icon(Icons.eco_rounded, color: Color(0xFF2E7D32), size: 18),
+              Icon(Icons.eco_rounded, size: 18, color: Color(0xFF2E7D32)),
               SizedBox(width: 8),
               Text(
-                'জৈব ও প্রাকৃতিক প্রতিকার (ঘরোয়া সমাধান)',
+                'তাৎক্ষণিক জৈব সমাধান (ঘরোয়া উপায়):',
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 14.5,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1B5E20),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          ...data.organicCures.map((cure) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF2E7D32)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      cure,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF263238),
-                        height: 1.35,
-                      ),
+          const SizedBox(height: 6),
+          ...data.organicCures.map((cure) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 6.0),
+                  child: Icon(Icons.circle, size: 6, color: Color(0xFF2E7D32)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    cure,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      color: Color(0xFF2E3D2F),
+                      height: 1.4,
                     ),
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+              ],
+            ),
+          )),
+          const SizedBox(height: 14),
         ],
-      ),
-    );
-  }
 
-  // ৩.২ সঠিক রাসায়নিক কীটনাশক/ছত্রাকনাশক ও প্রয়োগের অনুপাত
-  Widget _buildChemicalCuresCard(DiseaseDiagnosisResult data) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFE082), width: 1.2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        // ৩. অনুমোদিত রাসায়নিক বালাইনাশক ও ব্যবহারের সঠিক মাত্রা (ডোজ)
+        if (data.chemicalCures.isNotEmpty) ...[
           const Row(
             children: [
-              Icon(Icons.science_rounded, color: Color(0xFFE65100), size: 18),
+              Icon(Icons.science_rounded, size: 18, color: Color(0xFFBF360C)),
               SizedBox(width: 8),
               Text(
-                'অনুমোদিত রাসায়নিক কীটনাশক/ছত্রাকনাশক ও সঠিক ডোজ',
+                'অনুমোদিত রাসায়নিক বালাইনাশক ও মাত্রা:',
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 14.5,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFFBF360C),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          ...data.chemicalCures.map((chem) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFE082)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    chem.name,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFD84315),
+          const SizedBox(height: 8),
+          ...data.chemicalCures.map((chem) => Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFFE082), width: 1.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        chem.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFBF360C),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.scale_rounded, size: 14, color: Color(0xFFE65100)),
-                      const SizedBox(width: 6),
-                      Expanded(
+                    if (chem.dosage.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBEE),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                         child: Text(
-                          'মাত্রা: ${chem.dosage}',
+                          chem.dosage,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF37474F),
+                            color: Color(0xFFC62828),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  if (chem.instruction.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF757575)),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            chem.instruction,
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              color: Color(0xFF546E7A),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
+                ),
+                if (chem.instruction.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    chem.instruction,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF5D4037),
+                      height: 1.35,
+                    ),
+                  ),
                 ],
-              ),
-            );
-          }),
+              ],
+            ),
+          )),
+          const SizedBox(height: 14),
         ],
-      ),
-    );
-  }
 
-  // ৪. ভবিষ্যৎ সুরক্ষায় করণীয় ও পরিচর্যা টিপস
-  Widget _buildPrecautionCard(DiseaseDiagnosisResult data) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        // ৪. প্রতিরোধমূলক সতর্কতা ও পরিচর্যা
+        if (data.precautionAndCare.isNotEmpty) ...[
+          const Row(
+            children: [
+              Icon(Icons.shield_outlined, size: 18, color: Color(0xFF7B1FA2)),
+              SizedBox(width: 8),
+              Text(
+                'ভবিষ্যৎ সুরক্ষায় প্রতিরোধমূলক পরিচর্যা:',
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF7B1FA2),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: data.precautionAndCare.map((tip) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
+          const SizedBox(height: 6),
+          ...data.precautionAndCare.map((tip) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.arrow_right_rounded, color: Color(0xFF7B1FA2), size: 18),
-                const SizedBox(width: 6),
+                const Padding(
+                  padding: EdgeInsets.only(top: 6.0),
+                  child: Icon(Icons.circle, size: 6, color: Color(0xFF7B1FA2)),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     tip,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 13.5,
                       color: Color(0xFF37474F),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )),
+          const SizedBox(height: 14),
+        ],
+
+        // জরুরি সতর্কতা (যদি থাকে)
+        if (data.emergencyWarning != null && data.emergencyWarning!.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEBEE),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFFCDD2), width: 1.2),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Color(0xFFD32F2F), size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    data.emergencyWarning!,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFC62828),
                       height: 1.35,
                     ),
                   ),
                 ),
               ],
             ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // জরুরি সতর্কতা ব্যানার
-  Widget _buildEmergencyWarningCard(String warning) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFFCDD2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xFFC62828), size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              warning,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFFB71C1C),
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
           ),
         ],
-      ),
+      ],
     );
   }
 
-  // ৫. ফিক্সড বটম অ্যাকশন বার
+  /// পেজের নিচে ফিক্সড অ্যাকশন বার (নতুন করে শনাক্ত ও ডাউনলোড/শেয়ার বাটন)
   Widget _buildFixedBottomActionBar(BuildContext context, DiseaseDiagnosisResult data) {
     return Positioned(
-      bottom: 0,
       left: 0,
       right: 0,
+      bottom: 0,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.96),
+          border: const Border(top: BorderSide(color: Color(0xFFE8F5E9), width: 1.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(0.04),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -666,11 +506,11 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
           top: false,
           child: Row(
             children: [
-              // নতুন করে শনাক্ত করুন বাটন
+              // নতুন করে শনাক্ত করুন বাটন (হিস্ট্রি পেজে স্ট্যাক অনুযায়ী পপ হয়ে ফিরে আসবে)
               Expanded(
                 flex: 2,
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.maybePop(context),
                   icon: const Icon(Icons.refresh_rounded, size: 17, color: Color(0xFF2E7D32)),
                   label: const Text(
                     'নতুন করে শনাক্ত',
@@ -736,4 +576,3 @@ class DiseasePrescriptionResultScreen extends StatelessWidget {
     );
   }
 }
-

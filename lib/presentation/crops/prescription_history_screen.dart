@@ -367,7 +367,7 @@ class _PrescriptionHistoryScreenState extends State<PrescriptionHistoryScreen> {
           IconButton(
             tooltip: 'ফিরে যান',
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.maybePop(context),
           ),
           const SizedBox(width: 4),
           const Text(

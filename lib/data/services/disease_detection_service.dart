@@ -46,6 +46,74 @@ class DiseaseDetectionService {
   static final StreamController<List<DiseaseDiagnosisResult>> _cacheStreamController =
       StreamController<List<DiseaseDiagnosisResult>>.broadcast();
 
+  /// প্রশ্নটি কৃষি/উদ্ভিদ বিষয়ক কিনা ১০০% যাচাই (Strict Agro Domain Validation)
+  static bool isAgroQuestion(String queryText, {bool hasImage = false}) {
+    if (hasImage) return true; // ছবি দেওয়া থাকলে এটি উদ্ভিদ নমুনার আওতায় পড়বে
+
+    final text = queryText.toLowerCase().trim();
+    if (text.isEmpty) return false;
+
+    // ১. স্পষ্টত কৃষিবহির্ভূত কি-ওয়ার্ডসমূহ (রাজনীতি, খেলাধুলা, ব্যক্তিগত আলাপ, টেকনোলজি ইত্যাদি)
+    const nonAgriKeywords = [
+      // রাজনীতি ও সরকার
+      'রাজনীতি', 'নির্বাচন', 'ভোট', 'সরকার', 'প্রধানমন্ত্রী', 'এমপি', 'মন্ত্রী', 'দল', 'বিএনপি', 'আওয়ামী',
+      'আওয়ামী', 'জামায়াত', 'politics', 'election', 'vote', 'minister', 'bnp', 'awami',
+      // খেলাধুলা
+      'খেলা', 'ক্রিকেট', 'ফুটবল', 'বিশ্বকাপ', 'ম্যাচ', 'গোল', 'রান', 'উইকেট', 'সাকিব', 'তামিম',
+      'মেসি', 'রোনালদো', 'cricket', 'football', 'sports', 'messi', 'ronaldo', 'world cup',
+      // ব্যক্তিগত আলাপ / বিনোদন
+      'কেমন আছো', 'কেমন আছেন', 'তুমি কে', 'তোমার নাম কি', 'হাই', 'হ্যালো', 'হেই', 'প্রেম', 'ভালোবাসা',
+      'বিয়ে', 'বিয়ে', 'বয়স', 'গান', 'কবিতা', 'সিনেমা', 'নাটক', 'hi', 'hello', 'hey', 'how are you',
+      'who are you', 'what is your name', 'love', 'girlfriend', 'boyfriend', 'song', 'movie',
+      // টেকনোলজি ও সফটওয়্যার
+      'কম্পিউটার', 'মোবাইল', 'ল্যাপটপ', 'সফটওয়্যার', 'সফটওয়্যার', 'কোড', 'পাইথন', 'জাভা', 'প্রোগ্রামিং',
+      'হ্যাকিং', 'ইন্টারনেট', 'ফেসবুক', 'ইউটিউব', 'phone', 'laptop', 'computer', 'python', 'java',
+      'code', 'facebook', 'youtube', 'programming',
+      // অর্থ / চাকরি / ব্যবসা
+      'চাকরি', 'বেতন', 'টাকা ধার', 'ক্যাশ', 'ডলার', 'ব্যাংক', 'শেয়ার বাজার', 'job', 'salary',
+      'money', 'dollar', 'crypto', 'bitcoin'
+    ];
+
+    for (final kw in nonAgriKeywords) {
+      if (text.contains(kw)) {
+        return false;
+      }
+    }
+
+    // ২. বাধ্যতামূলক কৃষি ও উদ্ভিদ সংশ্লিষ্ট কি-ওয়ার্ডসমূহ (বাংলা, ইংরেজি, বাংলিশ)
+    const agroKeywords = [
+      'কৃষি', 'চাষ', 'ফসল', 'গাছ', 'উদ্ভিদ', 'চারা', 'বীজ', 'মাটি', 'জমি', 'ক্ষেত', 'মাঠ', 'সেচ',
+      'সার', 'ইউরিয়া', 'টিএসপি', 'ডিএপি', 'পটাশ', 'কীটনাশক', 'বালাইনাশক', 'ছত্রাকনাশক', 'মাকড়নাশক',
+      'আগাছা', 'পাতা', 'শিকড়', 'শিকড়', 'কাণ্ড', 'ডাল', 'ফুল', 'ফল', 'ফলন', 'ধান', 'গম', 'ভুট্টা',
+      'আলু', 'টমেটো', 'বেগুন', 'মরিচ', 'পেঁয়াজ', 'পেয়াজ', 'রসুন', 'আদা', 'হলুদ', 'সরিষা', 'তিল',
+      'পাট', 'চা', 'পান', 'আম', 'জাম', 'কাঁঠাল', 'লিচু', 'কলা', 'পেঁপে', 'লেবু', 'পেয়ারা', 'ড্রাগন',
+      'মাল্টা', 'কমলা', 'তরমুজ', 'ফুলকপি', 'বাঁধাকপি', 'শসা', 'লাউ', 'মিষ্টি কুমড়া', 'মিষ্টিকুমড়া',
+      'চালকুমড়া', 'করলা', 'পটল', 'বরবটি', 'শিম', 'ঢেঁড়শ', 'ঢ্যাঁড়শ', 'শাক', 'পালং', 'লালশাক',
+      'কলমি', 'রোগ', 'বালাই', 'পোকা', 'ছত্রাক', 'ব্যাকটেরিয়া', 'ভাইরাস', 'পচা', 'ধসা', 'ব্লাইট',
+      'হলুদ', 'কুঁকড়ে', 'কুঁকড়ে', 'শুকিয়ে', 'ঝরে', 'মাজরা', 'লেদা', 'বিছা', 'ঘাসফড়িং', 'জাবপোকা',
+      'সাদামাছি', 'থ্রিপস', 'মিলিবাগ', 'মাকড়', 'উইল্ট', 'ডাউনি মিলডিউ', 'মোজাইক', 'অ্যানথ্রাকনোজ',
+      'ব্লাস্ট', 'খোলপোড়া',
+      // English / Banglish
+      'agri', 'krishi', 'chash', 'crop', 'plant', 'tree', 'seed', 'seedling', 'soil', 'land',
+      'field', 'irrigation', 'fertilizer', 'urea', 'tsp', 'dap', 'potash', 'pesticide',
+      'insecticide', 'fungicide', 'leaf', 'leaves', 'root', 'stem', 'flower', 'fruit', 'rice',
+      'paddy', 'wheat', 'corn', 'maize', 'potato', 'tomato', 'brinjal', 'eggplant', 'chilli',
+      'pepper', 'onion', 'garlic', 'mustard', 'jute', 'mango', 'banana', 'papaya', 'lemon',
+      'cabbage', 'cauliflower', 'cucumber', 'gourd', 'spinach', 'disease', 'pest', 'fungus',
+      'rot', 'blight', 'yellow', 'curl', 'aphid', 'thrips', 'wilt', 'mildew', 'fasal', 'gach',
+      'pata', 'rog', 'roog', 'poka', 'sar', 'kitnashok'
+    ];
+
+    for (final kw in agroKeywords) {
+      if (text.contains(kw)) {
+        return true;
+      }
+    }
+
+    // যদি কোনো কৃষি কি-ওয়ার্ডের সাথে মিল না পাওয়া যায়, তবে এটি গ্রহণযোগ্য নয়
+    return false;
+  }
+
   /// SharedPreferences থেকে লোকাল ক্যাশ লোড করা
   Future<void> _loadLocalFromPrefs() async {
     try {
@@ -80,6 +148,24 @@ class DiseaseDetectionService {
 
     if (!hasImage && !hasText) {
       throw Exception('রোগ বিশ্লেষণের জন্য অনুগ্রহ করে আক্রান্ত পাতার ছবি তুলুন অথবা লক্ষণসমূহ লিখুন।');
+    }
+
+    // ৩. কঠোর কৃষি প্রশ্ন যাচাই: অ-কৃষি প্রশ্নে কোনো উত্তর জেনারেট করা সম্পূর্ণ নিষিদ্ধ
+    if (!isAgroQuestion(symptomsText ?? '', hasImage: hasImage)) {
+      return DiseaseDiagnosisResult(
+        id: 'unauthorized_${DateTime.now().millisecondsSinceEpoch}',
+        plantName: 'অননুমোদিত বিষয়',
+        diseaseName: 'অননুমোদিত প্রশ্ন',
+        confidence: '০%',
+        confidencePercentage: 0,
+        causesAndSymptoms: [],
+        organicCures: [],
+        chemicalCures: [],
+        precautionAndCare: [],
+        createdAt: DateTime.now(),
+        isNonAgri: true,
+        nonAgriMessage: "এটি গ্রহণযোগ্য প্রশ্ন নয়। 'কৃষি কথা' অ্যাপের এই সেবাটি শুধুমাত্র আপনার ফসল, গাছপালা ও উদ্ভিদের যাবতীয় রোগবালাই ও কৃষি সমস্যার সমাধানের জন্য নিবেদিত। অনুগ্রহ করে কৃষি বিষয়ক প্রশ্ন করার জন্য বিনীত অনুরোধ করা হচ্ছে।",
+      );
     }
 
     Uint8List? rawBytes = imageBytes;
@@ -546,7 +632,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
 
     // ৪. ফায়ারবেস ক্লাউডে সংরক্ষণ (রিয়েল-টাইম ডিসপ্লের জন্য)
     try {
-      final map = result.toMap();
+      final map = result.toFirestoreMap();
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         map['user_id'] = currentUser.uid;
@@ -656,21 +742,23 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
         .handleError((_) => _localCache.where((e) => !e.isNonAgri).toList());
   }
 
-  /// নির্দিষ্ট প্রেসক্রিপশনের লাইভ ডকুমেন্ট স্ট্রীম
+  /// নির্দিষ্ট প্রেসক্রিপশনের লাইভ ডকুমেন্ট স্ট্রীম (Firestore StreamBuilder)
   Stream<DiseaseDiagnosisResult?> getPrescriptionLiveStream(String id) {
     return _firestore.collection(_collectionName).doc(id).snapshots().map((doc) {
       if (doc.exists) {
         return DiseaseDiagnosisResult.fromFirestore(doc);
       }
-      return _localCache.firstWhere(
-        (e) => e.id == id,
-        orElse: () => _generateOfflineKnowledgeResult(),
-      );
+      try {
+        return _localCache.firstWhere((e) => e.id == id);
+      } catch (_) {
+        return null;
+      }
     }).handleError((_) {
-      return _localCache.firstWhere(
-        (e) => e.id == id,
-        orElse: () => _generateOfflineKnowledgeResult(),
-      );
+      try {
+        return _localCache.firstWhere((e) => e.id == id);
+      } catch (_) {
+        return null;
+      }
     });
   }
 
