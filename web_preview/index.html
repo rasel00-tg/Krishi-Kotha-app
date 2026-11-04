@@ -2806,39 +2806,48 @@
 
         <!-- 2. GUEST AUTH GATEWAY (Locked Menu View - Reference-styled Login UI) -->
         <div id="webMenuGuestGateway" style="display: none; padding: 12px 4px 30px 4px;">
-          <!-- Top Greeting -->
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: 0.2px;">স্বাগতম!</h2>
-            <p style="font-size: 14px; color: var(--text-secondary); margin: 0; font-weight: 500;">চালিয়ে যেতে লগইন করুন</p>
+          <!-- Top Greeting (ONLY "স্বাগতম") -->
+          <div style="text-align: center; margin-bottom: 16px;">
+            <h2 style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: 0.2px;">স্বাগতম</h2>
           </div>
 
-          <!-- Center Brand Logo & Name -->
-          <div style="text-align: center; margin-bottom: 22px;">
-            <div style="width: 78px; height: 78px; border-radius: 50%; background: var(--primary-container); border: 2.5px solid var(--primary-light); margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(46,125,50,0.14);">
-              <img src="pnglogo.png" style="width: 48px; height: 48px; object-fit: contain;" alt="কৃষি কথা লোগো">
-            </div>
+          <!-- Plain Large Logo (NO Circle, NO Container, NO Shadow) -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="pnglogo.png" style="width: 90px; height: 90px; object-fit: contain; display: block; margin: 0 auto 10px auto;" alt="কৃষি কথা লোগো">
             <h3 style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 0;">কৃষি কথা</h3>
           </div>
 
           <!-- Modern Login Card -->
           <div style="background: white; border-radius: 24px; border: 1px solid #E2E8E2; padding: 22px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px;">
+            <!-- 2-Tab Segmented Bar: ইমেইল ও নাম্বার -->
+            <div style="display: flex; background: #F1F5F1; border-radius: 12px; border: 1px solid #E2E8E2; padding: 4px; margin-bottom: 18px;">
+              <div id="tabBtnEmail" onclick="setGatewayLoginTab('email')" style="flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 2px 6px rgba(46,125,50,0.25);">
+                <i class="fa-regular fa-envelope"></i>
+                <span>ইমেইল</span>
+              </div>
+              <div id="tabBtnPhone" onclick="setGatewayLoginTab('phone')" style="flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 7px;">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <span>নাম্বার</span>
+              </div>
+            </div>
+
             <div style="display: flex; flex-direction: column; gap: 15px;">
-              <!-- Identifier Field -->
+              <!-- Identifier Field with Stable Font & Checkmark -->
               <div>
-                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
+                <label id="gatewayLoginLabel" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">জিমেইল অ্যাড্রেস *</label>
                 <div style="position: relative;">
-                  <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                  <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="ইমেইল বা মোবাইল নম্বর দিন..." style="width: 100%; box-sizing: border-box; padding: 12px 40px 12px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-family: inherit;">
+                  <i id="gatewayLoginIcon" class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                  <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 13px 40px 13px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; line-height: 1.25; font-family: inherit;">
                   <i class="fa-solid fa-circle-check" id="gatewayLoginCheckmark" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #2E7D32; font-size: 18px; display: none;"></i>
                 </div>
               </div>
 
-              <!-- Password Field -->
+              <!-- Password Field with Stable Font -->
               <div>
                 <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পাসওয়ার্ড *</label>
                 <div style="position: relative;">
                   <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                  <input type="password" id="gatewayLoginPass" placeholder="পাসওয়ার্ড লিখুন..." style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-family: inherit;">
+                  <input type="password" id="gatewayLoginPass" placeholder="পাসওয়ার্ড লিখুন..." style="width: 100%; box-sizing: border-box; padding: 13px 42px 13px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; line-height: 1.25; font-family: inherit;">
                   <i class="fa-solid fa-eye" id="toggleGatewayPassIcon" onclick="togglePassVisibility('gatewayLoginPass', 'toggleGatewayPassIcon')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
                 </div>
               </div>
@@ -8825,8 +8834,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const email = (document.getElementById('authRegEmail')?.value || '').trim();
       const phone = (document.getElementById('authRegPhone')?.value || '').trim();
 
-      if (!email || !email.includes('@') || !email.includes('.')) {
-        showToast('অনুগ্রহ করে সঠিক ও কার্যকর ইমেইল লিখুন');
+      if (!email || !email.toLowerCase().endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
+        showToast('শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)');
         return;
       }
       const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -8957,21 +8966,74 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       showToast('আপনার ইমেইলে একটি অফিসিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে।');
     }
 
+    let currentGatewayLoginTab = 'email'; // 'email' or 'phone'
+
+    function setGatewayLoginTab(tab) {
+      currentGatewayLoginTab = tab;
+      const btnEmail = document.getElementById('tabBtnEmail');
+      const btnPhone = document.getElementById('tabBtnPhone');
+      const lbl = document.getElementById('gatewayLoginLabel');
+      const inp = document.getElementById('gatewayLoginId');
+      const icon = document.getElementById('gatewayLoginIcon');
+      const checkmark = document.getElementById('gatewayLoginCheckmark');
+
+      if (checkmark) checkmark.style.display = 'none';
+
+      if (tab === 'email') {
+        if (btnEmail) {
+          btnEmail.style.background = 'var(--primary)';
+          btnEmail.style.color = 'white';
+          btnEmail.style.boxShadow = '0 2px 6px rgba(46,125,50,0.25)';
+        }
+        if (btnPhone) {
+          btnPhone.style.background = 'transparent';
+          btnPhone.style.color = 'var(--text-secondary)';
+          btnPhone.style.boxShadow = 'none';
+        }
+        if (lbl) lbl.innerText = 'জিমেইল অ্যাড্রেস *';
+        if (icon) icon.className = 'fa-solid fa-envelope';
+        if (inp) {
+          inp.placeholder = 'example@gmail.com';
+          inp.value = '';
+          inp.type = 'email';
+          inp.maxLength = 100;
+        }
+      } else {
+        if (btnPhone) {
+          btnPhone.style.background = 'var(--primary)';
+          btnPhone.style.color = 'white';
+          btnPhone.style.boxShadow = '0 2px 6px rgba(46,125,50,0.25)';
+        }
+        if (btnEmail) {
+          btnEmail.style.background = 'transparent';
+          btnEmail.style.color = 'var(--text-secondary)';
+          btnEmail.style.boxShadow = 'none';
+        }
+        if (lbl) lbl.innerText = 'মোবাইল নম্বর (১১ ডিজিট) *';
+        if (icon) icon.className = 'fa-solid fa-mobile-screen';
+        if (inp) {
+          inp.placeholder = '01XXXXXXXXX';
+          inp.value = '';
+          inp.type = 'tel';
+          inp.maxLength = 11;
+        }
+      }
+    }
+
     function onGatewayIdInput(val) {
       const text = (val || '').trim();
       const checkmark = document.getElementById('gatewayLoginCheckmark');
       if (!checkmark) return;
 
-      const isEmail = text.includes('@') && text.includes('.');
-      const cleanPhone = text.replace(/[^0-9]/g, '');
-      const isPhone = (cleanPhone.length === 11 && cleanPhone.startsWith('01')) ||
-                      (cleanPhone.length === 13 && cleanPhone.startsWith('8801')) ||
-                      cleanPhone.length >= 10;
-
-      if (isEmail || isPhone) {
-        checkmark.style.display = 'inline-block';
+      if (currentGatewayLoginTab === 'email') {
+        const isGmail = text.toLowerCase().endsWith('@gmail.com') && /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(text);
+        checkmark.style.display = isGmail ? 'inline-block' : 'none';
       } else {
-        checkmark.style.display = 'none';
+        const clean = text.replace(/[^0-9]/g, '');
+        const inp = document.getElementById('gatewayLoginId');
+        if (inp && inp.value !== clean) inp.value = clean;
+        const isPhone = clean.length === 11 && clean.startsWith('01');
+        checkmark.style.display = isPhone ? 'inline-block' : 'none';
       }
     }
 
@@ -8981,9 +9043,23 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const rememberMe = document.getElementById('gatewayRememberMe')?.checked ?? true;
 
       if (!identifier) {
-        showToast('অনুগ্রহ করে ইমেইল বা মোবাইল নম্বর লিখুন');
+        showToast(currentGatewayLoginTab === 'email' ? 'অনুগ্রহ করে জিমেইল অ্যাড্রেস লিখুন' : 'অনুগ্রহ করে মোবাইল নম্বর লিখুন');
         return;
       }
+
+      if (currentGatewayLoginTab === 'email') {
+        if (!identifier.toLowerCase().endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(identifier)) {
+          showToast('শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)');
+          return;
+        }
+      } else {
+        const clean = identifier.replace(/[^0-9]/g, '');
+        if (clean.length !== 11 || !clean.startsWith('01')) {
+          showToast('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)');
+          return;
+        }
+      }
+
       if (!pass) {
         showToast('অনুগ্রহ করে পাসওয়ার্ড লিখুন');
         return;
@@ -8991,8 +9067,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (rememberMe) {
         localStorage.setItem('krishi_kotha_remembered_identifier', identifier);
+        localStorage.setItem('krishi_kotha_remembered_mode', currentGatewayLoginTab);
       } else {
         localStorage.removeItem('krishi_kotha_remembered_identifier');
+        localStorage.removeItem('krishi_kotha_remembered_mode');
       }
 
       const isEmail = identifier.includes('@');
@@ -9094,10 +9172,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (authContainer) authContainer.style.display = 'none';
         if (guestGateway) guestGateway.style.display = 'block';
 
-        // Pre-fill remembered identifier if available
+        // Pre-fill remembered identifier and mode if available
         const savedId = localStorage.getItem('krishi_kotha_remembered_identifier');
+        const savedMode = localStorage.getItem('krishi_kotha_remembered_mode') || 'email';
+        setGatewayLoginTab(savedMode);
         const idInp = document.getElementById('gatewayLoginId');
-        if (savedId && idInp && !idInp.value) {
+        if (savedId && idInp) {
           idInp.value = savedId;
           onGatewayIdInput(savedId);
         }

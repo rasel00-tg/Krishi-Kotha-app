@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
@@ -34,6 +35,20 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
   String _selectedOccupation = 'কৃষক';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // Font stability styles to fix jumping/variable font size
+  static const TextStyle _inputTextStyle = TextStyle(
+    fontSize: 16,
+    height: 1.25,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const StrutStyle _inputStrutStyle = StrutStyle(
+    fontSize: 16,
+    height: 1.25,
+    forceStrutHeight: true,
+  );
 
   final List<String> _occupations = [
     'কৃষক',
@@ -365,28 +380,32 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
 
             // Email Address
             const Text(
-              'ইমেইল অ্যাড্রেস *',
+              'জিমেইল অ্যাড্রেস (@gmail.com বাধ্যতামূলক) *',
               style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 6),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(fontSize: 15),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+              ],
               decoration: InputDecoration(
                 hintText: 'example@gmail.com',
                 prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
-                  return 'অনুগ্রহ করে ইমেইল ঠিকানা প্রদান করুন';
+                  return 'অনুগ্রহ করে জিমেইল ঠিকানা প্রদান করুন';
                 }
-                final email = val.trim();
-                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                if (!emailRegex.hasMatch(email)) {
-                  return 'সঠিক ও কার্যকর ইমেইল ফরম্যাট লিখুন (যেমন: user@gmail.com)';
+                final email = val.trim().toLowerCase();
+                final gmailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
+                if (!email.endsWith('@gmail.com') || !gmailRegex.hasMatch(email)) {
+                  return 'শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)';
                 }
                 return null;
               },
@@ -403,11 +422,16 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.8),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(11),
+              ],
               decoration: InputDecoration(
                 hintText: '01XXXXXXXXX',
                 prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               validator: (val) {
@@ -504,11 +528,12 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             const SizedBox(height: 6),
             TextFormField(
               controller: _nameController,
-              style: const TextStyle(fontSize: 15),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
               decoration: InputDecoration(
                 hintText: 'যেমন: মো: রফিকুল ইসলাম',
                 prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               validator: (val) {
@@ -538,13 +563,14 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                       DropdownButtonFormField<String>(
                         value: _selectedDistrict,
                         isExpanded: true,
+                        style: _inputTextStyle,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         items: BangladeshLocationData.districts.map((d) {
-                          return DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 14)));
+                          return DropdownMenuItem(value: d, child: Text(d, style: _inputTextStyle));
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) setState(() => _selectedDistrict = val);
@@ -567,10 +593,11 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _upazilaController,
-                        style: const TextStyle(fontSize: 14),
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
                         decoration: InputDecoration(
                           hintText: 'উপজেলার নাম',
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         validator: (val) {
@@ -596,11 +623,12 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             const SizedBox(height: 6),
             TextFormField(
               controller: _villageController,
-              style: const TextStyle(fontSize: 15),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
               decoration: InputDecoration(
                 hintText: 'যেমন: শিবগঞ্জ গ্রাম বা রোড নম্বর',
                 prefixIcon: const Icon(Icons.home_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -616,14 +644,15 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             DropdownButtonFormField<String>(
               value: _selectedOccupation,
               isExpanded: true,
+              style: _inputTextStyle,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.work_outline_rounded, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               items: _occupations.map((occ) {
-                return DropdownMenuItem(value: occ, child: Text(occ, style: const TextStyle(fontSize: 14)));
-              }).toList>,
+                return DropdownMenuItem(value: occ, child: Text(occ, style: _inputTextStyle));
+              }).toList(),
               onChanged: (val) {
                 if (val != null) setState(() => _selectedOccupation = val);
               },
@@ -640,7 +669,8 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
-              style: const TextStyle(fontSize: 15),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
               decoration: InputDecoration(
                 hintText: '••••••••',
                 prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 22),
@@ -652,7 +682,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                   onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               validator: (val) {
@@ -674,7 +704,8 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
-              style: const TextStyle(fontSize: 15),
+              style: _inputTextStyle,
+              strutStyle: _inputStrutStyle,
               decoration: InputDecoration(
                 hintText: '••••••••',
                 prefixIcon: const Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 22),
@@ -686,7 +717,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
                   ),
                   onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               validator: (val) {

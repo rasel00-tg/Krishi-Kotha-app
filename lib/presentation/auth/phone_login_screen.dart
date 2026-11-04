@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
@@ -20,6 +21,9 @@ class PhoneLoginScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
+  // 0 = ইমেইল, 1 = নাম্বার
+  int _loginTabIndex = 0;
+
   final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -30,6 +34,21 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
   static const String _prefRememberKey = 'krishi_kotha_remember_me';
   static const String _prefIdentifierKey = 'krishi_kotha_remembered_identifier';
+  static const String _prefLoginModeKey = 'krishi_kotha_login_mode';
+
+  // Constant font styling to fix font stability & jumping
+  static const TextStyle _inputTextStyle = TextStyle(
+    fontSize: 16,
+    height: 1.25,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const StrutStyle _inputStrutStyle = StrutStyle(
+    fontSize: 16,
+    height: 1.25,
+    forceStrutHeight: true,
+  );
 
   @override
   void initState() {
@@ -51,9 +70,12 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       final remember = prefs.getBool(_prefRememberKey) ?? true;
       final savedId = prefs.getString(_prefIdentifierKey) ?? '';
+      final savedMode = prefs.getInt(_prefLoginModeKey) ?? 0;
+
       if (mounted) {
         setState(() {
           _rememberMe = remember;
+          _loginTabIndex = savedMode;
           if (remember && savedId.isNotEmpty) {
             _identifierController.text = savedId;
             _checkIdentifierValidation(savedId);
@@ -68,14 +90,19 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   }
 
   void _checkIdentifierValidation(String text) {
-    // Check if input is valid Email or valid BD Phone Number
-    final isEmail = text.contains('@') && text.contains('.');
-    final cleanPhone = text.replaceAll(RegExp(r'[^0-9]'), '');
-    final isPhone = (cleanPhone.length == 11 && cleanPhone.startsWith('01')) ||
-        (cleanPhone.length == 13 && cleanPhone.startsWith('8801')) ||
-        cleanPhone.length >= 10;
+    bool isValid = false;
 
-    final isValid = isEmail || isPhone;
+    if (_loginTabIndex == 0) {
+      // ইমেইল মোড: অবশ্যই @gmail.com থাকতে হবে
+      final lower = text.toLowerCase();
+      isValid = lower.endsWith('@gmail.com') &&
+          RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', caseSensitive: false).hasMatch(lower);
+    } else {
+      // নাম্বার মোড: ১১ ডিজিট এবং ০১ দিয়ে শুরু
+      final cleanPhone = text.replaceAll(RegExp(r'[^0-9]'), '');
+      isValid = cleanPhone.length == 11 && cleanPhone.startsWith('01');
+    }
+
     if (isValid != _isIdentifierValid) {
       setState(() {
         _isIdentifierValid = isValid;
@@ -90,12 +117,13 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     final identifier = _identifierController.text.trim();
     final password = _passwordController.text;
 
-    // Persist Remember Me
+    // Persist Remember Me & Login Mode
     try {
       final prefs = await SharedPreferences.getInstance();
       if (_rememberMe) {
         await prefs.setString(_prefIdentifierKey, identifier);
         await prefs.setBool(_prefRememberKey, true);
+        await prefs.setInt(_prefLoginModeKey, _loginTabIndex);
       } else {
         await prefs.remove(_prefIdentifierKey);
         await prefs.setBool(_prefRememberKey, false);
@@ -194,7 +222,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'নিবন্ধিত ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হবে',
+                                  'নিবন্ধিত জিমেইলে পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হবে',
                                   style: TextStyle(
                                     fontSize: 12.5,
                                     color: AppColors.textSecondary,
@@ -207,7 +235,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                       ),
                       const SizedBox(height: 20),
                       const Text(
-                        'আপনার নিবন্ধিত ইমেইল অ্যাড্রেস *',
+                        'আপনার নিবন্ধিত জিমেইল অ্যাড্রেস *',
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.bold,
@@ -218,7 +246,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                       TextFormField(
                         controller: resetEmailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(fontSize: 15),
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
                         decoration: InputDecoration(
                           hintText: 'example@gmail.com',
                           prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
@@ -227,10 +256,12 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                         ),
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
-                            return 'অনুগ্রহ করে ইমেইল ঠিকানা দিন';
+                            return 'অনুগ্রহ করে জিমেইল ঠিকানা দিন';
                           }
-                          if (!val.contains('@') || !val.contains('.')) {
-                            return 'সঠিক ইমেইল ফরম্যাট দিন';
+                          final email = val.trim().toLowerCase();
+                          if (!email.endsWith('@gmail.com') ||
+                              !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(email)) {
+                            return 'শুধুমাত্র বৈধ @gmail.com ইমেইল ঠিকানা দিন';
                           }
                           return null;
                         },
@@ -261,7 +292,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                     ScaffoldMessenger.of(this.context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          'আপনার ইমেইলে একটি অফিসিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।',
+                                          'আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।',
                                         ),
                                         backgroundColor: AppColors.primary,
                                         duration: Duration(seconds: 5),
@@ -271,7 +302,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                   } else {
                                     setModalState(() {
                                       isSending = false;
-                                      resetError = authProvider.errorMessage ?? 'রিসেট লিংক পাঠাতে সমস্যা হয়েছে।';
+                                      resetError = authProvider.errorMessage ?? 'রিসেট লিঙ্ক পাঠাতে সমস্যা হয়েছে।';
                                     });
                                   }
                                 },
@@ -333,64 +364,37 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ================= ১. শীর্ষে সম্ভাষণ (TOP GREETING) =================
+                  // ================= ১. একক শিরোনাম (ONLY "স্বাগতম") =================
                   const Text(
-                    'স্বাগতম!',
+                    'স্বাগতম',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                       letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'চালিয়ে যেতে লগইন করুন',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
 
-                  // ================= ২. মাঝে ব্র্যান্ডিং (BRAND LOGO & APP NAME) =================
-                  Container(
-                    width: 82,
-                    height: 82,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryContainer,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primaryLight, width: 2.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.14),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Image.asset(
-                          'assets/icons/pnglogo.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.eco_rounded,
-                            size: 46,
-                            color: AppColors.primary,
-                          ),
-                        ),
+                  // ================= লোগো (PLAIN LARGE LOGO: NO CIRCLE, NO SHADOW, NO CONTAINER) =================
+                  SizedBox(
+                    width: 90,
+                    height: 90,
+                    child: Image.asset(
+                      'assets/icons/pnglogo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.eco_rounded,
+                        size: 76,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 10),
 
+                  // অ্যাপের নাম
                   const Text(
                     'কৃষি কথা',
                     style: TextStyle(
@@ -401,7 +405,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
                   // ================= ৩. প্রিমিয়াম লগইন কার্ড (MODERN LOGIN CARD) =================
                   Container(
@@ -422,10 +426,132 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // আইডেন্টিফায়ার ফিল্ড (Username / Email / Mobile)
-                        const Text(
-                          'ইমেইল বা মোবাইল নম্বর *',
-                          style: TextStyle(
+                        // ================= ২. ইমেইল ও মোবাইল নম্বর টগল বার (2-TAB SEGMENTED BAR) =================
+                        Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8E2)),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              // ট্যাব ১: ইমেইল
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (_loginTabIndex != 0) {
+                                      setState(() {
+                                        _loginTabIndex = 0;
+                                        _identifierController.clear();
+                                        _isIdentifierValid = false;
+                                      });
+                                      authProvider.clearError();
+                                    }
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    decoration: BoxDecoration(
+                                      color: _loginTabIndex == 0 ? AppColors.primary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(9),
+                                      boxShadow: _loginTabIndex == 0
+                                          ? [
+                                              BoxShadow(
+                                                color: AppColors.primary.withOpacity(0.28),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.email_outlined,
+                                          size: 18,
+                                          color: _loginTabIndex == 0 ? Colors.white : AppColors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'ইমেইল',
+                                          style: TextStyle(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: _loginTabIndex == 0 ? Colors.white : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              // ট্যাব ২: নাম্বার
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (_loginTabIndex != 1) {
+                                      setState(() {
+                                        _loginTabIndex = 1;
+                                        _identifierController.clear();
+                                        _isIdentifierValid = false;
+                                      });
+                                      authProvider.clearError();
+                                    }
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    decoration: BoxDecoration(
+                                      color: _loginTabIndex == 1 ? AppColors.primary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(9),
+                                      boxShadow: _loginTabIndex == 1
+                                          ? [
+                                              BoxShadow(
+                                                color: AppColors.primary.withOpacity(0.28),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.phone_android_rounded,
+                                          size: 18,
+                                          color: _loginTabIndex == 1 ? Colors.white : AppColors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'নাম্বার',
+                                          style: TextStyle(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: _loginTabIndex == 1 ? Colors.white : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // আইডেন্টিফায়ার ফিল্ড (ইমেইল বা নাম্বার ভিত্তিক ডাইনামিক ফিল্ড)
+                        Text(
+                          _loginTabIndex == 0 ? 'জিমেইল অ্যাড্রেস *' : 'মোবাইল নম্বর (১১ ডিজিট) *',
+                          style: const TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -433,21 +559,28 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                         ),
                         const SizedBox(height: 7),
                         TextFormField(
+                          key: ValueKey('input_mode_$_loginTabIndex'),
                           controller: _identifierController,
-                          keyboardType: TextInputType.emailAddress,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          keyboardType: _loginTabIndex == 0 ? TextInputType.emailAddress : TextInputType.phone,
+                          style: _inputTextStyle,
+                          strutStyle: _inputStrutStyle,
+                          inputFormatters: _loginTabIndex == 1
+                              ? [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(11),
+                                ]
+                              : [
+                                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                                ],
                           decoration: InputDecoration(
-                            hintText: 'ইমেইল বা মোবাইল নম্বর দিন...',
+                            hintText: _loginTabIndex == 0 ? 'example@gmail.com' : '01XXXXXXXXX',
                             hintStyle: const TextStyle(
                               fontSize: 14,
                               color: AppColors.textMuted,
                               fontWeight: FontWeight.normal,
                             ),
-                            prefixIcon: const Icon(
-                              Icons.email_outlined,
+                            prefixIcon: Icon(
+                              _loginTabIndex == 0 ? Icons.email_outlined : Icons.phone_android_rounded,
                               color: AppColors.primary,
                               size: 22,
                             ),
@@ -461,7 +594,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                     ),
                                   )
                                 : null,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -477,7 +610,21 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
-                              return 'অনুগ্রহ করে ইমেইল বা মোবাইল নম্বর লিখুন';
+                              return _loginTabIndex == 0
+                                  ? 'অনুগ্রহ করে জিমেইল অ্যাড্রেস লিখুন'
+                                  : 'অনুগ্রহ করে মোবাইল নম্বর লিখুন';
+                            }
+                            if (_loginTabIndex == 0) {
+                              final text = val.trim().toLowerCase();
+                              if (!text.endsWith('@gmail.com') ||
+                                  !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(text)) {
+                                return 'শুধুমাত্র @gmail.com ইমেইল গ্রহণযোগ্য (যেমন: user@gmail.com)';
+                              }
+                            } else {
+                              final clean = val.replaceAll(RegExp(r'[^0-9]'), '');
+                              if (clean.length != 11 || !clean.startsWith('01')) {
+                                return 'সঠিক ১১ ডিজিটের বাংলাদেশী নম্বর দিন (যেমন: 017XXXXXXXX)';
+                              }
                             }
                             return null;
                           },
@@ -498,9 +645,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          style: const TextStyle(
-                            fontSize: 15,
-                          ),
+                          style: _inputTextStyle,
+                          strutStyle: _inputStrutStyle,
                           decoration: InputDecoration(
                             hintText: 'পাসওয়ার্ড লিখুন...',
                             hintStyle: const TextStyle(
@@ -520,7 +666,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
