@@ -6,6 +6,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
+import 'forgot_password_screen.dart';
 import 'registration_multi_step_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
@@ -38,15 +39,15 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
   // Constant font styling to fix font stability & jumping
   static const TextStyle _inputTextStyle = TextStyle(
-    fontSize: 16,
-    height: 1.25,
+    fontSize: 15.0,
+    height: 1.2,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
   );
 
   static const StrutStyle _inputStrutStyle = StrutStyle(
-    fontSize: 16,
-    height: 1.25,
+    fontSize: 15.0,
+    height: 1.2,
     forceStrutHeight: true,
   );
 
@@ -155,186 +156,6 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         );
       }
     }
-  }
-
-  /// Forgot password bottom sheet dialog
-  void _showForgotPasswordDialog() {
-    final resetEmailController = TextEditingController();
-    final resetFormKey = GlobalKey<FormState>();
-    bool isSending = false;
-    String? resetError;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (bottomSheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
-              ),
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Form(
-                  key: resetFormKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE0E0E0),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 24),
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'পাসওয়ার্ড পুনরুদ্ধার',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                Text(
-                                  'নিবন্ধিত জিমেইলে পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হবে',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'আপনার নিবন্ধিত জিমেইল অ্যাড্রেস *',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: resetEmailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: _inputTextStyle,
-                        strutStyle: _inputStrutStyle,
-                        decoration: InputDecoration(
-                          hintText: 'example@gmail.com',
-                          prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'অনুগ্রহ করে জিমেইল ঠিকানা দিন';
-                          }
-                          final email = val.trim().toLowerCase();
-                          if (!email.endsWith('@gmail.com') ||
-                              !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(email)) {
-                            return 'শুধুমাত্র বৈধ @gmail.com ইমেইল ঠিকানা দিন';
-                          }
-                          return null;
-                        },
-                      ),
-                      if (resetError != null) ...[
-                        const SizedBox(height: 10),
-                        Text(
-                          resetError!,
-                          style: const TextStyle(color: AppColors.alertCritical, fontSize: 13),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: isSending
-                              ? null
-                              : () async {
-                                  if (!resetFormKey.currentState!.validate()) return;
-                                  setModalState(() {
-                                    isSending = true;
-                                    resetError = null;
-                                  });
-                                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                                  final ok = await authProvider.sendPasswordResetEmail(resetEmailController.text.trim());
-                                  if (ok) {
-                                    Navigator.pop(bottomSheetContext);
-                                    ScaffoldMessenger.of(this.context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।',
-                                        ),
-                                        backgroundColor: AppColors.primary,
-                                        duration: Duration(seconds: 5),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  } else {
-                                    setModalState(() {
-                                      isSending = false;
-                                      resetError = authProvider.errorMessage ?? 'রিসেট লিঙ্ক পাঠাতে সমস্যা হয়েছে।';
-                                    });
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          icon: isSending
-                              ? const SizedBox.shrink()
-                              : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
-                          label: isSending
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : const Text(
-                                  'রিসেট লিঙ্ক পাঠান',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -594,7 +415,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                     ),
                                   )
                                 : null,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -666,7 +487,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
@@ -726,7 +547,14 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                               ),
                             ),
                             TextButton(
-                              onPressed: _showForgotPasswordDialog,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,

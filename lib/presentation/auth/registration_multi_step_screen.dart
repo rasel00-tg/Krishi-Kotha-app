@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/district_data.dart';
-import '../../core/widgets/custom_button.dart';
 import '../../providers/auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 
@@ -16,39 +15,21 @@ class RegistrationMultiStepScreen extends StatefulWidget {
 }
 
 class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScreen> {
-  int _currentStep = 0; // 0 = Step 1, 1 = Step 2
+  final _formKey = GlobalKey<FormState>();
 
-  // Controllers Step 1
+  // 8 Required Input Controllers
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final _step1FormKey = GlobalKey<FormState>();
-
-  // Controllers Step 2
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _upazilaController = TextEditingController();
   final TextEditingController _villageController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  final _step2FormKey = GlobalKey<FormState>();
 
   String _selectedDistrict = 'বগুড়া';
   String _selectedOccupation = 'কৃষক';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-
-  // Font stability styles to fix jumping/variable font size
-  static const TextStyle _inputTextStyle = TextStyle(
-    fontSize: 16,
-    height: 1.25,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
-  );
-
-  static const StrutStyle _inputStrutStyle = StrutStyle(
-    fontSize: 16,
-    height: 1.25,
-    forceStrutHeight: true,
-  );
 
   final List<String> _occupations = [
     'কৃষক',
@@ -58,6 +39,20 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     'কৃষি কর্মকর্তা',
     'অন্যান্য',
   ];
+
+  // Constant font styling to fix font stability & digit jumping
+  static const TextStyle _inputTextStyle = TextStyle(
+    fontSize: 15.0,
+    height: 1.2,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const StrutStyle _inputStrutStyle = StrutStyle(
+    fontSize: 15.0,
+    height: 1.2,
+    forceStrutHeight: true,
+  );
 
   @override
   void dispose() {
@@ -71,25 +66,11 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     super.dispose();
   }
 
-  void _goToStep2() {
-    if (_step1FormKey.currentState!.validate()) {
-      setState(() {
-        _currentStep = 1;
-      });
-    }
-  }
-
-  void _goToStep1() {
-    setState(() {
-      _currentStep = 0;
-    });
-  }
-
   Future<void> _submitRegistration() async {
-    if (!_step2FormKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final email = _emailController.text.trim();
+    final email = _emailController.text.trim().toLowerCase();
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
     final district = _selectedDistrict;
@@ -120,7 +101,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 4)),
         (route) => false,
       );
     }
@@ -134,661 +115,581 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       backgroundColor: const Color(0xFFF7FAF7),
       appBar: AppBar(
         title: const Text(
-          'নতুন একাউন্ট নিবন্ধন',
+          'নতুন একাউন্ট তৈরি করুন',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-          onPressed: () {
-            if (_currentStep == 1) {
-              _goToStep1();
-            } else {
-              Navigator.pop(context);
-            }
-          },
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Step Wizard Indicator
-              _buildStepIndicator(),
-
-              const SizedBox(height: 20),
-
-              // Animated Form Step
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _currentStep == 0
-                    ? _buildStep1Card(authProvider)
-                    : _buildStep2Card(authProvider),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Back to Login Prompt
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'ইতিমধ্যে অ্যাকাউন্ট আছে?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // ================= ১. লোগো (NO CONTAINER, NO BORDER, NO SHADOW) =================
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Image.asset(
+                    'assets/icons/pnglogo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.eco_rounded,
+                      size: 70,
+                      color: AppColors.primary,
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'লগইন করুন',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Modern Step Indicator (Step 1 of 2 -> Step 2 of 2)
-  Widget _buildStepIndicator() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8E2), width: 1.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _buildStepBadge(
-                stepIndex: 0,
-                title: 'ধাপ ১',
-                subtitle: 'যোগাযোগের তথ্য',
-                isActive: _currentStep == 0,
-                isCompleted: _currentStep > 0,
-              ),
-              Expanded(
-                child: Container(
-                  height: 3,
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: _currentStep > 0 ? AppColors.primary : const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              _buildStepBadge(
-                stepIndex: 1,
-                title: 'ধাপ ২',
-                subtitle: 'প্রোফাইল ও পাসওয়ার্ড',
-                isActive: _currentStep == 1,
-                isCompleted: false,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildStepBadge({
-    required int stepIndex,
-    required String title,
-    required String subtitle,
-    required bool isActive,
-    required bool isCompleted,
-  }) {
-    final Color badgeColor = (isActive || isCompleted) ? AppColors.primary : const Color(0xFF9E9E9E);
-    final Color bgColor = (isActive || isCompleted) ? const Color(0xFFE8F5E9) : const Color(0xFFF5F5F5);
+                const SizedBox(height: 10),
 
-    return Row(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: bgColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: badgeColor, width: 2),
-          ),
-          child: Center(
-            child: isCompleted
-                ? const Icon(Icons.check, size: 18, color: AppColors.primary)
-                : Text(
-                    '${stepIndex + 1}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: badgeColor,
-                    ),
+                // অ্যাপের নাম: "কৃষি কথা"
+                const Text(
+                  'কৃষি কথা',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryDark,
+                    letterSpacing: 0.3,
                   ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: (isActive || isCompleted) ? AppColors.textPrimary : AppColors.textMuted,
-              ),
-            ),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+                ),
 
-  /// Step 1: Communication Info (Email + Mobile)
-  Widget _buildStep1Card(AuthProvider authProvider) {
-    return Container(
-      key: const ValueKey('step_1_card'),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8E2), width: 1.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0C000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(22.0),
-      child: Form(
-        key: _step1FormKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
+                const SizedBox(height: 4),
+
+                const Text(
+                  'সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ================= ২. সমস্ত ফিল্ড সহ পূর্ণাঙ্গ ফর্ম কার্ড =================
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.mail_outline_rounded, color: AppColors.primary, size: 24),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'প্রাথমিক যোগাযোগ তথ্য',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'আপনার বৈধ ইমেইল ও সচল মোবাইল নম্বর দিন',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
-                        ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8E2), width: 1.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0C000000),
+                        blurRadius: 18,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 22),
-
-            // Email Address
-            const Text(
-              'জিমেইল অ্যাড্রেস (@gmail.com বাধ্যতামূলক) *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              inputFormatters: [
-                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-              ],
-              decoration: InputDecoration(
-                hintText: 'example@gmail.com',
-                prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'অনুগ্রহ করে জিমেইল ঠিকানা প্রদান করুন';
-                }
-                final email = val.trim().toLowerCase();
-                final gmailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
-                if (!email.endsWith('@gmail.com') || !gmailRegex.hasMatch(email)) {
-                  return 'শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 18),
-
-            // Mobile Number (11 digits)
-            const Text(
-              'মোবাইল নম্বর (১১ ডিজিট) *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(11),
-              ],
-              decoration: InputDecoration(
-                hintText: '01XXXXXXXXX',
-                prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'অনুগ্রহ করে মোবাইল নম্বর প্রদান করুন';
-                }
-                final clean = val.replaceAll(RegExp(r'[^0-9]'), '');
-                if (clean.length != 11 || !clean.startsWith('01')) {
-                  return 'সঠিক ১১ ডিজিটের বাংলাদেশী নম্বর দিন (যেমন: 017XXXXXXXX)';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 28),
-
-            // Next Step Button
-            CustomButton(
-              text: 'পরবর্তী ধাপ (ধাপ ২)',
-              onPressed: _goToStep2,
-              icon: Icons.arrow_forward_rounded,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Step 2: Personal Profile + Security
-  Widget _buildStep2Card(AuthProvider authProvider) {
-    return Container(
-      key: const ValueKey('step_2_card'),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8E2), width: 1.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0C000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(22.0),
-      child: Form(
-        key: _step2FormKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.person_pin_rounded, color: AppColors.primary, size: 24),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 22.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ব্যক্তিগত ও কৃষি প্রোফাইল',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'আপনার নাম, এলাকা ও পাসওয়ার্ড নির্ধারণ করুন',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // Full Name
-            const Text(
-              'আপনার পূর্ণ নাম *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _nameController,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              decoration: InputDecoration(
-                hintText: 'যেমন: মো: রফিকুল ইসলাম',
-                prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'অনুগ্রহ করে আপনার নাম লিখুন';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // District & Upazila Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // District Dropdown
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      // ১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক)
                       const Text(
-                        'জেলা *',
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: _selectedDistrict,
-                        isExpanded: true,
-                        style: _inputTextStyle,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        items: BangladeshLocationData.districts.map((d) {
-                          return DropdownMenuItem(value: d, child: Text(d, style: _inputTextStyle));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedDistrict = val);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-
-                // Upazila Text Field
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'উপজেলা *',
+                        '১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) *',
                         style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 6),
                       TextFormField(
-                        controller: _upazilaController,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
                         style: _inputTextStyle,
                         strutStyle: _inputStrutStyle,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        ],
                         decoration: InputDecoration(
-                          hintText: 'উপজেলার নাম',
+                          hintText: 'example@gmail.com',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
                         ),
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
-                            return 'উপজেলা লিখুন';
+                            return 'অনুগ্রহ করে জিমেইল এড্রেস লিখুন';
+                          }
+                          final email = val.trim().toLowerCase();
+                          final gmailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
+                          if (!email.endsWith('@gmail.com') || !gmailRegex.hasMatch(email)) {
+                            return 'শুধুমাত্র @gmail.com ইমেইল গ্রহণযোগ্য (যেমন: user@gmail.com)';
                           }
                           return null;
                         },
                       ),
+
+                      const SizedBox(height: 16),
+
+                      // ২. মোবাইল নম্বর (১১ ডিজিট)
+                      const Text(
+                        '২. মোবাইল নম্বর (১১ ডিজিট) *',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: '01XXXXXXXXX',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 22),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'অনুগ্রহ করে মোবাইল নম্বর লিখুন';
+                          }
+                          final clean = val.replaceAll(RegExp(r'[^0-9]'), '');
+                          if (clean.length != 11 || !clean.startsWith('01')) {
+                            return 'সঠিক ১১ ডিজিটের বাংলাদেশী নম্বর দিন (যেমন: 017XXXXXXXX)';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ৩. পূর্ণ নাম
+                      const Text(
+                        '৩. পূর্ণ নাম *',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _nameController,
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
+                        decoration: InputDecoration(
+                          hintText: 'যেমন: মো: রফিকুল ইসলাম',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary, size: 22),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'অনুগ্রহ করে আপনার নাম লিখুন';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ৪ ও ৫. জেলা ও উপজেলা সারি
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ৪. জেলা
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '৪. জেলা *',
+                                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                ),
+                                const SizedBox(height: 6),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedDistrict,
+                                  isExpanded: true,
+                                  style: _inputTextStyle,
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                                    ),
+                                  ),
+                                  items: BangladeshLocationData.districts.map((d) {
+                                    return DropdownMenuItem(value: d, child: Text(d, style: _inputTextStyle));
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedDistrict = val);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // ৫. উপজেলা
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '৫. উপজেলা *',
+                                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _upazilaController,
+                                  style: _inputTextStyle,
+                                  strutStyle: _inputStrutStyle,
+                                  decoration: InputDecoration(
+                                    hintText: 'উপজেলার নাম',
+                                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                                    ),
+                                  ),
+                                  validator: (val) {
+                                    if (val == null || val.trim().isEmpty) {
+                                      return 'উপজেলা লিখুন';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // গ্রাম / পাড়া (ঐচ্ছিক)
+                      const Text(
+                        'গ্রাম / পাড়া / ঠিকানা',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _villageController,
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
+                        decoration: InputDecoration(
+                          hintText: 'যেমন: শেরপুর গ্রাম বা রোড নম্বর',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.home_outlined, color: AppColors.primary, size: 22),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ৬. পেশা
+                      const Text(
+                        '৬. পেশা / ক্যাটাগরি *',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: _selectedOccupation,
+                        isExpanded: true,
+                        style: _inputTextStyle,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.work_outline_rounded, color: AppColors.primary, size: 22),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                        ),
+                        items: _occupations.map((occ) {
+                          return DropdownMenuItem(value: occ, child: Text(occ, style: _inputTextStyle));
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedOccupation = val);
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ৭. পাসওয়ার্ড (কমপক্ষে ৬ ডিজিট)
+                      const Text(
+                        '৭. পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর) *',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
+                        decoration: InputDecoration(
+                          hintText: '••••••••',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 22),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              color: AppColors.textMuted,
+                              size: 20,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.length < 6) {
+                            return 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ৮. পাসওয়ার্ড নিশ্চিত করুন (কনফার্ম পাসওয়ার্ড)
+                      const Text(
+                        '৮. পাসওয়ার্ড নিশ্চিত করুন *',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        style: _inputTextStyle,
+                        strutStyle: _inputStrutStyle,
+                        decoration: InputDecoration(
+                          hintText: '••••••••',
+                          hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+                          prefixIcon: const Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 22),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              color: AppColors.textMuted,
+                              size: 20,
+                            ),
+                            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFCFD8DC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val != _passwordController.text) {
+                            return 'পাসওয়ার্ড দুটি মিলছে না';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      if (authProvider.errorMessage != null) ...[
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFEBEE),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline_rounded, color: AppColors.alertCritical, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  authProvider.errorMessage!,
+                                  style: const TextStyle(
+                                    color: AppColors.alertCritical,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 26),
+
+                      // নিচে স্পষ্ট ও চওড়া "একাউন্ট তৈরি করুন" সাবমিট বাটন
+                      Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2E7D32).withOpacity(0.32),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: authProvider.isLoading ? null : _submitRegistration,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: authProvider.isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
+                                )
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'একাউন্ট তৈরি করুন',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 16),
+                const SizedBox(height: 22),
 
-            // Village / Street Address
-            const Text(
-              'গ্রাম / ঠিকানা',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _villageController,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              decoration: InputDecoration(
-                hintText: 'যেমন: শিবগঞ্জ গ্রাম বা রোড নম্বর',
-                prefixIcon: const Icon(Icons.home_outlined, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Occupation / Category Dropdown
-            const Text(
-              'পেশা / ক্যাটাগরি *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            DropdownButtonFormField<String>(
-              value: _selectedOccupation,
-              isExpanded: true,
-              style: _inputTextStyle,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.work_outline_rounded, color: AppColors.primary, size: 22),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              items: _occupations.map((occ) {
-                return DropdownMenuItem(value: occ, child: Text(occ, style: _inputTextStyle));
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedOccupation = val);
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Password Field
-            const Text(
-              'নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর) *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              decoration: InputDecoration(
-                hintText: '••••••••',
-                prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 22),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textMuted,
-                    size: 20,
-                  ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              validator: (val) {
-                if (val == null || val.length < 6) {
-                  return 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Confirm Password Field
-            const Text(
-              'পাসওয়ার্ড নিশ্চিত করুন *',
-              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _confirmPasswordController,
-              obscureText: _obscureConfirmPassword,
-              style: _inputTextStyle,
-              strutStyle: _inputStrutStyle,
-              decoration: InputDecoration(
-                hintText: '••••••••',
-                prefixIcon: const Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 22),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textMuted,
-                    size: 20,
-                  ),
-                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              validator: (val) {
-                if (val != _passwordController.text) {
-                  return 'পাসওয়ার্ড দুটি মিলছে না';
-                }
-                return null;
-              },
-            ),
-
-            if (authProvider.errorMessage != null) ...[
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFFCDD2)),
-                ),
-                child: Row(
+                // Back to Login Prompt
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: AppColors.alertCritical, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        authProvider.errorMessage!,
-                        style: const TextStyle(
-                          color: AppColors.alertCritical,
-                          fontSize: 13,
+                    const Text(
+                      'ইতিমধ্যে অ্যাকাউন্ট আছে?',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'লগইন করুন',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-
-            const SizedBox(height: 26),
-
-            // Buttons: Back & Submit
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton.icon(
-                    onPressed: _goToStep1,
-                    icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                    label: const Text('পূর্ববর্তী'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: AppColors.border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: CustomButton(
-                    text: 'একাউন্ট তৈরি করুন',
-                    onPressed: _submitRegistration,
-                    isLoading: authProvider.isLoading,
-                    icon: Icons.check_circle_outline_rounded,
-                  ),
-                ),
+                const SizedBox(height: 20),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
