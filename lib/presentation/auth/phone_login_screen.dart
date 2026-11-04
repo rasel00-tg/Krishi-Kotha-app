@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/widgets/app_warning_dialog.dart';
 import '../../providers/auth_provider.dart';
 import '../menu/privacy_policy_screen.dart';
 import '../navigation/main_navigation_screen.dart';
@@ -43,7 +44,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   static const TextStyle _inputTextStyle = TextStyle(
     fontSize: 15.0,
     height: 1.2,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
   );
 
@@ -114,11 +115,51 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   }
 
   Future<void> _submitLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final identifier = _identifierController.text.trim();
     final password = _passwordController.text;
+
+    // ১. আইডেন্টিফায়ার ভ্যালিডেশন ডায়ালগ
+    if (identifier.isEmpty) {
+      showAppWarningDialog(
+        context,
+        message: _loginTabIndex == 0
+            ? 'অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!'
+            : 'অনুগ্রহ করে আপনার ১১ ডিজিটের মোবাইল নম্বর লিখুন!',
+      );
+      return;
+    }
+
+    if (_loginTabIndex == 0) {
+      final lower = identifier.toLowerCase();
+      if (!lower.endsWith('@gmail.com') ||
+          !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', caseSensitive: false).hasMatch(lower)) {
+        showAppWarningDialog(
+          context,
+          message: 'শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!',
+        );
+        return;
+      }
+    } else {
+      final clean = identifier.replaceAll(RegExp(r'[^0-9]'), '');
+      if (clean.length != 11 || !clean.startsWith('01')) {
+        showAppWarningDialog(
+          context,
+          message: 'সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!',
+        );
+        return;
+      }
+    }
+
+    // ২. পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
+    if (password.isEmpty) {
+      showAppWarningDialog(
+        context,
+        message: 'অনুগ্রহ করে আপনার অ্যাকাউন্টের পাসওয়ার্ড লিখুন!',
+      );
+      return;
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     // Persist Remember Me & Login Mode
     try {
@@ -138,7 +179,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       password: password,
     );
 
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('স্বাগতম! সফলভাবে লগইন সম্পন্ন হয়েছে।'),
@@ -157,6 +200,11 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
           (route) => false,
         );
       }
+    } else {
+      showAppWarningDialog(
+        context,
+        message: authProvider.errorMessage ?? 'লগইন ব্যর্থ হয়েছে। আপনার জিমেইল/মোবাইল নম্বর ও পাসওয়ার্ড সঠিক কিনা পরীক্ষা করুন।',
+      );
     }
   }
 
@@ -396,6 +444,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                   FilteringTextInputFormatter.deny(RegExp(r'\s')),
                                 ],
                           decoration: InputDecoration(
+                            isDense: true,
                             hintText: _loginTabIndex == 0 ? 'example@gmail.com' : '01XXXXXXXXX',
                             hintStyle: const TextStyle(
                               fontSize: 14,
@@ -471,6 +520,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                           style: _inputTextStyle,
                           strutStyle: _inputStrutStyle,
                           decoration: InputDecoration(
+                            isDense: true,
                             hintText: 'পাসওয়ার্ড লিখুন...',
                             hintStyle: const TextStyle(
                               fontSize: 14,

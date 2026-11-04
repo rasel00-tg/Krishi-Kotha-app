@@ -2837,7 +2837,7 @@
                 <label id="gatewayLoginLabel" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">জিমেইল অ্যাড্রেস *</label>
                 <div style="position: relative;">
                   <i id="gatewayLoginIcon" class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                  <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 40px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
+                  <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 40px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
                   <i class="fa-solid fa-circle-check" id="gatewayLoginCheckmark" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #2E7D32; font-size: 18px; display: none;"></i>
                 </div>
               </div>
@@ -2847,7 +2847,7 @@
                 <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পাসওয়ার্ড *</label>
                 <div style="position: relative;">
                   <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                  <input type="password" id="gatewayLoginPass" placeholder="পাসওয়ার্ড লিখুন..." style="width: 100%; box-sizing: border-box; padding: 14px 42px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
+                  <input type="password" id="gatewayLoginPass" placeholder="পাসওয়ার্ড লিখুন..." style="width: 100%; box-sizing: border-box; padding: 14px 42px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
                   <i class="fa-solid fa-eye" id="toggleGatewayPassIcon" onclick="togglePassVisibility('gatewayLoginPass', 'toggleGatewayPassIcon')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
                 </div>
               </div>
@@ -2858,7 +2858,7 @@
                   <input type="checkbox" id="gatewayRememberMe" checked style="accent-color: var(--primary); width: 16px; height: 16px;">
                   <span>মনে রাখুন</span>
                 </label>
-                <a href="javascript:void(0)" onclick="openAuthModal('forgot')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
+                <a href="javascript:void(0)" onclick="openForgotPasswordPage()" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
               </div>
 
               <!-- Sign In Button -->
@@ -2872,7 +2872,7 @@
           <!-- New Account Creation Section -->
           <div style="text-align: center;">
             <p style="font-size: 13.5px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">একাউন্ট নেই?</p>
-            <button type="button" onclick="openAuthModal('reg')" style="width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid var(--primary); background: white; color: var(--primary); font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <button type="button" onclick="openRegistrationPage()" style="width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid var(--primary); background: white; color: var(--primary); font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
               <i class="fa-solid fa-user-plus"></i>
               <span>নতুন একাউন্ট তৈরি করুন</span>
             </button>
@@ -3079,6 +3079,174 @@
             <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-dark);">কৃষি কথা – Krishi Kotha</h4>
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">স্মার্ট কৃষিতে কৃষকের সাথে সবসময় •
               কপিরাইট © ২০২৬ সর্বস্বত্ব সংরক্ষিত</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN REGISTRATION PAGE (EDGE-TO-EDGE, NO DIALOG / MODAL) -->
+    <div class="full-screen-page" id="registrationPage" style="background: #FFFFFF;">
+      <!-- Top Bar with Back Button & Title -->
+      <div
+        style="background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="icon-btn" onclick="closeRegistrationPage()" style="color: var(--text-primary); background: #F1F3F4;"
+            title="ফিরে যান">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h2 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0;">নতুন একাউন্ট তৈরি করুন</h2>
+        </div>
+      </div>
+
+      <!-- Edge-to-Edge Scrollable SingleChildScrollView Body -->
+      <div style="flex: 1; overflow-y: auto; padding: 20px 18px 48px 18px;">
+        <div style="max-width: 650px; margin: 0 auto;">
+          <!-- Top Plain Large Logo (NO Container, NO Border, NO Shadow) -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="pnglogo.png" style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 8px auto;" alt="কৃষি কথা লোগো">
+            <h3 style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 0 0 4px 0;">কৃষি কথা</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- ১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) -->
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="email" id="fullRegEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <!-- ২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু) -->
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু) *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-phone" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="tel" id="fullRegPhone" maxlength="11" placeholder="01XXXXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <!-- ৩. পূর্ণ নাম -->
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৩. পূর্ণ নাম *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="text" id="fullRegName" placeholder="আপনার পূর্ণ নাম লিখুন" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <!-- ৪ ও ৫. জেলা ও উপজেলা -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৪. জেলা *</label>
+                <select id="fullRegDistrict" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14.5px; font-weight: normal; line-height: 1.2; font-family: inherit; background: white;">
+                  <option value="বগুড়া" selected>বগুড়া</option>
+                  <option value="ঢাকা">ঢাকা</option>
+                  <option value="রাজশাহী">রাজশাহী</option>
+                  <option value="রংপুর">রংপুর</option>
+                  <option value="দিনাজপুর">দিনাজপুর</option>
+                  <option value="ময়মনসিংহ">ময়মনসিংহ</option>
+                  <option value="চট্টগ্রাম">চট্টগ্রাম</option>
+                  <option value="কুমিল্লা">কুমিল্লা</option>
+                  <option value="খুলনা">খুলনা</option>
+                  <option value="যশোর">যশোর</option>
+                  <option value="বরিশাল">বরিশাল</option>
+                  <option value="সিলেট">সিলেট</option>
+                  <option value="টাঙ্গাইল">টাঙ্গাইল</option>
+                  <option value="পাবনা">পাবনা</option>
+                  <option value="সিরাজগঞ্জ">সিরাজগঞ্জ</option>
+                  <option value="গাজীপুর">গাজীপুর</option>
+                  <option value="কক্সবাজার">কক্সবাজার</option>
+                  <option value="কুষ্টিয়া">কুষ্টিয়া</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৫. উপজেলা / থানা *</label>
+                <input type="text" id="fullRegUpazila" placeholder="উপজেলা লিখুন" value="শেরপুর" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14.5px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <!-- ৬. পেশা -->
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৬. পেশা / ক্যাটাগরি *</label>
+              <select id="fullRegOccupation" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14.5px; font-weight: normal; line-height: 1.2; font-family: inherit; background: white;">
+                <option value="কৃষক" selected>কৃষক</option>
+                <option value="কৃষি উদ্যোক্তা">কৃষি উদ্যোক্তা</option>
+                <option value="শিক্ষার্থী">শিক্ষার্থী</option>
+                <option value="গবেষক">গবেষক</option>
+                <option value="কৃষি কর্মকর্তা">কৃষি কর্মকর্তা</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+
+            <!-- ৭ ও ৮. নতুন পাসওয়ার্ড ও নিশ্চিতকরণ -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৭. পাসওয়ার্ড *</label>
+                <input type="password" id="fullRegPassword" placeholder="কমপক্ষে ৬ অক্ষর" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14.5px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">৮. নিশ্চিত করুন *</label>
+                <input type="password" id="fullRegConfirmPassword" placeholder="একই পাসওয়ার্ড" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14.5px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <!-- Submit Button: একাউন্ট তৈরি করুন -->
+            <button type="button" onclick="executeFullRegistration()" style="width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32); margin-top: 10px;">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>একাউন্ট তৈরি করুন</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 10px;">
+              <span style="font-size: 13.5px; color: var(--text-secondary);">ইতিমধ্যে অ্যাকাউন্ট আছে? </span>
+              <a href="javascript:void(0)" onclick="closeRegistrationPage()" style="font-size: 13.5px; color: var(--primary); font-weight: 700; text-decoration: none;">লগইন করুন</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN FORGOT PASSWORD PAGE (EDGE-TO-EDGE, NO DIALOG / MODAL) -->
+    <div class="full-screen-page" id="forgotPasswordPage" style="background: #FFFFFF;">
+      <!-- Top Bar with Back Button & Title -->
+      <div
+        style="background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="icon-btn" onclick="closeForgotPasswordPage()" style="color: var(--text-primary); background: #F1F3F4;"
+            title="ফিরে যান">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h2 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0;">পাসওয়ার্ড রিসেট</h2>
+        </div>
+      </div>
+
+      <!-- Edge-to-Edge Scrollable Body -->
+      <div style="flex: 1; overflow-y: auto; padding: 24px 18px 48px 18px;">
+        <div style="max-width: 550px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 22px;">
+            <img src="pnglogo.png" style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 10px auto;" alt="কৃষি কথা লোগো">
+            <h3 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;">পাসওয়ার্ড রিসেট</h3>
+            <p style="font-size: 13.5px; color: var(--text-secondary); margin: 0; line-height: 1.4;">আপনার নিবন্ধিত জিমেইল এড্রেস লিখুন, একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হবে</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার নিবন্ধিত জিমেইল এড্রেস *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="email" id="fullForgotEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
+              </div>
+            </div>
+
+            <button type="button" onclick="executeFullForgotPassword()" style="width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32);">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>রিসেট লিঙ্ক পাঠান</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 10px;">
+              <a href="javascript:void(0)" onclick="closeForgotPasswordPage()" style="font-size: 13.5px; color: var(--primary); font-weight: 700; text-decoration: none;">&larr; লগইন পেজে ফিরে যান</a>
+            </div>
           </div>
         </div>
       </div>
@@ -3589,7 +3757,17 @@
       </div>
     </div>
 
-    <!-- MODAL: MODERN AUTHENTICATION (LOGIN, 2-STEP REGISTRATION, FORGOT PASSWORD) -->
+    <!-- CUSTOM WARNING ALERT DIALOG WITH APP LOGO (REPLACES BOTTOM SNACKBARS) -->
+    <div class="modal-overlay" id="warningDialogModal" style="display: none; align-items: center; justify-content: center; z-index: 10000000; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+      <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 360px; width: 88%; border-radius: 22px; padding: 26px 22px 20px 22px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
+        <img src="pnglogo.png" style="width: 55px; height: 55px; object-fit: contain; margin: 0 auto 10px auto; display: block;" alt="কৃষি কথা লোগো">
+        <h3 id="warningDialogTitle" style="color: #D32F2F; font-size: 19px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: 0.3px;">সতর্কবার্তা</h3>
+        <p id="warningDialogMessage" style="font-size: 14.5px; font-weight: 500; color: #212121; line-height: 1.45; margin: 0 0 20px 0;"></p>
+        <button type="button" onclick="closeWarningDialog()" style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #2E7D32; color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">ঠিক আছে</button>
+      </div>
+    </div>
+
+    <!-- MODAL: MODERN AUTHENTICATION LOGIN -->
     <div class="modal-overlay" id="authModal" style="display: none; align-items: center; justify-content: center; z-index: 1000009; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
       <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 440px; width: 92%; max-height: 90vh; overflow-y: auto; border-radius: 24px; padding: 24px; background: white; box-shadow: 0 20px 50px rgba(0,0,0,0.25); text-align: left; position: relative;">
         <!-- Close Button -->
@@ -3608,7 +3786,7 @@
               <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
               <div style="position: relative;">
                 <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="text" id="authLoginId" placeholder="user@gmail.com অথবা ০১৭১XXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
+                <input type="text" id="authLoginId" placeholder="user@gmail.com অথবা ০১৭১XXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
               </div>
             </div>
 
@@ -3616,13 +3794,13 @@
               <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পাসওয়ার্ড *</label>
               <div style="position: relative;">
                 <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="password" id="authLoginPass" placeholder="••••••••" style="width: 100%; box-sizing: border-box; padding: 14px 42px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
+                <input type="password" id="authLoginPass" placeholder="••••••••" style="width: 100%; box-sizing: border-box; padding: 14px 42px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
                 <i class="fa-solid fa-eye" id="toggleLoginPassIcon" onclick="togglePassVisibility('authLoginPass', 'toggleLoginPassIcon')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
               </div>
             </div>
 
             <div style="text-align: right;">
-              <a href="javascript:void(0)" onclick="showAuthView('forgot')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
+              <a href="javascript:void(0)" onclick="closeModal('authModal'); openForgotPasswordPage()" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
             </div>
 
             <button type="button" onclick="executeWebAuthLogin()" style="width: 100%; padding: 13px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3);">
@@ -3630,7 +3808,7 @@
               <span>লগইন করুন</span>
             </button>
 
-            <button type="button" onclick="showAuthView('reg')" style="width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid var(--primary); background: #F1F8F1; color: var(--primary-dark); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button type="button" onclick="closeModal('authModal'); openRegistrationPage()" style="width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid var(--primary); background: #F1F8F1; color: var(--primary-dark); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <i class="fa-solid fa-user-plus"></i>
               <span>নতুন অ্যাকাউন্ট খুলুন (সাইন-আপ)</span>
             </button>
@@ -3641,140 +3819,8 @@
             </div>
           </div>
         </div>
-
-        <!-- VIEW 2: FULL CONTINUOUS REGISTRATION FORM (ALL 8 FIELDS VISIBLE) -->
-        <div id="authViewReg" style="display: none;">
-          <!-- Top Plain Large Logo -->
-          <div style="text-align: center; margin-bottom: 16px;">
-            <img src="pnglogo.png" style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 8px auto;" alt="কৃষি কথা লোগো">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin: 0 0 4px 0;">কৃষি কথা</h3>
-            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন</p>
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 13px;">
-            <!-- ১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) -->
-            <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">১. জিমেইল এড্রেস (@gmail.com বাধ্যতামূলক) *</label>
-              <div style="position: relative;">
-                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="email" id="authRegEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
-              </div>
-            </div>
-
-            <!-- ২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু) -->
-            <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">২. মোবাইল নম্বর (১১ ডিজিট, ০১ দিয়ে শুরু) *</label>
-              <div style="position: relative;">
-                <i class="fa-solid fa-phone" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="tel" id="authRegPhone" maxlength="11" placeholder="01XXXXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit; font-weight: 600;">
-              </div>
-            </div>
-
-            <!-- ৩. পূর্ণ নাম -->
-            <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৩. পূর্ণ নাম *</label>
-              <div style="position: relative;">
-                <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="text" id="authRegName" placeholder="আপনার পূর্ণ নাম লিখুন" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
-              </div>
-            </div>
-
-            <!-- ৪ ও ৫. জেলা ও উপজেলা -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৪. জেলা *</label>
-                <select id="authRegDistrict" style="width: 100%; box-sizing: border-box; padding: 14px 10px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; line-height: 1.2; font-family: inherit; background: white;">
-                  <option value="বগুড়া" selected>বগুড়া</option>
-                  <option value="ঢাকা">ঢাকা</option>
-                  <option value="রাজশাহী">রাজশাহী</option>
-                  <option value="রংপুর">রংপুর</option>
-                  <option value="দিনাজপুর">দিনাজপুর</option>
-                  <option value="ময়মনসিংহ">ময়মনসিংহ</option>
-                  <option value="চট্টগ্রাম">চট্টগ্রাম</option>
-                  <option value="কুমিল্লা">কুমিল্লা</option>
-                  <option value="খুলনা">খুলনা</option>
-                  <option value="যশোর">যশোর</option>
-                  <option value="বরিশাল">বরিশাল</option>
-                  <option value="সিলেট">সিলেট</option>
-                  <option value="টাঙ্গাইল">টাঙ্গাইল</option>
-                  <option value="পাবনা">পাবনা</option>
-                  <option value="সিরাজগঞ্জ">সিরাজগঞ্জ</option>
-                  <option value="গাজীপুর">গাজীপুর</option>
-                  <option value="কক্সবাজার">কক্সবাজার</option>
-                  <option value="কুষ্টিয়া">কুষ্টিয়া</option>
-                </select>
-              </div>
-              <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৫. উপজেলা / থানা *</label>
-                <input type="text" id="authRegUpazila" placeholder="উপজেলা লিখুন" value="শেরপুর" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; line-height: 1.2; font-family: inherit;">
-              </div>
-            </div>
-
-            <!-- ৬. পেশা -->
-            <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৬. পেশা / ক্যাটাগরি *</label>
-              <select id="authRegOccupation" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; line-height: 1.2; font-family: inherit; background: white;">
-                <option value="কৃষক" selected>কৃষক</option>
-                <option value="কৃষি উদ্যোক্তা">কৃষি উদ্যোক্তা</option>
-                <option value="শিক্ষার্থী">শিক্ষার্থী</option>
-                <option value="গবেষক">গবেষক</option>
-                <option value="কৃষি কর্মকর্তা">কৃষি কর্মকর্তা</option>
-                <option value="অন্যান্য">অন্যান্য</option>
-              </select>
-            </div>
-
-            <!-- ৭ ও ৮. নতুন পাসওয়ার্ড ও নিশ্চিতকরণ -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৭. পাসওয়ার্ড *</label>
-                <input type="password" id="authRegPassword" placeholder="কমপক্ষে ৬ অক্ষর" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; line-height: 1.2; font-family: inherit;">
-              </div>
-              <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">৮. নিশ্চিত করুন *</label>
-                <input type="password" id="authRegConfirmPassword" placeholder="একই পাসওয়ার্ড" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; line-height: 1.2; font-family: inherit;">
-              </div>
-            </div>
-
-            <!-- Submit Button: একাউন্ট তৈরি করুন -->
-            <button type="button" onclick="executeWebAuthRegister()" style="width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.32); margin-top: 8px;">
-              <i class="fa-solid fa-circle-check"></i>
-              <span>একাউন্ট তৈরি করুন</span>
-            </button>
-
-            <div style="text-align: center; margin-top: 8px;">
-              <span style="font-size: 13px; color: var(--text-secondary);">ইতিমধ্যে অ্যাকাউন্ট আছে? </span>
-              <a href="javascript:void(0)" onclick="showAuthView('login')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">লগইন করুন</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- VIEW 3: FORGOT PASSWORD (PLAIN LOGO, NO CONTAINER/SHADOW) -->
-        <div id="authViewForgot" style="display: none;">
-          <div style="text-align: center; margin-bottom: 18px;">
-            <img src="pnglogo.png" style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 10px auto;" alt="কৃষি কথা লোগো">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">পাসওয়ার্ড রিসেট</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">আপনার নিবন্ধিত জিমেইল এড্রেস লিখুন, একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হবে</p>
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 14px;">
-            <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার নিবন্ধিত জিমেইল এড্রেস *</label>
-              <div style="position: relative;">
-                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
-                <input type="email" id="authForgotEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; line-height: 1.2; font-family: inherit;">
-              </div>
-            </div>
-
-            <button type="button" onclick="executeWebAuthForgot()" style="width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3);">
-              <i class="fa-solid fa-paper-plane"></i>
-              <span>রিসেট লিঙ্ক পাঠান</span>
-            </button>
-
-            <div style="text-align: center; margin-top: 6px;">
-              <a href="javascript:void(0)" onclick="showAuthView('login')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">&larr; লগইন পেজে ফিরে যান</a>
-            </div>
-          </div>
-        </div>
+      </div>
+    </div>
       </div>
     </div>
 
@@ -8752,6 +8798,40 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       alert('জরুরি সতর্কতা: দেশের উত্তর ও মধ্যাঞ্চলে আগামী ২৪ ঘণ্টায় শিলাবৃষ্টি ও তীব্র বাতাস হতে পারে। পাকা ধান কেটে অবিলম্বে নিরাপদ স্থানে সংরক্ষণ করুন।');
     }
 
+    function openRegistrationPage() {
+      const page = document.getElementById('registrationPage');
+      if (page) page.classList.add('active');
+    }
+
+    function closeRegistrationPage() {
+      const page = document.getElementById('registrationPage');
+      if (page) page.classList.remove('active');
+    }
+
+    function openForgotPasswordPage() {
+      const page = document.getElementById('forgotPasswordPage');
+      if (page) page.classList.add('active');
+    }
+
+    function closeForgotPasswordPage() {
+      const page = document.getElementById('forgotPasswordPage');
+      if (page) page.classList.remove('active');
+    }
+
+    function showWarningDialog(message, title) {
+      const m = document.getElementById('warningDialogModal');
+      const t = document.getElementById('warningDialogTitle');
+      const msg = document.getElementById('warningDialogMessage');
+      if (t) t.innerText = title || 'সতর্কবার্তা';
+      if (msg) msg.innerText = message || '';
+      if (m) m.style.display = 'flex';
+    }
+
+    function closeWarningDialog() {
+      const m = document.getElementById('warningDialogModal');
+      if (m) m.style.display = 'none';
+    }
+
     function isWebUserLoggedIn() {
       const cached = localStorage.getItem('krishi_kotha_cached_user');
       if (!cached) return false;
@@ -8764,26 +8844,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openAuthModal(view) {
+      if (view === 'reg' || view === 'regStep1' || view === 'regStep2') {
+        openRegistrationPage();
+        return;
+      }
+      if (view === 'forgot') {
+        openForgotPasswordPage();
+        return;
+      }
       showAuthView(view || 'login');
       openModal('authModal');
     }
 
     function showAuthView(view) {
       const loginV = document.getElementById('authViewLogin');
-      const regV = document.getElementById('authViewReg');
-      const forgotV = document.getElementById('authViewForgot');
-
-      if (loginV) loginV.style.display = 'none';
-      if (regV) regV.style.display = 'none';
-      if (forgotV) forgotV.style.display = 'none';
-
-      if ((view === 'reg' || view === 'regStep1' || view === 'regStep2') && regV) {
-        regV.style.display = 'block';
-      } else if (view === 'forgot' && forgotV) {
-        forgotV.style.display = 'block';
-      } else if (loginV) {
-        loginV.style.display = 'block';
-      }
+      if (loginV) loginV.style.display = 'block';
     }
 
     function togglePassVisibility(inputId, iconId) {
@@ -8799,36 +8874,35 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
-    async function executeWebAuthRegister() {
-      const email = (document.getElementById('authRegEmail')?.value || '').trim().toLowerCase();
-      const phone = (document.getElementById('authRegPhone')?.value || '').trim();
-      const name = (document.getElementById('authRegName')?.value || '').trim();
-      const district = (document.getElementById('authRegDistrict')?.value || 'বগুড়া').trim();
-      const upazila = (document.getElementById('authRegUpazila')?.value || 'শেরপুর').trim();
-      const village = (document.getElementById('authRegVillage')?.value || '').trim();
-      const occupation = (document.getElementById('authRegOccupation')?.value || 'কৃষক').trim();
-      const pass = (document.getElementById('authRegPassword')?.value || '');
-      const confirmPass = (document.getElementById('authRegConfirmPassword')?.value || '');
+    async function executeFullRegistration() {
+      const email = (document.getElementById('fullRegEmail')?.value || '').trim().toLowerCase();
+      const phone = (document.getElementById('fullRegPhone')?.value || '').trim();
+      const name = (document.getElementById('fullRegName')?.value || '').trim();
+      const district = (document.getElementById('fullRegDistrict')?.value || 'বগুড়া').trim();
+      const upazila = (document.getElementById('fullRegUpazila')?.value || 'শেরপুর').trim();
+      const occupation = (document.getElementById('fullRegOccupation')?.value || 'কৃষক').trim();
+      const pass = (document.getElementById('fullRegPassword')?.value || '');
+      const confirmPass = (document.getElementById('fullRegConfirmPassword')?.value || '');
 
       if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
-        showToast('১. শুধুমাত্র বৈধ @gmail.com ইমেইল ঠিকানা দিন (যেমন: user@gmail.com)');
+        showWarningDialog('অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!');
         return;
       }
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
-        showToast('২. সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)');
+        showWarningDialog('অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!');
         return;
       }
       if (!name) {
-        showToast('৩. অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন');
+        showWarningDialog('অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন!');
         return;
       }
       if (!pass || pass.length < 6) {
-        showToast('৭. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ সংখ্যার বা অক্ষরের হতে হবে!');
         return;
       }
       if (pass !== confirmPass) {
-        showToast('৮. পাসওয়ার্ড দুটি মিলছে না');
+        showWarningDialog('পাসওয়ার্ড এবং পাসওয়ার্ড নিশ্চিতকরণ মিলছে না!');
         return;
       }
 
@@ -8840,7 +8914,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         phone: phone,
         district: district,
         upazila: upazila,
-        village: village,
+        village: '',
         occupation: occupation,
         preferred_crops: ['বোরো ধান', 'আলু'],
         createdAt: new Date().toISOString()
@@ -8851,13 +8925,38 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           await firebase.firestore().collection('users').doc(uid).set(user);
         }
       } catch (err) {
-        console.warn('Firestore register sync notice:', err);
+        console.warn('Firestore register notice:', err);
       }
 
       localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      closeRegistrationPage();
       closeModal('authModal');
       updateWebProfileHeader();
-      showToast('অভিনন্দন! আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।');
+      showWarningDialog('আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। "কৃষি কথা"-এ আপনাকে স্বাগতম!', 'অভিনন্দন!');
+    }
+
+    async function executeFullForgotPassword() {
+      const email = (document.getElementById('fullForgotEmail')?.value || '').trim().toLowerCase();
+
+      if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
+        showWarningDialog('অনুগ্রহ করে আপনার নিবন্ধিত @gmail.com জিমেইল এড্রেসটি লিখুন!');
+        return;
+      }
+
+      try {
+        if (window.firebase && firebase.auth) {
+          await firebase.auth().sendPasswordResetEmail(email);
+        }
+      } catch (err) {
+        console.warn('Password reset notice:', err);
+      }
+
+      closeForgotPasswordPage();
+      showWarningDialog('আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।', 'রিসেট লিঙ্ক পাঠানো হয়েছে');
+    }
+
+    async function executeWebAuthRegister() {
+      executeFullRegistration();
     }
 
     async function executeWebAuthLogin() {
@@ -8865,11 +8964,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const pass = (document.getElementById('authLoginPass')?.value || '');
 
       if (!identifier) {
-        showToast('অনুগ্রহ করে ইমেইল বা মোবাইল নম্বর লিখুন');
+        showWarningDialog('অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল বা মোবাইল নম্বর লিখুন!');
         return;
       }
       if (!pass) {
-        showToast('অনুগ্রহ করে পাসওয়ার্ড লিখুন');
+        showWarningDialog('অনুগ্রহ করে পাসওয়ার্ড লিখুন!');
         return;
       }
 
@@ -8909,22 +9008,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     async function executeWebAuthForgot() {
-      const email = (document.getElementById('authForgotEmail')?.value || '').trim();
-      if (!email || !email.includes('@') || !email.includes('.')) {
-        showToast('অনুগ্রহ করে সঠিক ও বৈধ ইমেইল দিন');
-        return;
-      }
-
-      try {
-        if (window.firebase && firebase.auth) {
-          await firebase.auth().sendPasswordResetEmail(email);
-        }
-      } catch (err) {
-        console.warn('Password reset notice:', err);
-      }
-
-      closeModal('authModal');
-      showToast('আপনার ইমেইলে একটি অফিসিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে।');
+      executeFullForgotPassword();
     }
 
     let currentGatewayLoginTab = 'email'; // 'email' or 'phone'
@@ -9004,25 +9088,27 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const rememberMe = document.getElementById('gatewayRememberMe')?.checked ?? true;
 
       if (!identifier) {
-        showToast(currentGatewayLoginTab === 'email' ? 'অনুগ্রহ করে জিমেইল অ্যাড্রেস লিখুন' : 'অনুগ্রহ করে মোবাইল নম্বর লিখুন');
+        showWarningDialog(currentGatewayLoginTab === 'email'
+          ? 'অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!'
+          : 'অনুগ্রহ করে আপনার ১১ ডিজিটের মোবাইল নম্বর লিখুন!');
         return;
       }
 
       if (currentGatewayLoginTab === 'email') {
         if (!identifier.toLowerCase().endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(identifier)) {
-          showToast('শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)');
+          showWarningDialog('শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)!');
           return;
         }
       } else {
         const clean = identifier.replace(/[^0-9]/g, '');
         if (clean.length !== 11 || !clean.startsWith('01')) {
-          showToast('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)');
+          showWarningDialog('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!');
           return;
         }
       }
 
       if (!pass) {
-        showToast('অনুগ্রহ করে পাসওয়ার্ড লিখুন');
+        showWarningDialog('অনুগ্রহ করে আপনার অ্যাকাউন্টের পাসওয়ার্ড লিখুন!');
         return;
       }
 
