@@ -15,6 +15,13 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get verificationId => _verificationId;
   bool get isAuthenticated => _user != null;
+  bool get isGuest => _user == null || (_user?.uid.startsWith('guest_') ?? true);
+  bool get isLoggedIn => _user != null && !_user!.uid.startsWith('guest_');
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
 
   AuthProvider() {
     _initUser();
@@ -98,6 +105,84 @@ class AuthProvider extends ChangeNotifier {
     _user = _authService.currentUser;
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<bool> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String phone,
+    required String name,
+    required String district,
+    required String upazila,
+    required String village,
+    required String occupation,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _authService.registerWithEmailAndPassword(
+        email: email,
+        password: password,
+        phone: phone,
+        name: name,
+        district: district,
+        upazila: upazila,
+        village: village,
+        occupation: occupation,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> loginWithIdentifierAndPassword({
+    required String identifier,
+    required String password,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _authService.loginWithIdentifierAndPassword(
+        identifier: identifier,
+        password: password,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> sendPasswordResetEmail(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authService.sendPasswordResetEmail(email);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> signOut() async {

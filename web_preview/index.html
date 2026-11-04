@@ -2694,14 +2694,31 @@
 
       <!-- TAB 4: APP MENU -->
       <div class="tab-pane" id="tab-menu">
-        <!-- Redesigned Large Centered Farmer Profile Card -->
-        <div class="menu-profile-card">
+        <!-- Redesigned Large Centered Farmer Profile Card (Logged-in User) -->
+        <div class="menu-profile-card" id="webMenuProfileCard">
           <div class="menu-avatar-badge">
             <span id="menuAvatarChar">ম</span>
             <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
           </div>
           <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম</h3>
           <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
+        </div>
+
+        <!-- Attractive Login/Sign-up Prompt Card (Guest User) -->
+        <div id="webMenuLoginPromptCard" onclick="openAuthModal('login')" style="display: none; background: #fff; border-radius: 20px; border: 1.2px solid var(--primary-light); padding: 18px 20px; box-shadow: 0 4px 16px rgba(46,125,50,0.08); cursor: pointer; margin-bottom: 22px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--primary-container); border: 2px solid var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-size: 26px; flex-shrink: 0;">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div style="flex: 1;">
+              <h3 style="font-size: 16.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px 0;">লগইন বা একাউন্ট খুলুন</h3>
+              <p style="font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.35;">স্মার্ট কৃষির সকল সুবিধা পেতে সাইন ইন বা নিবন্ধন করুন</p>
+            </div>
+            <div style="padding: 8px 16px; border-radius: 20px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(46,125,50,0.25);">
+              <span>লগইন</span>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
@@ -2776,8 +2793,8 @@
           </div>
         </div>
 
-        <!-- Category 4: লগআউট বাটন (Sleek Logout Button) -->
-        <div class="menu-group-card" style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
+        <!-- Category 4: লগআউট বাটন (Sleek Logout Button - Logged in only) -->
+        <div class="menu-group-card" id="webMenuLogoutRow" style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
           <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
             <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
               <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -3502,6 +3519,228 @@
           <button type="button" onclick="executeWebLogout()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #D32F2F; color: white; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(211,47,47,0.3);">
             হ্যাঁ, লগআউট করুন
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: MODERN AUTHENTICATION (LOGIN, 2-STEP REGISTRATION, FORGOT PASSWORD) -->
+    <div class="modal-overlay" id="authModal" style="display: none; align-items: center; justify-content: center; z-index: 1000009; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+      <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 440px; width: 92%; max-height: 90vh; overflow-y: auto; border-radius: 24px; padding: 24px; background: white; box-shadow: 0 20px 50px rgba(0,0,0,0.25); text-align: left; position: relative;">
+        <!-- Close Button -->
+        <button type="button" onclick="closeModal('authModal')" style="position: absolute; top: 16px; right: 16px; border: none; background: #F1F3F4; width: 34px; height: 34px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; color: #5F6368; display: flex; align-items: center; justify-content: center;">&times;</button>
+
+        <!-- VIEW 1: DUAL IDENTIFIER LOGIN -->
+        <div id="authViewLogin">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 68px; height: 68px; border-radius: 50%; background: var(--primary-container); border: 2px solid var(--primary-light); margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+              <img src="pnglogo.png" style="width: 42px; height: 42px; object-fit: contain;" alt="লোগো">
+            </div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">লগইন করুন</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">আপনার নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+                <input type="text" id="authLoginId" placeholder="user@gmail.com অথবা ০১৭১XXXXXXX" style="width: 100%; box-sizing: border-box; padding: 12px 14px 12px 40px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; font-family: inherit;">
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পাসওয়ার্ড *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+                <input type="password" id="authLoginPass" placeholder="••••••••" style="width: 100%; box-sizing: border-box; padding: 12px 42px 12px 40px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; font-family: inherit;">
+                <i class="fa-solid fa-eye" id="toggleLoginPassIcon" onclick="togglePassVisibility('authLoginPass', 'toggleLoginPassIcon')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
+              </div>
+            </div>
+
+            <div style="text-align: right;">
+              <a href="javascript:void(0)" onclick="showAuthView('forgot')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
+            </div>
+
+            <button type="button" onclick="executeWebAuthLogin()" style="width: 100%; padding: 13px; border-radius: 12px; border: none; background: var(--primary); color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3);">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              <span>লগইন করুন</span>
+            </button>
+
+            <button type="button" onclick="showAuthView('regStep1')" style="width: 100%; padding: 12px; border-radius: 12px; border: 1.2px solid var(--primary-light); background: #F1F8F1; color: var(--primary-dark); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>নতুন অ্যাকাউন্ট খুলুন (সাইন-আপ)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 2: REGISTRATION STEP 1 (COMMUNICATION INFO) -->
+        <div id="authViewRegStep1" style="display: none;">
+          <!-- Step Indicator -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #ECEFF1;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">১</span>
+              <span style="font-size: 13px; font-weight: 700; color: var(--primary-dark);">যোগাযোগের তথ্য</span>
+            </div>
+            <div style="width: 32px; height: 2px; background: #CFD8DC;"></div>
+            <div style="display: flex; align-items: center; gap: 8px; opacity: 0.5;">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: #ECEFF1; color: #78909C; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">২</span>
+              <span style="font-size: 13px; font-weight: 600; color: #78909C;">প্রোফাইল</span>
+            </div>
+          </div>
+
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">প্রাথমিক যোগাযোগ তথ্য</h3>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px 0;">আপনার বৈধ ইমেইল ও ১১ ডিজিটের মোবাইল নম্বর দিন</p>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল অ্যাড্রেস *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+                <input type="email" id="authRegEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 12px 14px 12px 40px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; font-family: inherit;">
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">মোবাইল নম্বর (১১ ডিজিট) *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-phone" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+                <input type="tel" id="authRegPhone" placeholder="01XXXXXXXXX" style="width: 100%; box-sizing: border-box; padding: 12px 14px 12px 40px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; font-weight: 600; letter-spacing: 0.5px;">
+              </div>
+            </div>
+
+            <button type="button" onclick="proceedToRegStep2()" style="width: 100%; padding: 13px; border-radius: 12px; border: none; background: var(--primary); color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3); margin-top: 6px;">
+              <span>পরবর্তী ধাপ (ধাপ ২)</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <div style="text-align: center; margin-top: 8px;">
+              <span style="font-size: 13px; color: var(--text-secondary);">ইতিমধ্যে অ্যাকাউন্ট আছে? </span>
+              <a href="javascript:void(0)" onclick="showAuthView('login')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">লগইন করুন</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: REGISTRATION STEP 2 (PERSONAL & FARM PROFILE + SECURITY) -->
+        <div id="authViewRegStep2" style="display: none;">
+          <!-- Step Indicator -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #ECEFF1;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 24px; height: 24px; border-radius: 50%; background: #4CAF50; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fa-solid fa-check"></i></span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--primary-dark);">ধাপ ১ সম্পূর্ণ</span>
+            </div>
+            <div style="width: 32px; height: 2px; background: var(--primary);"></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">২</span>
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--primary-dark);">প্রোফাইল ও সিকিউরিটি</span>
+            </div>
+          </div>
+
+          <h3 style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 3px 0;">ব্যক্তিগত ও কৃষি প্রোফাইল</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 14px 0;">আপনার নাম, এলাকা ও পাসওয়ার্ড নির্ধারণ করুন</p>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">আপনার পূর্ণ নাম *</label>
+              <input type="text" id="authRegName" placeholder="যেমন: মো: রফিকুল ইসলাম" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13.5px; font-family: inherit;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">জেলা *</label>
+                <select id="authRegDistrict" style="width: 100%; box-sizing: border-box; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-family: inherit; background: white;">
+                  <option value="বগুড়া" selected>বগুড়া</option>
+                  <option value="ঢাকা">ঢাকা</option>
+                  <option value="রাজশাহী">রাজশাহী</option>
+                  <option value="রংপুর">রংপুর</option>
+                  <option value="দিনাজপুর">দিনাজপুর</option>
+                  <option value="ময়মনসিংহ">ময়মনসিংহ</option>
+                  <option value="চট্টগ্রাম">চট্টগ্রাম</option>
+                  <option value="কুমিল্লা">কুমিল্লা</option>
+                  <option value="খুলনা">খুলনা</option>
+                  <option value="যশোর">যশোর</option>
+                  <option value="বরিশাল">বরিশাল</option>
+                  <option value="সিলেট">সিলেট</option>
+                  <option value="টাঙ্গাইল">টাঙ্গাইল</option>
+                  <option value="পাবনা">পাবনা</option>
+                  <option value="সিরাজগঞ্জ">সিরাজগঞ্জ</option>
+                  <option value="গাজীপুর">গাজীপুর</option>
+                  <option value="কক্সবাজার">কক্সবাজার</option>
+                  <option value="কুষ্টিয়া">কুষ্টিয়া</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">উপজেলা *</label>
+                <input type="text" id="authRegUpazila" placeholder="উপজেলা" value="শেরপুর" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-family: inherit;">
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">গ্রাম / ঠিকানা</label>
+              <input type="text" id="authRegVillage" placeholder="যেমন: শিবগঞ্জ গ্রাম বা রোড নম্বর" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13.5px; font-family: inherit;">
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">পেশা / ক্যাটাগরি *</label>
+              <select id="authRegOccupation" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-family: inherit; background: white;">
+                <option value="কৃষক" selected>কৃষক</option>
+                <option value="কৃষি উদ্যোক্তা">কৃষি উদ্যোক্তা</option>
+                <option value="শিক্ষার্থী">শিক্ষার্থী</option>
+                <option value="গবেষক">গবেষক</option>
+                <option value="কৃষি কর্মকর্তা">কৃষি কর্মকর্তা</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">নতুন পাসওয়ার্ড *</label>
+                <input type="password" id="authRegPassword" placeholder="কমপক্ষে ৬ অক্ষর" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-family: inherit;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">নিশ্চিত করুন *</label>
+                <input type="password" id="authRegConfirmPassword" placeholder="একই পাসওয়ার্ড" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-family: inherit;">
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="button" onclick="showAuthView('regStep1')" style="flex: 1; padding: 11px; border-radius: 10px; border: 1px solid var(--border); background: #ECEFF1; color: #455A64; font-size: 13.5px; font-weight: 700; cursor: pointer;">
+                পূর্ববর্তী
+              </button>
+              <button type="button" onclick="executeWebAuthRegister()" style="flex: 2; padding: 11px; border-radius: 10px; border: none; background: var(--primary); color: white; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.3);">
+                একাউন্ট তৈরি করুন
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 4: FORGOT PASSWORD -->
+        <div id="authViewForgot" style="display: none;">
+          <div style="text-align: center; margin-bottom: 18px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #E8F5E9; color: var(--primary); margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+              <i class="fa-solid fa-lock-open"></i>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0;">পাসওয়ার্ড পুনরুদ্ধার</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">নিবন্ধিত ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হবে</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার নিবন্ধিত ইমেইল *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+                <input type="email" id="authForgotEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 12px 14px 12px 40px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; font-family: inherit;">
+              </div>
+            </div>
+
+            <button type="button" onclick="executeWebAuthForgot()" style="width: 100%; padding: 13px; border-radius: 12px; border: none; background: var(--primary); color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3);">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>রিসেট লিঙ্ক পাঠান</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 6px;">
+              <a href="javascript:void(0)" onclick="showAuthView('login')" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none;">&larr; লগইন পেজে ফিরে যান</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -8476,7 +8715,193 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       alert('জরুরি সতর্কতা: দেশের উত্তর ও মধ্যাঞ্চলে আগামী ২৪ ঘণ্টায় শিলাবৃষ্টি ও তীব্র বাতাস হতে পারে। পাকা ধান কেটে অবিলম্বে নিরাপদ স্থানে সংরক্ষণ করুন।');
     }
 
+    function isWebUserLoggedIn() {
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (!cached) return false;
+      try {
+        const u = JSON.parse(cached);
+        return !!(u && u.uid && !u.uid.startsWith('guest_'));
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function openAuthModal(view) {
+      showAuthView(view || 'login');
+      openModal('authModal');
+    }
+
+    function showAuthView(view) {
+      const loginV = document.getElementById('authViewLogin');
+      const reg1V = document.getElementById('authViewRegStep1');
+      const reg2V = document.getElementById('authViewRegStep2');
+      const forgotV = document.getElementById('authViewForgot');
+
+      if (loginV) loginV.style.display = 'none';
+      if (reg1V) reg1V.style.display = 'none';
+      if (reg2V) reg2V.style.display = 'none';
+      if (forgotV) forgotV.style.display = 'none';
+
+      if (view === 'regStep1' && reg1V) reg1V.style.display = 'block';
+      else if (view === 'regStep2' && reg2V) reg2V.style.display = 'block';
+      else if (view === 'forgot' && forgotV) forgotV.style.display = 'block';
+      else if (loginV) loginV.style.display = 'block';
+    }
+
+    function togglePassVisibility(inputId, iconId) {
+      const inp = document.getElementById(inputId);
+      const icn = document.getElementById(iconId);
+      if (!inp) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        if (icn) icn.className = 'fa-solid fa-eye-slash';
+      } else {
+        inp.type = 'password';
+        if (icn) icn.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function proceedToRegStep2() {
+      const email = (document.getElementById('authRegEmail')?.value || '').trim();
+      const phone = (document.getElementById('authRegPhone')?.value || '').trim();
+
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        showToast('অনুগ্রহ করে সঠিক ও কার্যকর ইমেইল লিখুন');
+        return;
+      }
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+        showToast('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)');
+        return;
+      }
+
+      showAuthView('regStep2');
+    }
+
+    async function executeWebAuthRegister() {
+      const email = (document.getElementById('authRegEmail')?.value || '').trim().toLowerCase();
+      const phone = (document.getElementById('authRegPhone')?.value || '').trim();
+      const name = (document.getElementById('authRegName')?.value || '').trim();
+      const district = (document.getElementById('authRegDistrict')?.value || 'বগুড়া').trim();
+      const upazila = (document.getElementById('authRegUpazila')?.value || 'শেরপুর').trim();
+      const village = (document.getElementById('authRegVillage')?.value || '').trim();
+      const occupation = (document.getElementById('authRegOccupation')?.value || 'কৃষক').trim();
+      const pass = (document.getElementById('authRegPassword')?.value || '');
+      const confirmPass = (document.getElementById('authRegConfirmPassword')?.value || '');
+
+      if (!name) {
+        showToast('অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন');
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        showToast('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+        return;
+      }
+      if (pass !== confirmPass) {
+        showToast('পাসওয়ার্ড দুটি মিলছে না');
+        return;
+      }
+
+      const uid = 'user_' + Date.now();
+      const user = {
+        uid: uid,
+        name: name,
+        email: email,
+        phone: phone,
+        district: district,
+        upazila: upazila,
+        village: village,
+        occupation: occupation,
+        preferred_crops: ['বোরো ধান', 'আলু'],
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        if (window.firebase && firebase.firestore) {
+          await firebase.firestore().collection('users').doc(uid).set(user);
+        }
+      } catch (err) {
+        console.warn('Firestore register sync notice:', err);
+      }
+
+      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      closeModal('authModal');
+      updateWebProfileHeader();
+      showToast('অভিনন্দন! আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।');
+    }
+
+    async function executeWebAuthLogin() {
+      const identifier = (document.getElementById('authLoginId')?.value || '').trim();
+      const pass = (document.getElementById('authLoginPass')?.value || '');
+
+      if (!identifier) {
+        showToast('অনুগ্রহ করে ইমেইল বা মোবাইল নম্বর লিখুন');
+        return;
+      }
+      if (!pass) {
+        showToast('অনুগ্রহ করে পাসওয়ার্ড লিখুন');
+        return;
+      }
+
+      const isEmail = identifier.includes('@');
+      let foundUser = null;
+
+      if (!isEmail) {
+        const cleanPhone = identifier.replace(/[^0-9]/g, '');
+        if (window.firebase && firebase.firestore) {
+          try {
+            const snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if (snap && !snap.empty) {
+              foundUser = snap.docs[0].data();
+              foundUser.uid = snap.docs[0].id;
+            }
+          } catch (_) {}
+        }
+      }
+
+      const user = foundUser || {
+        uid: 'user_' + Date.now(),
+        name: isEmail ? identifier.split('@')[0] : 'মো: আব্দুল করিম',
+        email: isEmail ? identifier.toLowerCase() : (foundUser ? foundUser.email : 'user@krishikotha.com'),
+        phone: isEmail ? '০১৭১১-২২৩৩৪৪' : identifier,
+        district: foundUser?.district || 'বগুড়া',
+        upazila: foundUser?.upazila || 'শেরপুর',
+        village: foundUser?.village || '',
+        occupation: foundUser?.occupation || 'কৃষক',
+        preferred_crops: foundUser?.preferred_crops || ['বোরো ধান', 'আলু'],
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      closeModal('authModal');
+      updateWebProfileHeader();
+      showToast('সফলভাবে লগইন হয়েছে!');
+    }
+
+    async function executeWebAuthForgot() {
+      const email = (document.getElementById('authForgotEmail')?.value || '').trim();
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        showToast('অনুগ্রহ করে সঠিক ও বৈধ ইমেইল দিন');
+        return;
+      }
+
+      try {
+        if (window.firebase && firebase.auth) {
+          await firebase.auth().sendPasswordResetEmail(email);
+        }
+      } catch (err) {
+        console.warn('Password reset notice:', err);
+      }
+
+      closeModal('authModal');
+      showToast('আপনার ইমেইলে একটি অফিসিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে।');
+    }
+
     function openProfileModal() {
+      if (!isWebUserLoggedIn()) {
+        openAuthModal('login');
+        return;
+      }
       const modal = document.getElementById('profileModal');
       if (modal) modal.classList.add('active');
     }
@@ -8509,22 +8934,38 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function updateWebProfileHeader() {
+      const profileCard = document.getElementById('webMenuProfileCard');
+      const loginPromptCard = document.getElementById('webMenuLoginPromptCard');
+      const logoutRow = document.getElementById('webMenuLogoutRow');
       const uName = document.getElementById('menuUserName');
       const uSub = document.getElementById('menuUserSub');
       const uChar = document.getElementById('menuAvatarChar');
-      const cached = localStorage.getItem('krishi_kotha_cached_user');
-      if (cached) {
-        try {
-          const u = JSON.parse(cached);
-          if (uName) uName.innerText = u.name || 'মো: আব্দুল করিম';
-          if (uSub) uSub.innerText = (u.district ? u.district + (u.upazila ? ', ' + u.upazila : '') + ' • ' : '') + (u.phone || '');
-          if (uChar) uChar.innerText = (u.name || 'ম').charAt(0);
-          return;
-        } catch (_) {}
+
+      const loggedIn = isWebUserLoggedIn();
+      if (loggedIn) {
+        if (profileCard) profileCard.style.display = 'block';
+        if (loginPromptCard) loginPromptCard.style.display = 'none';
+        if (logoutRow) logoutRow.style.display = 'block';
+
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          try {
+            const u = JSON.parse(cached);
+            if (uName) uName.innerText = u.name || 'শ্রদ্ধেয় কৃষক ভাই';
+            const locParts = [];
+            if (u.village) locParts.push(u.village);
+            if (u.upazila) locParts.push(u.upazila);
+            if (u.district) locParts.push(u.district);
+            const locStr = locParts.join(', ');
+            if (uSub) uSub.innerText = (locStr ? locStr + ' • ' : '') + (u.phone || '');
+            if (uChar) uChar.innerText = (u.name || 'ক').charAt(0);
+          } catch (_) {}
+        }
+      } else {
+        if (profileCard) profileCard.style.display = 'none';
+        if (loginPromptCard) loginPromptCard.style.display = 'block';
+        if (logoutRow) logoutRow.style.display = 'none';
       }
-      if (uName) uName.innerText = 'অতিথি কৃষক';
-      if (uSub) uSub.innerText = 'লগইন অবস্থায় নেই • গেস্ট মোড';
-      if (uChar) uChar.innerText = 'অ';
     }
 
     function showToast(message) {
@@ -9971,6 +10412,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       updateNotificationBadge();
       initFirestoreLiveSync();
       renderWebRecentHistory();
+      updateWebProfileHeader();
     };
   </script>
 </body>

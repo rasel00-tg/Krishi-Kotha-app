@@ -19,6 +19,7 @@ class AppMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
+    final bool isLoggedIn = authProvider.isLoggedIn;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
@@ -31,8 +32,11 @@ class AppMenuScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ================= REDESIGNED LARGE PROFILE CARD =================
-              _buildLargeProfileCard(context, user),
+              // ================= CONDITIONAL PROFILE CARD OR LOGIN PROMPT =================
+              if (isLoggedIn)
+                _buildLargeProfileCard(context, user)
+              else
+                _buildLoginPromptCard(context),
 
               const SizedBox(height: 22),
 
@@ -147,10 +151,11 @@ class AppMenuScreen extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 18),
-
-              // ================= CATEGORY 4: লগআউট বাটন (Sleek Logout Button) =================
-              _buildLogoutButton(context),
+              // ================= CATEGORY 4: লগআউট বাটন (Sleek Logout Button - Logged in Only) =================
+              if (isLoggedIn) ...[
+                const SizedBox(height: 18),
+                _buildLogoutButton(context),
+              ],
 
               const SizedBox(height: 28),
 
@@ -339,10 +344,11 @@ class AppMenuScreen extends StatelessWidget {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
         builder: (context, snapshot) {
-          String name = user.name;
-          String district = user.district;
-          String upazila = user.upazila;
-          String phone = user.phone;
+          String name = user?.name ?? 'কৃষক ভাই';
+          String district = user?.district ?? '';
+          String upazila = user?.upazila ?? '';
+          String village = user?.village ?? '';
+          String phone = user?.phone ?? '';
 
           if (snapshot.hasData && snapshot.data?.exists == true) {
             final data = snapshot.data!.data();
@@ -350,15 +356,17 @@ class AppMenuScreen extends StatelessWidget {
               name = data['name'] ?? name;
               district = data['district'] ?? district;
               upazila = data['upazila'] ?? upazila;
+              village = data['village'] ?? data['village_name'] ?? village;
               phone = data['phone'] ?? phone;
             }
           }
 
           return _buildProfileCardContent(
             context: context,
-            name: name.isNotEmpty ? name : 'মো: আব্দুল করিম',
+            name: name.isNotEmpty ? name : 'শ্রদ্ধেয় কৃষক ভাই',
             district: district.isNotEmpty ? district : 'বগুড়া',
             upazila: upazila.isNotEmpty ? upazila : 'শেরপুর',
+            village: village,
             phone: phone.isNotEmpty ? phone : '০১৭১১-২২৩৩৪৪',
           );
         },
@@ -367,9 +375,10 @@ class AppMenuScreen extends StatelessWidget {
 
     return _buildProfileCardContent(
       context: context,
-      name: user?.name.isNotEmpty == true ? user!.name : 'মো: আব্দুল করিম',
+      name: user?.name.isNotEmpty == true ? user!.name : 'শ্রদ্ধেয় কৃষক ভাই',
       district: user?.district.isNotEmpty == true ? user!.district : 'বগুড়া',
       upazila: user?.upazila.isNotEmpty == true ? user!.upazila : 'শেরপুর',
+      village: user?.village ?? '',
       phone: user?.phone.isNotEmpty == true ? user!.phone : '০১৭১১-২২৩৩৪৪',
     );
   }
@@ -379,11 +388,14 @@ class AppMenuScreen extends StatelessWidget {
     required String name,
     required String district,
     required String upazila,
+    required String village,
     required String phone,
   }) {
-    final locationText = (district.isNotEmpty && upazila.isNotEmpty)
-        ? '$district, $upazila'
-        : (district.isNotEmpty ? district : upazila);
+    final List<String> locParts = [];
+    if (village.trim().isNotEmpty) locParts.add(village.trim());
+    if (upazila.trim().isNotEmpty) locParts.add(upazila.trim());
+    if (district.trim().isNotEmpty) locParts.add(district.trim());
+    final locationText = locParts.join(', ');
 
     final subInfo = locationText.isNotEmpty ? '$locationText • $phone' : phone;
 
@@ -465,7 +477,7 @@ class AppMenuScreen extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          // Mobile Number / Location (Cleaned: "প্রোফাইল সম্পাদনা" removed)
+          // Mobile Number / Location
           Text(
             subInfo,
             textAlign: TextAlign.center,
@@ -476,6 +488,114 @@ class AppMenuScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Attractive Login/Sign-up Card for Guest Users
+  Widget _buildLoginPromptCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryLight, width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0C000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primaryLight, width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: AppColors.primaryDark,
+                      size: 30,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'লগইন বা একাউন্ট খুলুন',
+                        style: TextStyle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'সকল সুবিধা পেতে সাইন ইন বা নিবন্ধন করুন',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.25),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'লগইন',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 11),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
