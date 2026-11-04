@@ -17,8 +17,9 @@
     href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;600;700&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Firebase Web SDK (v10 compat) for Live Firestore Synchronization -->
+  <!-- Firebase Web SDK (v10 compat) for Live Firestore Synchronization & Authentication -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <!-- Client-side PDF Export & Social Share Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -3764,6 +3765,19 @@
         <h3 id="warningDialogTitle" style="color: #D32F2F; font-size: 19px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: 0.3px;">সতর্কবার্তা</h3>
         <p id="warningDialogMessage" style="font-size: 14.5px; font-weight: 500; color: #212121; line-height: 1.45; margin: 0 0 20px 0;"></p>
         <button type="button" onclick="closeWarningDialog()" style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #2E7D32; color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">ঠিক আছে</button>
+      </div>
+    </div>
+
+    <!-- CUSTOM SUCCESS MODAL DIALOG WITH APP LOGO & GREEN CHECKMARK -->
+    <div class="modal-overlay" id="successDialogModal" style="display: none; align-items: center; justify-content: center; z-index: 10000001; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+      <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 360px; width: 88%; border-radius: 22px; padding: 26px 22px 20px 22px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
+        <img src="pnglogo.png" style="width: 55px; height: 55px; object-fit: contain; margin: 0 auto 10px auto; display: block;" alt="কৃষি কথা লোগো">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 24px;">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 id="successDialogTitle" style="color: #1B5E20; font-size: 20px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: 0.2px;">লগইন সফল হয়েছে!</h3>
+        <p id="successDialogMessage" style="font-size: 14.5px; font-weight: 500; color: #212121; line-height: 1.45; margin: 0 0 20px 0;">কৃষি কথা অ্যাপে আপনাকে স্বাগতম।</p>
+        <button type="button" onclick="closeSuccessDialog(true)" style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #2E7D32; color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">চালিয়ে যান</button>
       </div>
     </div>
 
@@ -8832,6 +8846,38 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (m) m.style.display = 'none';
     }
 
+    let successDialogTimer = null;
+    let successDialogCallback = null;
+
+    function showSuccessDialog(title, message, onConfirm) {
+      const m = document.getElementById('successDialogModal');
+      const t = document.getElementById('successDialogTitle');
+      const msg = document.getElementById('successDialogMessage');
+      if (t) t.innerText = title || 'লগইন সফল হয়েছে!';
+      if (msg) msg.innerText = message || 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।';
+      successDialogCallback = onConfirm;
+      if (m) m.style.display = 'flex';
+
+      if (successDialogTimer) clearTimeout(successDialogTimer);
+      successDialogTimer = setTimeout(() => {
+        closeSuccessDialog(true);
+      }, 1500);
+    }
+
+    function closeSuccessDialog(triggerCallback) {
+      if (successDialogTimer) {
+        clearTimeout(successDialogTimer);
+        successDialogTimer = null;
+      }
+      const m = document.getElementById('successDialogModal');
+      if (m) m.style.display = 'none';
+      if (triggerCallback && typeof successDialogCallback === 'function') {
+        const cb = successDialogCallback;
+        successDialogCallback = null;
+        cb();
+      }
+    }
+
     function isWebUserLoggedIn() {
       const cached = localStorage.getItem('krishi_kotha_cached_user');
       if (!cached) return false;
@@ -8906,12 +8952,62 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      const uid = 'user_' + Date.now();
+      // ১. ক্লাউড ফায়ারস্টোরে ডুপ্লিকেট জিমেইল বা মোবাইল নম্বর চেক (Single Account Policy)
+      if (window.firebase && firebase.firestore) {
+        try {
+          const emailSnap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
+          if (emailSnap && !emailSnap.empty) {
+            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+            return;
+          }
+
+          const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+          if (phoneSnap && !phoneSnap.empty) {
+            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+            return;
+          }
+          const altPhone = '+88' + cleanPhone;
+          const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+          if (altPhoneSnap && !altPhoneSnap.empty) {
+            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+            return;
+          }
+        } catch (checkErr) {
+          console.warn('Firestore duplicate check notice:', checkErr);
+        }
+      }
+
+      let uid = 'user_' + Date.now();
+
+      // ২. ফায়ারবেস অথেন্টিকেশন দিয়ে অ্যাকাউন্ট তৈরি
+      if (window.firebase && firebase.auth) {
+        try {
+          const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+          if (cred && cred.user) {
+            uid = cred.user.uid;
+            try {
+              await cred.user.updateProfile({ displayName: name });
+            } catch (_) {}
+          }
+        } catch (authErr) {
+          if (authErr.code === 'auth/email-already-in-use') {
+            showWarningDialog('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+            return;
+          } else if (authErr.code === 'auth/weak-password') {
+            showWarningDialog('পাসওয়ার্ডটি অন্তত ৬ অক্ষরের বা আরও শক্তিশালী হতে হবে।');
+            return;
+          } else {
+            showWarningDialog(authErr.message || 'রেজিস্ট্রেশন সম্পন্ন করা যায়নি।');
+            return;
+          }
+        }
+      }
+
       const user = {
         uid: uid,
         name: name,
         email: email,
-        phone: phone,
+        phone: cleanPhone,
         district: district,
         upazila: upazila,
         village: '',
@@ -8973,38 +9069,80 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       const isEmail = identifier.includes('@');
+      let targetEmail = identifier.toLowerCase();
       let foundUser = null;
 
       if (!isEmail) {
         const cleanPhone = identifier.replace(/[^0-9]/g, '');
+        const altPhone = '+88' + cleanPhone;
         if (window.firebase && firebase.firestore) {
           try {
-            const snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if ((!snap || snap.empty) && altPhone !== cleanPhone) {
+              snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+            }
             if (snap && !snap.empty) {
               foundUser = snap.docs[0].data();
               foundUser.uid = snap.docs[0].id;
+              targetEmail = (foundUser.email || '').toLowerCase().trim();
             }
-          } catch (_) {}
+          } catch (err) {
+            console.warn('Firestore phone query notice:', err);
+          }
+        }
+
+        if (!foundUser || !targetEmail) {
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
         }
       }
 
-      const user = foundUser || {
-        uid: 'user_' + Date.now(),
-        name: isEmail ? identifier.split('@')[0] : 'মো: আব্দুল করিম',
-        email: isEmail ? identifier.toLowerCase() : (foundUser ? foundUser.email : 'user@krishikotha.com'),
-        phone: isEmail ? '০১৭১১-২২৩৩৪৪' : identifier,
-        district: foundUser?.district || 'বগুড়া',
-        upazila: foundUser?.upazila || 'শেরপুর',
-        village: foundUser?.village || '',
-        occupation: foundUser?.occupation || 'কৃষক',
-        preferred_crops: foundUser?.preferred_crops || ['বোরো ধান', 'আলু'],
-        createdAt: new Date().toISOString()
-      };
+      if (window.firebase && firebase.auth) {
+        try {
+          const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+          if (cred && cred.user) {
+            const uid = cred.user.uid;
+            if (window.firebase && firebase.firestore) {
+              const uDoc = await firebase.firestore().collection('users').doc(uid).get();
+              if (uDoc && uDoc.exists) {
+                foundUser = uDoc.data();
+                foundUser.uid = uid;
+              }
+            }
+            if (!foundUser) {
+              foundUser = {
+                uid: uid,
+                name: cred.user.displayName || 'কৃষক ভাই',
+                email: cred.user.email || targetEmail,
+                phone: isEmail ? '' : identifier,
+                district: 'বগুড়া',
+                upazila: 'শেরপুর',
+                village: '',
+                occupation: 'কৃষক',
+                preferred_crops: ['বোরো ধান', 'আলু'],
+                createdAt: new Date().toISOString()
+              };
+            }
+          }
+        } catch (authErr) {
+          console.warn('Firebase auth failed:', authErr);
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
+        }
+      } else {
+        if (!foundUser) {
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
+        }
+      }
 
-      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
       closeModal('authModal');
       updateWebProfileHeader();
-      showToast('সফলভাবে লগইন হয়েছে!');
+
+      showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+        setTab('menu');
+      });
     }
 
     async function executeWebAuthForgot() {
@@ -9121,37 +9259,79 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       const isEmail = identifier.includes('@');
+      let targetEmail = identifier.toLowerCase();
       let foundUser = null;
 
       if (!isEmail) {
         const cleanPhone = identifier.replace(/[^0-9]/g, '');
+        const altPhone = '+88' + cleanPhone;
         if (window.firebase && firebase.firestore) {
           try {
-            const snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if ((!snap || snap.empty) && altPhone !== cleanPhone) {
+              snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+            }
             if (snap && !snap.empty) {
               foundUser = snap.docs[0].data();
               foundUser.uid = snap.docs[0].id;
+              targetEmail = (foundUser.email || '').toLowerCase().trim();
             }
-          } catch (_) {}
+          } catch (err) {
+            console.warn('Firestore phone query notice:', err);
+          }
+        }
+
+        if (!foundUser || !targetEmail) {
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
         }
       }
 
-      const user = foundUser || {
-        uid: 'user_' + Date.now(),
-        name: isEmail ? identifier.split('@')[0] : 'মো: আব্দুল করিম',
-        email: isEmail ? identifier.toLowerCase() : (foundUser ? foundUser.email : 'user@krishikotha.com'),
-        phone: isEmail ? '০১৭১১-২২৩৩৪৪' : identifier,
-        district: foundUser?.district || 'বগুড়া',
-        upazila: foundUser?.upazila || 'শেরপুর',
-        village: foundUser?.village || '',
-        occupation: foundUser?.occupation || 'কৃষক',
-        preferred_crops: foundUser?.preferred_crops || ['বোরো ধান', 'আলু'],
-        createdAt: new Date().toISOString()
-      };
+      if (window.firebase && firebase.auth) {
+        try {
+          const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+          if (cred && cred.user) {
+            const uid = cred.user.uid;
+            if (window.firebase && firebase.firestore) {
+              const uDoc = await firebase.firestore().collection('users').doc(uid).get();
+              if (uDoc && uDoc.exists) {
+                foundUser = uDoc.data();
+                foundUser.uid = uid;
+              }
+            }
+            if (!foundUser) {
+              foundUser = {
+                uid: uid,
+                name: cred.user.displayName || 'কৃষক ভাই',
+                email: cred.user.email || targetEmail,
+                phone: isEmail ? '' : identifier,
+                district: 'বগুড়া',
+                upazila: 'শেরপুর',
+                village: '',
+                occupation: 'কৃষক',
+                preferred_crops: ['বোরো ধান', 'আলু'],
+                createdAt: new Date().toISOString()
+              };
+            }
+          }
+        } catch (authErr) {
+          console.warn('Firebase auth failed:', authErr);
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
+        }
+      } else {
+        if (!foundUser) {
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          return;
+        }
+      }
 
-      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(user));
+      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
       updateWebProfileHeader();
-      showToast('স্বাগতম! সফলভাবে লগইন সম্পন্ন হয়েছে।');
+
+      showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+        setTab('menu');
+      });
     }
 
     function openProfileModal() {

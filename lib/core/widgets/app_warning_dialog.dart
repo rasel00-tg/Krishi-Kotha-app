@@ -103,3 +103,138 @@ void showAppWarningDialog(
     },
   );
 }
+
+/// কাস্টম সাকসেস ডায়ালগ (অ্যাপ লোগো ও সবুজ সাকসেস আইকন সহ)
+void showAppSuccessDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  VoidCallback? onConfirm,
+  bool autoDismiss = true,
+}) {
+  bool isDismissed = false;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      if (autoDismiss) {
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (!isDismissed && Navigator.canPop(dialogContext)) {
+            isDismissed = true;
+            Navigator.pop(dialogContext);
+            if (onConfirm != null) onConfirm();
+          }
+        });
+      }
+
+      return Dialog(
+        backgroundColor: Colors.white,
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ১. শীর্ষে অ্যাপের আসল লোগো (assets/icons/pnglogo.png, height: 55, width: 55)
+              SizedBox(
+                width: 55,
+                height: 55,
+                child: Image.asset(
+                  'assets/icons/pnglogo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 50,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ২. সবুজ টিক / সাকসেস আইকন
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 34,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ৩. হেডিং: "লগইন সফল হয়েছে!"
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryDark,
+                  letterSpacing: 0.2,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ৪. বার্তা: "কৃষি কথা অ্যাপে আপনাকে স্বাগতম।"
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  height: 1.45,
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              // ৫. "চালিয়ে যান" বাটন
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (!isDismissed) {
+                      isDismissed = true;
+                      Navigator.pop(dialogContext);
+                      if (onConfirm != null) onConfirm();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'চালিয়ে যান',
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}

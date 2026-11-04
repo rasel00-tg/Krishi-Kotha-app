@@ -7,8 +7,8 @@ import '../models/user_model.dart';
 import 'firebase_service.dart';
 
 class AuthService {
-  final FirebaseAuth? _auth = FirebaseService.isFirebaseInitialized ? FirebaseAuth.instance : null;
-  final FirebaseFirestore? _firestore = FirebaseService.isFirebaseInitialized ? FirebaseFirestore.instance : null;
+  FirebaseAuth? get _auth => FirebaseService.isFirebaseInitialized ? FirebaseAuth.instance : null;
+  FirebaseFirestore? get _firestore => FirebaseService.isFirebaseInitialized ? FirebaseFirestore.instance : null;
 
   static const String _prefUserKey = 'krishi_kotha_cached_user';
   UserModel? _currentUser;
@@ -219,27 +219,55 @@ class AuthService {
     required String occupation,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
-    final cleanPhone = phone.trim();
-
-    if (!FirebaseService.isFirebaseInitialized || _auth == null || _firestore == null) {
-      // Mock / Offline fallback
-      final user = UserModel(
-        uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: name.trim().isEmpty ? 'কৃষক ভাই' : name.trim(),
-        email: cleanEmail,
-        phone: cleanPhone,
-        district: district.trim().isEmpty ? 'বগুড়া' : district.trim(),
-        upazila: upazila.trim().isEmpty ? 'শেরপুর' : upazila.trim(),
-        village: village.trim(),
-        occupation: occupation.trim().isEmpty ? 'কৃষক' : occupation.trim(),
-        preferredCrops: [],
-        createdAt: DateTime.now(),
-      );
-      await _cacheUser(user);
-      _currentUser = user;
-      return user;
+    final cleanPhone = phone.trim().replaceAll(RegExp(r'[^0-9+]'), '');
+    String altPhone = cleanPhone;
+    if (cleanPhone.startsWith('+880')) {
+      altPhone = cleanPhone.replaceFirst('+88', '');
+    } else if (cleanPhone.startsWith('0')) {
+      altPhone = '+88$cleanPhone';
     }
 
+    if (!FirebaseService.isFirebaseInitialized || _auth == null || _firestore == null) {
+      throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+    }
+
+    // ১. ক্লাউড ফায়ারস্টোরের users কালেকশনে ডুপ্লিকেট জিমেইল বা মোবাইল নম্বর চেক (Single Account Policy)
+    try {
+      final emailQuery = await _firestore!
+          .collection('users')
+          .where('email', isEqualTo: cleanEmail)
+          .limit(1)
+          .get();
+      if (emailQuery.docs.isNotEmpty) {
+        throw Exception('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+      }
+
+      final phoneQuery = await _firestore!
+          .collection('users')
+          .where('phone', isEqualTo: cleanPhone)
+          .limit(1)
+          .get();
+      if (phoneQuery.docs.isNotEmpty) {
+        throw Exception('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+      }
+
+      if (altPhone != cleanPhone) {
+        final altPhoneQuery = await _firestore!
+            .collection('users')
+            .where('phone', isEqualTo: altPhone)
+            .limit(1)
+            .get();
+        if (altPhoneQuery.docs.isNotEmpty) {
+          throw Exception('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+        }
+      }
+    } catch (e) {
+      if (e is Exception && e.toString().contains('ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে')) {
+        rethrow;
+      }
+    }
+
+    // ২. খাঁটি ফায়ারবেস অথেন্টিকেশন দিয়ে অ্যাকাউন্ট তৈরি
     try {
       final credential = await _auth!.createUserWithEmailAndPassword(
         email: cleanEmail,
@@ -256,31 +284,32 @@ class AuthService {
         name: name.trim().isEmpty ? 'কৃষক ভাই' : name.trim(),
         email: cleanEmail,
         phone: cleanPhone,
-        district: district.trim(),
-        upazila: upazila.trim(),
+        district: district.trim().isEmpty ? 'বগুড়া' : district.trim(),
+        upazila: upazila.trim().isEmpty ? 'শেরপুর' : upazila.trim(),
         village: village.trim(),
         occupation: occupation.trim().isEmpty ? 'কৃষক' : occupation.trim(),
         preferredCrops: [],
         createdAt: DateTime.now(),
       );
 
+      // ৩. ফায়ারস্টোরের আসল users কালেকশনে সংরক্ষিত করা
       await _firestore!.collection('users').doc(firebaseUser.uid).set(user.toMap());
       await _cacheUser(user);
       _currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
-      String banglaError = 'রেজিস্ট্রেশন সম্পন্ন করা যায়নি।';
       if (e.code == 'email-already-in-use') {
-        banglaError = 'এই ইমেইলটি দিয়ে ইতিমধ্যে একাউন্ট তৈরি করা আছে।';
+        throw Exception('এই জিমেইল অথবা মোবাইল নম্বর দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
       } else if (e.code == 'weak-password') {
-        banglaError = 'পাসওয়ার্ডটি অন্তত ৬ অক্ষরের বা আরও শক্তিশালী হতে হবে।';
+        throw Exception('পাসওয়ার্ডটি অন্তত ৬ অক্ষরের বা আরও শক্তিশালী হতে হবে।');
       } else if (e.code == 'invalid-email') {
-        banglaError = 'সঠিক ও বৈধ ইমেইল ঠিকানা প্রদান করুন।';
+        throw Exception('সঠিক ও বৈধ ইমেইল ঠিকানা প্রদান করুন।');
       } else if (e.message != null) {
-        banglaError = e.message!;
+        throw Exception(e.message!);
       }
-      throw Exception(banglaError);
+      throw Exception('রেজিস্ট্রেশন সম্পন্ন করা যায়নি।');
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('রেজিস্ট্রেশনে সমস্যা: $e');
     }
   }
@@ -293,23 +322,7 @@ class AuthService {
     final cleanId = identifier.trim();
 
     if (!FirebaseService.isFirebaseInitialized || _auth == null || _firestore == null) {
-      // Mock / Offline login
-      final isEmail = cleanId.contains('@');
-      final user = UserModel(
-        uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: isEmail ? cleanId.split('@').first : 'শ্রদ্ধেয় কৃষক ভাই',
-        email: isEmail ? cleanId.toLowerCase() : 'user@krishikotha.com',
-        phone: isEmail ? '০১৭১২-৩৪৫৬৭৮' : cleanId,
-        district: 'বগুড়া',
-        upazila: 'শেরপুর',
-        village: '',
-        occupation: 'কৃষক',
-        preferredCrops: ['বোরো ধান', 'আলু'],
-        createdAt: DateTime.now(),
-      );
-      await _cacheUser(user);
-      _currentUser = user;
-      return user;
+      throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।');
     }
 
     try {
@@ -319,7 +332,7 @@ class AuthService {
         // Direct Email Login
         targetEmail = cleanId.toLowerCase();
       } else {
-        // Mobile Number lookup in Firestore
+        // Mobile Number lookup in Firestore users collection
         final cleanPhone = cleanId.replaceAll(RegExp(r'[^0-9+]'), '');
         String altPhone = cleanPhone;
         if (cleanPhone.startsWith('+880')) {
@@ -343,24 +356,25 @@ class AuthService {
         }
 
         if (query.docs.isEmpty) {
-          throw Exception('এই মোবাইল নম্বরের সাথে কোনো নিবন্ধিত একাউন্ট পাওয়া যায়নি।');
+          throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
         }
 
         final docData = query.docs.first.data();
         final foundEmail = (docData['email'] as String?)?.trim();
         if (foundEmail == null || foundEmail.isEmpty) {
-          throw Exception('এই মোবাইল নম্বরের সাথে কোনো ইমেইল সংযুক্ত নেই।');
+          throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
         }
         targetEmail = foundEmail.toLowerCase();
       }
 
+      // Live Firebase Authentication
       final credential = await _auth!.signInWithEmailAndPassword(
         email: targetEmail,
         password: password,
       );
       final firebaseUser = credential.user!;
 
-      // Retrieve full user profile from Firestore
+      // Retrieve full user profile from Firestore users collection
       final userDoc = await _firestore!.collection('users').doc(firebaseUser.uid).get();
       UserModel user;
       if (userDoc.exists && userDoc.data() != null) {
@@ -371,8 +385,8 @@ class AuthService {
           name: firebaseUser.displayName ?? 'কৃষক ভাই',
           email: firebaseUser.email ?? targetEmail,
           phone: cleanId.contains('@') ? '' : cleanId,
-          district: 'ঢাকা',
-          upazila: '',
+          district: 'বগুড়া',
+          upazila: 'শেরপুর',
           village: '',
           occupation: 'কৃষক',
           preferredCrops: [],
@@ -385,22 +399,19 @@ class AuthService {
       _currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
-      String banglaError = 'লগইন ব্যর্থ হয়েছে।';
-      if (e.code == 'user-not-found') {
-        banglaError = 'এই তথ্যের সাথে কোনো ব্যবহারকারী একাউন্ট পাওয়া যায়নি।';
-      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        banglaError = 'প্রদত্ত পাসওয়ার্ডটি সঠিক নয়। অনুগ্রহ করে পুনরায় চেষ্টা করুন।';
-      } else if (e.code == 'invalid-email') {
-        banglaError = 'সঠিক ইমেইল বা ফোন নম্বর প্রদান করুন।';
+      if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential' ||
+          e.code == 'user-not-found' ||
+          e.code == 'invalid-email') {
+        throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
       } else if (e.code == 'user-disabled') {
-        banglaError = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
-      } else if (e.message != null) {
-        banglaError = e.message!;
+        throw Exception('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।');
+      } else {
+        throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
       }
-      throw Exception(banglaError);
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('লগইন ত্রুটি: $e');
+      throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
     }
   }
 
@@ -408,8 +419,7 @@ class AuthService {
   Future<void> sendPasswordResetEmail(String email) async {
     final cleanEmail = email.trim().toLowerCase();
     if (!FirebaseService.isFirebaseInitialized || _auth == null) {
-      // Mock success for offline testing
-      return;
+      throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।');
     }
 
     try {

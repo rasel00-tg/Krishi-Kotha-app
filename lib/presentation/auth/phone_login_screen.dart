@@ -182,28 +182,26 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('স্বাগতম! সফলভাবে লগইন সম্পন্ন হয়েছে।'),
-          backgroundColor: AppColors.primary,
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
+      showAppSuccessDialog(
+        context,
+        title: 'লগইন সফল হয়েছে!',
+        message: 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।',
+        onConfirm: () {
+          if (!widget.isGatewayForMenu) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const MainNavigationScreen(initialIndex: 4),
+              ),
+              (route) => false,
+            );
+          }
+        },
       );
-
-      if (!widget.isGatewayForMenu) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const MainNavigationScreen(initialIndex: 4),
-          ),
-          (route) => false,
-        );
-      }
     } else {
       showAppWarningDialog(
         context,
-        message: authProvider.errorMessage ?? 'লগইন ব্যর্থ হয়েছে। আপনার জিমেইল/মোবাইল নম্বর ও পাসওয়ার্ড সঠিক কিনা পরীক্ষা করুন।',
+        message: authProvider.errorMessage ?? 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!',
       );
     }
   }
