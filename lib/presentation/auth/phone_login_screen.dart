@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
+import '../menu/privacy_policy_screen.dart';
 import '../navigation/main_navigation_screen.dart';
 import 'forgot_password_screen.dart';
 import 'registration_multi_step_screen.dart';
@@ -701,14 +703,59 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Footer info
-                  const Text(
-                    'কৃষি তথ্য সার্ভিস (AIS) ও কৃষি সম্প্রসারণ অধিদপ্তর সমর্থিত',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
+                  // ================= ফুটার সেকশন: ডায়নামিক অ্যাপ ভার্সন ও গোপনীয়তা নীতি =================
+                  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection('settings')
+                        .doc('app_config')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      final appVer = (snapshot.hasData &&
+                              snapshot.data?.data() != null &&
+                              snapshot.data!.data()!['version'] != null)
+                          ? snapshot.data!.data()!['version'].toString()
+                          : AppStrings.appVersion;
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            appVer,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF9E9E9E),
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PrivacyPolicyScreen(),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(6),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              child: Text(
+                                'গোপনীয়তা নীতি',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
