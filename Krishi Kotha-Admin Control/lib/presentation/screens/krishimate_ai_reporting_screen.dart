@@ -855,3 +855,4 @@ class _KrishiMateAiReportingScreenState extends State<KrishiMateAiReportingScree
     );
   }
 }
+

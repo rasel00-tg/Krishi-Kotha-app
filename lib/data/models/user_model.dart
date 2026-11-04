@@ -9,6 +9,8 @@ class UserModel {
   final List<String> preferredCrops;
   final DateTime createdAt;
 
+  String get userId => uid;
+
   const UserModel({
     required this.uid,
     required this.name,

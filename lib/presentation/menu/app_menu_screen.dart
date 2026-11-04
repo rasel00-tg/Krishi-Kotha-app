@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/phone_login_screen.dart';
 import '../profile/user_profile_screen.dart';
 import '../support/expert_helpline_screen.dart';
-import '../crops/pest_catalog_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'settings_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -58,31 +59,10 @@ class AppMenuScreen extends StatelessWidget {
 
               const SizedBox(height: 18),
 
-              // ================= CATEGORY: কৃষি সেবা ও নোটিফিকেশন =================
-              _buildCategoryHeader('কৃষি সেবা ও নোটিফিকেশন'),
+              // ================= CATEGORY: নোটিফিকেশন ও বার্তা =================
+              _buildCategoryHeader('নোটিফিকেশন ও বার্তা'),
               _buildCardWrapper(
                 children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.bug_report_outlined,
-                    iconColor: const Color(0xFFC2185B),
-                    iconBgColor: const Color(0xFFFCE4EC),
-                    title: 'রোগবালাই দমন (Pests & Diseases)',
-                    subtitle: 'ফসলের রোগ ও পোকা দমন নির্দেশিকা',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const PestCatalogScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(
-                    height: 1,
-                    thickness: 0.8,
-                    indent: 68,
-                    endIndent: 16,
-                    color: Color(0xFFEFF3EF),
-                  ),
                   _buildMenuItem(
                     context: context,
                     icon: Icons.notifications_none_rounded,
@@ -167,7 +147,12 @@ class AppMenuScreen extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 18),
+
+              // ================= CATEGORY 4: লগআউট বাটন (Sleek Logout Button) =================
+              _buildLogoutButton(context),
+
+              const SizedBox(height: 28),
 
               // ================= APP BRANDING FOOTER =================
               Center(
@@ -349,9 +334,10 @@ class AppMenuScreen extends StatelessWidget {
 
   /// Large, Centered Profile Header Card with Firestore StreamBuilder
   Widget _buildLargeProfileCard(BuildContext context, dynamic user) {
-    if (FirebaseService.isFirebaseInitialized && user != null && user.userId.isNotEmpty == true) {
+    final String? uid = user != null ? (user.uid ?? user.userId) : null;
+    if (FirebaseService.isFirebaseInitialized && uid != null && uid.isNotEmpty) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('users').doc(user.userId).snapshots(),
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
         builder: (context, snapshot) {
           String name = user.name;
           String district = user.district;
@@ -395,6 +381,12 @@ class AppMenuScreen extends StatelessWidget {
     required String upazila,
     required String phone,
   }) {
+    final locationText = (district.isNotEmpty && upazila.isNotEmpty)
+        ? '$district, $upazila'
+        : (district.isNotEmpty ? district : upazila);
+
+    final subInfo = locationText.isNotEmpty ? '$locationText • $phone' : phone;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -473,9 +465,9 @@ class AppMenuScreen extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          // District & Upazila + Phone
+          // Mobile Number / Location (Cleaned: "প্রোফাইল সম্পাদনা" removed)
           Text(
-            '$district, $upazila • $phone',
+            subInfo,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 13,
@@ -483,48 +475,198 @@ class AppMenuScreen extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 14),
-
-          // 'প্রোফাইল সম্পাদনা' (Edit Profile) Badge / Button
-          InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UserProfileScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F8E9),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.edit_outlined,
-                    size: 15,
-                    color: AppColors.primaryDark,
+  /// ৩. স্লিক ও মার্জিত লগআউট বাটন (Sleek Logout Button)
+  Widget _buildLogoutButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF5F5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFCDD2), width: 1.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08D32F2F),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showLogoutConfirmationDialog(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Logout Circular Icon
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFEBEE),
+                    shape: BoxShape.circle,
                   ),
-                  SizedBox(width: 6),
-                  Text(
-                    'প্রোফাইল সম্পাদনা',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryDark,
+                  child: const Center(
+                    child: Icon(
+                      Icons.logout_rounded,
+                      color: Color(0xFFD32F2F),
+                      size: 22,
                     ),
                   ),
-                ],
+                ),
+
+                const SizedBox(width: 14),
+
+                // Center Title & Subtitle
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'লগআউট (Logout)',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFD32F2F),
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFE57373),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Right Arrow Icon
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Color(0xFFEF9A9A),
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ৩. লগআউট কনফার্মেশন ডায়ালগ (Confirmation Popup)
+  Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 10,
+        backgroundColor: Colors.white,
+        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 10),
+        contentPadding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFEBEE),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFD32F2F),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'লগআউট নিশ্চিতকরণ',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFFD32F2F),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'আপনি কি লগআউট করতে চান?',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF455A64),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            child: const Text(
+              'না',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF78909C),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'হ্যাঁ, লগআউট করুন',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
               ),
             ),
           ),
         ],
       ),
     );
+
+    if (confirmed == true && context.mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.signOut();
+
+      // SharedPreferences সেশন ক্লিয়ারিং
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('krishi_kotha_cached_user');
+      } catch (_) {}
+
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
+          (route) => false,
+        );
+      }
+    }
   }
 }

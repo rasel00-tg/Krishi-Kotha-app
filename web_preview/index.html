@@ -2697,16 +2697,11 @@
         <!-- Redesigned Large Centered Farmer Profile Card -->
         <div class="menu-profile-card">
           <div class="menu-avatar-badge">
-            <span>ম</span>
+            <span id="menuAvatarChar">ম</span>
             <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
           </div>
-          <h3 style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম
-          </h3>
-          <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
-          <button class="menu-edit-btn" onclick="openProfileModal()">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <span>প্রোফাইল সম্পাদনা</span>
-          </button>
+          <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম</h3>
+          <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
         </div>
 
         <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
@@ -2724,29 +2719,15 @@
           </div>
         </div>
 
-        <!-- Category: কৃষি সেবা ও নোটিফিকেশন -->
-        <div class="menu-category-title">কৃষি সেবা ও নোটিফিকেশন</div>
+        <!-- Category: নোটিফিকেশন ও বার্তা -->
+        <div class="menu-category-title">নোটিফিকেশন ও বার্তা</div>
         <div class="menu-group-card">
-          <div class="menu-item-row" onclick="openPestCatalogModal()">
-            <div class="menu-icon-wrap" style="background: #FCE4EC; color: #C2185B;">
-              <i class="fa-solid fa-bug"></i>
-            </div>
-            <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">রোগবালাই দমন (Pests &
-                Diseases)</h4>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ফসলের রোগ ও পোকা দমন নির্দেশিকা
-              </p>
-            </div>
-            <i class="fa-solid fa-chevron-right menu-arrow"></i>
-          </div>
-          <div class="menu-divider"></div>
           <div class="menu-item-row" onclick="openNotificationsPage()">
             <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
               <i class="fa-solid fa-bell"></i>
             </div>
             <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">নোটিফিকেশন (Notifications)
-              </h4>
+              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">নোটিফিকেশন (Notifications)</h4>
               <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">জরুরি বার্তা ও সতর্কতা</p>
             </div>
             <i class="fa-solid fa-chevron-right menu-arrow"></i>
@@ -2788,11 +2769,24 @@
               <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div class="menu-item-text">
-              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)
-              </h4>
+              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)</h4>
               <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
             </div>
             <i class="fa-solid fa-chevron-right menu-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Category 4: লগআউট বাটন (Sleek Logout Button) -->
+        <div class="menu-group-card" style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
+          <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
+            <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+            <div class="menu-item-text">
+              <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
+              <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন</p>
+            </div>
+            <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
           </div>
         </div>
 
@@ -3486,6 +3480,31 @@
       </div>
     </div>
 
+
+    <!-- MODAL: LOGOUT CONFIRMATION POPUP -->
+    <div class="modal-overlay" id="webLogoutModal" style="display: none; align-items: center; justify-content: center; z-index: 1000008; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+      <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 380px; width: 88%; border-radius: 20px; padding: 24px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: left;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #D32F2F; font-size: 20px;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 17.5px; font-weight: 800; color: #D32F2F;">লগআউট নিশ্চিতকরণ</h3>
+          </div>
+        </div>
+        <p style="font-size: 14.5px; color: #455A64; margin-bottom: 24px; line-height: 1.45;">
+          আপনি কি লগআউট করতে চান?
+        </p>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeModal('webLogoutModal')" style="padding: 10px 20px; border-radius: 10px; border: none; background: #ECEFF1; color: #546E7A; font-weight: 700; font-size: 14px; cursor: pointer;">
+            না
+          </button>
+          <button type="button" onclick="executeWebLogout()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #D32F2F; color: white; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(211,47,47,0.3);">
+            হ্যাঁ, লগআউট করুন
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- MODAL: PROFILE -->
     <div class="modal-overlay" id="profileModal">
@@ -8470,6 +8489,73 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function openHelplineModal() {
       const modal = document.getElementById('helplineModal');
       if (modal) modal.classList.add('active');
+    }
+
+    function confirmWebLogout() {
+      openModal('webLogoutModal');
+    }
+
+    async function executeWebLogout() {
+      closeModal('webLogoutModal');
+      try {
+        if (window.firebase && firebase.auth) {
+          await firebase.auth().signOut();
+        }
+      } catch (_) {}
+      localStorage.removeItem('krishi_kotha_cached_user');
+      showToast('সফলভাবে লগআউট সম্পন্ন হয়েছে');
+      switchTab(0);
+      updateWebProfileHeader();
+    }
+
+    function updateWebProfileHeader() {
+      const uName = document.getElementById('menuUserName');
+      const uSub = document.getElementById('menuUserSub');
+      const uChar = document.getElementById('menuAvatarChar');
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (cached) {
+        try {
+          const u = JSON.parse(cached);
+          if (uName) uName.innerText = u.name || 'মো: আব্দুল করিম';
+          if (uSub) uSub.innerText = (u.district ? u.district + (u.upazila ? ', ' + u.upazila : '') + ' • ' : '') + (u.phone || '');
+          if (uChar) uChar.innerText = (u.name || 'ম').charAt(0);
+          return;
+        } catch (_) {}
+      }
+      if (uName) uName.innerText = 'অতিথি কৃষক';
+      if (uSub) uSub.innerText = 'লগইন অবস্থায় নেই • গেস্ট মোড';
+      if (uChar) uChar.innerText = 'অ';
+    }
+
+    function showToast(message) {
+      let toast = document.getElementById('globalAppToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'globalAppToast';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '85px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = 'rgba(33, 33, 33, 0.92)';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 20px';
+        toast.style.borderRadius = '24px';
+        toast.style.fontSize = '13.5px';
+        toast.style.fontWeight = '600';
+        toast.style.boxShadow = '0 6px 18px rgba(0,0,0,0.25)';
+        toast.style.zIndex = '9999999';
+        toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        toast.style.pointerEvents = 'none';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = message;
+      toast.style.opacity = '1';
+      toast.style.display = 'block';
+      if (window._toastTimer) clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 250);
+      }, 2500);
     }
 
     function openPrivacyPage() {
