@@ -46,15 +46,16 @@ class DiseaseDetectionService {
   static final StreamController<List<DiseaseDiagnosisResult>> _cacheStreamController =
       StreamController<List<DiseaseDiagnosisResult>>.broadcast();
 
-  /// প্রশ্নটি কৃষি/উদ্ভিদ বিষয়ক কিনা ১০০% যাচাই (Strict Agro Domain Validation)
+  /// প্রশ্নটি কৃষি/উদ্ভিদ বিষয়ক কিনা যাচাই (Smart Agro Domain Validation: Prevent False Rejections)
   static bool isAgroQuestion(String queryText, {bool hasImage = false}) {
-    if (hasImage) return true; // ছবি দেওয়া থাকলে এটি উদ্ভিদ নমুনার আওতায় পড়বে
+    // ১. ছবি সংযুক্ত থাকলে এআই-এর কঠোর ভিশন গার্ডরেল তা পুঙ্খানুপুঙ্খ যাচাই করবে (Strict Plant Image Guardrail)
+    if (hasImage) return true;
 
     final text = queryText.toLowerCase().trim();
     if (text.isEmpty) return false;
 
-    // ১. স্পষ্টত কৃষিবহির্ভূত কি-ওয়ার্ডসমূহ (রাজনীতি, খেলাধুলা, ব্যক্তিগত আলাপ, টেকনোলজি ইত্যাদি)
-    const nonAgriKeywords = [
+    // ২. শুধুমাত্র সুস্পষ্ট ও শতভাগ কৃষিবহির্ভূত বিষয়সমূহ (রাজনীতি, খেলাধুলা, শোবিজ, ব্যক্তিগত খোশগল্প ইত্যাদি)
+    const pureNonAgriKeywords = [
       // রাজনীতি ও সরকার
       'রাজনীতি', 'নির্বাচন', 'ভোট', 'সরকার', 'প্রধানমন্ত্রী', 'এমপি', 'মন্ত্রী', 'দল', 'বিএনপি', 'আওয়ামী',
       'আওয়ামী', 'জামায়াত', 'politics', 'election', 'vote', 'minister', 'bnp', 'awami',
@@ -63,55 +64,35 @@ class DiseaseDetectionService {
       'মেসি', 'রোনালদো', 'cricket', 'football', 'sports', 'messi', 'ronaldo', 'world cup',
       // ব্যক্তিগত আলাপ / বিনোদন
       'কেমন আছো', 'কেমন আছেন', 'তুমি কে', 'তোমার নাম কি', 'হাই', 'হ্যালো', 'হেই', 'প্রেম', 'ভালোবাসা',
-      'বিয়ে', 'বিয়ে', 'বয়স', 'গান', 'কবিতা', 'সিনেমা', 'নাটক', 'hi', 'hello', 'hey', 'how are you',
-      'who are you', 'what is your name', 'love', 'girlfriend', 'boyfriend', 'song', 'movie',
-      // টেকনোলজি ও সফটওয়্যার
-      'কম্পিউটার', 'মোবাইল', 'ল্যাপটপ', 'সফটওয়্যার', 'সফটওয়্যার', 'কোড', 'পাইথন', 'জাভা', 'প্রোগ্রামিং',
-      'হ্যাকিং', 'ইন্টারনেট', 'ফেসবুক', 'ইউটিউব', 'phone', 'laptop', 'computer', 'python', 'java',
-      'code', 'facebook', 'youtube', 'programming',
-      // অর্থ / চাকরি / ব্যবসা
-      'চাকরি', 'বেতন', 'টাকা ধার', 'ক্যাশ', 'ডলার', 'ব্যাংক', 'শেয়ার বাজার', 'job', 'salary',
+      'বিয়ে', 'বিয়ে', 'বয়স', 'গান', 'কবিতা', 'সিনেমা', 'নাটক', 'মুভি', 'নায়ক', 'নায়িকা',
+      'hi', 'hello', 'hey', 'how are you', 'who are you', 'what is your name', 'love', 'girlfriend', 'boyfriend', 'song', 'movie',
+      // সাধারণ ইলেকট্রনিক্স / হার্ডওয়্যার মেরামত
+      'ডিসপ্লে ভাঙা', 'মোবাইল মেরামত', 'স্ক্রিন ফাটা', 'phone repair', 'screen replacement',
+      // অর্থ / চাকরি / ক্রিপ্টো
+      'চাকরি', 'বেতন', 'টাকা ধার', 'ক্যাশ', 'ডলার', 'ব্যাংক লোন', 'শেয়ার বাজার', 'job', 'salary',
       'money', 'dollar', 'crypto', 'bitcoin'
     ];
 
-    for (final kw in nonAgriKeywords) {
-      if (text.contains(kw)) {
-        return false;
-      }
-    }
-
-    // ২. বাধ্যতামূলক কৃষি ও উদ্ভিদ সংশ্লিষ্ট কি-ওয়ার্ডসমূহ (বাংলা, ইংরেজি, বাংলিশ)
-    const agroKeywords = [
-      'কৃষি', 'চাষ', 'ফসল', 'গাছ', 'উদ্ভিদ', 'চারা', 'বীজ', 'মাটি', 'জমি', 'ক্ষেত', 'মাঠ', 'সেচ',
-      'সার', 'ইউরিয়া', 'টিএসপি', 'ডিএপি', 'পটাশ', 'কীটনাশক', 'বালাইনাশক', 'ছত্রাকনাশক', 'মাকড়নাশক',
-      'আগাছা', 'পাতা', 'শিকড়', 'শিকড়', 'কাণ্ড', 'ডাল', 'ফুল', 'ফল', 'ফলন', 'ধান', 'গম', 'ভুট্টা',
-      'আলু', 'টমেটো', 'বেগুন', 'মরিচ', 'পেঁয়াজ', 'পেয়াজ', 'রসুন', 'আদা', 'হলুদ', 'সরিষা', 'তিল',
-      'পাট', 'চা', 'পান', 'আম', 'জাম', 'কাঁঠাল', 'লিচু', 'কলা', 'পেঁপে', 'লেবু', 'পেয়ারা', 'ড্রাগন',
-      'মাল্টা', 'কমলা', 'তরমুজ', 'ফুলকপি', 'বাঁধাকপি', 'শসা', 'লাউ', 'মিষ্টি কুমড়া', 'মিষ্টিকুমড়া',
-      'চালকুমড়া', 'করলা', 'পটল', 'বরবটি', 'শিম', 'ঢেঁড়শ', 'ঢ্যাঁড়শ', 'শাক', 'পালং', 'লালশাক',
-      'কলমি', 'রোগ', 'বালাই', 'পোকা', 'ছত্রাক', 'ব্যাকটেরিয়া', 'ভাইরাস', 'পচা', 'ধসা', 'ব্লাইট',
-      'হলুদ', 'কুঁকড়ে', 'কুঁকড়ে', 'শুকিয়ে', 'ঝরে', 'মাজরা', 'লেদা', 'বিছা', 'ঘাসফড়িং', 'জাবপোকা',
-      'সাদামাছি', 'থ্রিপস', 'মিলিবাগ', 'মাকড়', 'উইল্ট', 'ডাউনি মিলডিউ', 'মোজাইক', 'অ্যানথ্রাকনোজ',
-      'ব্লাস্ট', 'খোলপোড়া',
-      // English / Banglish
-      'agri', 'krishi', 'chash', 'crop', 'plant', 'tree', 'seed', 'seedling', 'soil', 'land',
-      'field', 'irrigation', 'fertilizer', 'urea', 'tsp', 'dap', 'potash', 'pesticide',
-      'insecticide', 'fungicide', 'leaf', 'leaves', 'root', 'stem', 'flower', 'fruit', 'rice',
-      'paddy', 'wheat', 'corn', 'maize', 'potato', 'tomato', 'brinjal', 'eggplant', 'chilli',
-      'pepper', 'onion', 'garlic', 'mustard', 'jute', 'mango', 'banana', 'papaya', 'lemon',
-      'cabbage', 'cauliflower', 'cucumber', 'gourd', 'spinach', 'disease', 'pest', 'fungus',
-      'rot', 'blight', 'yellow', 'curl', 'aphid', 'thrips', 'wilt', 'mildew', 'fasal', 'gach',
-      'pata', 'rog', 'roog', 'poka', 'sar', 'kitnashok'
+    // কৃষি, প্রযুক্তি, সার, সেচ, মাটি ও বালাই সহায়ক প্রসঙ্গ (এসব থাকলে তা বাতিল করা যাবে না)
+    const agroContextKeywords = [
+      'কৃষি', 'চাষ', 'ফসল', 'গাছ', 'উদ্ভিদ', 'মাটি', 'সার', 'সেচ', 'পোকা', 'রোগ', 'বালাই', 'পাতা',
+      'iot', 'আইওটি', 'সেন্সর', 'স্প্রে', 'ড্রিপ', 'ph', 'পিএইচ', 'npk', 'ইউরিয়া', 'কীটনাশক', 'ডোজ',
+      'agri', 'crop', 'soil', 'plant', 'fertilizer', 'irrigation', 'pest', 'leaf', 'seed'
     ];
 
-    for (final kw in agroKeywords) {
-      if (text.contains(kw)) {
-        return true;
+    final hasAgroContext = agroContextKeywords.any((ak) => text.contains(ak));
+
+    // যদি কোনো কৃষি প্রসঙ্গ ছাড়া কেবল অপ-টপিক থাকে, তবেই বাতিল হবে
+    if (!hasAgroContext) {
+      for (final kw in pureNonAgriKeywords) {
+        if (text.contains(kw)) {
+          return false;
+        }
       }
     }
 
-    // যদি কোনো কৃষি কি-ওয়ার্ডের সাথে মিল না পাওয়া যায়, তবে এটি গ্রহণযোগ্য নয়
-    return false;
+    // অন্যথায় হার্ডকোডেড কি-ওয়ার্ড ব্লকিং এড়িয়ে এআই মডেলের হাতে গভীর ডোমেন যাচাইয়ের নমনীয় ক্ষমতা দেওয়া হলো
+    return true;
   }
 
   /// SharedPreferences থেকে লোকাল ক্যাশ লোড করা
@@ -123,8 +104,8 @@ class DiseaseDetectionService {
         try {
           final map = jsonDecode(jsonStr) as Map<String, dynamic>;
           final item = DiseaseDiagnosisResult.fromMap(map);
-          // কৃষিবহির্ভূত কথোপকথন ক্যাশে সেভ হবে না
-          if (item.isNonAgri) continue;
+          // কৃষিবহির্ভূত বা উদ্ভিদহীন ছবির কথোপকথন ক্যাশে সেভ হবে না
+          if (item.isNonAgri || item.isNotPlantImage) continue;
           if (!_localCache.any((x) => x.id == item.id)) {
             _localCache.add(item);
           }
@@ -302,6 +283,30 @@ class DiseaseDetectionService {
     if (rawText.isEmpty) {
       rawText = partsList.first['text']?.toString() ?? '';
     }
+
+    // ১. ছবি যাচাইকরণ গার্ডরেল: মডেল সরাসরি "NOT_PLANT_IMAGE" টেক্সট রিটার্ন করলে হ্যান্ডলিং
+    final trimmedRaw = rawText.trim().replaceAll('"', '').trim();
+    if (trimmedRaw == 'NOT_PLANT_IMAGE') {
+      return DiseaseDiagnosisResult(
+        id: 'presc_invalid_${DateTime.now().millisecondsSinceEpoch}',
+        plantName: 'উদ্ভিদহীন ছবি',
+        diseaseName: 'NOT_PLANT_IMAGE',
+        confidence: '০%',
+        confidencePercentage: 0,
+        causesAndSymptoms: const [],
+        organicCures: const [],
+        chemicalCures: const [],
+        precautionAndCare: const [],
+        userSymptoms: symptomsText,
+        localImagePath: localImagePath,
+        createdAt: DateTime.now(),
+        expertVerified: true,
+        isNotPlantImage: true,
+        notPlantImageMessage:
+            'আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।',
+      );
+    }
+
     rawText = _cleanJsonString(rawText);
 
     final parsedJson = jsonDecode(rawText) as Map<String, dynamic>;
@@ -321,30 +326,53 @@ class DiseaseDetectionService {
     return '''
 তুমি বাংলাদেশ সরকারের কৃষি সম্প্রসারণ অধিদপ্তর (DAE) ও বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট (BARI) মানসম্মত প্রধান উদ্ভিদ রোগ বিশেষজ্ঞ এবং "KrishiMate AI"।
 
-কঠোর নির্দেশিকা (Strict Rules):
-১. উত্তরের শুরুতে বা শেষে কোনো অতিরিক্ত ভূমিকা, সৌজন্যমূলক শুভেচ্ছা বা অপ্রয়োজনীয় কথাবার্তা থাকবে না।
-২. সরাসরি সুনির্দিষ্ট পয়েন্ট আকারে বাস্তবসম্মত, অনুমোদিত ও কার্যকরী পরামর্শ দেবে:
-   - আক্রান্ত ফসল ও চিহ্নিত রোগ
+*** সর্বোচ্চ অগ্রাধিকার ও অলঙ্ঘনীয় গার্ডরেল (Strict Guardrails) ***
+
+১. ছবি যাচাইকরণ অলঙ্ঘনীয় গার্ডরেল (Strict Plant/Crop Image Verification):
+- ${hasImage ? '''ব্যবহারকারী একটি ছবি সংযুক্ত করেছেন। তোমার সর্বপ্রথম ও অবশ্য পালনীয় কাজ হলো ছবিটি পুঙ্খানুপুঙ্খ স্ক্যান করে নিশ্চিত হওয়া:
+  "ছবিটিতে কি কোনো জীবিত বা শুষ্ক উদ্ভিদ, ফসল, গাছপালা, পাতা, ফুল, ফল, কাণ্ড, ডাল, শিকড়, চারা, বীজ বা ফসলের কোনো বাস্তব অংশ রয়েছে?"
+- যদি ছবিতে কোনো গাছপালা, উদ্ভিদ বা ফসলের কোনো উপাদান না থাকে—যেমন: মানুষের মুখ বা শরীর, পশুপাখি, ঘরের আসবাবপত্র, দেওয়াল, মেঝ, রুম, রাস্তাঘাট, গাড়ি বা যানবাহন, নথিপত্র, ইলেকট্রনিক্স বা যেকোনো অপ্রাসঙ্গিক ছবি:
+  * কোনো অবস্থাতেই অনুমানের ওপর নির্ভর করে কোনো কাল্পনিক বা অসত্য রোগ ও সমাধান তৈরি করবে না।
+  * অবিলম্বে এবং সরাসরি নিচের নির্ধারিত JSON ফরম্যাট রিটার্ন করবে:
+  {
+    "status": "NOT_PLANT_IMAGE",
+    "is_not_plant_image": true,
+    "is_non_agri": false,
+    "not_plant_image_message": "আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।"
+  }''' : 'কোনো ছবি সংযুক্ত নেই, শুধুমাত্র লক্ষণ বা প্রশ্নের ভিত্তিতে উত্তর প্রস্তুত করো।'}
+
+২. স্মার্ট ও নমনীয় কৃষি ডোমেন যাচাইকরণ (Prevent False Rejections for Technical Agro Questions):
+- কৃষির পরিধি ব্যাপক। কৃষি, ফসল, মাটি ও উদ্ভিদের সাথে প্রত্যক্ষ বা পরোক্ষভাবে জড়িত যেকোনো প্রশ্ন—তা যত জটিল, আধুনিক বা প্রযুক্তিগতই হোক না কেন—তা ১০০% বৈধ কৃষি প্রশ্ন হিসেবে গ্রহণ করতে হবে:
+  * কৃষি প্রযুক্তি ও অটোমেশন (যেমন: আইওটি (IoT) সেচ, স্বয়ংক্রিয় সেন্সর, ড্রোন স্প্রেয়ার, আধুনিক স্প্রেয়ার, গ্রিনহাউজ, ড্রিপ ইরিগেশন, হাইড্রোপনিক্স)
+  * রাসায়নিক ও জৈব সার এবং বালাইনাশকের উপাদান ও সক্রিয় উপকরণ (যেমন: NPK অনুপাত, ইউরিয়া, টিএসপি, ডিএপি, জিপসাম, ডলোমাইট, ম্যানকোজেব, কার্বেনডাজিম, মেটালেক্সিল, অ্যাজাডিরাকটিন ইত্যাদি)
+  * মাটির গুণাগুণ ও বিজ্ঞান (যেমন: মাটির পিএইচ (pH), অম্লতা, ক্ষারত্ব, লবণাক্ততা, পুষ্টি উপাদানের অভাব)
+  * ফসলের আবহাওয়াজনিত ক্ষতি ও প্রতিকার (যেমন: অতিরিক্ত কুয়াশা, শৈত্যপ্রবাহ, খরা, জলাবদ্ধতা, তাপদাহ)
+  * উদ্ভিদের যেকোনো রোগ, লক্ষণ বা বালাই দমন ব্যবস্থা।
+  * ভাষা বা বাক্য গঠন যাই হোক, মূল উদ্দেশ্য কৃষি বা উদ্ভিদ সংশ্লিষ্ট হলে তা পূর্ণ গুরুত্ব দিয়ে সমাধান করবে এবং "is_non_agri": false রাখবে।
+- শুধুমাত্র এবং কেবলমাত্র সেইসব প্রশ্ন যেগুলোর সাথে প্রত্যক্ষ বা পরোক্ষভাবে কৃষির কোনো বিন্দুমাত্র সম্পর্ক নেই (যেমন: ক্রিকেট বা ফুটবল খেলা, রাজনীতি ও নির্বাচন, চলচ্চিত্র বা সিনেমা, গান-বাজনা, মোবাইল মেরামত, ব্যক্তিগত প্রেম-ভালোবাসা, সাধারণ খোশগল্প ইত্যাদি) এবং কোনো উদ্ভিদের ছবিও নেই:
+  * শুধুমাত্র সেক্ষেত্রে "is_non_agri": true নির্ধারণ করবে এবং "non_agri_message" ফিল্ডে বিনীত অনুরোধ বার্তা দেবে।
+
+৩. সরাসরি সুনির্দিষ্ট পয়েন্ট আকারে বাস্তবসম্মত, অনুমোদিত ও কার্যকরী পরামর্শ দেবে:
+   - আক্রান্ত ফসল ও চিহ্নিত রোগ বা সমস্যা
    - প্রধান লক্ষণ ও ক্ষতির মাত্রা
    - তাৎক্ষণিক জৈব সমাধান (ঘরোয়া উপায়)
    - অনুমোদিত রাসায়নিক বালাইনাশক ও ব্যবহারের সঠিক মাত্রা (কেজি/লিটার প্রতি সঠিক ডোজ)
    - প্রতিরোধমূলক সতর্কতা
-৩. কোনো প্রকার ভূমিকা বা উপসংহার ছাড়াই সরাসরি নিচের নির্ধারিত বৈধ JSON ফরম্যাট আউটপুট দেবে:
+৪. উত্তরের শুরুতে বা শেষে কোনো অতিরিক্ত ভূমিকা, সৌজন্যমূলক শুভেচ্ছা বা অপ্রয়োজনীয় কথাবার্তা থাকবে না। সরাসরি নির্ধারিত বৈধ JSON ফরম্যাট আউটপুট দেবে:
 
 কৃষকের ইনপুট / লক্ষণ:
 "$textInfo"
 
 ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগের রঙ, বলয়, নেক্রোসিস, পাতার কিনারা পোড়া, ক্লোরোসিস, ছত্রাক বা পোকার আক্রমণ অত্যন্ত সূক্ষ্মভাবে পর্যবেক্ষণ করো।' : 'শুধুমাত্র প্রদত্ত লক্ষণের ওপর ভিত্তি করে বাংলাদেশে সচরাচর দেখা যাওয়া সর্বাধিক সম্ভাব্য রোগটি চিহ্নিত করো।'}
 
-কঠোর ডোমেইন ফিল্টার নিয়ম (Strict Agricultural Domain Policy):
-- এই সেবাটি শুধুমাত্র ফসল, শাকসবজি, ফলমূল, গাছপালা, পাতার রোগবালাই, পোকামাকড়, সেচ, সার ও কৃষি বিষয়ক সমস্যার জন্য সংরক্ষিত।
-- যদি প্রশ্নটি কৃষি বহির্ভূত যেকোনো বিষয় (যেমন: রাজনীতি, খেলাধুলা, ক্রিকেট, বিনোদন, সিনেমা, গান, সাধারণ গল্পগুজব, সফটওয়্যার বা প্রযুক্তি ইত্যাদি) সম্পর্কিত হয় এবং কোনো উদ্ভিদের ছবিও না থাকে, তবে "is_non_agri": true নির্ধারণ করবে এবং "non_agri_message" ফিল্ডে বিনীত বার্তাটি দিবে।
-
-নির্ধারিত বৈধ JSON স্কিমা:
+নির্ধারিত বৈধ JSON স্কিমা (বৈধ উদ্ভিদ বা কৃষি প্রশ্নের ক্ষেত্রে):
 {
+  "status": "SUCCESS",
+  "is_not_plant_image": false,
+  "not_plant_image_message": "",
   "is_non_agri": false,
   "non_agri_message": "",
-  "plant_name": "আক্রান্ত ফসল (যেমন: টমেটো / ধান / বেগুন / আলু / মরিচ)",
+  "plant_name": "আক্রান্ত ফসল বা উদ্ভিদের নাম (যেমন: টমেটো / ধান / বেগুন / আলু / মরিচ)",
   "disease_name": "চিহ্নিত রোগ বা বালাইয়ের নাম (যেমন: আর্লি ব্লাইট (Early Blight))",
   "confidence_percentage": 95,
   "confidence_display": "৯৫%",
@@ -391,6 +419,33 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     String? localImagePath,
   }) {
     final docId = 'presc_${DateTime.now().millisecondsSinceEpoch}';
+
+    // ১. ছবি যাচাইকরণ গার্ডরেল: ছবিতে কোনো উদ্ভিদ/ফসল না থাকলে সরাসরি হ্যান্ডলিং
+    final bool isNotPlant = json['is_not_plant_image'] == true ||
+        json['status']?.toString() == 'NOT_PLANT_IMAGE' ||
+        json['flag']?.toString() == 'NOT_PLANT_IMAGE' ||
+        json['disease_name']?.toString() == 'NOT_PLANT_IMAGE';
+
+    if (isNotPlant) {
+      return DiseaseDiagnosisResult(
+        id: docId,
+        plantName: 'উদ্ভিদহীন ছবি',
+        diseaseName: 'NOT_PLANT_IMAGE',
+        confidence: '০%',
+        confidencePercentage: 0,
+        causesAndSymptoms: const [],
+        organicCures: const [],
+        chemicalCures: const [],
+        precautionAndCare: const [],
+        userSymptoms: userSymptoms,
+        localImagePath: localImagePath,
+        createdAt: DateTime.now(),
+        expertVerified: true,
+        isNotPlantImage: true,
+        notPlantImageMessage: json['not_plant_image_message']?.toString() ??
+            'আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।',
+      );
+    }
 
     int confPct = (json['confidence_percentage'] as num?)?.toInt() ?? 94;
     if (confPct < 70) confPct = 85;
@@ -451,6 +506,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
       expertVerified: true,
       isNonAgri: isNonAgri,
       nonAgriMessage: nonAgriMsg,
+      isNotPlantImage: false,
     );
   }
 
@@ -611,10 +667,10 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     );
   }
 
-  /// লোকাল ক্যাশ ও ফায়ারবেসে হিস্ট্রি ডেটা সংরক্ষণ (Requirement 1: ফিল্টারিং)
+  /// লোকাল ক্যাশ ও ফায়ারবেসে হিস্ট্রি ডেটা সংরক্ষণ (Requirement 1 & 3: ফিল্টারিং)
   Future<void> _persistDiagnosis(DiseaseDiagnosisResult result) async {
-    // ১. শর্তাধীন ফিল্টারিং: কৃষিবহির্ভূত প্রশ্ন ও উত্তর কোনো অবস্থাতেই হিস্ট্রিতে সেভ করা যাবে না
-    if (result.isNonAgri) {
+    // ১. শর্তাধীন ফিল্টারিং: কৃষিবহির্ভূত প্রশ্ন ও উদ্ভিদহীন ছবির ফলাফল কোনো অবস্থাতেই হিস্ট্রিতে সেভ করা যাবে না
+    if (result.isNonAgri || result.isNotPlantImage) {
       return;
     }
 
@@ -718,7 +774,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
     return false;
   }
 
-  /// রিয়েল-টাইম Firestore StreamBuilder স্ট্রীম (শর্ত: নন-এগ্রি সম্পূর্ণ ফিল্টার্ড)
+  /// রিয়েল-টাইম Firestore StreamBuilder স্ট্রীম (শর্ত: নন-এগ্রি ও উদ্ভিদহীন ছবি সম্পূর্ণ ফিল্টার্ড)
   Stream<List<DiseaseDiagnosisResult>> getRecentPrescriptionsStream({int limit = 15}) {
     return _firestore
         .collection(_collectionName)
@@ -728,7 +784,7 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
         .map((snapshot) {
           final items = snapshot.docs
               .map((doc) => DiseaseDiagnosisResult.fromFirestore(doc))
-              .where((doc) => !doc.isNonAgri)
+              .where((doc) => !doc.isNonAgri && !doc.isNotPlantImage)
               .toList();
           // ক্লাউড ডেটা দিয়ে লোকাল ক্যাশ সিঙ্ক
           for (final item in items) {
@@ -736,10 +792,10 @@ ${hasImage ? 'সংযুক্ত পাতার ছবিতে দাগে
               _localCache.add(item);
             }
           }
-          final filteredCache = _localCache.where((e) => !e.isNonAgri).toList();
+          final filteredCache = _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList();
           return items.isNotEmpty ? items : filteredCache;
         })
-        .handleError((_) => _localCache.where((e) => !e.isNonAgri).toList());
+        .handleError((_) => _localCache.where((e) => !e.isNonAgri && !e.isNotPlantImage).toList());
   }
 
   /// নির্দিষ্ট প্রেসক্রিপশনের লাইভ ডকুমেন্ট স্ট্রীম (Firestore StreamBuilder)

@@ -430,6 +430,77 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
     );
   }
 
+  // ৪. ছবি যাচাইকরণ গার্ডরেল: উদ্ভিদহীন ছবির জন্য মার্জিত পপ-আপ অ্যালার্ট (Strict Plant Image Verification)
+  void _showNotPlantImageDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        elevation: 8,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3E0),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFE0B2), width: 1.5),
+                ),
+                child: const Icon(Icons.hide_image_rounded, color: Color(0xFFE65100), size: 40),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'উদ্ভিদের ছবি আবশ্যক',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFE65100),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: Color(0xFF424242),
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'ঠিক আছে',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ওয়ান-টাইম ওয়েলকাম অনবোর্ডিং পপ-আপ লজিক (SharedPreferences)
   Future<void> _checkFirstTimeWelcome() async {
     try {
@@ -910,7 +981,21 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen>
 
       _messageTimer?.cancel();
 
-      // ৩. কঠোর কৃষি প্রশ্ন যাচাই: কোনো প্রকার অ-কৃষি উত্তর বা চ্যাট বাবল তৈরি নিষিদ্ধ
+      // ১. ছবি যাচাইকরণ গার্ডরেল: ছবিতে কোনো উদ্ভিদ/ফসল না থাকলে সরাসরি মার্জিত পপ-আপ অ্যালার্ট
+      if (result.isNotPlantImage) {
+        if (mounted) {
+          setState(() {
+            _currentPhase = DiseasePhase.idle;
+            _selectedImage = null;
+            _webImageBytes = null;
+          });
+          _morphController.reverse();
+          _showNotPlantImageDialog();
+        }
+        return;
+      }
+
+      // ২. কঠোর কৃষি প্রশ্ন যাচাই: কোনো প্রকার অ-কৃষি উত্তর বা চ্যাট বাবল তৈরি নিষিদ্ধ
       if (result.isNonAgri) {
         if (mounted) {
           setState(() {

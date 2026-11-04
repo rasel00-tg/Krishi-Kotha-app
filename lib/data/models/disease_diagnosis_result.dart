@@ -43,6 +43,8 @@ class DiseaseDiagnosisResult {
   final bool expertVerified;
   final bool isNonAgri;
   final String? nonAgriMessage;
+  final bool isNotPlantImage;
+  final String? notPlantImageMessage;
 
   const DiseaseDiagnosisResult({
     required this.id,
@@ -62,6 +64,8 @@ class DiseaseDiagnosisResult {
     this.expertVerified = true,
     this.isNonAgri = false,
     this.nonAgriMessage,
+    this.isNotPlantImage = false,
+    this.notPlantImageMessage,
   });
 
   Map<String, dynamic> toMap() {
@@ -83,6 +87,8 @@ class DiseaseDiagnosisResult {
       'expert_verified': expertVerified,
       'is_non_agri': isNonAgri,
       'non_agri_message': nonAgriMessage,
+      'is_not_plant_image': isNotPlantImage,
+      'not_plant_image_message': notPlantImageMessage,
     };
   }
 
@@ -147,6 +153,14 @@ class DiseaseDiagnosisResult {
       expertVerified: map['expert_verified'] as bool? ?? true,
       isNonAgri: map['is_non_agri'] as bool? ?? (map['is_non_agricultural'] as bool? ?? false),
       nonAgriMessage: map['non_agri_message']?.toString(),
+      isNotPlantImage: map['is_not_plant_image'] as bool? ??
+          (map['status']?.toString() == 'NOT_PLANT_IMAGE' ||
+              map['disease_name']?.toString() == 'NOT_PLANT_IMAGE' ||
+              map['flag']?.toString() == 'NOT_PLANT_IMAGE'),
+      notPlantImageMessage: map['not_plant_image_message']?.toString() ??
+          (map['is_not_plant_image'] == true
+              ? 'আপনার দেওয়া ছবিটি কোনো উদ্ভিদ বা ফসলের নয়। অনুগ্রহ করে আক্রান্ত ফসলের পাতা বা গাছের স্পষ্ট ছবি আপলোড করুন।'
+              : null),
     );
   }
 
