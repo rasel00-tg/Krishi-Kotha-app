@@ -730,8 +730,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             authProvider.clearError();
-                            Navigator.push(
-                              context,
+                            Navigator.of(context, rootNavigator: true).push(
                               MaterialPageRoute(
                                 builder: (_) => const RegistrationMultiStepScreen(),
                               ),

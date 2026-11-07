@@ -3086,7 +3086,7 @@
     </div>
 
     <!-- DEDICATED FULL SCREEN REGISTRATION PAGE (EDGE-TO-EDGE, NO DIALOG / MODAL) -->
-    <div class="full-screen-page" id="registrationPage" style="background: #FFFFFF;">
+    <div class="full-screen-page" id="registrationPage" style="background: linear-gradient(180deg, #EFF7EE 0%, #FCFDFC 100%); z-index: 100010;">
       <!-- Top Bar with Back Button & Title -->
       <div
         style="background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
@@ -3100,48 +3100,60 @@
       </div>
 
       <!-- Edge-to-Edge Scrollable SingleChildScrollView Body -->
-      <div style="flex: 1; overflow-y: auto; padding: 20px 18px 48px 18px;">
-        <div style="max-width: 650px; margin: 0 auto;">
+      <div style="flex: 1; overflow-y: auto; padding: 16px 16px 48px 16px;">
+        <div style="max-width: 580px; margin: 0 auto; background: white; border-radius: 20px; border: 1.2px solid #E2EBE2; box-shadow: 0 6px 18px rgba(46,125,50,0.06); padding: 22px 20px;">
           <!-- Top Plain Large Logo (NO Container, NO Border, NO Shadow) -->
-          <div style="text-align: center; margin-bottom: 20px;">
-            <img src="pnglogo.png" style="width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 8px auto;" alt="কৃষি কথা লোগো">
-            <h3 style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 0 0 4px 0;">কৃষি কথা</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন</p>
+          <div style="text-align: center; margin-bottom: 18px;">
+            <img src="pnglogo.png" style="width: 75px; height: 75px; object-fit: contain; display: block; margin: 0 auto 8px auto;" alt="কৃষি কথা লোগো">
+            <h3 style="font-size: 21px; font-weight: 800; color: var(--primary-dark); margin: 0 0 3px 0;">কৃষি কথা</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">সকল প্রয়োজনীয় তথ্য দিয়ে আপনার প্রোফাইল তৈরি করুন</p>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 13px;">
             <!-- ১. জিমেইল এড্রেস -->
             <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">জিমেইল এড্রেস *</label>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">জিমেইল এড্রেস *</label>
+              </div>
               <div style="position: relative;">
                 <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                <input type="email" id="fullRegEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 16px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <input type="email" id="fullRegEmail" placeholder="example@gmail.com" oninput="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 44px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <span id="badgeRegEmail" style="display: none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(46,125,50,0.35);"><i class="fa-solid fa-check"></i></span>
               </div>
             </div>
 
             <!-- ২. মোবাইল নম্বর (১১ ডিজিট) -->
             <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">মোবাইল নম্বর (১১ ডিজিট) *</label>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">মোবাইল নম্বর (১১ ডিজিট) *</label>
+              </div>
               <div style="position: relative;">
                 <i class="fa-solid fa-phone" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                <input type="tel" id="fullRegPhone" maxlength="11" placeholder="01XXXXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 16px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <input type="tel" id="fullRegPhone" maxlength="11" placeholder="01XXXXXXXXX" oninput="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 44px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <span id="badgeRegPhone" style="display: none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(46,125,50,0.35);"><i class="fa-solid fa-check"></i></span>
               </div>
             </div>
 
             <!-- ৩. পূর্ণ নাম -->
             <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">পূর্ণ নাম *</label>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">পূর্ণ নাম *</label>
+              </div>
               <div style="position: relative;">
                 <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
-                <input type="text" id="fullRegName" placeholder="আপনার পূর্ণ নাম লিখুন" style="width: 100%; box-sizing: border-box; padding: 14px 16px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <input type="text" id="fullRegName" placeholder="আপনার পূর্ণ নাম লিখুন" oninput="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 44px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <span id="badgeRegName" style="display: none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(46,125,50,0.35);"><i class="fa-solid fa-check"></i></span>
               </div>
             </div>
 
             <!-- ৪ ও ৫. জেলা ও উপজেলা (ডায়নামিক ডিপেন্ডেন্ট ড্রপডাউন) -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <div>
-                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">জেলা *</label>
-                <select id="fullRegDistrict" onchange="onRegistrationDistrictChange(this.value)" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif; background: white;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                  <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">জেলা *</label>
+                  <span id="badgeRegDistrict" style="display: none; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 10.5px;"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <select id="fullRegDistrict" onchange="onRegistrationDistrictChange(this.value); updateRegistrationValidationState();" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif; background: white;">
                   <option value="" disabled selected>জেলা নির্বাচন করুন</option>
                   <option value="কক্সবাজার">কক্সবাজার</option>
                   <option value="কিশোরগঞ্জ">কিশোরগঞ্জ</option>
@@ -3210,8 +3222,11 @@
                 </select>
               </div>
               <div>
-                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">উপজেলা *</label>
-                <select id="fullRegUpazila" disabled style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif; background: white;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                  <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">উপজেলা *</label>
+                  <span id="badgeRegUpazila" style="display: none; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 10.5px;"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <select id="fullRegUpazila" disabled onchange="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 12px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 14px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif; background: white;">
                   <option value="" disabled selected>আগে জেলা বাছুন</option>
                 </select>
               </div>
@@ -3230,15 +3245,39 @@
               </select>
             </div>
 
-            <!-- ৭ ও ৮. নতুন পাসওয়ার্ড ও নিশ্চিতকরণ -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>
-                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">পাসওয়ার্ড *</label>
-                <input type="password" id="fullRegPassword" placeholder="কমপক্ষে ৬ অক্ষর" style="width: 100%; box-sizing: border-box; padding: 14px 14px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+            <!-- ৭ ও ৮. নতুন পাসওয়ার্ড ও নিশ্চিতকরণ (লাইভ স্ট্রেংথ ও এক্সাক্টলি সঠিক ব্যাজ) -->
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর) *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="password" id="fullRegPassword" placeholder="পাসওয়ার্ড নির্ধারণ করুন..." oninput="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 44px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <span id="badgeRegPassword" style="display: none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(46,125,50,0.35);"><i class="fa-solid fa-check"></i></span>
               </div>
-              <div>
-                <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">নিশ্চিত করুন *</label>
-                <input type="password" id="fullRegConfirmPassword" placeholder="একই পাসওয়ার্ড" style="width: 100%; box-sizing: border-box; padding: 14px 14px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+              <!-- পাসওয়ার্ড স্ট্রেংথ মিটার -->
+              <div id="regPassStrengthContainer" style="display: none; margin-top: 7px;">
+                <div style="display: flex; gap: 5px; height: 4.5px;">
+                  <div id="regPassBar1" style="flex: 1; border-radius: 4px; background: #E0E0E0; transition: background 0.25s;"></div>
+                  <div id="regPassBar2" style="flex: 1; border-radius: 4px; background: #E0E0E0; transition: background 0.25s;"></div>
+                  <div id="regPassBar3" style="flex: 1; border-radius: 4px; background: #E0E0E0; transition: background 0.25s;"></div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                  <i id="regPassStrengthIcon" class="fa-solid fa-shield" style="font-size: 12px; color: #E53935;"></i>
+                  <span id="regPassStrengthLabel" style="font-size: 12px; font-weight: 600; color: #E53935;">দুর্বল পাসওয়ার্ড</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">পাসওয়ার্ড নিশ্চিত করুন *</label>
+              <div style="position: relative;">
+                <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
+                <input type="password" id="fullRegConfirmPassword" placeholder="একই পাসওয়ার্ড পুনরায় লিখুন..." oninput="updateRegistrationValidationState()" style="width: 100%; box-sizing: border-box; padding: 14px 44px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
+                <span id="badgeRegConfirmPassword" style="display: none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #43A047, #2E7D32); color: white; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 6px rgba(46,125,50,0.35);"><i class="fa-solid fa-check"></i></span>
+              </div>
+              <!-- কনফার্ম পাসওয়ার্ড ম্যাচ ইন্ডিকেটর -->
+              <div id="regConfirmPassMatchContainer" style="display: none; margin-top: 7px; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; align-items: center; gap: 6px;">
+                <i id="regConfirmPassMatchIcon" class="fa-solid fa-circle-check"></i>
+                <span id="regConfirmPassMatchLabel">এক্সাক্টলি সঠিক!</span>
               </div>
             </div>
 
@@ -8921,7 +8960,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.classList.add('active');
         page.style.display = 'flex';
         page.style.pointerEvents = 'auto';
+        page.style.zIndex = '100010';
       }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+      updateRegistrationValidationState();
     }
 
     function closeRegistrationPage() {
@@ -8931,7 +8974,149 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.style.display = 'none';
         page.style.pointerEvents = 'none';
       }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
       document.body.style.overflow = '';
+    }
+
+    function updateRegistrationValidationState() {
+      // 1. Email check
+      const email = (document.getElementById('fullRegEmail')?.value || '').trim();
+      const badgeEmail = document.getElementById('badgeRegEmail');
+      const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+      if (badgeEmail) badgeEmail.style.display = isEmailValid ? 'flex' : 'none';
+
+      // 2. Phone check (11 digits starting with 01)
+      const phone = (document.getElementById('fullRegPhone')?.value || '').trim();
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const badgePhone = document.getElementById('badgeRegPhone');
+      const isPhoneValid = cleanPhone.length === 11 && cleanPhone.startsWith('01');
+      if (badgePhone) badgePhone.style.display = isPhoneValid ? 'flex' : 'none';
+
+      // 3. Name check (length >= 2)
+      const name = (document.getElementById('fullRegName')?.value || '').trim();
+      const badgeName = document.getElementById('badgeRegName');
+      const isNameValid = name.length >= 2;
+      if (badgeName) badgeName.style.display = isNameValid ? 'flex' : 'none';
+
+      // 4. District check
+      const district = (document.getElementById('fullRegDistrict')?.value || '').trim();
+      const badgeDistrict = document.getElementById('badgeRegDistrict');
+      const isDistrictValid = district.length > 0;
+      if (badgeDistrict) badgeDistrict.style.display = isDistrictValid ? 'flex' : 'none';
+
+      // 5. Upazila check
+      const upazila = (document.getElementById('fullRegUpazila')?.value || '').trim();
+      const badgeUpazila = document.getElementById('badgeRegUpazila');
+      const isUpazilaValid = upazila.length > 0;
+      if (badgeUpazila) badgeUpazila.style.display = isUpazilaValid ? 'flex' : 'none';
+
+      // 6. Password Strength Meter
+      const pass = document.getElementById('fullRegPassword')?.value || '';
+      const badgePass = document.getElementById('badgeRegPassword');
+      const strengthContainer = document.getElementById('regPassStrengthContainer');
+      const bar1 = document.getElementById('regPassBar1');
+      const bar2 = document.getElementById('regPassBar2');
+      const bar3 = document.getElementById('regPassBar3');
+      const strengthIcon = document.getElementById('regPassStrengthIcon');
+      const strengthLabel = document.getElementById('regPassStrengthLabel');
+
+      if (!pass) {
+        if (strengthContainer) strengthContainer.style.display = 'none';
+        if (badgePass) badgePass.style.display = 'none';
+      } else {
+        if (strengthContainer) strengthContainer.style.display = 'block';
+        let score = 1;
+        if (pass.length >= 6) {
+          const hasLetters = /[a-zA-Z]/.test(pass);
+          const hasDigits = /[0-9]/.test(pass);
+          const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+          if ((hasLetters && hasDigits) || (hasDigits && hasSpecial) || pass.length >= 8) {
+            score = 3;
+          } else {
+            score = 2;
+          }
+        }
+
+        if (score === 1) {
+          if (bar1) bar1.style.background = '#E53935';
+          if (bar2) bar2.style.background = '#E0E0E0';
+          if (bar3) bar3.style.background = '#E0E0E0';
+          if (strengthIcon) {
+            strengthIcon.className = 'fa-solid fa-triangle-exclamation';
+            strengthIcon.style.color = '#E53935';
+          }
+          if (strengthLabel) {
+            strengthLabel.innerText = 'দুর্বল পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা বা অক্ষর দিন)';
+            strengthLabel.style.color = '#E53935';
+          }
+          if (badgePass) badgePass.style.display = 'none';
+        } else if (score === 2) {
+          if (bar1) bar1.style.background = '#FB8C00';
+          if (bar2) bar2.style.background = '#FB8C00';
+          if (bar3) bar3.style.background = '#E0E0E0';
+          if (strengthIcon) {
+            strengthIcon.className = 'fa-solid fa-circle-info';
+            strengthIcon.style.color = '#FB8C00';
+          }
+          if (strengthLabel) {
+            strengthLabel.innerText = 'মাঝারি পাসওয়ার্ড (সংখ্যা ও অক্ষরের মিশ্রণ ব্যবহার করুন)';
+            strengthLabel.style.color = '#FB8C00';
+          }
+          if (badgePass) badgePass.style.display = 'flex';
+        } else {
+          if (bar1) bar1.style.background = '#2E7D32';
+          if (bar2) bar2.style.background = '#2E7D32';
+          if (bar3) bar3.style.background = '#2E7D32';
+          if (strengthIcon) {
+            strengthIcon.className = 'fa-solid fa-shield-halved';
+            strengthIcon.style.color = '#2E7D32';
+          }
+          if (strengthLabel) {
+            strengthLabel.innerText = 'শক্তিশালী পাসওয়ার্ড';
+            strengthLabel.style.color = '#2E7D32';
+          }
+          if (badgePass) badgePass.style.display = 'flex';
+        }
+      }
+
+      // 7. Confirm Password Match Checker
+      const confirmPass = document.getElementById('fullRegConfirmPassword')?.value || '';
+      const badgeConfirm = document.getElementById('badgeRegConfirmPassword');
+      const matchContainer = document.getElementById('regConfirmPassMatchContainer');
+      const matchIcon = document.getElementById('regConfirmPassMatchIcon');
+      const matchLabel = document.getElementById('regConfirmPassMatchLabel');
+
+      if (!confirmPass) {
+        if (matchContainer) matchContainer.style.display = 'none';
+        if (badgeConfirm) badgeConfirm.style.display = 'none';
+      } else if (pass && confirmPass === pass) {
+        if (badgeConfirm) badgeConfirm.style.display = 'flex';
+        if (matchContainer) {
+          matchContainer.style.display = 'flex';
+          matchContainer.style.background = '#E8F5E9';
+          matchContainer.style.border = '1px solid #A5D6A7';
+          matchContainer.style.color = '#2E7D32';
+        }
+        if (matchIcon) {
+          matchIcon.className = 'fa-solid fa-circle-check';
+          matchIcon.style.color = '#2E7D32';
+        }
+        if (matchLabel) matchLabel.innerText = 'এক্সাক্টলি সঠিক!';
+      } else {
+        if (badgeConfirm) badgeConfirm.style.display = 'none';
+        if (matchContainer) {
+          matchContainer.style.display = 'flex';
+          matchContainer.style.background = '#FFEBEE';
+          matchContainer.style.border = '1px solid #FFCDD2';
+          matchContainer.style.color = '#D32F2F';
+        }
+        if (matchIcon) {
+          matchIcon.className = 'fa-solid fa-circle-xmark';
+          matchIcon.style.color = '#E53935';
+        }
+        if (matchLabel) matchLabel.innerText = 'পাসওয়ার্ড মিলছে না, পুনরায় যাচাই করুন!';
+      }
     }
 
     function openForgotPasswordPage() {
