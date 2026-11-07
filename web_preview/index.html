@@ -3962,11 +3962,15 @@
                 <i class="fa-solid fa-circle-check"></i>
                 <span>নিবন্ধিত জিমেইল পাওয়া গেছে:</span>
               </div>
-              <div style="background: white; border: 1px solid #C8E6C9; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                <span id="fgmMaskedEmail" style="font-size: 15.5px; font-weight: 800; color: #1B5E20; letter-spacing: 0.5px;">-</span>
-                <i class="fa-solid fa-lock" style="color: #9E9E9E; font-size: 14px;"></i>
+              <div style="background: white; border: 1px solid #C8E6C9; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span id="fgmMaskedEmail" style="font-size: 16px; font-weight: 800; color: #1B5E20; letter-spacing: 0.6px;">-</span>
+                <i class="fa-solid fa-lock" style="color: #2E7D32; font-size: 15px;"></i>
               </div>
-              <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">নিরাপত্তার স্বার্থে ইমেইলের মাঝের অক্ষরগুলো গোপন রাখা হয়েছে।</p>
+              <div style="display: inline-flex; align-items: center; gap: 5px; background: #E8F5E9; border: 1px solid #A5D6A7; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; color: #1B5E20; margin-bottom: 6px;">
+                <span>🔒</span>
+                <span>এনক্রিপ্টেড অ্যাকাউন্ট ভেরিফিকেশন</span>
+              </div>
+              <p style="font-size: 12px; font-weight: 500; color: #2E7D32; margin: 0; line-height: 1.35;">আপনার নিবন্ধিত ইমেইলটি শনাক্ত করা হয়েছে। পাসওয়ার্ড পুনরুদ্ধারে এগিয়ে যান।</p>
             </div>
 
             <!-- Option 1: Auto-fill into reset page input box -->
@@ -3989,13 +3993,39 @@
       </div>
     </div>
 
-    <!-- INTERACTIVE LOGIN LOADING DIALOG -->
-    <div id="loginLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 100020; align-items: center; justify-content: center; pointer-events: auto;">
-      <div style="background: white; border-radius: 20px; padding: 22px 26px; display: flex; align-items: center; gap: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.22); max-width: 320px; width: 85%;">
-        <div style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-        <div>
-          <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">লগইন হচ্ছে...</div>
-          <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">অনুগ্রহ করে অপেক্ষা করুন</div>
+    <!-- INTERACTIVE BRANDED LOGIN LOADING & STATE TRANSITION DIALOG -->
+    <div id="loginLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100020; align-items: center; justify-content: center; pointer-events: auto;">
+      <div id="loginDialogCard" style="background: white; border-radius: 24px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 12px 36px rgba(0,0,0,0.22); max-width: 320px; width: 85%; transition: all 0.35s ease;">
+        <!-- STATE 1: LOADING -->
+        <div id="loginStateLoading" style="display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-right-color: #1B5E20; animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; box-shadow: 0 0 12px rgba(46,125,50,0.25);"></div>
+            <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
+          </div>
+          <div style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">লগইন হচ্ছে....</div>
+          <div style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
+        </div>
+
+        <!-- STATE 2: SUCCESS -->
+        <div id="loginStateSuccess" style="display: none; flex-direction: column; align-items: center;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 38px; margin-bottom: 16px;">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div id="loginSuccessTitle" style="font-size: 18px; font-weight: 800; color: #1B5E20; margin-bottom: 6px;">লগইন সফল হয়েছে!</div>
+          <div id="loginSuccessMsg" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.4;">কৃষি কথা অ্যাপে আপনাকে স্বাগতম।</div>
+        </div>
+
+        <!-- STATE 3: FAILURE -->
+        <div id="loginStateFailure" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 16px;">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+          <div id="loginFailTitle" style="font-size: 18px; font-weight: 800; color: #D32F2F; margin-bottom: 6px;">লগইন ব্যর্থ হয়েছে!</div>
+          <div id="loginFailMsg" style="font-size: 13.5px; color: var(--text-primary); line-height: 1.4; margin-bottom: 18px; word-break: break-word;">আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!</div>
+          <button type="button" onclick="hideLoginLoadingDialog()" style="width: 100%; height: 44px; border-radius: 12px; border: none; background: #D32F2F; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-arrow-rotate-right"></i>
+            <span>আবার চেষ্টা করুন</span>
+          </button>
         </div>
       </div>
     </div>
@@ -8640,15 +8670,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           bg: '#E1F5FE',
           role: 'পটাশিয়ামের উৎস • গাছের রোগবালাই ও পোকার আক্রমণ প্রতিরোধ, দানা পুষ্ট ও ফলন বৃদ্ধি।',
           stage: 'অর্ধেক শেষ চাষে এবং বাকি অর্ধেক শেষ কিস্তি ইউরিয়ার সাথে (কাইচ থোড়ে)'
-        },
-        {
-          name: 'জিপসাম ও দস্তা (Gypsum & Zinc)',
-          eng: 'Sulphur (S) & Zinc (Zn)',
-          kg: gypsumKg,
-          zinc: zincKg,
-          icon: 'fa-atom',
-          color: '#6A1B9A',
-          bg: '#F3E5F5',
+     
           role: 'সালফার ও জিংক পুষ্টি • পাতার হলদে রোগ দূর করে এবং শিষের দানা চিটা হওয়া প্রতিরোধ করে।',
           stage: 'জমি তৈরির শেষ চাষে পুরোটা প্রয়োগ করুন'
         },
@@ -9564,15 +9586,59 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     // ==========================================
-    // ১. ইন্টারেক্টিভ লগইন লোডিং পপ-আপ কন্ট্রোলার
+    // ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং ও স্টেট ট্রানজিশন কন্ট্রোলার
     // ==========================================
-    function showLoginLoadingDialog(title = 'লগইন হচ্ছে...', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
+    function showLoginLoadingDialog() {
       const o = document.getElementById('loginLoadingOverlay');
       if (o) {
-        const titleEl = o.querySelector('div > div > div:first-child');
-        const subEl = o.querySelector('div > div > div:last-child');
-        if (titleEl) titleEl.textContent = title;
-        if (subEl) subEl.textContent = subtitle;
+        const l = document.getElementById('loginStateLoading');
+        const s = document.getElementById('loginStateSuccess');
+        const f = document.getElementById('loginStateFailure');
+        if (l) l.style.display = 'flex';
+        if (s) s.style.display = 'none';
+        if (f) f.style.display = 'none';
+        o.style.display = 'flex';
+      }
+    }
+
+    function showLoginSuccessDialog(title = 'লগইন সফল হয়েছে!', msg = 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', onDone) {
+      const o = document.getElementById('loginLoadingOverlay');
+      if (o) {
+        const l = document.getElementById('loginStateLoading');
+        const s = document.getElementById('loginStateSuccess');
+        const f = document.getElementById('loginStateFailure');
+        if (l) l.style.display = 'none';
+        if (f) f.style.display = 'none';
+        if (s) {
+          const tEl = document.getElementById('loginSuccessTitle');
+          const mEl = document.getElementById('loginSuccessMsg');
+          if (tEl) tEl.textContent = title;
+          if (mEl) mEl.textContent = msg;
+          s.style.display = 'flex';
+        }
+        o.style.display = 'flex';
+        setTimeout(() => {
+          hideLoginLoadingDialog();
+          if (onDone) onDone();
+        }, 1300);
+      }
+    }
+
+    function showLoginFailureDialog(title = 'লগইন ব্যর্থ হয়েছে!', msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!') {
+      const o = document.getElementById('loginLoadingOverlay');
+      if (o) {
+        const l = document.getElementById('loginStateLoading');
+        const s = document.getElementById('loginStateSuccess');
+        const f = document.getElementById('loginStateFailure');
+        if (l) l.style.display = 'none';
+        if (s) s.style.display = 'none';
+        if (f) {
+          const tEl = document.getElementById('loginFailTitle');
+          const mEl = document.getElementById('loginFailMsg');
+          if (tEl) tEl.textContent = title;
+          if (mEl) mEl.textContent = msg;
+          f.style.display = 'flex';
+        }
         o.style.display = 'flex';
       }
     }
@@ -9615,9 +9681,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (atIdx <= 1) return clean;
       const name = clean.substring(0, atIdx);
       const domain = clean.substring(atIdx);
-      if (name.length <= 2) return name[0] + '****' + domain;
-      if (name.length <= 4) return name[0] + '****' + name[name.length - 1] + domain;
-      return name.substring(0, 2) + '****' + name[name.length - 1] + domain;
+      if (name.length > 7) {
+        return name.substring(0, 3) + '****' + name.substring(name.length - 4) + domain;
+      } else if (name.length > 4) {
+        return name.substring(0, 2) + '****' + name.substring(name.length - 2) + domain;
+      } else if (name.length > 2) {
+        return name[0] + '****' + name[name.length - 1] + domain;
+      }
+      return name[0] + '****' + domain;
     }
 
     async function searchGmailByPhoneWeb() {
@@ -9897,8 +9968,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
 
           if (!foundUser || !targetEmail) {
-            hideLoginLoadingDialog();
-            showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
             return;
           }
         }
@@ -9932,29 +10002,27 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             }
           } catch (authErr) {
             console.warn('Firebase auth failed:', authErr);
-            hideLoginLoadingDialog();
             const errCode = authErr.code || '';
+            let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
             if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+              msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!';
             } else if (errCode === 'auth/user-not-found') {
-              showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+              msg = isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
             } else if (errCode === 'auth/invalid-email') {
-              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+              msg = 'জিমেইল এড্রেসটি সঠিক নয়!';
             } else if (errCode === 'auth/network-request-failed') {
-              showWarningDialog('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+              msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
             } else if (errCode === 'auth/too-many-requests') {
-              showWarningDialog('অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+              msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
             } else if (errCode === 'auth/user-disabled') {
-              showWarningDialog('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।', 'ব্যর্থ হয়েছে!');
-            } else {
-              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+              msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
             }
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', msg);
             return;
           }
         } else {
           if (!foundUser) {
-            hideLoginLoadingDialog();
-            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
             return;
           }
         }
@@ -9963,8 +10031,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         closeModal('authModal');
         updateWebProfileHeader();
 
-        hideLoginLoadingDialog();
-        showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+        showLoginSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
           setTab('menu');
         });
       } finally {
@@ -10112,8 +10179,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
 
           if (!foundUser || !targetEmail) {
-            hideLoginLoadingDialog();
-            showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
             return;
           }
         }
@@ -10147,29 +10213,27 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             }
           } catch (authErr) {
             console.warn('Firebase auth failed:', authErr);
-            hideLoginLoadingDialog();
             const errCode = authErr.code || '';
+            let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
             if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+              msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!';
             } else if (errCode === 'auth/user-not-found') {
-              showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+              msg = isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
             } else if (errCode === 'auth/invalid-email') {
-              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+              msg = 'জিমেইল এড্রেসটি সঠিক নয়!';
             } else if (errCode === 'auth/network-request-failed') {
-              showWarningDialog('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+              msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
             } else if (errCode === 'auth/too-many-requests') {
-              showWarningDialog('অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+              msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
             } else if (errCode === 'auth/user-disabled') {
-              showWarningDialog('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।', 'ব্যর্থ হয়েছে!');
-            } else {
-              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+              msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
             }
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', msg);
             return;
           }
         } else {
           if (!foundUser) {
-            hideLoginLoadingDialog();
-            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
             return;
           }
         }
@@ -10177,12 +10241,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
         updateWebProfileHeader();
 
-        hideLoginLoadingDialog();
-        showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+        showLoginSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
           setTab('menu');
         });
-      } finally {
-        hideLoginLoadingDialog();
+      } catch (err) {
+        showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', err.message || 'অপ্রত্যাশিত ত্রুটি ঘটেছে!');
       }
     }
 

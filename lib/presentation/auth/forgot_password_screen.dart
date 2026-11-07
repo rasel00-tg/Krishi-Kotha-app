@@ -79,56 +79,67 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     FocusScope.of(context).unfocus();
 
-    // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর ডায়ালগ (Loading State Dialog)
+    // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর ডায়ালগ (Loading State Dialog: Overflow-Immune)
     bool isLoaderShowing = true;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) => PopScope(
         canPop: false,
-        child: Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          elevation: 6,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 22, vertical: 22),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
-                SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'যাচাই করা হচ্ছে...',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+        child: MediaQuery.withNoTextScaling(
+          child: Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 8,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
-                      SizedBox(height: 3),
-                      Text(
-                        'অনুগ্রহ করে অপেক্ষা করুন',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
-                        ),
+                    ),
+                    const SizedBox(width: 16),
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'যাচাই করা হচ্ছে...',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'অনুগ্রহ করে অপেক্ষা করুন',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -533,7 +544,7 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
     super.dispose();
   }
 
-  // ইমেইলের মাঝখানের ৪-৫টি অক্ষর মাস্কিং (****) করা
+  // ইমেইলের প্রথম ৩টি ও শেষের ৪টি অক্ষর দৃশ্যমান রেখে মাঝখানের সমস্ত অক্ষর মাস্কিং (****) করা
   String _maskEmail(String email) {
     final clean = email.trim().toLowerCase();
     final atIndex = clean.indexOf('@');
@@ -541,14 +552,18 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
     final namePart = clean.substring(0, atIndex);
     final domainPart = clean.substring(atIndex);
 
-    if (namePart.length <= 2) {
-      return '${namePart[0]}****$domainPart';
-    } else if (namePart.length <= 4) {
+    if (namePart.length > 7) {
+      final prefix = namePart.substring(0, 3);
+      final suffix = namePart.substring(namePart.length - 4);
+      return '$prefix****$suffix$domainPart';
+    } else if (namePart.length > 4) {
+      final prefix = namePart.substring(0, 2);
+      final suffix = namePart.substring(namePart.length - 2);
+      return '$prefix****$suffix$domainPart';
+    } else if (namePart.length > 2) {
       return '${namePart[0]}****${namePart[namePart.length - 1]}$domainPart';
     } else {
-      final prefix = namePart.substring(0, 2);
-      final suffix = namePart.substring(namePart.length - 1);
-      return '$prefix****$suffix$domainPart';
+      return '${namePart[0]}****$domainPart';
     }
   }
 
@@ -721,13 +736,13 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 10,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
+        constraints: const BoxConstraints(maxWidth: 460),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -875,67 +890,101 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
                 ),
               ],
 
-              // Found Email Result Box
+              // Found Email Result Box (Modern, Spacious & Encrypted Verification Badge)
               if (_foundFullEmail != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F8F1),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: const Color(0xFFA5D6A7), width: 1.2),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 18),
-                          SizedBox(width: 6),
+                          Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 19),
+                          SizedBox(width: 8),
                           Text(
                             'নিবন্ধিত জিমেইল পাওয়া গেছে:',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF1B5E20),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0xFFC8E6C9)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.email_outlined, color: AppColors.primary, size: 18),
-                            const SizedBox(width: 8),
+                            const Icon(Icons.email_outlined, color: AppColors.primary, size: 20),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 _maskedEmail ?? '',
                                 style: const TextStyle(
-                                  fontSize: 15.5,
+                                  fontSize: 16.5,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF1B5E20),
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.6,
                                 ),
                               ),
                             ),
-                            const Icon(Icons.lock_outline_rounded, color: AppColors.textMuted, size: 16),
+                            const Icon(Icons.lock_rounded, color: Color(0xFF2E7D32), size: 18),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
+                      // আধুনিক ও প্রফেশনাল ব্যাজ/ইনফো ট্যাগ
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFA5D6A7)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('🔒', style: TextStyle(fontSize: 12)),
+                            SizedBox(width: 5),
+                            Text(
+                              'এনক্রিপ্টেড অ্যাকাউন্ট ভেরিফিকেশন',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B5E20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 7),
                       const Text(
-                        'নিরাপত্তার স্বার্থে ইমেইলের মাঝের অক্ষরগুলো গোপন রাখা হয়েছে।',
+                        'আপনার নিবন্ধিত ইমেইলটি শনাক্ত করা হয়েছে। পাসওয়ার্ড পুনরুদ্ধারে এগিয়ে যান।',
                         style: TextStyle(
-                          fontSize: 11.5,
-                          color: AppColors.textSecondary,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF2E7D32),
+                          height: 1.35,
                         ),
                       ),
                     ],

@@ -178,58 +178,24 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       }
     } catch (_) {}
 
-    // ১. ইন্টারেক্টিভ নন-ডিসমিসিবল কাস্টম লোডিং ডায়ালগ (Login Loading Dialog)
-    bool isLoaderShowing = true;
+    // ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং ও স্টেট ট্রানজিশন পপ-আপ
+    final dialogKey = GlobalKey<_LoginStateDialogState>();
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) => PopScope(
         canPop: false,
-        child: Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          elevation: 6,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 22, vertical: 22),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
-                SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'লগইন হচ্ছে...',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'অনুগ্রহ করে অপেক্ষা করুন',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: _LoginStateDialog(
+          key: dialogKey,
+          onSuccessComplete: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const MainNavigationScreen(initialIndex: 4),
+              ),
+              (route) => false,
+            );
+          },
         ),
       ),
     );
@@ -262,36 +228,19 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       }
     } catch (e) {
       explicitErrorMessage = e.toString().replaceFirst('Exception: ', '');
-    } finally {
-      // লোডিং ডায়ালগ সাথে সাথে ডিসমিস/পপ নিশ্চিত করা
-      if (isLoaderShowing && mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        isLoaderShowing = false;
-      }
     }
 
     if (!mounted) return;
 
     if (success) {
-      showAppSuccessDialog(
-        context,
+      dialogKey.currentState?.showSuccess(
         title: 'লগইন সফল হয়েছে!',
         message: 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।',
-        onConfirm: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const MainNavigationScreen(initialIndex: 4),
-            ),
-            (route) => false,
-          );
-        },
       );
     } else {
       final msg = explicitErrorMessage ?? authProvider.errorMessage ?? 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
+      dialogKey.currentState?.showFailure(
+        title: 'লগইন ব্যর্থ হয়েছে!',
         message: msg,
       );
     }
@@ -908,5 +857,274 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         ),
       ),
     );
+  }
+}
+
+/// ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং ও স্টেট ট্রানজিশন পপ-আপ
+enum _LoginDialogStatus { loading, success, failure }
+
+class _LoginStateDialog extends StatefulWidget {
+  final VoidCallback? onSuccessComplete;
+
+  const _LoginStateDialog({super.key, this.onSuccessComplete});
+
+  @override
+  State<_LoginStateDialog> createState() => _LoginStateDialogState();
+}
+
+class _LoginStateDialogState extends State<_LoginStateDialog> with SingleTickerProviderStateMixin {
+  _LoginDialogStatus _status = _LoginDialogStatus.loading;
+  String _message = 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।';
+  String _title = 'লগইন সফল হয়েছে!';
+
+  late AnimationController _rotationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  void showSuccess({String title = 'লগইন সফল হয়েছে!', String message = 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।'}) {
+    if (!mounted) return;
+    setState(() {
+      _status = _LoginDialogStatus.success;
+      _title = title;
+      _message = message;
+    });
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        widget.onSuccessComplete?.call();
+      }
+    });
+  }
+
+  void showFailure({String title = 'লগইন ব্যর্থ হয়েছে!', required String message}) {
+    if (!mounted) return;
+    setState(() {
+      _status = _LoginDialogStatus.failure;
+      _title = title;
+      _message = message;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MediaQuery.withNoTextScaling(
+      child: Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 12,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: _buildCurrentState(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrentState() {
+    switch (_status) {
+      case _LoginDialogStatus.loading:
+        return Column(
+          key: const ValueKey('loading_state'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Centered App Logo surrounded by spinning ring
+            SizedBox(
+              width: 96,
+              height: 96,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  RotationTransition(
+                    turns: _rotationController,
+                    child: Container(
+                      width: 96,
+                      height: 96,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 3.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        backgroundColor: Color(0xFFE8F5E9),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Image.asset(
+                      'assets/icons/pnglogo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.eco_rounded,
+                        color: AppColors.primary,
+                        size: 48,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'লগইন হচ্ছে....',
+              style: TextStyle(
+                fontSize: 16.5,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'অনুগ্রহ করে অপেক্ষা করুন',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        );
+
+      case _LoginDialogStatus.success:
+        return Column(
+          key: const ValueKey('success_state'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE8F5E9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Color(0xFF2E7D32),
+                size: 44,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1B5E20),
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: AppColors.textSecondary,
+                height: 1.35,
+              ),
+            ),
+          ],
+        );
+
+      case _LoginDialogStatus.failure:
+        return Column(
+          key: const ValueKey('failure_state'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFEBEE),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.close_rounded,
+                color: Color(0xFFD32F2F),
+                size: 42,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD32F2F),
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: AppColors.textPrimary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD32F2F),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.refresh_rounded, size: 18),
+                    SizedBox(width: 6),
+                    Text(
+                      'আবার চেষ্টা করুন',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+    }
   }
 }
