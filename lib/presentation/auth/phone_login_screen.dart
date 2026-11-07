@@ -982,22 +982,21 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          InkWell(
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () {
-                              Navigator.push(
-                                context,
+                              Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => const PrivacyPolicyScreen(),
                                 ),
                               );
                             },
-                            borderRadius: BorderRadius.circular(6),
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               child: Text(
-                                'গোপনীয়তা নীতি',
+                                'গোপনীয় নীতি',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 13.0,
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                   decoration: TextDecoration.underline,

@@ -61,8 +61,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     // ১. জিমেইল ফরম্যাট ভ্যালিডেশন
     if (email.isEmpty) {
-      showAppWarningDialog(
+      showAppFailureDialog(
         context,
+        title: 'তথ্য অসম্পূর্ণ',
         message: 'অনুগ্রহ করে আপনার নিবন্ধিত @gmail.com জিমেইল এড্রেসটি লিখুন!',
       );
       return;
@@ -70,8 +71,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     if (!email.endsWith('@gmail.com') ||
         !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', caseSensitive: false).hasMatch(email)) {
-      showAppWarningDialog(
+      showAppFailureDialog(
         context,
+        title: 'ভুল ফরম্যাট',
         message: 'শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!',
       );
       return;
@@ -265,9 +267,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         },
       );
     } else if (explicitErrorMessage != null) {
-      showAppWarningDialog(
+      showAppFailureDialog(
         context,
-        title: explicitErrorTitle ?? 'সতর্কবার্তা',
+        title: explicitErrorTitle ?? 'ব্যর্থ হয়েছে!',
         message: explicitErrorMessage,
       );
     }
@@ -750,10 +752,10 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
       } else if (e.code == 'network-request-failed') {
         errMsg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
       }
-      showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: errMsg);
+      showAppFailureDialog(context, title: 'ব্যর্থ হয়েছে!', message: errMsg);
     } catch (e) {
       if (!context.mounted) return;
-      showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: 'ত্রুটি ঘটেছে: $e');
+      showAppFailureDialog(context, title: 'ব্যর্থ হয়েছে!', message: 'ত্রুটি ঘটেছে: $e');
     } finally {
       if (mounted) {
         setState(() => _isSendingReset = false);

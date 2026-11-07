@@ -2881,7 +2881,7 @@
 
           <div style="text-align: center; margin-top: 24px;">
             <p id="gatewayAppVersion" style="font-size: 12px; color: #9E9E9E; margin: 0 0 5px 0; font-weight: 500; letter-spacing: 0.2px;">ভার্সন ১.০.০</p>
-            <a href="javascript:void(0)" onclick="openPrivacyPage()" style="font-size: 12.5px; color: var(--primary); font-weight: 600; text-decoration: underline; cursor: pointer;">গোপনীয়তা নীতি</a>
+            <a href="javascript:void(0)" onclick="openPrivacyPage()" style="font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: underline; cursor: pointer; padding: 6px 12px; display: inline-block;">গোপনীয় নীতি</a>
           </div>
         </div>
       </div>
@@ -4027,12 +4027,28 @@
     <!-- DEDICATED PASSWORD RESET CATEGORY-BASED STEP LOADING DIALOG -->
     <div id="resetLoadingOverlay" onclick="if(event.target === this) hideResetStepDialog()" style="display: none; pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100021; align-items: center; justify-content: center;">
       <div id="resetDialogCard" style="background: white; border-radius: 24px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 12px 36px rgba(0,0,0,0.22); max-width: 320px; width: 85%;">
-        <div style="position: relative; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
-          <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-right-color: #1B5E20; animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; box-shadow: 0 0 12px rgba(46,125,50,0.25);"></div>
-          <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
+        <!-- STEP LOADING -->
+        <div id="resetStateLoading" style="display: flex; flex-direction: column; align-items: center;">
+          <div style="position: relative; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-right-color: #1B5E20; animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; box-shadow: 0 0 12px rgba(46,125,50,0.25);"></div>
+            <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
+          </div>
+          <div id="resetLoadingTitle" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">তথ্য যাচাই করা হচ্ছে.....</div>
+          <div id="resetLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
         </div>
-        <div id="resetLoadingTitle" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">তথ্য যাচাই করা হচ্ছে.....</div>
-        <div id="resetLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
+
+        <!-- FAILURE STATE WITH ANIMATED RED CROSS (✗) -->
+        <div id="resetStateFailure" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 16px; animation: popIn 0.3s ease;">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+          <div id="resetFailTitle" style="font-size: 18px; font-weight: 800; color: #D32F2F; margin-bottom: 6px;">ব্যর্থ হয়েছে!</div>
+          <div id="resetFailMsg" style="font-size: 13.5px; color: var(--text-primary); line-height: 1.4; margin-bottom: 18px; word-break: break-word;">এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি।</div>
+          <button type="button" onclick="hideResetStepDialog()" style="width: 100%; height: 44px; border-radius: 12px; border: none; background: #D32F2F; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-arrow-rotate-right"></i>
+            <span>আবার চেষ্টা করুন</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -9672,10 +9688,30 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function showResetStepDialog(title = 'তথ্য যাচাই করা হচ্ছে.....', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
       const o = document.getElementById('resetLoadingOverlay');
       if (o) {
+        const l = document.getElementById('resetStateLoading');
+        const f = document.getElementById('resetStateFailure');
+        if (l) l.style.display = 'flex';
+        if (f) f.style.display = 'none';
         const tEl = document.getElementById('resetLoadingTitle');
         const sEl = document.getElementById('resetLoadingSubtitle');
         if (tEl) tEl.textContent = title;
         if (sEl) sEl.textContent = subtitle;
+        o.style.setProperty('display', 'flex', 'important');
+        o.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function showResetFailureDialog(title = 'ব্যর্থ হয়েছে!', msg = 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি।') {
+      const o = document.getElementById('resetLoadingOverlay');
+      if (o) {
+        const l = document.getElementById('resetStateLoading');
+        const f = document.getElementById('resetStateFailure');
+        const tEl = document.getElementById('resetFailTitle');
+        const mEl = document.getElementById('resetFailMsg');
+        if (l) l.style.display = 'none';
+        if (tEl) tEl.textContent = title;
+        if (mEl) mEl.textContent = msg;
+        if (f) f.style.display = 'flex';
         o.style.setProperty('display', 'flex', 'important');
         o.style.setProperty('pointer-events', 'auto', 'important');
       }
@@ -9893,7 +9929,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       // ১. জিমেইল ফরম্যাট ভ্যালিডেশন
       if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
-        showWarningDialog('শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!', 'সতর্কতা');
+        showResetFailureDialog('ভুল ফরম্যাট', 'শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!');
         return;
       }
 
@@ -9922,6 +9958,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             title: 'একাউন্ট পাওয়া যায়নি!',
             msg: 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা মোবাইল নম্বর দিয়ে খুঁজে নিন।'
           };
+          showResetFailureDialog(explicitError.title, explicitError.msg);
           return;
         }
 
@@ -9943,6 +9980,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               title: 'রিকোয়েস্ট বাতিল করা হয়েছে',
               msg: 'রিকোয়েস্ট বাতিল করা হয়েছে। আপনি প্রতি ঘণ্টায় ১ বার রিকোয়েস্ট পাঠাতে পারবেন। পুনরায় চেষ্টা করতে আর ' + toBangla(rem) + ' মিনিট অপেক্ষা করুন।'
             };
+            showResetFailureDialog(explicitError.title, explicitError.msg);
             return;
           }
         }
@@ -9977,16 +10015,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           errMsg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
         }
         explicitError = { title: 'ব্যর্থ হয়েছে!', msg: errMsg };
-      } finally {
-        hideResetStepDialog();
+        showResetFailureDialog(explicitError.title, explicitError.msg);
       }
 
       if (isSuccess) {
         // গ) সফল হলে: সবুজ অ্যানিমেটেড টিক (✓) চিহ্নসহ সাকসেস পপ-আপ
+        hideResetStepDialog();
         closeForgotPasswordPage();
         showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে আপনার ইমেইলে পাঠানো হয়েছে।');
-      } else if (explicitError) {
-        showWarningDialog(explicitError.msg, explicitError.title);
       }
     }
 
@@ -10511,14 +10547,18 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const page = document.getElementById('privacyPage');
       if (page) {
         page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
         window.history.pushState({ page: 'privacy' }, '');
       }
     }
 
     function closePrivacyPage() {
       const page = document.getElementById('privacyPage');
-      if (page && page.classList.contains('active')) {
+      if (page) {
         page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
       }
     }
 
