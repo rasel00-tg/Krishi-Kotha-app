@@ -490,4 +490,58 @@ class AdminFirestoreService {
       throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
     }
   }
+
+  // ==================== 8. APP SETTINGS & PRIVACY POLICY ====================
+  /// Real-time stream of privacy policy settings document
+  Stream<AdminPrivacyPolicyModel> getPrivacyPolicyStream() {
+    final db = _db;
+    if (db != null) {
+      return db
+          .collection('settings')
+          .doc('privacy_policy')
+          .snapshots()
+          .handleError((error) {
+            debugPrint('Privacy policy stream notice: ${AdminErrorHandler.getFriendlyErrorMessage(error)}');
+          })
+          .map((snapshot) {
+            if (!snapshot.exists || snapshot.data() == null) {
+              return AdminPrivacyPolicyModel.defaultPolicy();
+            }
+            return AdminPrivacyPolicyModel.fromMap(snapshot.data());
+          });
+    }
+    return Stream.value(AdminPrivacyPolicyModel.defaultPolicy());
+  }
+
+  /// Update privacy policy in Firestore settings collection
+  Future<void> updatePrivacyPolicy({
+    required String content,
+    String? bannerText,
+    String? lastUpdated,
+    String updatedBy = 'এডমিন',
+  }) async {
+    final db = _db;
+    if (db == null) {
+      throw Exception('ফায়ারবেস ডেটাবেজ সংযুক্ত নেই।');
+    }
+
+    try {
+      final data = <String, dynamic>{
+        'policy_content': content.trim(),
+        'updated_at': FieldValue.serverTimestamp(),
+        'updated_by': updatedBy,
+      };
+
+      if (bannerText != null && bannerText.trim().isNotEmpty) {
+        data['banner_text'] = bannerText.trim();
+      }
+      if (lastUpdated != null && lastUpdated.trim().isNotEmpty) {
+        data['last_updated'] = lastUpdated.trim();
+      }
+
+      await db.collection('settings').doc('privacy_policy').set(data, SetOptions(merge: true));
+    } catch (e) {
+      throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
+    }
+  }
 }

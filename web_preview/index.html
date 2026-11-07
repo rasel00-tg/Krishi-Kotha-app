@@ -2956,8 +2956,8 @@
           ডকুমেন্ট</span>
       </div>
 
-      <!-- Document Scrollable Body -->
-      <div style="flex: 1; overflow-y: auto; padding: 24px 18px 48px 18px;">
+      <!-- Document Scrollable Body (Generous 140px bottom padding eliminates navbar overlap) -->
+      <div id="privacyScrollContainer" style="flex: 1; overflow-y: auto; padding: 24px 18px 140px 18px; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;">
         <div style="max-width: 760px; margin: 0 auto;">
           <!-- Header with Center Logo -->
           <div style="text-align: center; margin-bottom: 24px;">
@@ -2968,7 +2968,7 @@
             <h1
               style="font-size: 21px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-bottom: 6px;">
               কৃষি কথা – গোপনীয়তা ও সুরক্ষা নীতিমালা</h1>
-            <p style="font-size: 12.5px; color: var(--text-muted); font-weight: 500;">সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ •
+            <p id="privacyLastUpdated" style="font-size: 12.5px; color: var(--text-muted); font-weight: 500;">সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ •
               সংস্করণ ১.০.০</p>
           </div>
 
@@ -2979,99 +2979,101 @@
             <div>
               <h4 style="font-size: 15px; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px;">কৃষকের
                 তথ্যের পূর্ণ নিরাপত্তা ও সুরক্ষা</h4>
-              <p style="font-size: 12.5px; color: #2E7D32; line-height: 1.45;">কৃষি কথা অ্যাপ কৃষকদের আস্থার
+              <p id="privacyBannerText" style="font-size: 12.5px; color: #2E7D32; line-height: 1.45;">কৃষি কথা অ্যাপ কৃষকদের আস্থার
                 প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা
                 শেয়ার করা হয় না।</p>
             </div>
           </div>
 
-          <!-- 5 Web-style Policy Sections -->
-          <!-- Section 1 -->
-          <div class="policy-doc-card">
-            <div class="policy-header">
-              <div class="policy-icon" style="background: #E3F2FD; color: #1565C0;"><i
-                  class="fa-solid fa-clipboard-list"></i></div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">১. সংগৃহীত তথ্যাবলী</h3>
-            </div>
-            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">কৃষকদের
-              সঠিক পরামর্শ ও স্থানীয় সেবা প্রদানের জন্য অ্যাপে নিম্নলিখিত তথ্যগুলো সংগ্রহ করা হয়:</p>
-            <ul class="policy-bullets">
-              <li><strong>ব্যবহারকারীর নাম:</strong> কৃষককে ব্যক্তিগতভাবে সঠিক সম্বোধন ও প্রোফাইল শনাক্তকরণের জন্য।</li>
-              <li><strong>মোবাইল নম্বর:</strong> ওটিপি (OTP) কোড যাচাইয়ের মাধ্যমে অ্যাকাউন্ট নিরাপত্তা ও সরাসরি
-                যোগাযোগের জন্য।</li>
-              <li><strong>লোকেশন (জেলা ও উপজেলা):</strong> স্থানীয় সঠিক আবহাওয়া পূর্বাভাস ও মোকামের বাজার দর দেখানোর
-                জন্য।</li>
-              <li><strong>পছন্দের ফসল:</strong> কৃষকের চাষকৃত ফসল অনুযায়ী উপযুক্ত সার ও বালাইনাশকের সময়োপযোগী নির্দেশনা
-                দিতে।</li>
-            </ul>
-          </div>
-
-          <!-- Section 2 -->
-          <div class="policy-doc-card">
-            <div class="policy-header">
-              <div class="policy-icon" style="background: #E8F5E9; color: #2E7D32;"><i class="fa-solid fa-sliders"></i>
+          <!-- Dynamic or Default Policy Sections Container -->
+          <div id="privacySectionsContainer">
+            <!-- Section 1 -->
+            <div class="policy-doc-card">
+              <div class="policy-header">
+                <div class="policy-icon" style="background: #E3F2FD; color: #1565C0;"><i
+                    class="fa-solid fa-clipboard-list"></i></div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">১. সংগৃহীত তথ্যাবলী</h3>
               </div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">২. তথ্যের ব্যবহার</h3>
+              <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">কৃষকদের
+                সঠিক পরামর্শ ও স্থানীয় সেবা প্রদানের জন্য অ্যাপে নিম্নলিখিত তথ্যগুলো সংগ্রহ করা হয়:</p>
+              <ul class="policy-bullets">
+                <li><strong>ব্যবহারকারীর নাম:</strong> কৃষককে ব্যক্তিগতভাবে সঠিক সম্বোধন ও প্রোফাইল শনাক্তকরণের জন্য।</li>
+                <li><strong>মোবাইল নম্বর:</strong> ওটিপি (OTP) কোড যাচাইয়ের মাধ্যমে অ্যাকাউন্ট নিরাপত্তা ও সরাসরি
+                  যোগাযোগের জন্য।</li>
+                <li><strong>লোকেশন (জেলা ও উপজেলা):</strong> স্থানীয় সঠিক আবহাওয়া পূর্বাভাস ও মোকামের বাজার দর দেখানোর
+                  জন্য।</li>
+                <li><strong>পছন্দের ফসল:</strong> কৃষকের চাষকৃত ফসল অনুযায়ী উপযুক্ত সার ও বালাইনাশকের সময়োপযোগী নির্দেশনা
+                  দিতে।</li>
+              </ul>
             </div>
-            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">সংগৃহীত
-              তথ্য কেবলমাত্র কৃষক কল্যাণ ও অ্যাপের কার্যকারিতা বৃদ্ধির উদ্দেশ্যে ব্যবহৃত হয়:</p>
-            <ul class="policy-bullets">
-              <li>জরুরি দুর্যোগ ও কালবৈশাখী ঝড়ের আবহাওয়ার তাৎক্ষণিক পুশ নোটিফিকেশন প্রদান।</li>
-              <li>জমি ও শতক অনুযায়ী ইউরিয়া, টিএসপি, এমওপি সারের সঠিক পরিমাণ হিসাব করা।</li>
-              <li>কৃষি কল সেন্টার ১৬১২৩ এবং উপজেলা কৃষি কর্মকর্তাদের সহায়তার সাথে সরাসরি যুক্ত করা।</li>
-              <li>অ্যাপের ব্যবহারবান্ধব অভিজ্ঞতা নিশ্চিত ও সমস্যা সমাধানে প্রযুক্তিগত উন্নয়ন।</li>
-            </ul>
-          </div>
 
-          <!-- Section 3 -->
-          <div class="policy-doc-card">
-            <div class="policy-header">
-              <div class="policy-icon" style="background: #FFF3E0; color: #E65100;"><i
-                  class="fa-solid fa-user-shield"></i></div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৩. তথ্যের সুরক্ষা ও গোপনীয়তা
-              </h3>
-            </div>
-            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">আমরা কঠোর
-              তথ্যের গোপনীয়তা নীতি মেনে চলি এবং ব্যবহারকারীর ডাটা সুরক্ষায় প্রতিশ্রুতিবদ্ধ:</p>
-            <ul class="policy-bullets">
-              <li>আপনার ডেটা কখনো বিজ্ঞাপন সংস্থা বা বাণিজ্যিক তৃতীয় পক্ষের কাছে হস্তান্তর করা হয় না।</li>
-              <li>অ্যাপের ব্যাকগ্রাউন্ডে কোনো অপ্রয়োজনীয় ক্যামেরা, কল বা অবস্থান ট্র্যাকিং চালানো হয় না।</li>
-              <li>ব্যবহারকারী যেকোনো সময় তার প্রোফাইল তথ্য হালনাগাদ বা পরিবর্তন করতে পারেন।</li>
-            </ul>
-          </div>
-
-          <!-- Section 4 -->
-          <div class="policy-doc-card">
-            <div class="policy-header">
-              <div class="policy-icon" style="background: #F3E5F5; color: #7B1FA2;"><i
-                  class="fa-solid fa-cloud-arrow-up"></i></div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৪. ফায়ারবেস ও ক্লাউড সিকিউরিটি
-              </h3>
-            </div>
-            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">কৃষি কথা
-              অ্যাপের সমস্ত রিয়েল-টাইম তথ্য ও অ্যাকাউন্ট গুগল ফায়ারবেস (Firebase Cloud) প্ল্যাটফর্মে পরিচালিত:</p>
-            <ul class="policy-bullets">
-              <li>Firebase Authentication এর মাধ্যমে নিরাপদ ও এনক্রিপ্টেড ফোন ভেরিফিকেশন ব্যবস্থা।</li>
-              <li>Cloud Firestore ডেটাবেসের সিকিউরিটি রুলস দ্বারা ডেটা অ্যাক্সেস কঠোরভাবে নিয়ন্ত্রিত।</li>
-              <li>ইন্টারনেট সংযোগ সাময়িক বিচ্ছিন্ন থাকলেও লোকাল অফলাইন ক্যাশিং সুরক্ষার সাথে সংরক্ষিত থাকে।</li>
-            </ul>
-          </div>
-
-          <!-- Section 5 -->
-          <div class="policy-doc-card">
-            <div class="policy-header">
-              <div class="policy-icon" style="background: #E0F2F1; color: #00897B;"><i class="fa-solid fa-headset"></i>
+            <!-- Section 2 -->
+            <div class="policy-doc-card">
+              <div class="policy-header">
+                <div class="policy-icon" style="background: #E8F5E9; color: #2E7D32;"><i class="fa-solid fa-sliders"></i>
+                </div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">২. তথ্যের ব্যবহার</h3>
               </div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৫. যোগাযোগ ও অভিযোগ প্রতিকার
-              </h3>
+              <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">সংগৃহীত
+                তথ্য কেবলমাত্র কৃষক কল্যাণ ও অ্যাপের কার্যকারিতা বৃদ্ধির উদ্দেশ্যে ব্যবহৃত হয়:</p>
+              <ul class="policy-bullets">
+                <li>জরুরি দুর্যোগ ও কালবৈশাখী ঝড়ের আবহাওয়ার তাৎক্ষণিক পুশ নোটিফিকেশন প্রদান।</li>
+                <li>জমি ও শতক অনুযায়ী ইউরিয়া, টিএসপি, এমওপি সারের সঠিক পরিমাণ হিসাব করা।</li>
+                <li>কৃষি কল সেন্টার ১৬১২৩ এবং উপজেলা কৃষি কর্মকর্তাদের সহায়তার সাথে সরাসরি যুক্ত করা।</li>
+                <li>অ্যাপের ব্যবহারবান্ধব অভিজ্ঞতা নিশ্চিত ও সমস্যা সমাধানে প্রযুক্তিগত উন্নয়ন।</li>
+              </ul>
             </div>
-            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">গোপনীয়তা
-              নীতিমালা বা তথ্যের নিরাপত্তা সংক্রান্ত যেকোনো প্রশ্ন বা অভিযোগের ক্ষেত্রে আমাদের সাথে যোগাযোগ করুন:</p>
-            <ul class="policy-bullets">
-              <li><strong>টোল-ফ্রি হেল্পলাইন:</strong> ১৬১২৩ (সরাসরি কৃষি কল সেন্টার, সকাল ৯টা - বিকাল ৫টা)</li>
-              <li><strong>ইমেইল সাপোর্ট:</strong> support@krishikotha.gov.bd / krishikotha.app@gmail.com</li>
-              <li><strong>অফিসিয়াল ঠিকানা:</strong> কৃষি সম্প্রসারণ অধিদপ্তর (DAE), খামারবাড়ি, ঢাকা, বাংলাদেশ</li>
-            </ul>
+
+            <!-- Section 3 -->
+            <div class="policy-doc-card">
+              <div class="policy-header">
+                <div class="policy-icon" style="background: #FFF3E0; color: #E65100;"><i
+                    class="fa-solid fa-user-shield"></i></div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৩. তথ্যের সুরক্ষা ও গোপনীয়তা
+                </h3>
+              </div>
+              <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">আমরা কঠোর
+                তথ্যের গোপনীয়তা নীতি মেনে চলি এবং ব্যবহারকারীর ডাটা সুরক্ষায় প্রতিশ্রুতিবদ্ধ:</p>
+              <ul class="policy-bullets">
+                <li>আপনার ডেটা কখনো বিজ্ঞাপন সংস্থা বা বাণিজ্যিক তৃতীয় পক্ষের কাছে হস্তান্তর করা হয় না।</li>
+                <li>অ্যাপের ব্যাকগ্রাউন্ডে কোনো অপ্রয়োজনীয় ক্যামেরা, কল বা অবস্থান ট্র্যাকিং চালানো হয় না।</li>
+                <li>ব্যবহারকারী যেকোনো সময় তার প্রোফাইল তথ্য হালনাগাদ বা পরিবর্তন করতে পারেন।</li>
+              </ul>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="policy-doc-card">
+              <div class="policy-header">
+                <div class="policy-icon" style="background: #F3E5F5; color: #7B1FA2;"><i
+                    class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৪. ফায়ারবেস ও ক্লাউড সিকিউরিটি
+                </h3>
+              </div>
+              <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">কৃষি কথা
+                অ্যাপের সমস্ত রিয়েল-টাইম তথ্য ও অ্যাকাউন্ট গুগল ফায়ারবেস (Firebase Cloud) প্ল্যাটফর্মে পরিচালিত:</p>
+              <ul class="policy-bullets">
+                <li>Firebase Authentication এর মাধ্যমে নিরাপদ ও এনক্রিপ্টেড ফোন ভেরিফিকেশন ব্যবস্থা।</li>
+                <li>Cloud Firestore ডেটাবেসের সিকিউরিটি রুলস দ্বারা ডেটা অ্যাক্সেস কঠোরভাবে নিয়ন্ত্রিত।</li>
+                <li>ইন্টারনেট সংযোগ সাময়িক বিচ্ছিন্ন থাকলেও লোকাল অফলাইন ক্যাশিং সুরক্ষার সাথে সংরক্ষিত থাকে।</li>
+              </ul>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="policy-doc-card">
+              <div class="policy-header">
+                <div class="policy-icon" style="background: #E0F2F1; color: #00897B;"><i class="fa-solid fa-headset"></i>
+                </div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">৫. যোগাযোগ ও অভিযোগ প্রতিকার
+                </h3>
+              </div>
+              <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">গোপনীয়তা
+                নীতিমালা বা তথ্যের নিরাপত্তা সংক্রান্ত যেকোনো প্রশ্ন বা অভিযোগের ক্ষেত্রে আমাদের সাথে যোগাযোগ করুন:</p>
+              <ul class="policy-bullets">
+                <li><strong>টোল-ফ্রি হেল্পলাইন:</strong> ১৬১২৩ (সরাসরি কৃষি কল সেন্টার, সকাল ৯টা - বিকাল ৫টা)</li>
+                <li><strong>ইমেইল সাপোর্ট:</strong> support@krishikotha.gov.bd / krishikotha.app@gmail.com</li>
+                <li><strong>অফিসিয়াল ঠিকানা:</strong> কৃষি সম্প্রসারণ অধিদপ্তর (DAE), খামারবাড়ি, ঢাকা, বাংলাদেশ</li>
+              </ul>
+            </div>
           </div>
 
           <!-- Footer Box -->
@@ -3081,6 +3083,11 @@
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">স্মার্ট কৃষিতে কৃষকের সাথে সবসময় •
               কপিরাইট © ২০২৬ সর্বস্বত্ব সংরক্ষিত</p>
           </div>
+
+          <!-- Extra bottom spacer for smooth scrolling above floating nav -->
+          <div style="height: 60px;"></div>
+        </div>
+      </div>
         </div>
       </div>
     </div>
@@ -11978,6 +11985,120 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           renderCommunityPosts();
         }
       }, err => console.warn('Community posts sync note:', err));
+
+      // 6. Live Privacy Policy Realtime Sync
+      try {
+        db.collection('settings').doc('privacy_policy').onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const d = doc.data() || {};
+            renderLivePrivacyPolicy(d);
+          }
+        }, err => console.warn('Privacy policy sync note:', err));
+      } catch (ppErr) {
+        console.warn('Privacy policy listener init note:', ppErr);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderLivePrivacyPolicy(data) {
+      if (!data) return;
+
+      const lu = data.last_updated || 'সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ • সংস্করণ ১.০.০';
+      const bt = data.banner_text || 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
+      const pc = data.policy_content;
+
+      const luEl = document.getElementById('privacyLastUpdated');
+      const btEl = document.getElementById('privacyBannerText');
+      const secContainer = document.getElementById('privacySectionsContainer');
+
+      if (luEl) luEl.innerText = lu;
+      if (btEl) btEl.innerText = bt;
+
+      if (!pc || !pc.trim() || !secContainer) return;
+
+      const sectionRegex = /(?:^|\n)(?=([০-৯\d]+[\.\)]\s*))/g;
+      const rawSections = pc.split(sectionRegex).filter(s => s && s.trim());
+
+      const icons = [
+        { icon: 'fa-clipboard-list', bg: '#E3F2FD', color: '#1565C0' },
+        { icon: 'fa-sliders', bg: '#E8F5E9', color: '#2E7D32' },
+        { icon: 'fa-camera-retro', bg: '#E0F2F1', color: '#00897B' },
+        { icon: 'fa-user-shield', bg: '#FFF3E0', color: '#E65100' },
+        { icon: 'fa-cloud-arrow-up', bg: '#F3E5F5', color: '#7B1FA2' },
+        { icon: 'fa-headset', bg: '#E1F5FE', color: '#0288D1' }
+      ];
+
+      if (rawSections.length === 0) {
+        secContainer.innerHTML = `
+          <div class="policy-doc-card" style="padding: 18px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">
+            ${escapeHtml(pc)}
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      let cardIdx = 0;
+
+      for (let i = 0; i < rawSections.length; i++) {
+        const block = rawSections[i].trim();
+        if (!block) continue;
+
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length === 0) continue;
+
+        const headerLine = lines[0];
+        let title = headerLine;
+        const match = headerLine.match(/^([০-৯\d]+)[\.\)]\s*(.*)$/);
+        let numStr = '';
+        if (match) {
+          numStr = match[1] + '. ';
+          title = match[2];
+        }
+
+        const paragraphs = [];
+        const bullets = [];
+
+        for (let j = 1; j < lines.length; j++) {
+          const l = lines[j];
+          if (l.startsWith('•') || l.startsWith('-') || l.startsWith('*')) {
+            bullets.push(l.replace(/^[•\-\*]\s*/, ''));
+          } else {
+            paragraphs.push(l);
+          }
+        }
+
+        const iconConfig = icons[cardIdx % icons.length];
+        cardIdx++;
+
+        html += `
+          <div class="policy-doc-card">
+            <div class="policy-header">
+              <div class="policy-icon" style="background: ${iconConfig.bg}; color: ${iconConfig.color};">
+                <i class="fa-solid ${iconConfig.icon}"></i>
+              </div>
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">${escapeHtml(numStr + title)}</h3>
+            </div>
+            ${paragraphs.length ? `<p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">${escapeHtml(paragraphs.join(' '))}</p>` : ''}
+            ${bullets.length ? `
+              <ul class="policy-bullets">
+                ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+              </ul>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      secContainer.innerHTML = html;
     }
 
     // Initialize on load

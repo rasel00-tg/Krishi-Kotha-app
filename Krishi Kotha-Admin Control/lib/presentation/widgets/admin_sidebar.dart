@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/admin_colors.dart';
 
-class AdminSidebar extends StatelessWidget {
+class AdminSidebar extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
 
@@ -10,6 +10,27 @@ class AdminSidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.onItemSelected,
   });
+
+  @override
+  State<AdminSidebar> createState() => _AdminSidebarState();
+}
+
+class _AdminSidebarState extends State<AdminSidebar> {
+  late bool _settingsExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _settingsExpanded = widget.selectedIndex == 7;
+  }
+
+  @override
+  void didUpdateWidget(covariant AdminSidebar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex == 7 && !_settingsExpanded) {
+      _settingsExpanded = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +148,12 @@ class AdminSidebar extends StatelessWidget {
                   label: 'KrishiMate AI',
                   subtitle: 'এআই প্রেসক্রিপশন ও হিস্ট্রি',
                 ),
+
+                const SizedBox(height: 8),
+
+                // Settings Parent Menu Item with Sub-menu
+                _buildSettingsParentItem(),
+                if (_settingsExpanded) _buildSettingsSubItem(),
               ],
             ),
           ),
@@ -176,7 +203,7 @@ class AdminSidebar extends StatelessWidget {
     required String label,
     required String subtitle,
   }) {
-    final isSelected = selectedIndex == index;
+    final isSelected = widget.selectedIndex == index;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -184,7 +211,7 @@ class AdminSidebar extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: () => onItemSelected(index),
+          onTap: () => widget.onItemSelected(index),
           hoverColor: AdminColors.sidebarHover,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -226,6 +253,140 @@ class AdminSidebar extends StatelessWidget {
                   Container(
                     width: 4,
                     height: 18,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsParentItem() {
+    final isSettingsActive = widget.selectedIndex == 7;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            setState(() {
+              _settingsExpanded = !_settingsExpanded;
+            });
+            if (!isSettingsActive) {
+              widget.onItemSelected(7);
+            }
+          },
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSettingsActive && !_settingsExpanded ? AdminColors.sidebarActive : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.settings_applications_rounded,
+                  color: isSettingsActive ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'অ্যাপস সেটিংস',
+                        style: TextStyle(
+                          color: isSettingsActive ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 14,
+                          fontWeight: isSettingsActive ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'কনফিগারেশন ও পলিসি',
+                        style: TextStyle(
+                          color: AdminColors.sidebarTextMuted,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _settingsExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  color: AdminColors.sidebarTextMuted,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsSubItem() {
+    const isSelected = true; // when expanded under settings, Privacy Policy is the active sub-menu
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, top: 2, bottom: 4, right: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => widget.onItemSelected(7),
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: widget.selectedIndex == 7 ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: widget.selectedIndex == 7 ? const Color(0x44FFFFFF) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.policy_rounded,
+                  color: widget.selectedIndex == 7 ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'গোপনীয় নীতি',
+                        style: TextStyle(
+                          color: widget.selectedIndex == 7 ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 13.5,
+                          fontWeight: widget.selectedIndex == 7 ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'Privacy Policy এডিটর',
+                        style: TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (widget.selectedIndex == 7)
+                  Container(
+                    width: 4,
+                    height: 16,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(2),
