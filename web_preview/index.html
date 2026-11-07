@@ -3808,7 +3808,7 @@
     </div>
 
     <!-- CUSTOM WARNING ALERT DIALOG WITH APP LOGO (REPLACES BOTTOM SNACKBARS) -->
-    <div class="modal-overlay" id="warningDialogModal" style="display: none; align-items: center; justify-content: center; z-index: 10000000; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+    <div class="modal-overlay" id="warningDialogModal" onclick="closeWarningDialog()" style="display: none; align-items: center; justify-content: center; z-index: 10000000; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
       <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 360px; width: 88%; border-radius: 22px; padding: 26px 22px 20px 22px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
         <img src="pnglogo.png" style="width: 55px; height: 55px; object-fit: contain; margin: 0 auto 10px auto; display: block;" alt="কৃষি কথা লোগো">
         <h3 id="warningDialogTitle" style="color: #D32F2F; font-size: 19px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: 0.3px;">সতর্কবার্তা</h3>
@@ -3818,7 +3818,7 @@
     </div>
 
     <!-- CUSTOM SUCCESS MODAL DIALOG WITH APP LOGO & GREEN CHECKMARK -->
-    <div class="modal-overlay" id="successDialogModal" style="display: none; align-items: center; justify-content: center; z-index: 10000001; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+    <div class="modal-overlay" id="successDialogModal" onclick="closeSuccessDialog(false)" style="display: none; align-items: center; justify-content: center; z-index: 10000001; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
       <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 360px; width: 88%; border-radius: 22px; padding: 26px 22px 20px 22px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
         <img src="pnglogo.png" style="width: 55px; height: 55px; object-fit: contain; margin: 0 auto 10px auto; display: block;" alt="কৃষি কথা লোগো">
         <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 24px;">
@@ -6355,8 +6355,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       // Auto-close all full-screen modals & overlay traps so user immediately navigates to clicked tab without any blockage
       document.querySelectorAll('.modal-overlay').forEach(m => {
         m.classList.remove('active');
-        m.style.display = 'none';
-        m.style.pointerEvents = 'none';
+        m.style.setProperty('display', 'none', 'important');
+        m.style.setProperty('pointer-events', 'none', 'important');
+      });
+      document.querySelectorAll('.full-screen-page').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+        p.style.pointerEvents = 'none';
       });
       document.body.style.overflow = '';
 
@@ -8870,22 +8875,40 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function openRegistrationPage() {
       const page = document.getElementById('registrationPage');
-      if (page) page.classList.add('active');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
     }
 
     function closeRegistrationPage() {
       const page = document.getElementById('registrationPage');
-      if (page) page.classList.remove('active');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      document.body.style.overflow = '';
     }
 
     function openForgotPasswordPage() {
       const page = document.getElementById('forgotPasswordPage');
-      if (page) page.classList.add('active');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
     }
 
     function closeForgotPasswordPage() {
       const page = document.getElementById('forgotPasswordPage');
-      if (page) page.classList.remove('active');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      document.body.style.overflow = '';
     }
 
     function showWarningDialog(message, title) {
@@ -8894,12 +8917,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const msg = document.getElementById('warningDialogMessage');
       if (t) t.innerText = title || 'সতর্কবার্তা';
       if (msg) msg.innerText = message || '';
-      if (m) m.style.display = 'flex';
+      if (m) {
+        m.classList.add('active');
+        m.style.setProperty('display', 'flex', 'important');
+        m.style.setProperty('pointer-events', 'auto', 'important');
+      }
     }
 
     function closeWarningDialog() {
       const m = document.getElementById('warningDialogModal');
-      if (m) m.style.display = 'none';
+      if (m) {
+        m.classList.remove('active');
+        m.style.setProperty('display', 'none', 'important');
+        m.style.setProperty('pointer-events', 'none', 'important');
+      }
+      document.body.style.overflow = '';
     }
 
     let successDialogTimer = null;
@@ -8909,15 +8941,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const m = document.getElementById('successDialogModal');
       const t = document.getElementById('successDialogTitle');
       const msg = document.getElementById('successDialogMessage');
-      if (t) t.innerText = title || 'লগইন সফল হয়েছে!';
+      if (t) t.innerText = title || 'সফল হয়েছে!';
       if (msg) msg.innerText = message || 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।';
       successDialogCallback = onConfirm;
-      if (m) m.style.display = 'flex';
+      if (m) {
+        m.classList.add('active');
+        m.style.setProperty('display', 'flex', 'important');
+        m.style.setProperty('pointer-events', 'auto', 'important');
+      }
 
       if (successDialogTimer) clearTimeout(successDialogTimer);
       successDialogTimer = setTimeout(() => {
         closeSuccessDialog(true);
-      }, 1500);
+      }, 1600);
     }
 
     function closeSuccessDialog(triggerCallback) {
@@ -8926,7 +8962,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         successDialogTimer = null;
       }
       const m = document.getElementById('successDialogModal');
-      if (m) m.style.display = 'none';
+      if (m) {
+        m.classList.remove('active');
+        m.style.setProperty('display', 'none', 'important');
+        m.style.setProperty('pointer-events', 'none', 'important');
+      }
+      document.body.style.overflow = '';
       if (triggerCallback && typeof successDialogCallback === 'function') {
         const cb = successDialogCallback;
         successDialogCallback = null;
@@ -9094,14 +9135,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // ৩. মোবাইল নম্বর ভ্যালিডেশন
+      // ৩. মোবাইল নম্বর ভ্যালিডেশন (১১ ডিজিট ও ০১ দিয়ে শুরু)
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       if (!phone || cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
         showWarningDialog("অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!", "ব্যর্থ হয়েছে!");
         return;
       }
 
-      // ৪. জেলা ও উপজেলা ড্রপডাউন ভ্যালিডেশন (ড্রপডাউন সিলেক্ট না থাকলে ওয়ার্নিং পপ-আপ)
+      // ৪. জেলা ও উপজেলা নির্বাচন
       if (!district || !upazila) {
         showWarningDialog("অনুগ্রহ করে জেলা ও উপজেলা নির্বাচন করুন!", "ব্যর্থ হয়েছে!");
         return;
@@ -9130,9 +9171,28 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       try {
+        // Step 1: Duplicate check in Cloud Firestore users collection
+        if (window.firebase && firebase.firestore) {
+          try {
+            const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+            if (phoneSnap && !phoneSnap.empty) {
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
+              return;
+            }
+            const altPhone = '+88' + cleanPhone;
+            const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+            if (altPhoneSnap && !altPhoneSnap.empty) {
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
+              return;
+            }
+          } catch (checkErr) {
+            console.warn('Firestore duplicate check notice:', checkErr);
+          }
+        }
+
         let uid = 'user_' + Date.now();
 
-        // ১. Auth একাউন্ট তৈরি
+        // Step 2: FirebaseAuth createUserWithEmailAndPassword
         if (window.firebase && firebase.auth) {
           try {
             const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
@@ -9153,28 +9213,34 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         }
 
-        // ২. সরাসরি ফায়ারস্টোরে আসল ফিল্ডগুলো ডক্যুমেন্ট আকারে সেট করা
-        const userDoc = {
+        // Step 3: Save user document to Firestore users collection
+        const user = {
           uid: uid,
           name: name,
           email: email,
           phone: cleanPhone,
           district: district,
           upazila: upazila,
+          village: '',
           occupation: occupation,
+          preferred_crops: ['বোরো ধান', 'আলু'],
           createdAt: (window.firebase && firebase.firestore && firebase.firestore.FieldValue)
             ? firebase.firestore.FieldValue.serverTimestamp()
             : new Date().toISOString(),
           isDeletedByUser: false,
         };
 
-        if (window.firebase && firebase.firestore) {
-          await firebase.firestore().collection('users').doc(uid).set(userDoc);
+        try {
+          if (window.firebase && firebase.firestore) {
+            await firebase.firestore().collection('users').doc(uid).set(user);
+          }
+        } catch (err) {
+          console.warn('Firestore register notice:', err);
         }
 
-        // লোকাল ক্যাশ ও প্রোফাইল হেডার আপডেট
+        // Cache user profile and update UI
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify({
-          ...userDoc,
+          ...user,
           createdAt: new Date().toISOString()
         }));
 
@@ -9182,12 +9248,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         closeModal('authModal');
         updateWebProfileHeader();
 
-        // ৩. সফল পপ-আপ প্রদর্শন
-        showSuccessDialog("সফল হয়েছে!", "আপনার একাউন্ট সফলভাবে তৈরি হয়েছে!", () => {
+        // Step 4: Success Popup & Redirection to Menu Screen
+        showSuccessDialog('অভিনন্দন!', 'আপনার একাউন্ট সফলভাবে তৈরি হয়েছে।', () => {
           setTab('menu');
         });
-      } catch (e) {
-        showWarningDialog("ত্রুটি ঘটেছে: " + (e.message || e), "ব্যর্থ হয়েছে!");
+      } catch (globalErr) {
+        showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (globalErr.message || globalErr), 'ব্যর্থ হয়েছে!');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -9655,11 +9721,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function closeModal(id) {
+      if (id === 'warningDialogModal') {
+        closeWarningDialog();
+        return;
+      }
+      if (id === 'successDialogModal') {
+        closeSuccessDialog(false);
+        return;
+      }
       const modal = document.getElementById(id);
       if (modal) {
         modal.classList.remove('active');
-        modal.style.display = 'none';
-        modal.style.pointerEvents = 'none';
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
         document.body.style.overflow = '';
       }
     }
@@ -11023,8 +11097,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       // Ensure zero modal blocking overlays on page load
       document.querySelectorAll('.modal-overlay').forEach(m => {
         m.classList.remove('active');
-        m.style.display = 'none';
-        m.style.pointerEvents = 'none';
+        m.style.setProperty('display', 'none', 'important');
+        m.style.setProperty('pointer-events', 'none', 'important');
+      });
+      document.querySelectorAll('.full-screen-page').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+        p.style.pointerEvents = 'none';
       });
       document.body.style.overflow = '';
 

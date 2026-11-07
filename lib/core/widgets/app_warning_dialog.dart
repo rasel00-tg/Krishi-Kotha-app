@@ -8,8 +8,22 @@ void showAppWarningDialog(
   String title = 'সতর্কবার্তা',
   VoidCallback? onConfirm,
 }) {
+  bool isDismissed = false;
+  void dismiss(BuildContext dContext) {
+    if (!isDismissed) {
+      isDismissed = true;
+      if (Navigator.of(dContext, rootNavigator: true).canPop()) {
+        Navigator.of(dContext, rootNavigator: true).pop();
+      }
+      if (onConfirm != null) {
+        Future.microtask(onConfirm);
+      }
+    }
+  }
+
   showDialog(
     context: context,
+    useRootNavigator: true,
     barrierDismissible: true,
     builder: (dialogContext) {
       return Dialog(
@@ -75,10 +89,7 @@ void showAppWarningDialog(
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                    if (onConfirm != null) onConfirm();
-                  },
+                  onPressed: () => dismiss(dialogContext),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     elevation: 0,
@@ -114,17 +125,26 @@ void showAppSuccessDialog(
 }) {
   bool isDismissed = false;
 
+  void dismiss(BuildContext dContext) {
+    if (!isDismissed) {
+      isDismissed = true;
+      if (Navigator.of(dContext, rootNavigator: true).canPop()) {
+        Navigator.of(dContext, rootNavigator: true).pop();
+      }
+      if (onConfirm != null) {
+        Future.microtask(onConfirm);
+      }
+    }
+  }
+
   showDialog(
     context: context,
-    barrierDismissible: false,
+    useRootNavigator: true,
+    barrierDismissible: true,
     builder: (dialogContext) {
       if (autoDismiss) {
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (!isDismissed && Navigator.canPop(dialogContext)) {
-            isDismissed = true;
-            Navigator.pop(dialogContext);
-            if (onConfirm != null) onConfirm();
-          }
+        Future.delayed(const Duration(milliseconds: 1600), () {
+          dismiss(dialogContext);
         });
       }
 
@@ -207,13 +227,7 @@ void showAppSuccessDialog(
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (!isDismissed) {
-                      isDismissed = true;
-                      Navigator.pop(dialogContext);
-                      if (onConfirm != null) onConfirm();
-                    }
-                  },
+                  onPressed: () => dismiss(dialogContext),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     elevation: 0,
@@ -239,7 +253,7 @@ void showAppSuccessDialog(
   );
 }
 
-/// গ্লোবাল এরর ও সাকসেস পপ-আপ হেল্পার
+/// গ্লোবাল এরর ও সাকসেস পপ-আপ হেল্পার (ক্র্যাশ-প্রুফ ও ইনস্ট্যান্ট টাচ আনব্লকার)
 void showErrorPopup(BuildContext context, String message, {String title = 'ব্যর্থ হয়েছে!'}) {
   showAppWarningDialog(context, title: title, message: message);
 }
