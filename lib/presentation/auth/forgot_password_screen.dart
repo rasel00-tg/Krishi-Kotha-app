@@ -79,11 +79,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     FocusScope.of(context).unfocus();
 
-    // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর ডায়ালগ (Loading State Dialog: Overflow-Immune)
+    // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর ডায়ালগ (Loading State Dialog: Overflow-Immune & Safe Dismiss)
     bool isLoaderShowing = true;
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true, // সেফটি: কোনো অবস্থাতেই যেন স্ক্রিন আনরেসপনসিভ হয়ে আটকে না থাকে
       builder: (dialogCtx) => PopScope(
         canPop: false,
         child: MediaQuery.withNoTextScaling(
@@ -146,6 +146,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
     );
 
+    bool isSuccess = false;
+    String? explicitErrorMessage;
+
     try {
       // ২. জিমেইল অস্তিত্ব যাচাইকরণ (Firestore Pre-Validation)
       final userQuery = await FirebaseFirestore.instance
@@ -157,16 +160,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       // যদি একাউন্ট না পাওয়া যায়:
       if (userQuery.docs.isEmpty) {
-        if (isLoaderShowing && mounted) {
-          Navigator.of(context, rootNavigator: true).pop();
-          isLoaderShowing = false;
-        }
-        if (!mounted) return;
-        showAppWarningDialog(
-          context,
-          title: 'একাউন্ট পাওয়া যায়নি!',
-          message: 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।',
-        );
+        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
         return;
       }
 
@@ -187,16 +181,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (diff.inMinutes < 60) {
           final remainingMin = 60 - diff.inMinutes;
           final bnMin = BanglaNumberConverter.toBangla(remainingMin.toString());
-          if (isLoaderShowing && mounted) {
-            Navigator.of(context, rootNavigator: true).pop();
-            isLoaderShowing = false;
-          }
-          if (!mounted) return;
-          showAppWarningDialog(
-            context,
-            title: 'অপেক্ষা করুন!',
-            message: 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিঙ্ক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো $bnMin মিনিট অপেক্ষা করতে হবে।',
-          );
+          explicitErrorMessage = 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিঙ্ক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো $bnMin মিনিট অপেক্ষা করতে হবে।';
           return;
         }
       }
@@ -209,13 +194,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         'lastPasswordReset': FieldValue.serverTimestamp(),
       });
 
+      isSuccess = true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
+      } else if (e.code == 'too-many-requests') {
+        explicitErrorMessage = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
+      } else if (e.code == 'network-request-failed') {
+        explicitErrorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+      } else {
+        explicitErrorMessage = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
+      }
+    } catch (e) {
+      explicitErrorMessage = 'ত্রুটি ঘটেছে: $e';
+    } finally {
+      // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা
       if (isLoaderShowing && mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
+        if (Navigator.of(context, rootNavigator: true).canPop()) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
         isLoaderShowing = false;
       }
-      if (!mounted) return;
+    }
 
-      // সুন্দর সাকসেস পপ-আপ
+    if (!mounted) return;
+
+    if (isSuccess) {
       showAppSuccessDialog(
         context,
         title: 'রিসেট লিঙ্ক পাঠানো হয়েছে!',
@@ -225,28 +229,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           if (mounted) Navigator.pop(context);
         },
       );
-    } on FirebaseAuthException catch (e) {
-      if (isLoaderShowing && mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        isLoaderShowing = false;
-      }
-      if (!mounted) return;
-      String errMsg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
-      if (e.code == 'user-not-found') {
-        errMsg = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
-      } else if (e.code == 'too-many-requests') {
-        errMsg = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
-      } else if (e.code == 'network-request-failed') {
-        errMsg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-      }
-      showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: errMsg);
-    } catch (e) {
-      if (isLoaderShowing && mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        isLoaderShowing = false;
-      }
-      if (!mounted) return;
-      showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: 'ত্রুটি ঘটেছে: $e');
+    } else if (explicitErrorMessage != null) {
+      showAppWarningDialog(
+        context,
+        title: explicitErrorMessage.contains('অপেক্ষা') ? 'অপেক্ষা করুন!' : 'সতর্কবার্তা',
+        message: explicitErrorMessage,
+      );
     }
   }
 
@@ -659,8 +647,13 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isSearching = false;
           _errorMessage = 'তথ্য অনুসন্ধানে সমস্যা হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
         });
       }
     }
@@ -694,7 +687,6 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
 
       if (!mounted) return;
       setState(() {
-        _isSendingReset = false;
         _cooldownRemainingMinutes = 60;
       });
 
@@ -714,7 +706,6 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      if (mounted) setState(() => _isSendingReset = false);
       if (!context.mounted) return;
       String errMsg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
       if (e.code == 'user-not-found') {
@@ -726,9 +717,12 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
       }
       showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: errMsg);
     } catch (e) {
-      if (mounted) setState(() => _isSendingReset = false);
       if (!context.mounted) return;
       showAppWarningDialog(context, title: 'ব্যর্থ হয়েছে!', message: 'ত্রুটি ঘটেছে: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingReset = false);
+      }
     }
   }
 

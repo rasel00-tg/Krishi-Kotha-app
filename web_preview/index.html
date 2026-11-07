@@ -3994,7 +3994,7 @@
     </div>
 
     <!-- INTERACTIVE BRANDED LOGIN LOADING & STATE TRANSITION DIALOG -->
-    <div id="loginLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100020; align-items: center; justify-content: center; pointer-events: auto;">
+    <div id="loginLoadingOverlay" onclick="if(event.target === this) hideLoginLoadingDialog()" style="display: none; pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100020; align-items: center; justify-content: center;">
       <div id="loginDialogCard" style="background: white; border-radius: 24px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 12px 36px rgba(0,0,0,0.22); max-width: 320px; width: 85%; transition: all 0.35s ease;">
         <!-- STATE 1: LOADING -->
         <div id="loginStateLoading" style="display: flex; flex-direction: column; align-items: center;">
@@ -8670,7 +8670,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           bg: '#E1F5FE',
           role: 'পটাশিয়ামের উৎস • গাছের রোগবালাই ও পোকার আক্রমণ প্রতিরোধ, দানা পুষ্ট ও ফলন বৃদ্ধি।',
           stage: 'অর্ধেক শেষ চাষে এবং বাকি অর্ধেক শেষ কিস্তি ইউরিয়ার সাথে (কাইচ থোড়ে)'
-     
+        },
+        {
+          name: 'জিপসাম ও দস্তা (Gypsum & Zinc)',
+          eng: 'Sulphur (S) & Zinc (Zn)',
+          kg: gypsumKg,
+          zincVal: zincKg,
+          icon: 'fa-gem',
+          color: '#7B1FA2',
+          bg: '#F3E5F5',
           role: 'সালফার ও জিংক পুষ্টি • পাতার হলদে রোগ দূর করে এবং শিষের দানা চিটা হওয়া প্রতিরোধ করে।',
           stage: 'জমি তৈরির শেষ চাষে পুরোটা প্রয়োগ করুন'
         },
@@ -9597,7 +9605,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (l) l.style.display = 'flex';
         if (s) s.style.display = 'none';
         if (f) f.style.display = 'none';
-        o.style.display = 'flex';
+        o.style.setProperty('display', 'flex', 'important');
+        o.style.setProperty('pointer-events', 'auto', 'important');
       }
     }
 
@@ -9616,7 +9625,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (mEl) mEl.textContent = msg;
           s.style.display = 'flex';
         }
-        o.style.display = 'flex';
+        o.style.setProperty('display', 'flex', 'important');
+        o.style.setProperty('pointer-events', 'auto', 'important');
         setTimeout(() => {
           hideLoginLoadingDialog();
           if (onDone) onDone();
@@ -9625,27 +9635,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function showLoginFailureDialog(title = 'লগইন ব্যর্থ হয়েছে!', msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!') {
-      const o = document.getElementById('loginLoadingOverlay');
-      if (o) {
-        const l = document.getElementById('loginStateLoading');
-        const s = document.getElementById('loginStateSuccess');
-        const f = document.getElementById('loginStateFailure');
-        if (l) l.style.display = 'none';
-        if (s) s.style.display = 'none';
-        if (f) {
-          const tEl = document.getElementById('loginFailTitle');
-          const mEl = document.getElementById('loginFailMsg');
-          if (tEl) tEl.textContent = title;
-          if (mEl) mEl.textContent = msg;
-          f.style.display = 'flex';
-        }
-        o.style.display = 'flex';
-      }
+      hideLoginLoadingDialog();
+      showWarningDialog(msg, title);
     }
 
     function hideLoginLoadingDialog() {
       const o = document.getElementById('loginLoadingOverlay');
-      if (o) o.style.display = 'none';
+      if (o) {
+        o.style.setProperty('display', 'none', 'important');
+        o.style.setProperty('pointer-events', 'none', 'important');
+      }
     }
 
     function applyFgmToResetPage() {
@@ -9849,8 +9848,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর চালু
+      // ৪. কাস্টম লোডিং ইন্ডিকেটর চালু
       showLoginLoadingDialog('যাচাই করা হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন');
+
+      let isSuccess = false;
+      let explicitError = null;
 
       try {
         let userDoc = null;
@@ -9867,8 +9869,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         // যদি একাউন্ট না পাওয়া যায়:
         if (!userDoc || !userData) {
-          hideLoginLoadingDialog();
-          showWarningDialog('এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।', 'একাউন্ট পাওয়া যায়নি!');
+          explicitError = { title: 'একাউন্ট পাওয়া যায়নি!', msg: 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।' };
           return;
         }
 
@@ -9886,8 +9887,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const diffMin = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
           if (diffMin < 60) {
             const rem = 60 - diffMin;
-            hideLoginLoadingDialog();
-            showWarningDialog('আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করতে হবে।', 'অপেক্ষা করুন!');
+            explicitError = { title: 'অপেক্ষা করুন!', msg: 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করতে হবে।' };
             return;
           }
         }
@@ -9906,11 +9906,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           } catch (_) {}
         }
 
-        hideLoginLoadingDialog();
-        closeForgotPasswordPage();
-        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে পাঠানো হয়েছে। ইনবক্স অথবা স্প্যাম ফোল্ডার চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+        isSuccess = true;
       } catch (err) {
-        hideLoginLoadingDialog();
         let errMsg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
         const code = err.code || '';
         if (code === 'auth/user-not-found') {
@@ -9920,7 +9917,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         } else if (code === 'auth/network-request-failed') {
           errMsg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
         }
-        showWarningDialog(errMsg, 'ব্যর্থ হয়েছে!');
+        explicitError = { title: 'ব্যর্থ হয়েছে!', msg: errMsg };
+      } finally {
+        hideLoginLoadingDialog();
+      }
+
+      if (isSuccess) {
+        closeForgotPasswordPage();
+        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে পাঠানো হয়েছে। ইনবক্স অথবা স্প্যাম ফোল্ডার চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+      } else if (explicitError) {
+        showWarningDialog(explicitError.msg, explicitError.title);
       }
     }
 
@@ -10157,6 +10163,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const isEmail = identifier.includes('@');
       let targetEmail = identifier.toLowerCase();
       let foundUser = null;
+      let isSuccess = false;
+      let errorMessage = null;
 
       try {
         if (!isEmail) {
@@ -10179,7 +10187,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
 
           if (!foundUser || !targetEmail) {
-            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
+            errorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
             return;
           }
         }
@@ -10228,24 +10236,33 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             } else if (errCode === 'auth/user-disabled') {
               msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
             }
-            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', msg);
+            errorMessage = msg;
             return;
           }
         } else {
           if (!foundUser) {
-            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+            errorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
             return;
           }
         }
 
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
         updateWebProfileHeader();
+        isSuccess = true;
+      } catch (err) {
+        errorMessage = err.message || 'অপ্রত্যাশিত ত্রুটি ঘটেছে!';
+      } finally {
+        if (!isSuccess) {
+          hideLoginLoadingDialog();
+        }
+      }
 
+      if (isSuccess) {
         showLoginSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
           setTab('menu');
         });
-      } catch (err) {
-        showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', err.message || 'অপ্রত্যাশিত ত্রুটি ঘটেছে!');
+      } else if (errorMessage) {
+        showWarningDialog(errorMessage, 'লগইন ব্যর্থ হয়েছে!');
       }
     }
 
