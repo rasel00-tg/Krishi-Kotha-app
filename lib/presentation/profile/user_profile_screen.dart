@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../core/widgets/custom_app_bar.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
-import '../auth/phone_login_screen.dart';
 import '../auth/profile_setup_screen.dart';
+import '../navigation/main_navigation_screen.dart';
 
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
@@ -16,11 +19,26 @@ class UserProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final activeUid = FirebaseAuth.instance.currentUser?.uid ?? user?.uid;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'কৃষক প্রোফাইল'),
-      body: SingleChildScrollView(
+    Widget buildProfileBody(Map<String, dynamic>? data) {
+      final name = data?['name'] as String? ?? user?.name ?? 'কৃষক ভাই';
+      final phone = data?['phone'] as String? ?? user?.phone ?? '';
+      final district = data?['district'] as String? ?? user?.district ?? '';
+      final upazila = data?['upazila'] as String? ?? user?.upazila ?? '';
+      final village = data?['village'] as String? ?? data?['village_name'] as String? ?? user?.village ?? '';
+      final occupation = data?['occupation'] as String? ?? user?.occupation ?? 'কৃষক';
+      final preferredCrops = List<String>.from(data?['preferred_crops'] ?? data?['preferredCrops'] ?? user?.preferredCrops ?? []);
+
+      final locParts = [
+        if (village.trim().isNotEmpty) village.trim(),
+        if (upazila.trim().isNotEmpty) upazila.trim(),
+        if (district.trim().isNotEmpty) district.trim(),
+      ];
+      final areaStr = locParts.isNotEmpty ? locParts.join(', ') : 'তথ্য প্রদান করা হয়নি';
+      final cropsStr = preferredCrops.isNotEmpty ? preferredCrops.join(', ') : 'তথ্য প্রদান করা হয়নি';
+
+      return SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -38,7 +56,7 @@ class UserProfileScreen extends StatelessWidget {
                       radius: 38,
                       backgroundColor: AppColors.primaryContainer,
                       child: Text(
-                        user?.name.isNotEmpty == true ? user!.name.substring(0, 1) : 'ক',
+                        name.isNotEmpty ? name.substring(0, 1) : 'ক',
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -48,7 +66,7 @@ class UserProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      user?.name ?? 'শ্রদ্ধেয় কৃষক ভাই',
+                      name,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -57,8 +75,8 @@ class UserProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user?.phone.isNotEmpty == true
-                          ? BanglaNumberConverter.toBangla(user!.phone)
+                      phone.isNotEmpty
+                          ? BanglaNumberConverter.toBangla(phone)
                           : 'অতিথি ব্যবহারকারী',
                       style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
                     ),
@@ -101,17 +119,21 @@ class UserProfileScreen extends StatelessWidget {
                     ),
                     const Divider(color: AppColors.divider, height: 20),
                     _buildInfoTile(
+                      icon: Icons.badge_outlined,
+                      label: 'পেশা',
+                      value: occupation,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoTile(
                       icon: Icons.location_on_outlined,
                       label: 'এলাকা',
-                      value: '${user?.upazila ?? ''}, ${user?.district ?? 'বাংলাদেশ'}',
+                      value: areaStr,
                     ),
                     const SizedBox(height: 12),
                     _buildInfoTile(
                       icon: Icons.eco_outlined,
                       label: 'প্রধান চাষকৃত ফসল',
-                      value: user?.preferredCrops.isNotEmpty == true
-                          ? user!.preferredCrops.join(', ')
-                          : 'সকল প্রকার ফসল',
+                      value: cropsStr,
                     ),
                   ],
                 ),
@@ -154,7 +176,7 @@ class UserProfileScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
+                    MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 4)),
                     (route) => false,
                   );
                 }
@@ -165,7 +187,24 @@ class UserProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
           ],
         ),
-      ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(title: 'কৃষক প্রোফাইল'),
+      body: (FirebaseService.isFirebaseInitialized &&
+              activeUid != null &&
+              activeUid.isNotEmpty &&
+              !activeUid.startsWith('guest_'))
+          ? StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance.collection('users').doc(activeUid).snapshots(),
+              builder: (context, snapshot) {
+                final data = snapshot.data?.data();
+                return buildProfileBody(data);
+              },
+            )
+          : buildProfileBody(null),
     );
   }
 

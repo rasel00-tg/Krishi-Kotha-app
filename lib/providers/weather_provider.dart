@@ -6,7 +6,7 @@ class WeatherProvider extends ChangeNotifier {
   WeatherInfoModel? _weatherInfo;
   bool _isLoading = false;
   String? _errorMessage;
-  String _selectedDistrict = 'বগুড়া';
+  String _selectedDistrict = 'ঢাকা';
 
   WeatherInfoModel? get weatherInfo => _weatherInfo;
   bool get isLoading => _isLoading;

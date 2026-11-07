@@ -385,11 +385,11 @@ class AppMenuScreen extends StatelessWidget {
 
           return _buildProfileCardContent(
             context: context,
-            name: name.isNotEmpty ? name : 'শ্রদ্ধেয় কৃষক ভাই',
-            district: district.isNotEmpty ? district : 'বগুড়া',
-            upazila: upazila.isNotEmpty ? upazila : 'শেরপুর',
+            name: name.isNotEmpty ? name : 'কৃষক ভাই',
+            district: district,
+            upazila: upazila,
             village: village,
-            phone: phone.isNotEmpty ? phone : '০১৭১১-২২৩৩৪৪',
+            phone: phone,
           );
         },
       );
@@ -397,11 +397,11 @@ class AppMenuScreen extends StatelessWidget {
 
     return _buildProfileCardContent(
       context: context,
-      name: user?.name.isNotEmpty == true ? user!.name : 'শ্রদ্ধেয় কৃষক ভাই',
-      district: user?.district.isNotEmpty == true ? user!.district : 'বগুড়া',
-      upazila: user?.upazila.isNotEmpty == true ? user!.upazila : 'শেরপুর',
+      name: user?.name.isNotEmpty == true ? user!.name : 'কৃষক ভাই',
+      district: user?.district ?? '',
+      upazila: user?.upazila ?? '',
       village: user?.village ?? '',
-      phone: user?.phone.isNotEmpty == true ? user!.phone : '০১৭১১-২২৩৩৪৪',
+      phone: user?.phone ?? '',
     );
   }
 
@@ -419,7 +419,10 @@ class AppMenuScreen extends StatelessWidget {
     if (district.trim().isNotEmpty) locParts.add(district.trim());
     final locationText = locParts.join(', ');
 
-    final subInfo = locationText.isNotEmpty ? '$locationText • $phone' : phone;
+    final formattedPhone = phone.trim().isNotEmpty ? BanglaNumberConverter.toBangla(phone.trim()) : '';
+    final subInfo = locationText.isNotEmpty
+        ? (formattedPhone.isNotEmpty ? '$locationText • $formattedPhone' : locationText)
+        : (formattedPhone.isNotEmpty ? formattedPhone : 'কৃষি তথ্য ও সেবা প্রোফাইল');
 
     return Container(
       width: double.infinity,

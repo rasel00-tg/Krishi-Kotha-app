@@ -2119,7 +2119,7 @@
             <div class="weather-top">
               <div class="location-chip" onclick="openDistrictPicker()">
                 <i class="fa-solid fa-location-dot"></i>
-                <span id="weatherDistrict">বগুড়া জেলা</span>
+                <span id="weatherDistrict">ঢাকা জেলা</span>
                 <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
               </div>
               <div class="weather-condition-tag" id="weatherCondition">
@@ -2700,11 +2700,11 @@
           <!-- Redesigned Large Centered Farmer Profile Card -->
           <div class="menu-profile-card" id="webMenuProfileCard">
             <div class="menu-avatar-badge">
-              <span id="menuAvatarChar">ম</span>
+              <span id="menuAvatarChar">ক</span>
               <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
             </div>
-            <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">মো: আব্দুল করিম</h3>
-            <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">বগুড়া, শেরপুর • ০১৭১১-২২৩৩৪৪</p>
+            <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">কৃষক ভাই</h3>
+            <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">প্রোফাইল লোড হচ্ছে...</p>
           </div>
 
           <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
@@ -3899,25 +3899,26 @@
         </div>
         <div style="text-align: center; margin: 12px 0;">
           <div
+            id="profModalAvatarWrap"
             style="width: 72px; height: 72px; border-radius: 50%; background: var(--primary-container); color: var(--primary); font-size: 32px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; border: 2px solid var(--primary-light);">
-            ম
+            <span id="profModalAvatarChar">ক</span>
           </div>
-          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">মো: আব্দুল করিম</h3>
-          <p style="font-size: 13px; color: var(--text-secondary);">০১৭১১-২২৩৩৪৪</p>
+          <h3 id="profModalName" style="font-size: 18px; font-weight: 700; color: var(--text-primary);">কৃষক ভাই</h3>
+          <p id="profModalPhone" style="font-size: 13px; color: var(--text-secondary);">-</p>
         </div>
         <div
           style="background: #F8FAF7; border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
           <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-secondary); font-size: 13px;">পেশা:</span>
+            <strong id="profModalOccupation" style="color: var(--text-primary); font-size: 13.5px;">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-secondary); font-size: 13px;">জেলা:</span>
-            <strong style="color: var(--text-primary); font-size: 13.5px;">বগুড়া</strong>
+            <strong id="profModalDistrict" style="color: var(--text-primary); font-size: 13.5px;">-</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-secondary); font-size: 13px;">উপজেলা:</span>
-            <strong style="color: var(--text-primary); font-size: 13.5px;">শেরপুর</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-secondary); font-size: 13px;">প্রধান ফসল:</span>
-            <strong style="color: var(--primary-dark); font-size: 13.5px;">বোরো ধান, গোল আলু</strong>
+            <strong id="profModalUpazila" style="color: var(--text-primary); font-size: 13.5px;">-</strong>
           </div>
         </div>
       </div>
@@ -8670,22 +8671,34 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       input.value = current + num;
     }
 
-    // Community Posts Logic
+    // Community Posts Logic (100% Live Firestore Stream Architecture)
+    let communityPosts = [];
+
     function renderCommunityPosts() {
       const c = document.getElementById('communityPostsContainer');
+      if (!c) return;
+      if (!communityPosts || communityPosts.length === 0) {
+        c.innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: var(--text-secondary);">
+            <i class="fa-solid fa-comments" style="font-size: 38px; color: #ccc; margin-bottom: 12px; display: block;"></i>
+            <p style="font-size: 14.5px; font-weight: 600; color: var(--text-secondary); margin: 0;">বর্তমানে কোনো কমিউনিটি পোস্ট পাওয়া যায়নি</p>
+          </div>
+        `;
+        return;
+      }
       c.innerHTML = communityPosts.map(p => `
         <div class="post-card">
           <div class="post-header">
-            <div class="post-avatar">${p.author.substring(0, 1)}</div>
+            <div class="post-avatar">${(p.author || 'ক').substring(0, 1)}</div>
             <div>
-              <div style="font-weight: 700; font-size: 14.5px;">${p.author}</div>
+              <div style="font-weight: 700; font-size: 14.5px;">${p.author || 'কৃষক ভাই'}</div>
               <div style="font-size: 11px; color: var(--text-muted);">${p.time}</div>
             </div>
           </div>
           <p style="font-size: 13.5px; line-height: 1.45; color: var(--text-primary);">${p.content}</p>
           ${p.img ? `<img src="${p.img}" class="post-img" alt="crop">` : ''}
           <div class="post-actions">
-            <button class="post-action-btn ${p.isLiked ? 'active' : ''}" onclick="toggleLike(${p.id})">
+            <button class="post-action-btn ${p.isLiked ? 'active' : ''}" onclick="toggleLike('${p.id}')">
               <i class="fa-solid fa-thumbs-up"></i> ${toBangla(p.likes)} পছন্দ
             </button>
             <button class="post-action-btn" onclick="alert('মন্তব্য থ্রেড শীঘ্রই চালু হবে!')">
@@ -8697,7 +8710,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function toggleLike(id) {
-      const post = communityPosts.find(p => p.id === id);
+      const post = communityPosts.find(p => p.id == id);
       if (post) {
         post.isLiked = !post.isLiked;
         post.likes += post.isLiked ? 1 : -1;
@@ -8708,17 +8721,46 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function submitNewPost() {
       const content = document.getElementById('newPostContent').value.trim();
       if (!content) return alert('অনুগ্রহ করে কিছু লিখুন');
-      communityPosts.unshift({
-        id: Date.now(),
-        author: 'মো: আব্দুল করিম',
-        phone: '০১৭১১-২২৩৩৪৪',
+
+      let authorName = 'কৃষক ভাই';
+      let authorPhone = '';
+      let authorId = 'guest_' + Date.now();
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (cached) {
+        try {
+          const u = JSON.parse(cached);
+          if (u.name) authorName = u.name;
+          if (u.phone) authorPhone = u.phone;
+          if (u.uid) authorId = u.uid;
+        } catch (_) {}
+      }
+
+      const newPostItem = {
+        id: 'post_' + Date.now(),
+        author: authorName,
+        phone: authorPhone,
         time: 'এইমাত্র',
         content: content,
         likes: 0,
         isLiked: false,
         comments: 0,
         img: null
-      });
+      };
+
+      if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        db.collection('community_posts').doc(newPostItem.id).set({
+          authorId: authorId,
+          authorName: authorName,
+          authorPhone: authorPhone,
+          content: content,
+          likesCount: 0,
+          commentsCount: 0,
+          likedBy: [],
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.warn('Community post cloud sync notice:', err));
+      }
+
+      communityPosts.unshift(newPostItem);
       document.getElementById('newPostContent').value = '';
       closeModal('newPostModal');
       renderCommunityPosts();
@@ -8790,7 +8832,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       'সিলেট', 'মৌলভীবাজার', 'হবিগঞ্জ', 'সুনামগঞ্জ',
       'ময়মনসিংহ', 'জামালপুর', 'নেত্রকোণা', 'শেরপুর'
     ];
-    let selectedDistrictName = 'বগুড়া';
+    let selectedDistrictName = 'ঢাকা';
 
     function renderDistrictList(filter = '') {
       const q = filter.trim().toLowerCase();
@@ -9346,11 +9388,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 name: cred.user.displayName || 'কৃষক ভাই',
                 email: cred.user.email || targetEmail,
                 phone: isEmail ? '' : identifier,
-                district: 'বগুড়া',
-                upazila: 'শেরপুর',
+                district: '',
+                upazila: '',
                 village: '',
                 occupation: 'কৃষক',
-                preferred_crops: ['বোরো ধান', 'আলু'],
+                preferred_crops: [],
                 createdAt: new Date().toISOString()
               };
             }
@@ -9543,11 +9585,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 name: cred.user.displayName || 'কৃষক ভাই',
                 email: cred.user.email || targetEmail,
                 phone: isEmail ? '' : identifier,
-                district: 'বগুড়া',
-                upazila: 'শেরপুর',
+                district: '',
+                upazila: '',
                 village: '',
                 occupation: 'কৃষক',
-                preferred_crops: ['বোরো ধান', 'আলু'],
+                preferred_crops: [],
                 createdAt: new Date().toISOString()
               };
             }
@@ -9579,13 +9621,87 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       });
     }
 
+    let userDocUnsubscribe = null;
+
+    function applyUserToUI(u) {
+      if (!u) return;
+      const uName = document.getElementById('menuUserName');
+      const uSub = document.getElementById('menuUserSub');
+      const uChar = document.getElementById('menuAvatarChar');
+
+      const pmName = document.getElementById('profModalName');
+      const pmPhone = document.getElementById('profModalPhone');
+      const pmDist = document.getElementById('profModalDistrict');
+      const pmUpz = document.getElementById('profModalUpazila');
+      const pmOcc = document.getElementById('profModalOccupation');
+      const pmChar = document.getElementById('profModalAvatarChar');
+
+      const name = (u.name || '').trim() || 'কৃষক ভাই';
+      const phone = (u.phone || '').trim();
+      const district = (u.district || '').trim();
+      const upazila = (u.upazila || '').trim();
+      const village = (u.village || '').trim();
+      const occupation = (u.occupation || '').trim() || 'কৃষক';
+
+      if (uName) uName.innerText = name;
+      const locParts = [];
+      if (village) locParts.push(village);
+      if (upazila) locParts.push(upazila);
+      if (district) locParts.push(district);
+      const locStr = locParts.join(', ');
+      if (uSub) uSub.innerText = (locStr ? locStr + ' • ' : '') + (phone ? toBangla(phone) : '');
+      if (uChar) uChar.innerText = name.charAt(0) || 'ক';
+
+      if (pmName) pmName.innerText = name;
+      if (pmPhone) pmPhone.innerText = phone ? toBangla(phone) : 'তথ্য দেওয়া হয়নি';
+      if (pmDist) pmDist.innerText = district || 'তথ্য দেওয়া হয়নি';
+      if (pmUpz) pmUpz.innerText = upazila || 'তথ্য দেওয়া হয়নি';
+      if (pmOcc) pmOcc.innerText = occupation;
+      if (pmChar) pmChar.innerText = name.charAt(0) || 'ক';
+
+      if (district) {
+        selectedDistrictName = district;
+        const wd = document.getElementById('weatherDistrict');
+        if (wd) wd.innerText = district + ' জেলা';
+      }
+    }
+
+    function syncUserLiveDoc(uid) {
+      if (!uid || uid.startsWith('guest_')) return;
+      if (userDocUnsubscribe) {
+        userDocUnsubscribe();
+        userDocUnsubscribe = null;
+      }
+      if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        try {
+          userDocUnsubscribe = db.collection('users').doc(uid).onSnapshot(doc => {
+            if (doc && doc.exists) {
+              const u = doc.data();
+              localStorage.setItem('krishi_kotha_cached_user', JSON.stringify({
+                ...u,
+                uid: doc.id
+              }));
+              applyUserToUI(u);
+            }
+          }, err => console.warn('User live sync note:', err));
+        } catch (e) {
+          console.warn('User live sync setup note:', e);
+        }
+      }
+    }
+
     function openProfileModal() {
       if (!isWebUserLoggedIn()) {
         openAuthModal('login');
         return;
       }
-      const modal = document.getElementById('profileModal');
-      if (modal) modal.classList.add('active');
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (cached) {
+        try {
+          applyUserToUI(JSON.parse(cached));
+        } catch (_) {}
+      }
+      openModal('profileModal');
     }
 
     function openSettingsModal() {
@@ -9604,6 +9720,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     async function executeWebLogout() {
       closeModal('webLogoutModal');
+      if (userDocUnsubscribe) {
+        userDocUnsubscribe();
+        userDocUnsubscribe = null;
+      }
       try {
         if (window.firebase && firebase.auth) {
           await firebase.auth().signOut();
@@ -9617,9 +9737,6 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function updateWebProfileHeader() {
       const authContainer = document.getElementById('webMenuAuthorizedContainer');
       const guestGateway = document.getElementById('webMenuGuestGateway');
-      const uName = document.getElementById('menuUserName');
-      const uSub = document.getElementById('menuUserSub');
-      const uChar = document.getElementById('menuAvatarChar');
 
       const loggedIn = isWebUserLoggedIn();
       if (loggedIn) {
@@ -9630,17 +9747,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (cached) {
           try {
             const u = JSON.parse(cached);
-            if (uName) uName.innerText = u.name || 'শ্রদ্ধেয় কৃষক ভাই';
-            const locParts = [];
-            if (u.village) locParts.push(u.village);
-            if (u.upazila) locParts.push(u.upazila);
-            if (u.district) locParts.push(u.district);
-            const locStr = locParts.join(', ');
-            if (uSub) uSub.innerText = (locStr ? locStr + ' • ' : '') + (u.phone || '');
-            if (uChar) uChar.innerText = (u.name || 'ক').charAt(0);
+            applyUserToUI(u);
+            if (u && u.uid && !u.uid.startsWith('guest_')) {
+              syncUserLiveDoc(u.uid);
+            }
           } catch (_) {}
         }
       } else {
+        if (userDocUnsubscribe) {
+          userDocUnsubscribe();
+          userDocUnsubscribe = null;
+        }
         if (authContainer) authContainer.style.display = 'none';
         if (guestGateway) guestGateway.style.display = 'block';
 
@@ -11090,6 +11207,34 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           pestsData = livePests;
         }
       }, err => console.warn("Pests sync notice:", err));
+
+      // 5. Live Community Posts Realtime Sync
+      db.collection('community_posts').onSnapshot(snap => {
+        if (snap && !snap.empty) {
+          const posts = [];
+          snap.forEach(doc => {
+            const d = doc.data();
+            posts.push({
+              id: doc.id,
+              author: d.authorName || d.author || 'কৃষক ভাই',
+              phone: d.authorPhone || d.phone || '',
+              time: d.timestamp ? formatBengaliFullDateTime(parseTimestampToDate(d.timestamp)) : 'সম্প্রতি',
+              content: d.content || '',
+              likes: Number(d.likesCount || d.likes || 0),
+              isLiked: false,
+              comments: Number(d.commentsCount || d.comments || 0),
+              img: d.imageUrl || d.image_url || d.img || null,
+              rawTime: d.timestamp ? (parseTimestampToDate(d.timestamp)?.getTime() || 0) : 0
+            });
+          });
+          posts.sort((a, b) => b.rawTime - a.rawTime);
+          communityPosts = posts;
+          renderCommunityPosts();
+        } else {
+          communityPosts = [];
+          renderCommunityPosts();
+        }
+      }, err => console.warn('Community posts sync note:', err));
     }
 
     // Initialize on load

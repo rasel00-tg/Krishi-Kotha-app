@@ -100,20 +100,8 @@ class AuthService {
   }) async {
     final effectiveVerificationId = verificationId ?? _verificationId ?? '';
 
-    if (!FirebaseService.isFirebaseInitialized || _auth == null || effectiveVerificationId.startsWith('mock_')) {
-      // Demo / Mock sign-in
-      final user = UserModel(
-        uid: 'user_${phoneNumber.replaceAll(RegExp(r'[^0-9]'), '')}',
-        name: 'শ্রদ্ধেয় কৃষক ভাই',
-        phone: phoneNumber,
-        district: 'বগুড়া',
-        upazila: 'শেরপুর',
-        preferredCrops: ['বোরো ধান', 'আলু'],
-        createdAt: DateTime.now(),
-      );
-      await _cacheUser(user);
-      _currentUser = user;
-      return user;
+    if (!FirebaseService.isFirebaseInitialized || _auth == null || effectiveVerificationId.isEmpty || effectiveVerificationId.startsWith('mock_')) {
+      throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।');
     }
 
     final credential = PhoneAuthProvider.credential(
@@ -135,14 +123,14 @@ class AuthService {
     } else {
       user = UserModel(
         uid: firebaseUser.uid,
-        name: 'কৃষক ভাই',
+        name: firebaseUser.displayName ?? 'কৃষক ভাই',
         phone: phone,
-        district: 'ঢাকা',
+        district: '',
         upazila: '',
         preferredCrops: [],
         createdAt: DateTime.now(),
       );
-      await _firestore.collection('users').doc(firebaseUser.uid).set(user.toMap());
+      await _firestore!.collection('users').doc(firebaseUser.uid).set(user.toMap());
     }
 
     await _cacheUser(user);
@@ -155,10 +143,12 @@ class AuthService {
     final guestUser = UserModel(
       uid: 'guest_${DateTime.now().millisecondsSinceEpoch}',
       name: 'অতিথি কৃষক',
-      phone: '০১XXXXXXXXX',
-      district: 'বগুড়া',
-      upazila: 'শেরপুর',
-      preferredCrops: ['বোরো ধান', 'আলু'],
+      phone: '',
+      district: '',
+      upazila: '',
+      village: '',
+      occupation: 'কৃষক',
+      preferredCrops: [],
       createdAt: DateTime.now(),
     );
     await _cacheUser(guestUser);
@@ -397,8 +387,8 @@ class AuthService {
           name: firebaseUser.displayName ?? 'কৃষক ভাই',
           email: firebaseUser.email ?? targetEmail,
           phone: cleanId.contains('@') ? '' : cleanId,
-          district: 'বগুড়া',
-          upazila: 'শেরপুর',
+          district: '',
+          upazila: '',
           village: '',
           occupation: 'কৃষক',
           preferredCrops: [],

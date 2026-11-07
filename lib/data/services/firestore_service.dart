@@ -11,7 +11,6 @@ import '../models/weather_alert_model.dart';
 import '../models/support_ticket_model.dart';
 import '../models/notification_model.dart';
 import 'firebase_service.dart';
-import 'dummy_data_seeder.dart';
 
 class FirestoreService {
   FirebaseFirestore? get _db {
