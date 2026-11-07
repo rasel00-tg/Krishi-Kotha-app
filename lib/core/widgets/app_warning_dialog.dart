@@ -238,3 +238,23 @@ void showAppSuccessDialog(
     },
   );
 }
+
+/// গ্লোবাল এরর ও সাকসেস পপ-আপ হেল্পার
+void showErrorPopup(BuildContext context, String message, {String title = 'ব্যর্থ হয়েছে!'}) {
+  showAppWarningDialog(context, title: title, message: message);
+}
+
+void showSuccessPopup(
+  BuildContext context,
+  String message, {
+  String title = 'সফল হয়েছে!',
+  VoidCallback? onConfirm,
+}) {
+  showAppSuccessDialog(
+    context,
+    title: title,
+    message: message,
+    autoDismiss: false,
+    onConfirm: onConfirm,
+  );
+}

@@ -9073,37 +9073,53 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     async function executeFullRegistration() {
-      const email = (document.getElementById('fullRegEmail')?.value || '').trim().toLowerCase();
+      const email = (document.getElementById('fullRegEmail')?.value || '').trim();
       const phone = (document.getElementById('fullRegPhone')?.value || '').trim();
       const name = (document.getElementById('fullRegName')?.value || '').trim();
       const district = (document.getElementById('fullRegDistrict')?.value || '').trim();
       const upazila = (document.getElementById('fullRegUpazila')?.value || '').trim();
       const occupation = (document.getElementById('fullRegOccupation')?.value || 'কৃষক').trim();
-      const pass = (document.getElementById('fullRegPassword')?.value || '');
-      const confirmPass = (document.getElementById('fullRegConfirmPassword')?.value || '');
+      const pass = (document.getElementById('fullRegPassword')?.value || '').trim();
+      const confirmPass = (document.getElementById('fullRegConfirmPassword')?.value || '').trim();
 
-      // ১. যেকোনো ফিল্ড ফাঁকা থাকলে সেন্ট্রাল লোগো সতর্কবার্তা
-      if (!email || !phone || !name || !district || !upazila || !pass || !confirmPass) {
-        showWarningDialog('অনুগ্রহ করে সব তথ্য পূরণ করুন!', 'ব্যর্থ হয়েছে!');
+      // ১. নাম ভ্যালিডেশন
+      if (!name) {
+        showWarningDialog("অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন!", "ব্যর্থ হয়েছে!");
         return;
       }
 
-      // ২. মোবাইল নম্বর ভ্যালিডেশন (১১ ডিজিট ও ০১ দিয়ে শুরু)
+      // ২. ইমেইল ভ্যালিডেশন
+      if (!email) {
+        showWarningDialog("অনুগ্রহ করে একটি সঠিক জিমেইল এড্রেস লিখুন!", "ব্যর্থ হয়েছে!");
+        return;
+      }
+
+      // ৩. মোবাইল নম্বর ভ্যালিডেশন
       const cleanPhone = phone.replace(/[^0-9]/g, '');
-      if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
-        showWarningDialog('অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!', 'ব্যর্থ হয়েছে!');
+      if (!phone || cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+        showWarningDialog("অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!", "ব্যর্থ হয়েছে!");
         return;
       }
 
-      // ৩. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে
+      // ৪. জেলা ও উপজেলা ড্রপডাউন ভ্যালিডেশন (ড্রপডাউন সিলেক্ট না থাকলে ওয়ার্নিং পপ-আপ)
+      if (!district || !upazila) {
+        showWarningDialog("অনুগ্রহ করে জেলা ও উপজেলা নির্বাচন করুন!", "ব্যর্থ হয়েছে!");
+        return;
+      }
+
+      // ৫. পাসওয়ার্ড ভ্যালিডেশন
+      if (!pass || !confirmPass) {
+        showWarningDialog("অনুগ্রহ করে পাসওয়ার্ড লিখুন!", "ব্যর্থ হয়েছে!");
+        return;
+      }
+
       if (pass.length < 6) {
-        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!', 'ব্যর্থ হয়েছে!');
+        showWarningDialog("কমপক্ষে ৬ সংখ্যার শক্তিশালী পাসওয়ার্ড দিন!", "ব্যর্থ হয়েছে!");
         return;
       }
 
-      // ৪. পাসওয়ার্ড দুটি না মিললে সতর্কবার্তা
       if (pass !== confirmPass) {
-        showWarningDialog('পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!', 'ব্যর্থ হয়েছে!');
+        showWarningDialog("পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!", "ব্যর্থ হয়েছে!");
         return;
       }
 
@@ -9114,28 +9130,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       try {
-        // Step 1: Duplicate check in Cloud Firestore users collection
-        if (window.firebase && firebase.firestore) {
-          try {
-            const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
-            if (phoneSnap && !phoneSnap.empty) {
-              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
-              return;
-            }
-            const altPhone = '+88' + cleanPhone;
-            const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
-            if (altPhoneSnap && !altPhoneSnap.empty) {
-              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
-              return;
-            }
-          } catch (checkErr) {
-            console.warn('Firestore duplicate check notice:', checkErr);
-          }
-        }
-
         let uid = 'user_' + Date.now();
 
-        // Step 2: FirebaseAuth createUserWithEmailAndPassword
+        // ১. Auth একাউন্ট তৈরি
         if (window.firebase && firebase.auth) {
           try {
             const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
@@ -9146,49 +9143,38 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               } catch (_) {}
             }
           } catch (authErr) {
-            if (authErr.code === 'auth/email-already-in-use') {
-              showWarningDialog('এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
-              return;
-            } else if (authErr.code === 'auth/weak-password') {
-              showWarningDialog('পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!', 'ব্যর্থ হয়েছে!');
-              return;
-            } else if (authErr.code === 'auth/invalid-email') {
-              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
-              return;
-            } else {
-              showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (authErr.message || authErr.code), 'ব্যর্থ হয়েছে!');
-              return;
-            }
+            let message = "একাউন্ট তৈরিতে ব্যর্থ হয়েছে!";
+            if (authErr.code === 'auth/email-already-in-use') message = "এই জিমেইল দিয়ে ইতোমধ্যে একাউন্ট খোলা আছে!";
+            if (authErr.code === 'auth/weak-password') message = "কমপক্ষে ৬ সংখ্যার শক্তিশালী পাসওয়ার্ড দিন!";
+            if (authErr.code === 'auth/invalid-email') message = "জিমেইল এড্রেসটি সঠিক নয়!";
+            if (authErr.code === 'auth/network-request-failed') message = "ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।";
+            showWarningDialog(message, "ব্যর্থ হয়েছে!");
+            return;
           }
         }
 
-        // Step 3: Save user document to Firestore users collection
-        const user = {
+        // ২. সরাসরি ফায়ারস্টোরে আসল ফিল্ডগুলো ডক্যুমেন্ট আকারে সেট করা
+        const userDoc = {
           uid: uid,
           name: name,
           email: email,
           phone: cleanPhone,
           district: district,
           upazila: upazila,
-          village: '',
           occupation: occupation,
-          preferred_crops: ['বোরো ধান', 'আলু'],
           createdAt: (window.firebase && firebase.firestore && firebase.firestore.FieldValue)
             ? firebase.firestore.FieldValue.serverTimestamp()
-            : new Date().toISOString()
+            : new Date().toISOString(),
+          isDeletedByUser: false,
         };
 
-        try {
-          if (window.firebase && firebase.firestore) {
-            await firebase.firestore().collection('users').doc(uid).set(user);
-          }
-        } catch (err) {
-          console.warn('Firestore register notice:', err);
+        if (window.firebase && firebase.firestore) {
+          await firebase.firestore().collection('users').doc(uid).set(userDoc);
         }
 
-        // Cache user profile and update UI
+        // লোকাল ক্যাশ ও প্রোফাইল হেডার আপডেট
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify({
-          ...user,
+          ...userDoc,
           createdAt: new Date().toISOString()
         }));
 
@@ -9196,12 +9182,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         closeModal('authModal');
         updateWebProfileHeader();
 
-        // Step 4: Success Popup & Redirection to Menu Screen
-        showSuccessDialog('অভিনন্দন!', 'আপনার একাউন্ট সফলভাবে তৈরি হয়েছে।', () => {
+        // ৩. সফল পপ-আপ প্রদর্শন
+        showSuccessDialog("সফল হয়েছে!", "আপনার একাউন্ট সফলভাবে তৈরি হয়েছে!", () => {
           setTab('menu');
         });
-      } catch (globalErr) {
-        showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (globalErr.message || globalErr), 'ব্যর্থ হয়েছে!');
+      } catch (e) {
+        showWarningDialog("ত্রুটি ঘটেছে: " + (e.message || e), "ব্যর্থ হয়েছে!");
       } finally {
         if (btn) {
           btn.disabled = false;

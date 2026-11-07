@@ -82,58 +82,53 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
   }
 
   Future<void> _submitRegistration() async {
-    final email = _emailController.text.trim().toLowerCase();
+    final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
     final name = _nameController.text.trim();
-    final district = _selectedDistrict?.trim() ?? '';
-    final upazila = _selectedUpazila?.trim() ?? '';
-    final password = _passwordController.text;
-    final confirmPassword = _confirmPasswordController.text;
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-    // ১. যেকোনো ফিল্ড ফাঁকা থাকলে সতর্কবার্তা
-    if (email.isEmpty ||
-        phone.isEmpty ||
-        name.isEmpty ||
-        district.isEmpty ||
-        upazila.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: 'অনুগ্রহ করে সব তথ্য পূরণ করুন!',
-      );
+    // ১. নাম ভ্যালিডেশন
+    if (name.isEmpty) {
+      showErrorPopup(context, "অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন!");
       return;
     }
 
-    // ২. মোবাইল নম্বর ভ্যালিডেশন ডায়ালগ (১১ ডিজিট ও ০১ দিয়ে শুরু)
+    // ২. ইমেইল ভ্যালিডেশন
+    if (email.isEmpty) {
+      showErrorPopup(context, "অনুগ্রহ করে একটি সঠিক জিমেইল এড্রেস লিখুন!");
+      return;
+    }
+
+    // ৩. মোবাইল নম্বর ভ্যালিডেশন
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanPhone.length != 11 || !cleanPhone.startsWith('01')) {
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: 'অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!',
-      );
+    if (phone.isEmpty || cleanPhone.length != 11 || !cleanPhone.startsWith('01')) {
+      showErrorPopup(context, "অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!");
       return;
     }
 
-    // ৩. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে
+    // ৪. জেলা ও উপজেলা ড্রপডাউন ভ্যালিডেশন (ড্রপডাউন সিলেক্ট না থাকলে ওয়ার্নিং পপ-আপ)
+    if (_selectedDistrict == null ||
+        _selectedDistrict!.trim().isEmpty ||
+        _selectedUpazila == null ||
+        _selectedUpazila!.trim().isEmpty) {
+      showErrorPopup(context, "অনুগ্রহ করে জেলা ও উপজেলা নির্বাচন করুন!");
+      return;
+    }
+
+    // ৫. পাসওয়ার্ড ভ্যালিডেশন
+    if (password.isEmpty || confirmPassword.isEmpty) {
+      showErrorPopup(context, "অনুগ্রহ করে পাসওয়ার্ড লিখুন!");
+      return;
+    }
+
     if (password.length < 6) {
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!',
-      );
+      showErrorPopup(context, "কমপক্ষে ৬ সংখ্যার শক্তিশালী পাসওয়ার্ড দিন!");
       return;
     }
 
-    // ৪. পাসওয়ার্ড দুটি না মিললে সতর্কবার্তা
     if (password != confirmPassword) {
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: 'পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!',
-      );
+      showErrorPopup(context, "পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!");
       return;
     }
 
@@ -142,107 +137,56 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     });
 
     try {
-      // Step 1: Duplicate check in Cloud Firestore users collection
-      if (FirebaseService.isFirebaseInitialized) {
-        try {
-          final phoneQuery = await FirebaseFirestore.instance
-              .collection('users')
-              .where('phone', isEqualTo: cleanPhone)
-              .limit(1)
-              .get()
-              .timeout(const Duration(seconds: 8));
+      // ১. Auth একাউন্ট তৈরি
+      UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-          if (phoneQuery.docs.isNotEmpty) {
-            if (!context.mounted) return;
-            showAppWarningDialog(
-              context,
-              title: 'ব্যর্থ হয়েছে!',
-              message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
-            );
-            return;
-          }
-
-          final altPhone = '+88$cleanPhone';
-          final altPhoneQuery = await FirebaseFirestore.instance
-              .collection('users')
-              .where('phone', isEqualTo: altPhone)
-              .limit(1)
-              .get()
-              .timeout(const Duration(seconds: 8));
-
-          if (altPhoneQuery.docs.isNotEmpty) {
-            if (!context.mounted) return;
-            showAppWarningDialog(
-              context,
-              title: 'ব্যর্থ হয়েছে!',
-              message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
-            );
-            return;
-          }
-        } catch (fsErr) {
-          debugPrint('Firestore pre-check notice: $fsErr');
-        }
-      }
-
-      // Step 2: FirebaseAuth createUserWithEmailAndPassword
-      UserCredential? credential;
-      if (FirebaseService.isFirebaseInitialized) {
-        credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        ).timeout(const Duration(seconds: 15));
-      } else {
-        throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ চেক করুন।');
-      }
-
-      final firebaseUser = credential.user;
-      if (firebaseUser == null) {
-        throw Exception('ব্যবহারকারী তৈরি করা সম্ভব হয়নি। আবার চেষ্টা করুন।');
-      }
+      String? uid = credential.user?.uid;
+      if (uid == null) throw Exception("User UID not found");
 
       try {
-        await firebaseUser.updateDisplayName(name);
+        await credential.user?.updateDisplayName(name);
       } catch (_) {}
 
-      // Step 3: Save profile in users/{uid} via .set()
+      // ২. সরাসরি ফায়ারস্টোরে আসল ফিল্ডগুলো ডক্যুমেন্ট আকারে সেট করা
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'uid': uid,
+        'name': name,
+        'email': email,
+        'phone': cleanPhone,
+        'district': _selectedDistrict ?? '',
+        'upazila': _selectedUpazila ?? '',
+        'occupation': _selectedOccupation,
+        'createdAt': FieldValue.serverTimestamp(),
+        'isDeletedByUser': false,
+      });
+
+      // লোকাল স্টেট ও ক্যাশ সিঙ্ক
       final userModel = UserModel(
-        uid: firebaseUser.uid,
+        uid: uid,
         name: name,
         email: email,
         phone: cleanPhone,
-        district: district,
-        upazila: upazila,
+        district: _selectedDistrict ?? '',
+        upazila: _selectedUpazila ?? '',
         village: '',
         occupation: _selectedOccupation,
         preferredCrops: [],
         createdAt: DateTime.now(),
       );
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.setUser(userModel);
+      } catch (_) {}
 
-      await FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid).set({
-        'uid': firebaseUser.uid,
-        'name': name,
-        'email': email,
-        'phone': cleanPhone,
-        'district': district,
-        'upazila': upazila,
-        'village': '',
-        'occupation': _selectedOccupation,
-        'preferredCrops': <String>[],
-        'createdAt': FieldValue.serverTimestamp(),
-      }).timeout(const Duration(seconds: 10));
-
-      // Update AuthProvider and local storage cache
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.setUser(userModel);
-
+      // ৩. সফল পপ-আপ প্রদর্শন
       if (!context.mounted) return;
-
-      // Step 4: Success Popup & Redirection
-      showAppSuccessDialog(
+      showSuccessPopup(
         context,
-        title: 'অভিনন্দন!',
-        message: 'আপনার একাউন্ট সফলভাবে তৈরি হয়েছে।',
-        autoDismiss: false,
+        "আপনার একাউন্ট সফলভাবে তৈরি হয়েছে!",
+        title: "সফল হয়েছে!",
         onConfirm: () {
           Navigator.pushAndRemoveUntil(
             context,
@@ -255,48 +199,15 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       );
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return;
-      String errorMessage;
-      switch (e.code) {
-        case 'email-already-in-use':
-          errorMessage = 'এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!';
-          break;
-        case 'weak-password':
-          errorMessage = 'পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!';
-          break;
-        case 'invalid-email':
-          errorMessage = 'জিমেইল এড্রেসটি সঠিক নয়!';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-          break;
-        default:
-          errorMessage = e.message != null && e.message!.isNotEmpty
-              ? e.message!
-              : 'একাউন্ট তৈরিতে সমস্যা হয়েছে: ${e.code}';
-          break;
-      }
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: errorMessage,
-      );
-    } on FirebaseException catch (e) {
-      if (!context.mounted) return;
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: e.message != null && e.message!.isNotEmpty
-            ? e.message!
-            : 'সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ চেক করুন।',
-      );
+      String message = "একাউন্ট তৈরিতে ব্যর্থ হয়েছে!";
+      if (e.code == 'email-already-in-use') message = "এই জিমেইল দিয়ে ইতোমধ্যে একাউন্ট খোলা আছে!";
+      if (e.code == 'weak-password') message = "কমপক্ষে ৬ সংখ্যার শক্তিশালী পাসওয়ার্ড দিন!";
+      if (e.code == 'invalid-email') message = "জিমেইল এড্রেসটি সঠিক নয়!";
+      if (e.code == 'network-request-failed') message = "ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।";
+      showErrorPopup(context, message);
     } catch (e) {
       if (!context.mounted) return;
-      final errorText = e.toString().replaceFirst('Exception: ', '');
-      showAppWarningDialog(
-        context,
-        title: 'ব্যর্থ হয়েছে!',
-        message: errorText.isNotEmpty ? errorText : 'একাউন্ট তৈরিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
-      );
+      showErrorPopup(context, "ত্রুটি ঘটেছে: ${e.toString().replaceFirst('Exception: ', '')}");
     } finally {
       if (mounted) {
         setState(() {
