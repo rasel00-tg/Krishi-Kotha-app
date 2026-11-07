@@ -124,8 +124,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
     // ১. আইডেন্টিফায়ার ভ্যালিডেশন ডায়ালগ
     if (identifier.isEmpty) {
-      showAppWarningDialog(
+      showAppFailureDialog(
         context,
+        title: 'লগইন ব্যর্থ হয়েছে!',
         message: _loginTabIndex == 0
             ? 'অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!'
             : 'অনুগ্রহ করে আপনার ১১ ডিজিটের মোবাইল নম্বর লিখুন!',
@@ -137,17 +138,19 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       final lower = identifier.toLowerCase();
       if (!lower.endsWith('@gmail.com') ||
           !RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$', caseSensitive: false).hasMatch(lower)) {
-        showAppWarningDialog(
+        showAppFailureDialog(
           context,
-          message: 'শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!',
+          title: 'লগইন ব্যর্থ হয়েছে!',
+          message: 'ইমেইল ফরম্যাট সঠিক নয়! শুধুমাত্র @gmail.com গ্রহণযোগ্য।',
         );
         return;
       }
     } else {
       final clean = identifier.replaceAll(RegExp(r'[^0-9]'), '');
       if (clean.length != 11 || !clean.startsWith('01')) {
-        showAppWarningDialog(
+        showAppFailureDialog(
           context,
+          title: 'লগইন ব্যর্থ হয়েছে!',
           message: 'সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!',
         );
         return;
@@ -156,9 +159,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
     // ২. পাসওয়ার্ড ভ্যালিডেশন ডায়ালগ
     if (password.isEmpty) {
-      showAppWarningDialog(
+      showAppFailureDialog(
         context,
-        message: 'অনুগ্রহ করে আপনার অ্যাকাউন্টের পাসওয়ার্ড লিখুন!',
+        title: 'লগইন ব্যর্থ হয়েছে!',
+        message: 'পাসওয়ার্ড লিখুন!',
       );
       return;
     }
@@ -260,19 +264,92 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     String? explicitErrorMessage;
 
     try {
-      success = await authProvider.loginWithIdentifierAndPassword(
-        identifier: identifier,
-        password: password,
-      );
+      String targetEmail = identifier.trim().toLowerCase();
+
+      // যদি মোবাইল নম্বর দিয়ে লগইন করার চেষ্টা হয়, তবে ফায়ারস্টোর থেকে ইমেইল অনুসন্ধান
+      if (!identifier.contains('@')) {
+        final cleanPhone = identifier.replaceAll(RegExp(r'[^0-9+]'), '');
+        String altPhone = cleanPhone;
+        if (cleanPhone.startsWith('+880')) {
+          altPhone = cleanPhone.replaceFirst('+88', '');
+        } else if (cleanPhone.startsWith('0')) {
+          altPhone = '+88$cleanPhone';
+        }
+
+        final query = await FirebaseFirestore.instance
+            .collection('users')
+            .where('phone', isEqualTo: cleanPhone)
+            .limit(1)
+            .get()
+            .timeout(const Duration(seconds: 8));
+
+        QuerySnapshot<Map<String, dynamic>> finalQuery = query;
+        if (query.docs.isEmpty && altPhone != cleanPhone) {
+          finalQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .where('phone', isEqualTo: altPhone)
+              .limit(1)
+              .get()
+              .timeout(const Duration(seconds: 8));
+        }
+
+        if (finalQuery.docs.isEmpty) {
+          explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+        } else {
+          final foundEmail = (finalQuery.docs.first.data()['email'] as String?)?.trim();
+          if (foundEmail == null || foundEmail.isEmpty) {
+            explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+          } else {
+            targetEmail = foundEmail.toLowerCase();
+          }
+        }
+      }
+
+      if (explicitErrorMessage == null) {
+        // ফায়ারবেজ অথেনটিকেশন সাইন-ইন
+        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: targetEmail,
+          password: password,
+        ).timeout(const Duration(seconds: 12));
+
+        if (credential.user != null) {
+          // ফায়ারস্টোর থেকে প্রোফাইল ডাটা লোড ও প্রোভাইডারে সিঙ্ক
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(credential.user!.uid)
+              .get();
+
+          UserModel loggedUser;
+          if (userDoc.exists && userDoc.data() != null) {
+            loggedUser = UserModel.fromFirestore(userDoc);
+          } else {
+            loggedUser = UserModel(
+              uid: credential.user!.uid,
+              name: credential.user!.displayName ?? 'কৃষক ভাই',
+              email: credential.user!.email ?? targetEmail,
+              phone: identifier.contains('@') ? '' : identifier,
+              district: '',
+              upazila: '',
+              village: '',
+              occupation: 'কৃষক',
+              preferredCrops: [],
+              createdAt: DateTime.now(),
+            );
+          }
+
+          await authProvider.setUser(loggedUser);
+          success = true;
+        }
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        explicitErrorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!';
+        explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
       } else if (e.code == 'user-not-found') {
         explicitErrorMessage = _loginTabIndex == 0
-            ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!'
+            ? 'এই ইমেইলে কোনো একাউন্ট নেই!'
             : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
       } else if (e.code == 'invalid-email') {
-        explicitErrorMessage = 'জিমেইল এড্রেসটি সঠিক নয়!';
+        explicitErrorMessage = 'ইমেইল ফরম্যাট সঠিক নয়!';
       } else if (e.code == 'network-request-failed') {
         explicitErrorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
       } else if (e.code == 'too-many-requests') {
@@ -280,10 +357,17 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       } else if (e.code == 'user-disabled') {
         explicitErrorMessage = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
       } else {
-        explicitErrorMessage = e.message ?? 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
+        explicitErrorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
       }
     } catch (e) {
-      explicitErrorMessage = e.toString().replaceFirst('Exception: ', '');
+      final str = e.toString().replaceFirst('Exception: ', '');
+      if (str.contains('wrong-password') || str.contains('invalid-credential')) {
+        explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
+      } else if (str.contains('user-not-found')) {
+        explicitErrorMessage = _loginTabIndex == 0 ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+      } else {
+        explicitErrorMessage = str;
+      }
     } finally {
       // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা
       if (isLoaderShowing && mounted) {
@@ -305,15 +389,15 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (_) => const MainNavigationScreen(initialIndex: 4),
+              builder: (_) => const MainNavigationScreen(initialIndex: 0),
             ),
             (route) => false,
           );
         },
       );
     } else {
-      final msg = explicitErrorMessage ?? authProvider.errorMessage ?? 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-      showAppWarningDialog(
+      final msg = explicitErrorMessage ?? 'পাসওয়ার্ড ভুল হয়েছে!';
+      showAppFailureDialog(
         context,
         title: 'লগইন ব্যর্থ হয়েছে!',
         message: msg,

@@ -253,9 +253,140 @@ void showAppSuccessDialog(
   );
 }
 
+/// অ্যানিমেটেড লাল ক্রস (✗) সংবলিত ফেইলিউর ডায়ালগ
+void showAppFailureDialog(
+  BuildContext context, {
+  required String message,
+  String title = 'লগইন ব্যর্থ হয়েছে!',
+  VoidCallback? onConfirm,
+}) {
+  bool isDismissed = false;
+  void dismiss(BuildContext dContext) {
+    if (!isDismissed) {
+      isDismissed = true;
+      if (Navigator.of(dContext, rootNavigator: true).canPop()) {
+        Navigator.of(dContext, rootNavigator: true).pop();
+      }
+      if (onConfirm != null) {
+        Future.microtask(onConfirm);
+      }
+    }
+  }
+
+  showDialog(
+    context: context,
+    useRootNavigator: true,
+    barrierDismissible: true,
+    builder: (dialogContext) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        elevation: 12,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // অ্যানিমেটেড লাল ক্রস (✗) চিহ্ন
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.elasticOut,
+                builder: (context, scale, child) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFEBEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFFD32F2F),
+                      size: 44,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFD32F2F),
+                  letterSpacing: 0.2,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  height: 1.45,
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () => dismiss(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD32F2F),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 18, color: Colors.white),
+                      SizedBox(width: 6),
+                      Text(
+                        'আবার চেষ্টা করুন',
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 /// গ্লোবাল এরর ও সাকসেস পপ-আপ হেল্পার (ক্র্যাশ-প্রুফ ও ইনস্ট্যান্ট টাচ আনব্লকার)
 void showErrorPopup(BuildContext context, String message, {String title = 'ব্যর্থ হয়েছে!'}) {
-  showAppWarningDialog(context, title: title, message: message);
+  showAppFailureDialog(context, title: title, message: message);
 }
 
 void showSuccessPopup(

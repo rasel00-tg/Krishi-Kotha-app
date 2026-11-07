@@ -79,7 +79,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     FocusScope.of(context).unfocus();
 
-    // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর ডায়ালগ (Loading State Dialog: Overflow-Immune & Safe Dismiss)
+    // ৪. ক্যাটাগরিভিত্তিক স্টেপ লোডিং ইন্ডিকেটর ডায়ালগ (Category-based Step Loading Dialog)
+    final ValueNotifier<String> stepTitleNotifier = ValueNotifier<String>('তথ্য যাচাই করা হচ্ছে.....');
     bool isLoaderShowing = true;
     showDialog(
       context: context,
@@ -89,52 +90,73 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: MediaQuery.withNoTextScaling(
           child: Dialog(
             backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            elevation: 12,
             insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 320),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Row(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Flexible(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'যাচাই করা হচ্ছে...',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                    SizedBox(
+                      width: 96,
+                      height: 96,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 96,
+                            height: 96,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                              backgroundColor: Color(0xFFE8F5E9),
                             ),
                           ),
-                          SizedBox(height: 3),
-                          Text(
-                            'অনুগ্রহ করে অপেক্ষা করুন',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12.0,
-                              color: AppColors.textSecondary,
+                          SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: Image.asset(
+                              'assets/icons/pnglogo.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.lock_reset_rounded,
+                                color: AppColors.primary,
+                                size: 48,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ValueListenableBuilder<String>(
+                      valueListenable: stepTitleNotifier,
+                      builder: (context, title, _) {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            title,
+                            key: ValueKey(title),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'অনুগ্রহ করে অপেক্ষা করুন',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -148,9 +170,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     bool isSuccess = false;
     String? explicitErrorMessage;
+    String? explicitErrorTitle;
 
     try {
-      // ২. জিমেইল অস্তিত্ব যাচাইকরণ (Firestore Pre-Validation)
+      // ধাপ ১: জিমেইল অস্তিত্ব যাচাইকরণ (Firestore Pre-Validation)
       final userQuery = await FirebaseFirestore.instance
           .collection('users')
           .where('email', isEqualTo: email)
@@ -158,16 +181,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           .get()
           .timeout(const Duration(seconds: 8));
 
-      // যদি একাউন্ট না পাওয়া যায়:
+      // ক) একাউন্ট না পাওয়া গেলে:
       if (userQuery.docs.isEmpty) {
-        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
+        explicitErrorTitle = 'একাউন্ট পাওয়া যায়নি!';
+        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা মোবাইল নম্বর দিয়ে খুঁজে নিন।';
         return;
       }
 
       final userDoc = userQuery.docs.first;
       final docData = userDoc.data();
 
-      // ৩. ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
+      // খ) ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
       final lastResetRaw = docData['lastPasswordReset'];
       DateTime? lastReset;
       if (lastResetRaw is Timestamp) {
@@ -181,10 +205,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (diff.inMinutes < 60) {
           final remainingMin = 60 - diff.inMinutes;
           final bnMin = BanglaNumberConverter.toBangla(remainingMin.toString());
-          explicitErrorMessage = 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিঙ্ক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো $bnMin মিনিট অপেক্ষা করতে হবে।';
+          explicitErrorTitle = 'রিকোয়েস্ট বাতিল করা হয়েছে';
+          explicitErrorMessage = 'রিকোয়েস্ট বাতিল করা হয়েছে। আপনি প্রতি ঘণ্টায় ১ বার রিকোয়েস্ট পাঠাতে পারবেন। পুনরায় চেষ্টা করতে আর $bnMin মিনিট অপেক্ষা করুন।';
           return;
         }
       }
+
+      // ধাপ ২: স্বয়ংক্রিয়ভাবে টেক্সট পরিবর্তন - "রিসেট লিংক পাঠানো হচ্ছে....."
+      stepTitleNotifier.value = 'রিসেট লিংক পাঠানো হচ্ছে.....';
+      await Future.delayed(const Duration(milliseconds: 400));
 
       // একাউন্ট বৈধ এবং কুলডাউন শেষ: Firebase Auth পাসওয়ার্ড রিসেট ইমেইল প্রেরণ
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
@@ -197,15 +226,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       isSuccess = true;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
+        explicitErrorTitle = 'একাউন্ট পাওয়া যায়নি!';
+        explicitErrorMessage = 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা মোবাইল নম্বর দিয়ে খুঁজে নিন।';
       } else if (e.code == 'too-many-requests') {
+        explicitErrorTitle = 'অপেক্ষা করুন!';
         explicitErrorMessage = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
       } else if (e.code == 'network-request-failed') {
+        explicitErrorTitle = 'নেটওয়ার্ক ত্রুটি';
         explicitErrorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
       } else {
+        explicitErrorTitle = 'ব্যর্থ হয়েছে!';
         explicitErrorMessage = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
       }
     } catch (e) {
+      explicitErrorTitle = 'ত্রুটি';
       explicitErrorMessage = 'ত্রুটি ঘটেছে: $e';
     } finally {
       // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা
@@ -220,10 +254,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!mounted) return;
 
     if (isSuccess) {
+      // গ) সফল হলে: সবুজ অ্যানিমেটেড টিক (✓) চিহ্নসহ সাকসেস পপ-আপ
       showAppSuccessDialog(
         context,
         title: 'রিসেট লিঙ্ক পাঠানো হয়েছে!',
-        message: 'পাসওয়ার্ড রিসেট লিংক সফলভাবে পাঠানো হয়েছে। ইনবক্স অথবা স্প্যাম ফোল্ডার চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।',
+        message: 'পাসওয়ার্ড রিসেট লিংক সফলভাবে আপনার ইমেইলে পাঠানো হয়েছে।',
         autoDismiss: false,
         onConfirm: () {
           if (mounted) Navigator.pop(context);
@@ -232,7 +267,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     } else if (explicitErrorMessage != null) {
       showAppWarningDialog(
         context,
-        title: explicitErrorMessage.contains('অপেক্ষা') ? 'অপেক্ষা করুন!' : 'সতর্কবার্তা',
+        title: explicitErrorTitle ?? 'সতর্কবার্তা',
         message: explicitErrorMessage,
       );
     }
@@ -986,33 +1021,6 @@ class _ForgotGmailDialogState extends State<_ForgotGmailDialog> {
                 ),
 
                 const SizedBox(height: 14),
-
-                // অপশন ১: স্বয়ংক্রিয়ভাবে ইনপুট বক্সে সেট করার অপশন
-                SizedBox(
-                  height: 44,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      final email = _foundFullEmail!;
-                      widget.onGmailRecovered?.call(email);
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.input_rounded, color: AppColors.primary, size: 18),
-                    label: const Text(
-                      'এই জিমেইলটি ইনপুট বক্সে বসান',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary, width: 1.4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
 
                 // অপশন ২: সরাসরি রিসেট ইমেইল পাঠানো অথবা ১ ঘণ্টার কুলডাউন ওয়ার্নিং
                 if (_cooldownRemainingMinutes != null && _cooldownRemainingMinutes! > 0) ...[

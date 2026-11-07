@@ -3973,12 +3973,6 @@
               <p style="font-size: 12px; font-weight: 500; color: #2E7D32; margin: 0; line-height: 1.35;">আপনার নিবন্ধিত ইমেইলটি শনাক্ত করা হয়েছে। পাসওয়ার্ড পুনরুদ্ধারে এগিয়ে যান।</p>
             </div>
 
-            <!-- Option 1: Auto-fill into reset page input box -->
-            <button type="button" id="btnFgmApplyReset" onclick="applyFgmToResetPage()" style="width: 100%; height: 42px; border-radius: 12px; border: 1.5px solid var(--primary); background: #F1F8F1; color: var(--primary-dark); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;">
-              <i class="fa-solid fa-arrow-down-to-bracket"></i>
-              <span>এই জিমেইলটি ইনপুট বক্সে বসান</span>
-            </button>
-
             <div id="fgmCooldownBox" style="display: none; margin-top: 12px; padding: 12px; border-radius: 12px; background: #FFF8E1; border: 1px solid #FFE082; color: #E65100; font-size: 12.5px; font-weight: 600; line-height: 1.35;">
               <i class="fa-solid fa-clock" style="margin-right: 6px; color: #F57C00;"></i>
               <span id="fgmCooldownMsg">আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। অনুগ্রহ করে আরো কিছুক্ষণ অপেক্ষা করুন।</span>
@@ -4027,6 +4021,18 @@
             <span>আবার চেষ্টা করুন</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED PASSWORD RESET CATEGORY-BASED STEP LOADING DIALOG -->
+    <div id="resetLoadingOverlay" onclick="if(event.target === this) hideResetStepDialog()" style="display: none; pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100021; align-items: center; justify-content: center;">
+      <div id="resetDialogCard" style="background: white; border-radius: 24px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 12px 36px rgba(0,0,0,0.22); max-width: 320px; width: 85%;">
+        <div style="position: relative; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+          <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-right-color: #1B5E20; animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; box-shadow: 0 0 12px rgba(46,125,50,0.25);"></div>
+          <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
+        </div>
+        <div id="resetLoadingTitle" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">তথ্য যাচাই করা হচ্ছে.....</div>
+        <div id="resetLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
       </div>
     </div>
 
@@ -9634,13 +9640,56 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
-    function showLoginFailureDialog(title = 'লগইন ব্যর্থ হয়েছে!', msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!') {
-      hideLoginLoadingDialog();
-      showWarningDialog(msg, title);
+    function showLoginFailureDialog(title = 'লগইন ব্যর্থ হয়েছে!', msg = 'পাসওয়ার্ড ভুল হয়েছে') {
+      const o = document.getElementById('loginLoadingOverlay');
+      if (o) {
+        const l = document.getElementById('loginStateLoading');
+        const s = document.getElementById('loginStateSuccess');
+        const f = document.getElementById('loginStateFailure');
+        const tEl = document.getElementById('loginFailTitle');
+        const mEl = document.getElementById('loginFailMsg');
+        if (l) l.style.display = 'none';
+        if (s) s.style.display = 'none';
+        if (tEl) tEl.textContent = title;
+        if (mEl) mEl.textContent = msg;
+        if (f) f.style.display = 'flex';
+        o.style.setProperty('display', 'flex', 'important');
+        o.style.setProperty('pointer-events', 'auto', 'important');
+      }
     }
 
     function hideLoginLoadingDialog() {
       const o = document.getElementById('loginLoadingOverlay');
+      if (o) {
+        o.style.setProperty('display', 'none', 'important');
+        o.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
+    // ==========================================
+    // পাসওয়ার্ড রিসেট ক্যাটাগরিভিত্তিক স্টেপ ডায়ালগ কন্ট্রোলার
+    // ==========================================
+    function showResetStepDialog(title = 'তথ্য যাচাই করা হচ্ছে.....', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
+      const o = document.getElementById('resetLoadingOverlay');
+      if (o) {
+        const tEl = document.getElementById('resetLoadingTitle');
+        const sEl = document.getElementById('resetLoadingSubtitle');
+        if (tEl) tEl.textContent = title;
+        if (sEl) sEl.textContent = subtitle;
+        o.style.setProperty('display', 'flex', 'important');
+        o.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function updateResetStepDialog(title, subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
+      const tEl = document.getElementById('resetLoadingTitle');
+      const sEl = document.getElementById('resetLoadingSubtitle');
+      if (tEl) tEl.textContent = title;
+      if (sEl && subtitle) sEl.textContent = subtitle;
+    }
+
+    function hideResetStepDialog() {
+      const o = document.getElementById('resetLoadingOverlay');
       if (o) {
         o.style.setProperty('display', 'none', 'important');
         o.style.setProperty('pointer-events', 'none', 'important');
@@ -9848,8 +9897,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // ৪. কাস্টম লোডিং ইন্ডিকেটর চালু
-      showLoginLoadingDialog('যাচাই করা হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন');
+      // ধাপ ১: তথ্য যাচাইকরণ স্টেপ লোডিং ডায়ালগ চালু
+      showResetStepDialog('তথ্য যাচাই করা হচ্ছে.....', 'অনুগ্রহ করে অপেক্ষা করুন');
 
       let isSuccess = false;
       let explicitError = null;
@@ -9867,13 +9916,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         }
 
-        // যদি একাউন্ট না পাওয়া যায়:
+        // ক) একাউন্ট না পাওয়া গেলে:
         if (!userDoc || !userData) {
-          explicitError = { title: 'একাউন্ট পাওয়া যায়নি!', msg: 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।' };
+          explicitError = {
+            title: 'একাউন্ট পাওয়া যায়নি!',
+            msg: 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা মোবাইল নম্বর দিয়ে খুঁজে নিন।'
+          };
           return;
         }
 
-        // ৩. ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
+        // খ) ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
         let lastReset = null;
         if (userData.lastPasswordReset) {
           if (typeof userData.lastPasswordReset.toDate === 'function') {
@@ -9887,10 +9939,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const diffMin = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
           if (diffMin < 60) {
             const rem = 60 - diffMin;
-            explicitError = { title: 'অপেক্ষা করুন!', msg: 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করতে হবে।' };
+            explicitError = {
+              title: 'রিকোয়েস্ট বাতিল করা হয়েছে',
+              msg: 'রিকোয়েস্ট বাতিল করা হয়েছে। আপনি প্রতি ঘণ্টায় ১ বার রিকোয়েস্ট পাঠাতে পারবেন। পুনরায় চেষ্টা করতে আর ' + toBangla(rem) + ' মিনিট অপেক্ষা করুন।'
+            };
             return;
           }
         }
+
+        // ধাপ ২: ডায়ালগের টেক্সট স্বয়ংক্রিয়ভাবে পরিবর্তিত হয়ে দেখাবে: "রিসেট লিংক পাঠানো হচ্ছে....."
+        updateResetStepDialog('রিসেট লিংক পাঠানো হচ্ছে.....', 'অনুগ্রহ করে অপেক্ষা করুন');
+        await new Promise(r => setTimeout(r, 450));
 
         // একাউন্ট বিদ্যমান এবং কুলডাউন শেষ: Firebase Auth রিসেট লিঙ্ক প্রেরণ
         if (window.firebase && firebase.auth) {
@@ -9911,7 +9970,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         let errMsg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
         const code = err.code || '';
         if (code === 'auth/user-not-found') {
-          errMsg = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
+          errMsg = 'এই জিমেইলে কোনো একাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা মোবাইল নম্বর দিয়ে খুঁজে নিন।';
         } else if (code === 'auth/too-many-requests') {
           errMsg = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
         } else if (code === 'auth/network-request-failed') {
@@ -9919,12 +9978,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
         explicitError = { title: 'ব্যর্থ হয়েছে!', msg: errMsg };
       } finally {
-        hideLoginLoadingDialog();
+        hideResetStepDialog();
       }
 
       if (isSuccess) {
+        // গ) সফল হলে: সবুজ অ্যানিমেটেড টিক (✓) চিহ্নসহ সাকসেস পপ-আপ
         closeForgotPasswordPage();
-        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে পাঠানো হয়েছে। ইনবক্স অথবা স্প্যাম ফোল্ডার চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে আপনার ইমেইলে পাঠানো হয়েছে।');
       } else if (explicitError) {
         showWarningDialog(explicitError.msg, explicitError.title);
       }
@@ -10126,7 +10186,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const rememberMe = document.getElementById('gatewayRememberMe')?.checked ?? true;
 
       if (!identifier) {
-        showWarningDialog(currentGatewayLoginTab === 'email'
+        showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', currentGatewayLoginTab === 'email'
           ? 'অনুগ্রহ করে একটি সঠিক @gmail.com জিমেইল এড্রেস লিখুন!'
           : 'অনুগ্রহ করে আপনার ১১ ডিজিটের মোবাইল নম্বর লিখুন!');
         return;
@@ -10134,19 +10194,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (currentGatewayLoginTab === 'email') {
         if (!identifier.toLowerCase().endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(identifier)) {
-          showWarningDialog('শুধুমাত্র @gmail.com ইমেইল ঠিকানা গ্রহণযোগ্য (যেমন: user@gmail.com)!');
+          showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'ইমেইল ফরম্যাট সঠিক নয়! শুধুমাত্র @gmail.com গ্রহণযোগ্য।');
           return;
         }
       } else {
         const clean = identifier.replace(/[^0-9]/g, '');
         if (clean.length !== 11 || !clean.startsWith('01')) {
-          showWarningDialog('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!');
+          showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!');
           return;
         }
       }
 
       if (!pass) {
-        showWarningDialog('অনুগ্রহ করে আপনার অ্যাকাউন্টের পাসওয়ার্ড লিখুন!');
+        showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'পাসওয়ার্ড লিখুন!');
         return;
       }
 
@@ -10188,81 +10248,79 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
           if (!foundUser || !targetEmail) {
             errorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-            return;
           }
         }
 
-        if (window.firebase && firebase.auth) {
-          try {
-            const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
-            if (cred && cred.user) {
-              const uid = cred.user.uid;
-              if (window.firebase && firebase.firestore) {
-                const uDoc = await firebase.firestore().collection('users').doc(uid).get();
-                if (uDoc && uDoc.exists) {
-                  foundUser = uDoc.data();
-                  foundUser.uid = uid;
+        if (!errorMessage) {
+          if (window.firebase && firebase.auth) {
+            try {
+              const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+              if (cred && cred.user) {
+                const uid = cred.user.uid;
+                if (window.firebase && firebase.firestore) {
+                  const uDoc = await firebase.firestore().collection('users').doc(uid).get();
+                  if (uDoc && uDoc.exists) {
+                    foundUser = uDoc.data();
+                    foundUser.uid = uid;
+                  }
+                }
+                if (!foundUser) {
+                  foundUser = {
+                    uid: uid,
+                    name: cred.user.displayName || 'কৃষক ভাই',
+                    email: cred.user.email || targetEmail,
+                    phone: isEmail ? '' : identifier,
+                    district: '',
+                    upazila: '',
+                    village: '',
+                    occupation: 'কৃষক',
+                    preferred_crops: [],
+                    createdAt: new Date().toISOString()
+                  };
                 }
               }
-              if (!foundUser) {
-                foundUser = {
-                  uid: uid,
-                  name: cred.user.displayName || 'কৃষক ভাই',
-                  email: cred.user.email || targetEmail,
-                  phone: isEmail ? '' : identifier,
-                  district: '',
-                  upazila: '',
-                  village: '',
-                  occupation: 'কৃষক',
-                  preferred_crops: [],
-                  createdAt: new Date().toISOString()
-                };
+            } catch (authErr) {
+              console.warn('Firebase auth failed:', authErr);
+              const errCode = (authErr.code || '').toLowerCase();
+              let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
+              if (errCode.includes('wrong-password') || errCode.includes('invalid-credential')) {
+                msg = 'পাসওয়ার্ড ভুল হয়েছে!';
+              } else if (errCode.includes('user-not-found')) {
+                msg = isEmail ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+              } else if (errCode.includes('invalid-email')) {
+                msg = 'ইমেইল ফরম্যাট সঠিক নয়!';
+              } else if (errCode.includes('network-request-failed')) {
+                msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+              } else if (errCode.includes('too-many-requests')) {
+                msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+              } else if (errCode.includes('user-disabled')) {
+                msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
               }
+              errorMessage = msg;
             }
-          } catch (authErr) {
-            console.warn('Firebase auth failed:', authErr);
-            const errCode = authErr.code || '';
-            let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-            if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-              msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!';
-            } else if (errCode === 'auth/user-not-found') {
-              msg = isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-            } else if (errCode === 'auth/invalid-email') {
-              msg = 'জিমেইল এড্রেসটি সঠিক নয়!';
-            } else if (errCode === 'auth/network-request-failed') {
-              msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-            } else if (errCode === 'auth/too-many-requests') {
-              msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
-            } else if (errCode === 'auth/user-disabled') {
-              msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
+          } else {
+            if (!foundUser) {
+              errorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
             }
-            errorMessage = msg;
-            return;
-          }
-        } else {
-          if (!foundUser) {
-            errorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-            return;
           }
         }
 
-        localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
-        updateWebProfileHeader();
-        isSuccess = true;
+        if (!errorMessage && foundUser) {
+          localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
+          localStorage.setItem('krishi_web_logged_in', 'true');
+          updateWebProfileHeader();
+          isSuccess = true;
+        }
       } catch (err) {
         errorMessage = err.message || 'অপ্রত্যাশিত ত্রুটি ঘটেছে!';
-      } finally {
-        if (!isSuccess) {
-          hideLoginLoadingDialog();
-        }
       }
 
       if (isSuccess) {
         showLoginSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
-          setTab('menu');
+          setTab('home');
         });
-      } else if (errorMessage) {
-        showWarningDialog(errorMessage, 'লগইন ব্যর্থ হয়েছে!');
+      } else {
+        showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', errorMessage || 'পাসওয়ার্ড ভুল হয়েছে!');
       }
     }
 
