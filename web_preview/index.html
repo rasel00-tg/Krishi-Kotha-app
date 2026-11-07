@@ -2835,10 +2835,7 @@
             <div style="display: flex; flex-direction: column; gap: 15px;">
               <!-- Identifier Field with Stable Font & Checkmark -->
               <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                  <label id="gatewayLoginLabel" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">জিমেইল অ্যাড্রেস *</label>
-                  <a href="javascript:void(0)" onclick="openForgotGmailModal()" style="font-size: 12.5px; color: var(--primary); font-weight: 700; text-decoration: none;">জিমেইল ভুলে গেছেন?</a>
-                </div>
+                <label id="gatewayLoginLabel" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">জিমেইল অ্যাড্রেস *</label>
                 <div style="position: relative;">
                   <i id="gatewayLoginIcon" class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
                   <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 40px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
@@ -3324,7 +3321,10 @@
 
           <div style="display: flex; flex-direction: column; gap: 16px;">
             <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার নিবন্ধিত জিমেইল এড্রেস *</label>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">আপনার নিবন্ধিত জিমেইল এড্রেস *</label>
+                <a href="javascript:void(0)" onclick="openForgotGmailModal()" style="font-size: 12.5px; color: var(--primary); font-weight: 700; text-decoration: none;">জিমেইল ভুলে গেছেন?</a>
+              </div>
               <div style="position: relative;">
                 <i class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
                 <input type="email" id="fullForgotEmail" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 42px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: normal; line-height: 1.2; font-family: inherit;">
@@ -3888,10 +3888,7 @@
 
           <div style="display: flex; flex-direction: column; gap: 14px;">
             <div>
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">ইমেইল বা মোবাইল নম্বর *</label>
-                <a href="javascript:void(0)" onclick="closeModal('authModal'); openForgotGmailModal()" style="font-size: 12.5px; color: var(--primary); font-weight: 700; text-decoration: none;">জিমেইল ভুলে গেছেন?</a>
-              </div>
+              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
               <div style="position: relative;">
                 <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
                 <input type="text" id="authLoginId" placeholder="user@gmail.com অথবা ০১৭১XXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
@@ -3971,6 +3968,12 @@
               </div>
               <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">নিরাপত্তার স্বার্থে ইমেইলের মাঝের অক্ষরগুলো গোপন রাখা হয়েছে।</p>
             </div>
+
+            <!-- Option 1: Auto-fill into reset page input box -->
+            <button type="button" id="btnFgmApplyReset" onclick="applyFgmToResetPage()" style="width: 100%; height: 42px; border-radius: 12px; border: 1.5px solid var(--primary); background: #F1F8F1; color: var(--primary-dark); font-size: 13.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;">
+              <i class="fa-solid fa-arrow-down-to-bracket"></i>
+              <span>এই জিমেইলটি ইনপুট বক্সে বসান</span>
+            </button>
 
             <div id="fgmCooldownBox" style="display: none; margin-top: 12px; padding: 12px; border-radius: 12px; background: #FFF8E1; border: 1px solid #FFE082; color: #E65100; font-size: 12.5px; font-weight: 600; line-height: 1.35;">
               <i class="fa-solid fa-clock" style="margin-right: 6px; color: #F57C00;"></i>
@@ -9563,14 +9566,27 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     // ==========================================
     // ১. ইন্টারেক্টিভ লগইন লোডিং পপ-আপ কন্ট্রোলার
     // ==========================================
-    function showLoginLoadingDialog() {
+    function showLoginLoadingDialog(title = 'লগইন হচ্ছে...', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
       const o = document.getElementById('loginLoadingOverlay');
-      if (o) o.style.display = 'flex';
+      if (o) {
+        const titleEl = o.querySelector('div > div > div:first-child');
+        const subEl = o.querySelector('div > div > div:last-child');
+        if (titleEl) titleEl.textContent = title;
+        if (subEl) subEl.textContent = subtitle;
+        o.style.display = 'flex';
+      }
     }
 
     function hideLoginLoadingDialog() {
       const o = document.getElementById('loginLoadingOverlay');
       if (o) o.style.display = 'none';
+    }
+
+    function applyFgmToResetPage() {
+      if (!fgmFoundEmail) return;
+      const resetEmailInp = document.getElementById('fullForgotEmail');
+      if (resetEmailInp) resetEmailInp.value = fgmFoundEmail;
+      closeModal('forgotGmailModal');
     }
 
     // ==========================================
@@ -9756,57 +9772,85 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     async function executeFullForgotPassword() {
       const email = (document.getElementById('fullForgotEmail')?.value || '').trim().toLowerCase();
 
+      // ১. জিমেইল ফরম্যাট ভ্যালিডেশন
       if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
-        showWarningDialog('অনুগ্রহ করে আপনার নিবন্ধিত @gmail.com জিমেইল এড্রেসটি লিখুন!');
+        showWarningDialog('শুধুমাত্র বৈধ @gmail.com জিমেইল এড্রেস গ্রহণযোগ্য (যেমন: user@gmail.com)!', 'সতর্কতা');
         return;
       }
 
-      // ১ ঘণ্টার কঠোর রেট-লিমিট যাচাই
-      if (window.firebase && firebase.firestore) {
-        try {
-          const snap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
-          if (snap && !snap.empty) {
-            const uData = snap.docs[0].data();
-            let lastReset = null;
-            if (uData.lastPasswordReset) {
-              if (typeof uData.lastPasswordReset.toDate === 'function') {
-                lastReset = uData.lastPasswordReset.toDate();
-              } else if (typeof uData.lastPasswordReset === 'string') {
-                lastReset = new Date(uData.lastPasswordReset);
-              }
-            }
-            if (lastReset && !isNaN(lastReset.getTime())) {
-              const diffMin = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
-              if (diffMin < 60) {
-                const rem = 60 - diffMin;
-                showWarningDialog('আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্টের জন্য অনুগ্রহ করে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করুন।', 'অপেক্ষা করুন!');
-                return;
-              }
-            }
-          }
-        } catch (_) {}
-      }
+      // ৪. নন-ডিসমিসিবল কাস্টম লোডিং ইন্ডিকেটর চালু
+      showLoginLoadingDialog('যাচাই করা হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন');
 
       try {
+        let userDoc = null;
+        let userData = null;
+
+        // ২. জিমেইল অস্তিত্ব যাচাইকরণ (Firestore Pre-Validation)
+        if (window.firebase && firebase.firestore) {
+          const snap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
+          if (snap && !snap.empty) {
+            userDoc = snap.docs[0];
+            userData = userDoc.data();
+          }
+        }
+
+        // যদি একাউন্ট না পাওয়া যায়:
+        if (!userDoc || !userData) {
+          hideLoginLoadingDialog();
+          showWarningDialog('এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।', 'একাউন্ট পাওয়া যায়নি!');
+          return;
+        }
+
+        // ৩. ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
+        let lastReset = null;
+        if (userData.lastPasswordReset) {
+          if (typeof userData.lastPasswordReset.toDate === 'function') {
+            lastReset = userData.lastPasswordReset.toDate();
+          } else if (typeof userData.lastPasswordReset === 'string') {
+            lastReset = new Date(userData.lastPasswordReset);
+          }
+        }
+
+        if (lastReset && !isNaN(lastReset.getTime())) {
+          const diffMin = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
+          if (diffMin < 60) {
+            const rem = 60 - diffMin;
+            hideLoginLoadingDialog();
+            showWarningDialog('আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করতে হবে।', 'অপেক্ষা করুন!');
+            return;
+          }
+        }
+
+        // একাউন্ট বিদ্যমান এবং কুলডাউন শেষ: Firebase Auth রিসেট লিঙ্ক প্রেরণ
         if (window.firebase && firebase.auth) {
           await firebase.auth().sendPasswordResetEmail(email);
         }
-        if (window.firebase && firebase.firestore) {
+
+        // ফায়ারস্টোরে টাইমস্ট্যাম্প সংরক্ষণ
+        if (window.firebase && firebase.firestore && userDoc) {
           try {
-            const snap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
-            if (snap && !snap.empty) {
-              await firebase.firestore().collection('users').doc(snap.docs[0].id).update({
-                lastPasswordReset: firebase.firestore.FieldValue.serverTimestamp()
-              });
-            }
+            await firebase.firestore().collection('users').doc(userDoc.id).update({
+              lastPasswordReset: firebase.firestore.FieldValue.serverTimestamp()
+            });
           } catch (_) {}
         }
-      } catch (err) {
-        console.warn('Password reset notice:', err);
-      }
 
-      closeForgotPasswordPage();
-      showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে', 'আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+        hideLoginLoadingDialog();
+        closeForgotPasswordPage();
+        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'পাসওয়ার্ড রিসেট লিংক সফলভাবে পাঠানো হয়েছে। ইনবক্স অথবা স্প্যাম ফোল্ডার চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+      } catch (err) {
+        hideLoginLoadingDialog();
+        let errMsg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
+        const code = err.code || '';
+        if (code === 'auth/user-not-found') {
+          errMsg = 'এই জিমেইলে কোনো একাউন্ট নেই। অনুগ্রহ করে সঠিক জিমেইল দিন অথবা জিমেইল ভুলে গিয়ে থাকলে মোবাইল নম্বর দিয়ে খুঁজে নিন।';
+        } else if (code === 'auth/too-many-requests') {
+          errMsg = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
+        } else if (code === 'auth/network-request-failed') {
+          errMsg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+        }
+        showWarningDialog(errMsg, 'ব্যর্থ হয়েছে!');
+      }
     }
 
     async function executeWebAuthRegister() {
