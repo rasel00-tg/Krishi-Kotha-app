@@ -189,20 +189,19 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         title: 'লগইন সফল হয়েছে!',
         message: 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।',
         onConfirm: () {
-          if (!widget.isGatewayForMenu) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const MainNavigationScreen(initialIndex: 4),
-              ),
-              (route) => false,
-            );
-          }
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const MainNavigationScreen(initialIndex: 4),
+            ),
+            (route) => false,
+          );
         },
       );
     } else {
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: authProvider.errorMessage ?? 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!',
       );
     }

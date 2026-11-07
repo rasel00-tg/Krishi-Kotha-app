@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/phone_login_screen.dart';
+import '../navigation/main_navigation_screen.dart';
 import '../profile/user_profile_screen.dart';
 import '../support/expert_helpline_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -19,30 +21,42 @@ class AppMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-    final bool isLoggedIn = authProvider.isLoggedIn;
 
-    // ১. মেনু ট্যাবে কন্ডিশনাল অথ গেটওয়ে (Authentication Gateway for Menu Tab):
-    // ব্যবহারকারী যদি লগইন অবস্থায় না থাকেন (Guest State):
-    // মেনু পেজটি সম্পূর্ণ লক থাকবে এবং কোনো মেনু আইটেম প্রদর্শিত হবে না।
-    // সরাসরি রেফারেন্স ছবির আধুনিক লগইন স্ক্রিন প্রদর্শিত হবে।
-    // লগইন সফল হওয়া মাত্রই স্বয়ংক্রিয়ভাবে পূর্ণাঙ্গ মেনু পেজে প্রবেশ করবে।
-    if (!isLoggedIn) {
-      return const PhoneLoginScreen(isGatewayForMenu: true);
-    }
+    // ১. মেনু পেজের ভিউ সরাসরি FirebaseAuth.instance.authStateChanges() স্ট্রিমের সাথে যুক্ত
+    return StreamBuilder<User?>(
+      stream: FirebaseService.isFirebaseInitialized
+          ? FirebaseAuth.instance.authStateChanges()
+          : const Stream.empty(),
+      builder: (context, authSnapshot) {
+        final firebaseUser = authSnapshot.data;
+        final bool isFirebaseLoggedIn = firebaseUser != null;
+        final bool isProviderLoggedIn = authProvider.isLoggedIn;
+        final bool isLoggedIn = isFirebaseLoggedIn || isProviderLoggedIn;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
-      // No topbar in Menu screen as requested
-      appBar: null,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ================= REDESIGNED LARGE PROFILE CARD (FIRESTORE STREAMBUILDER) =================
-              _buildLargeProfileCard(context, user),
+        // মেনু ট্যাবে কন্ডিশনাল অথ গেটওয়ে (Authentication Gateway for Menu Tab):
+        // ব্যবহারকারী যদি লগইন অবস্থায় না থাকেন (Guest State):
+        // মেনু পেজটি সম্পূর্ণ লক থাকবে এবং কোনো মেনু আইটেম প্রদর্শিত হবে না।
+        // সরাসরি রেফারেন্স ছবির আধুনিক লগইন স্ক্রিন প্রদর্শিত হবে।
+        // লগইন সফল হওয়া মাত্রই স্বয়ংক্রিয়ভাবে পূর্ণাঙ্গ মেনু পেজে প্রবেশ করবে।
+        if (!isLoggedIn) {
+          return const PhoneLoginScreen(isGatewayForMenu: true);
+        }
+
+        final activeUid = firebaseUser?.uid ?? user?.uid;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF7FAF7),
+          // No topbar in Menu screen as requested
+          appBar: null,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ================= REDESIGNED LARGE PROFILE CARD (FIRESTORE STREAMBUILDER) =================
+                  _buildLargeProfileCard(context, user, activeUid),
 
               const SizedBox(height: 22),
 
@@ -224,6 +238,8 @@ class AppMenuScreen extends StatelessWidget {
         ),
       ),
     );
+      },
+    );
   }
 
   /// Category Header Text
@@ -344,8 +360,8 @@ class AppMenuScreen extends StatelessWidget {
   }
 
   /// Large, Centered Profile Header Card with Firestore StreamBuilder
-  Widget _buildLargeProfileCard(BuildContext context, dynamic user) {
-    final String? uid = user != null ? (user.uid ?? user.userId) : null;
+  Widget _buildLargeProfileCard(BuildContext context, dynamic user, [String? activeUid]) {
+    final String? uid = activeUid ?? (user != null ? (user.uid ?? user.userId) : null);
     if (FirebaseService.isFirebaseInitialized && uid != null && uid.isNotEmpty) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
@@ -789,7 +805,7 @@ class AppMenuScreen extends StatelessWidget {
 
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 4)),
           (route) => false,
         );
       }

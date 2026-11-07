@@ -6343,6 +6343,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       return String(val).replace(/[0-9.]/g, d => bDigits[d] || d);
     }
 
+    // Global tab helper for named/indexed switching
+    function setTab(nameOrIndex) {
+      const map = { 'home': 0, 'crops': 1, 'market': 2, 'calculator': 3, 'menu': 4 };
+      const idx = typeof nameOrIndex === 'number' ? nameOrIndex : (map[nameOrIndex] !== undefined ? map[nameOrIndex] : 0);
+      switchTab(idx);
+    }
+
     // Tabs switching (Global Navigation Active)
     function switchTab(index) {
       // Auto-close all full-screen modals & overlay traps so user immediately navigates to clicked tab without any blockage
@@ -9077,26 +9084,26 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       // ১. যেকোনো ফিল্ড ফাঁকা থাকলে সেন্ট্রাল লোগো সতর্কবার্তা
       if (!email || !phone || !name || !district || !upazila || !pass || !confirmPass) {
-        showWarningDialog('অনুগ্রহ করে সব তথ্য পূরণ করুন!');
+        showWarningDialog('অনুগ্রহ করে সব তথ্য পূরণ করুন!', 'ব্যর্থ হয়েছে!');
         return;
       }
 
       // ২. মোবাইল নম্বর ভ্যালিডেশন (১১ ডিজিট ও ০১ দিয়ে শুরু)
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
-        showWarningDialog('অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!');
+        showWarningDialog('অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!', 'ব্যর্থ হয়েছে!');
         return;
       }
 
       // ৩. পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে
       if (pass.length < 6) {
-        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
+        showWarningDialog('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!', 'ব্যর্থ হয়েছে!');
         return;
       }
 
       // ৪. পাসওয়ার্ড দুটি না মিললে সতর্কবার্তা
       if (pass !== confirmPass) {
-        showWarningDialog('পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!');
+        showWarningDialog('পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!', 'ব্যর্থ হয়েছে!');
         return;
       }
 
@@ -9112,13 +9119,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           try {
             const phoneSnap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
             if (phoneSnap && !phoneSnap.empty) {
-              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!');
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
               return;
             }
             const altPhone = '+88' + cleanPhone;
             const altPhoneSnap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
             if (altPhoneSnap && !altPhoneSnap.empty) {
-              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!');
+              showWarningDialog('এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
               return;
             }
           } catch (checkErr) {
@@ -9140,16 +9147,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             }
           } catch (authErr) {
             if (authErr.code === 'auth/email-already-in-use') {
-              showWarningDialog('এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!');
+              showWarningDialog('এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!', 'ব্যর্থ হয়েছে!');
               return;
             } else if (authErr.code === 'auth/weak-password') {
-              showWarningDialog('পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!');
+              showWarningDialog('পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!', 'ব্যর্থ হয়েছে!');
               return;
             } else if (authErr.code === 'auth/invalid-email') {
-              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!');
+              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
               return;
             } else {
-              showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (authErr.message || authErr.code));
+              showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (authErr.message || authErr.code), 'ব্যর্থ হয়েছে!');
               return;
             }
           }
@@ -9194,7 +9201,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           setTab('menu');
         });
       } catch (globalErr) {
-        showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (globalErr.message || globalErr));
+        showWarningDialog('একাউন্ট তৈরিতে সমস্যা হয়েছে: ' + (globalErr.message || globalErr), 'ব্যর্থ হয়েছে!');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -9264,7 +9271,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
 
         if (!foundUser || !targetEmail) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
           return;
         }
       }
@@ -9298,12 +9305,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         } catch (authErr) {
           console.warn('Firebase auth failed:', authErr);
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          const errCode = authErr.code || '';
+          if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
+            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+          } else if (errCode === 'auth/user-not-found') {
+            showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          } else {
+            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          }
           return;
         }
       } else {
         if (!foundUser) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
           return;
         }
       }
@@ -9454,7 +9468,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
 
         if (!foundUser || !targetEmail) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
           return;
         }
       }
@@ -9488,12 +9502,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         } catch (authErr) {
           console.warn('Firebase auth failed:', authErr);
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          const errCode = authErr.code || '';
+          if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
+            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+          } else if (errCode === 'auth/user-not-found') {
+            showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          } else {
+            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          }
           return;
         }
       } else {
         if (!foundUser) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
           return;
         }
       }

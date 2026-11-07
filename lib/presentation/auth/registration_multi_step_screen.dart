@@ -100,6 +100,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         confirmPassword.isEmpty) {
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: 'অনুগ্রহ করে সব তথ্য পূরণ করুন!',
       );
       return;
@@ -110,6 +111,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     if (cleanPhone.length != 11 || !cleanPhone.startsWith('01')) {
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: 'অনুগ্রহ করে ১১ ডিজিটের সঠিক মোবাইল নম্বর লিখুন!',
       );
       return;
@@ -119,6 +121,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     if (password.length < 6) {
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!',
       );
       return;
@@ -128,6 +131,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     if (password != confirmPassword) {
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: 'পাসওয়ার্ড দুটি মেলেনি, পুনরায় যাচাই করুন!',
       );
       return;
@@ -140,35 +144,43 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     try {
       // Step 1: Duplicate check in Cloud Firestore users collection
       if (FirebaseService.isFirebaseInitialized) {
-        final phoneQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .where('phone', isEqualTo: cleanPhone)
-            .limit(1)
-            .get();
+        try {
+          final phoneQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .where('phone', isEqualTo: cleanPhone)
+              .limit(1)
+              .get()
+              .timeout(const Duration(seconds: 8));
 
-        if (phoneQuery.docs.isNotEmpty) {
-          if (!mounted) return;
-          showAppWarningDialog(
-            context,
-            message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
-          );
-          return;
-        }
+          if (phoneQuery.docs.isNotEmpty) {
+            if (!context.mounted) return;
+            showAppWarningDialog(
+              context,
+              title: 'ব্যর্থ হয়েছে!',
+              message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
+            );
+            return;
+          }
 
-        final altPhone = '+88$cleanPhone';
-        final altPhoneQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .where('phone', isEqualTo: altPhone)
-            .limit(1)
-            .get();
+          final altPhone = '+88$cleanPhone';
+          final altPhoneQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .where('phone', isEqualTo: altPhone)
+              .limit(1)
+              .get()
+              .timeout(const Duration(seconds: 8));
 
-        if (altPhoneQuery.docs.isNotEmpty) {
-          if (!mounted) return;
-          showAppWarningDialog(
-            context,
-            message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
-          );
-          return;
+          if (altPhoneQuery.docs.isNotEmpty) {
+            if (!context.mounted) return;
+            showAppWarningDialog(
+              context,
+              title: 'ব্যর্থ হয়েছে!',
+              message: 'এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!',
+            );
+            return;
+          }
+        } catch (fsErr) {
+          debugPrint('Firestore pre-check notice: $fsErr');
         }
       }
 
@@ -178,9 +190,9 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password,
-        );
+        ).timeout(const Duration(seconds: 15));
       } else {
-        throw Exception('ফায়ারবেস সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+        throw Exception('সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ চেক করুন।');
       }
 
       final firebaseUser = credential.user;
@@ -217,13 +229,13 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         'occupation': _selectedOccupation,
         'preferredCrops': <String>[],
         'createdAt': FieldValue.serverTimestamp(),
-      });
+      }).timeout(const Duration(seconds: 10));
 
       // Update AuthProvider and local storage cache
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.setUser(userModel);
 
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       // Step 4: Success Popup & Redirection
       showAppSuccessDialog(
@@ -242,7 +254,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         },
       );
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       String errorMessage;
       switch (e.code) {
         case 'email-already-in-use':
@@ -254,19 +266,35 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         case 'invalid-email':
           errorMessage = 'জিমেইল এড্রেসটি সঠিক নয়!';
           break;
+        case 'network-request-failed':
+          errorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+          break;
         default:
-          errorMessage = 'একাউন্ট তৈরিতে সমস্যা হয়েছে: ${e.message ?? e.code}';
+          errorMessage = e.message != null && e.message!.isNotEmpty
+              ? e.message!
+              : 'একাউন্ট তৈরিতে সমস্যা হয়েছে: ${e.code}';
           break;
       }
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: errorMessage,
       );
+    } on FirebaseException catch (e) {
+      if (!context.mounted) return;
+      showAppWarningDialog(
+        context,
+        title: 'ব্যর্থ হয়েছে!',
+        message: e.message != null && e.message!.isNotEmpty
+            ? e.message!
+            : 'সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। ইন্টারনেট সংযোগ চেক করুন।',
+      );
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       final errorText = e.toString().replaceFirst('Exception: ', '');
       showAppWarningDialog(
         context,
+        title: 'ব্যর্থ হয়েছে!',
         message: errorText.isNotEmpty ? errorText : 'একাউন্ট তৈরিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
       );
     } finally {

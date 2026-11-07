@@ -346,28 +346,35 @@ class AuthService {
           altPhone = '+88$cleanPhone';
         }
 
-        var query = await _firestore!
-            .collection('users')
-            .where('phone', isEqualTo: cleanPhone)
-            .limit(1)
-            .get();
-
-        if (query.docs.isEmpty && altPhone != cleanPhone) {
+        QuerySnapshot<Map<String, dynamic>> query;
+        try {
           query = await _firestore!
               .collection('users')
-              .where('phone', isEqualTo: altPhone)
+              .where('phone', isEqualTo: cleanPhone)
               .limit(1)
-              .get();
+              .get()
+              .timeout(const Duration(seconds: 8));
+
+          if (query.docs.isEmpty && altPhone != cleanPhone) {
+            query = await _firestore!
+                .collection('users')
+                .where('phone', isEqualTo: altPhone)
+                .limit(1)
+                .get()
+                .timeout(const Duration(seconds: 8));
+          }
+        } catch (_) {
+          throw Exception('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
         }
 
         if (query.docs.isEmpty) {
-          throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          throw Exception('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
         }
 
         final docData = query.docs.first.data();
         final foundEmail = (docData['email'] as String?)?.trim();
         if (foundEmail == null || foundEmail.isEmpty) {
-          throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          throw Exception('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
         }
         targetEmail = foundEmail.toLowerCase();
       }
@@ -376,7 +383,7 @@ class AuthService {
       final credential = await _auth!.signInWithEmailAndPassword(
         email: targetEmail,
         password: password,
-      );
+      ).timeout(const Duration(seconds: 12));
       final firebaseUser = credential.user!;
 
       // Retrieve full user profile from Firestore users collection
@@ -404,11 +411,16 @@ class AuthService {
       _currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password' ||
-          e.code == 'invalid-credential' ||
-          e.code == 'user-not-found' ||
-          e.code == 'invalid-email') {
-        throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!');
+      } else if (e.code == 'user-not-found') {
+        throw Exception(cleanId.contains('@')
+            ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!'
+            : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
+      } else if (e.code == 'invalid-email') {
+        throw Exception('জিমেইল এড্রেসটি সঠিক নয়!');
+      } else if (e.code == 'network-request-failed') {
+        throw Exception('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।');
       } else if (e.code == 'user-disabled') {
         throw Exception('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।');
       } else {
