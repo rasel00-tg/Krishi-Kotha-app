@@ -518,6 +518,7 @@ class AdminFirestoreService {
     required String content,
     String? bannerText,
     String? lastUpdated,
+    String? bannerImageUrl,
     String updatedBy = 'এডমিন',
   }) async {
     final db = _db;
@@ -537,6 +538,9 @@ class AdminFirestoreService {
       }
       if (lastUpdated != null && lastUpdated.trim().isNotEmpty) {
         data['last_updated'] = lastUpdated.trim();
+      }
+      if (bannerImageUrl != null) {
+        data['banner_image_url'] = bannerImageUrl.trim();
       }
 
       await db.collection('settings').doc('privacy_policy').set(data, SetOptions(merge: true));

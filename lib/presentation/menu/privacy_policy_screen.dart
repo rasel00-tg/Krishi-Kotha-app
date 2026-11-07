@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -13,14 +14,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 19),
           onPressed: () => Navigator.pop(context),
           tooltip: 'ফিরে যান',
         ),
         title: const Text(
           'গোপনীয়তা নীতি',
           style: TextStyle(
-            fontSize: 17,
+            fontSize: 16.5,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
@@ -37,12 +38,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
           final lastUpdated = data?['last_updated']?.toString() ?? 'সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ • সংস্করণ ১.০.০';
           final bannerText = data?['banner_text']?.toString() ??
               'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
+          final bannerImageUrl = data?['banner_image_url']?.toString() ?? data?['image_url']?.toString();
           final customPolicyContent = data?['policy_content']?.toString();
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             // Extra bottom padding ensures smooth scrolling without overlap from fixed floating navigation bar
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 20.0, bottom: 120.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 120.0),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 800),
@@ -51,58 +53,101 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   children: [
                     // Top App Logo
                     SizedBox(
-                      width: 72,
-                      height: 72,
+                      width: 64,
+                      height: 64,
                       child: Image.asset(
                         'assets/icons/pnglogo.png',
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => const Icon(
                           Icons.eco_rounded,
                           color: AppColors.primary,
-                          size: 48,
+                          size: 44,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
 
                     // Main Title & Subtitle
                     const Text(
                       'কৃষি কথা – গোপনীয়তা ও সুরক্ষা নীতিমালা',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18.5,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
-                        height: 1.3,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       lastUpdated,
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 12,
                         color: AppColors.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+
+                    // 16:9 Banner Image (Cloudflare R2 Optimized CachedNetworkImage)
+                    if (bannerImageUrl != null && bannerImageUrl.trim().isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFE2EBE2), width: 0.9),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x08000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: CachedNetworkImage(
+                              imageUrl: bannerImageUrl.trim(),
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: const Color(0xFFF1F5F1),
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
 
                     // Security Highlight Banner
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F5E9),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFC8E6C9)),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(color: const Color(0xFFC8E6C9), width: 0.8),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.verified_user_rounded, color: AppColors.primary, size: 26),
-                          const SizedBox(width: 12),
+                          const Icon(Icons.verified_user_rounded, color: AppColors.primary, size: 24),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,18 +155,18 @@ class PrivacyPolicyScreen extends StatelessWidget {
                                 const Text(
                                   'কৃষকের তথ্যের পূর্ণ নিরাপত্তা ও গোপনীয়তা',
                                   style: TextStyle(
-                                    fontSize: 14.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primaryDark,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 3),
                                 Text(
                                   bannerText,
                                   style: const TextStyle(
-                                    fontSize: 12.5,
+                                    fontSize: 12.2,
                                     color: Color(0xFF2E7D32),
-                                    height: 1.4,
+                                    height: 1.38,
                                   ),
                                 ),
                               ],
@@ -131,7 +176,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
 
                     // Policy Sections (Dynamic from Firestore or Fallback Defaults)
                     if (customPolicyContent != null && customPolicyContent.trim().isNotEmpty)
@@ -139,33 +184,40 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     else
                       ..._buildDefaultPolicySections(),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     // Footer Note
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(color: const Color(0xFFE2EBE2), width: 0.8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x05000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
                           const Text(
                             'কৃষি কথা – Krishi Kotha',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                               color: AppColors.primaryDark,
                             ),
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
                           Text(
                             'স্মার্ট কৃষিতে কৃষকের সাথে সবসময় • কপিরাইট © ২০২৬ সর্বস্বত্ব সংরক্ষিত',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11.5,
                               color: Colors.grey.shade600,
                             ),
                           ),
@@ -173,7 +225,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // Extra space at bottom so no overlap occurs even on larger screen density
+                    // Extra space at bottom so no overlap occurs with the floating bottom bar
                     const SizedBox(height: 36),
                   ],
                 ),
@@ -279,26 +331,26 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget _buildFallbackTextCard(String text) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE0E6E0), width: 1.0),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: const Color(0xFFE2EBE2), width: 0.8),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
+            color: Color(0x05000000),
+            blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 13.5,
+          fontSize: 13,
           color: AppColors.textSecondary,
-          height: 1.5,
+          height: 1.45,
         ),
       ),
     );
@@ -401,20 +453,20 @@ class PrivacyPolicyScreen extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE0E6E0), width: 1.0),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: const Color(0xFFE2EBE2), width: 0.8),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
+            color: Color(0x05000000),
+            blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -422,22 +474,22 @@ class PrivacyPolicyScreen extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Icon(icon, color: iconColor, size: 20),
+                  child: Icon(icon, color: iconColor, size: 18),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '$number. $title',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
@@ -446,43 +498,51 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           // Paragraph
           if (content.isNotEmpty)
             Text(
               content,
               style: const TextStyle(
-                fontSize: 13.5,
+                fontSize: 13,
                 color: AppColors.textSecondary,
-                height: 1.45,
+                height: 1.42,
               ),
             ),
 
-          if (bullets.isNotEmpty) const SizedBox(height: 10),
+          if (bullets.isNotEmpty) const SizedBox(height: 8),
 
-          // Bullet Points
+          // Bullet Points with minimalist stylish check badge
           ...bullets.map(
             (b) => Padding(
-              padding: const EdgeInsets.only(bottom: 6.0),
+              padding: const EdgeInsets.only(bottom: 5.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6, right: 8),
-                    child: Icon(
-                      Icons.circle,
-                      size: 6,
-                      color: AppColors.primary,
+                  Container(
+                    margin: const EdgeInsets.only(top: 2.5, right: 8),
+                    width: 15,
+                    height: 15,
+                    decoration: BoxDecoration(
+                      color: iconBgColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.check_rounded,
+                        size: 10,
+                        color: iconColor,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Text(
                       b,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 12.8,
                         color: Color(0xFF37474F),
-                        height: 1.4,
+                        height: 1.38,
                       ),
                     ),
                   ),

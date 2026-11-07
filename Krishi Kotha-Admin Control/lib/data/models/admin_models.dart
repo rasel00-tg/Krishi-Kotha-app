@@ -359,6 +359,7 @@ class AdminPrivacyPolicyModel {
   final String lastUpdated;
   final String bannerText;
   final String content;
+  final String? bannerImageUrl;
   final DateTime? updatedAt;
   final String updatedBy;
 
@@ -366,6 +367,7 @@ class AdminPrivacyPolicyModel {
     required this.lastUpdated,
     required this.bannerText,
     required this.content,
+    this.bannerImageUrl,
     this.updatedAt,
     this.updatedBy = 'এডমিন',
   });
@@ -379,6 +381,7 @@ class AdminPrivacyPolicyModel {
       bannerText: data['banner_text']?.toString() ??
           'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।',
       content: data['policy_content']?.toString() ?? AdminPrivacyPolicyModel.defaultContentText(),
+      bannerImageUrl: data['banner_image_url']?.toString() ?? data['image_url']?.toString(),
       updatedAt: (data['updated_at'] is Timestamp) ? (data['updated_at'] as Timestamp).toDate() : null,
       updatedBy: data['updated_by']?.toString() ?? 'এডমিন',
     );

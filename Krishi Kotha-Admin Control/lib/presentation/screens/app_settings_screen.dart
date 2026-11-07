@@ -16,6 +16,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
   final _formKey = GlobalKey<FormState>();
   final _lastUpdatedController = TextEditingController();
   final _bannerTextController = TextEditingController();
+  final _bannerImageUrlController = TextEditingController();
   final _policyContentController = TextEditingController();
 
   bool _isSaving = false;
@@ -26,6 +27,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
   void dispose() {
     _lastUpdatedController.dispose();
     _bannerTextController.dispose();
+    _bannerImageUrlController.dispose();
     _policyContentController.dispose();
     super.dispose();
   }
@@ -34,6 +36,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
     if (!_isInitialized) {
       _lastUpdatedController.text = policy.lastUpdated;
       _bannerTextController.text = policy.bannerText;
+      _bannerImageUrlController.text = policy.bannerImageUrl ?? '';
       _policyContentController.text = policy.content;
       _isInitialized = true;
     }
@@ -48,6 +51,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
         content: _policyContentController.text.trim(),
         bannerText: _bannerTextController.text.trim(),
         lastUpdated: _lastUpdatedController.text.trim(),
+        bannerImageUrl: _bannerImageUrlController.text.trim().isNotEmpty ? _bannerImageUrlController.text.trim() : null,
         updatedBy: 'সুপার এডমিন',
       );
 
@@ -60,7 +64,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'গোপনীয় নীতি সফলভাবে আপডেট ও সংরক্ষিত হয়েছে! সকল ইউজার অ্যাপে তাৎক্ষণিক সিঙ্ক হয়েছে।',
+                    'গোপনীয় নীতি ও ব্যানার সফলভাবে আপডেট হয়েছে! সমস্ত ইউজার অ্যাপে তাৎক্ষণিক সিঙ্ক সম্পন্ন।',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -243,7 +247,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'এখানে যেকোনো ধারা বা টেক্সট এডিট করে আপডেট করলে তা সাথে সাথে ক্লাউড ফায়ারস্টোরে সেভ হবে এবং ইউজার অ্যাপে রিয়েল-টাইমে প্রদর্শিত হবে।',
+                  '১৬:৯ ব্যানার ছবি, নিরাপত্তা বার্তা ও পূর্ণ নীতি টেক্সট এডিট করুন। ক্লাউডফ্লেয়ার R2 ও ফায়ারস্টোরে লাইভ সিঙ্ক সক্রিয়।',
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.3),
                 ),
               ],
@@ -428,7 +432,101 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
 
           const SizedBox(height: 18),
 
-          // 3. Multi-line Policy Content Editor
+          // 3. Feature Banner Image Field (16:9 Cloudflare R2 Banner)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'ফিচার ব্যানার ছবি (১৬:৯ • Cloudflare R2)',
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: AdminColors.textPrimary),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFA5D6A7)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_outlined, size: 12, color: Color(0xFF2E7D32)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Zero-Orphan সেফটি নীতি',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF2E7D32)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: _bannerImageUrlController,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/...',
+              prefixIcon: const Icon(Icons.image_outlined, size: 20),
+              suffixIcon: _bannerImageUrlController.text.trim().isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        setState(() => _bannerImageUrlController.clear());
+                      },
+                      tooltip: 'ছবি মুছুন',
+                    )
+                  : null,
+              filled: true,
+              fillColor: const Color(0xFFF9FBF9),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AdminColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AdminColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AdminColors.primary, width: 1.5)),
+            ),
+          ),
+
+          // 16:9 Image Preview in Editor
+          if (_bannerImageUrlController.text.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxHeight: 200),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AdminColors.border),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x06000000),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    _bannerImageUrlController.text.trim(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFFF5F5F5),
+                      child: const Center(
+                        child: Text(
+                          'ছবির প্রিভিউ লোড করা সম্ভব হয়নি',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 18),
+
+          // 4. Multi-line Policy Content Editor
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -527,6 +625,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
         ? 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম।'
         : _bannerTextController.text.trim();
 
+    final bannerImageUrl = _bannerImageUrlController.text.trim();
+
     final content = _policyContentController.text.trim().isEmpty
         ? AdminPrivacyPolicyModel.defaultContentText()
         : _policyContentController.text.trim();
@@ -607,6 +707,29 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
                   style: const TextStyle(fontSize: 11.5, color: AdminColors.textMuted),
                 ),
                 const SizedBox(height: 14),
+
+                // 16:9 Banner Image Preview in simulated app
+                if (bannerImageUrl.isNotEmpty) ...[
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2EBE2)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.network(
+                          bannerImageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
 
                 // Banner Preview
                 Container(

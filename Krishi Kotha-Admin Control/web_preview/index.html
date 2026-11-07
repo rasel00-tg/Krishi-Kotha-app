@@ -1166,6 +1166,46 @@
                 </div>
               </div>
 
+              <!-- 3. Feature Banner Image Field (16:9 Cloudflare R2 Banner with In-Browser Cropper & Zero-Orphan Safety) -->
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label style="font-size: 13.5px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-image" style="color: var(--primary);"></i>
+                    <span>ফিচার ব্যানার ছবি (১৬:৯ • Cloudflare R2)</span>
+                  </label>
+                  <span style="font-size: 11px; font-weight: 600; color: #2E7D32; background: #E8F5E9; padding: 3px 8px; border-radius: 12px; border: 1px solid #C8E6C9; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fa-solid fa-shield-halved"></i> Zero-Orphan সেফটি নীতি
+                  </span>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <div style="position: relative; flex: 1;">
+                    <i class="fa-solid fa-link" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 13px;"></i>
+                    <input type="text" id="settingPrivacyBannerUrl" oninput="handleBannerUrlInput()" placeholder="ছবি নির্বাচন করুন বা Cloudflare R2 লিংক দিন..." class="form-control" style="padding-left: 38px; height: 42px; font-size: 13.5px; border-radius: 10px; width: 100%; border: 1px solid var(--border); box-sizing: border-box;">
+                  </div>
+                  <button type="button" onclick="document.getElementById('privacyBannerFileInput').click()" class="btn btn-outline" style="height: 42px; padding: 0 16px; font-size: 13px; font-weight: 600; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; border: 1.5px solid var(--primary); color: var(--primary); cursor: pointer;">
+                    <i class="fa-solid fa-crop-simple"></i>
+                    <span>ছবি নির্বাচন ও ক্রপ</span>
+                  </button>
+                  <input type="file" id="privacyBannerFileInput" accept="image/*" style="display: none;" onchange="handlePrivacyImageSelected(this)">
+                </div>
+
+                <!-- 16:9 Image Preview Box (Zero-Orphan Local Memory Preview) -->
+                <div id="privacyBannerPreviewBox" style="display: none; margin-top: 10px; background: #F8FAF8; border: 1px solid var(--border); border-radius: 12px; padding: 12px;">
+                  <div style="position: relative; width: 100%; max-width: 460px; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+                    <img id="privacyBannerPreviewImg" src="" style="width: 100%; height: 100%; object-fit: cover;" alt="ব্যানার প্রিভিউ">
+                    <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 6px; backdrop-filter: blur(4px);">১৬:৯ ক্রপড ব্যানার</div>
+                    <button type="button" onclick="reopenPrivacyCropper()" style="position: absolute; top: 8px; right: 42px; width: 28px; height: 28px; border-radius: 50%; background: #2E7D32; color: #fff; border: 1.5px solid #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);" title="পুনরায় ক্রপ করুন">
+                      <i class="fa-solid fa-crop-simple"></i>
+                    </button>
+                    <button type="button" onclick="removePrivacyBannerImage()" style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #D32F2F; color: #fff; border: 1.5px solid #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3);" title="ছবি মুছুন">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                  <div id="privacyUploadStatus" style="font-size: 12px; margin-top: 8px; color: #2E7D32; font-weight: 500;"></div>
+                </div>
+              </div>
+
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <label style="font-size: 13.5px; font-weight: 600; color: var(--text-primary);">
@@ -1211,6 +1251,11 @@
                 <p id="previewLastUpdated" style="font-size: 11.5px; color: var(--text-muted); margin: 0;">সর্বশেষ হালনাগাদ: নভেম্বর ২০২৬ • সংস্করণ ১.০.০</p>
               </div>
 
+              <!-- 16:9 Banner Image Preview in simulated app -->
+              <div id="previewAppBannerWrap" style="display: none; margin-bottom: 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.06); aspect-ratio: 16/9; width: 100%;">
+                <img id="previewAppBannerImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="ইউজার অ্যাপ ব্যানার">
+              </div>
+
               <!-- Preview Highlight Banner -->
               <div style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start;">
                 <i class="fa-solid fa-shield-halved" style="color: var(--primary); font-size: 18px; margin-top: 2px;"></i>
@@ -1232,6 +1277,62 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ৫. Privacy Policy 16:9 Banner Image Cropper Modal -->
+  <div class="modal-overlay" id="privacyCropModal">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 660px; width: 94%; max-height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.3); background: #fff;">
+      <!-- Pinned Modal Header -->
+      <div style="padding: 16px 22px 14px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; flex-shrink: 0;">
+        <h3 style="margin: 0; font-size: 16.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-crop-simple" style="color: var(--primary);"></i>
+          <span>ব্যানার ক্রপ ও ফ্রেম অ্যাডজাস্টমেন্ট (১৬:৯)</span>
+        </h3>
+        <button type="button" onclick="closePrivacyCropModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1;" title="বন্ধ করুন">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 18px 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; align-items: center; background: #F8FAF8;">
+        <!-- Tip Alert -->
+        <div style="width: 100%; margin-bottom: 12px; font-size: 12px; color: #2E7D32; background: #E8F5E9; border: 1px solid #C8E6C9; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px; box-sizing: border-box;">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>ছবিটি মাউস দিয়ে ড্র্যাগ করে বা টাচ করে পজিশন করুন এবং জুম কন্ট্রোল দিয়ে ১৬:৯ ফ্রেমে মানানসই করুন।</span>
+        </div>
+
+        <!-- Canvas Container with 16:9 Viewport -->
+        <div style="position: relative; width: 100%; max-width: 580px; aspect-ratio: 16/9; background: #111827; border-radius: 12px; overflow: hidden; border: 2px solid #2E7D32; box-shadow: 0 4px 14px rgba(0,0,0,0.2); cursor: grab; user-select: none;" id="cropCanvasContainer">
+          <canvas id="privacyCropCanvas" style="display: block; width: 100%; height: 100%;"></canvas>
+          <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 6px; pointer-events: none;">
+            ১৬:৯ রেশিও লক করা
+          </div>
+        </div>
+
+        <!-- Zoom and Controls -->
+        <div style="width: 100%; max-width: 580px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; box-sizing: border-box;">
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+            <i class="fa-solid fa-magnifying-glass-minus" style="color: var(--text-muted); cursor: pointer;" onclick="adjustCropZoom(-0.1)" title="জুম আউট"></i>
+            <input type="range" id="cropZoomRange" min="0.5" max="3" step="0.05" value="1" oninput="onCropZoomSlider(this.value)" style="flex: 1; accent-color: var(--primary); cursor: pointer;">
+            <i class="fa-solid fa-magnifying-glass-plus" style="color: var(--text-muted); cursor: pointer;" onclick="adjustCropZoom(0.1)" title="জুম ইন"></i>
+          </div>
+          <button type="button" onclick="resetCropTransform()" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+            <i class="fa-solid fa-rotate-right"></i> রিসেট
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 12px 22px; border-top: 1px solid var(--border); background: #FAFDF9; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+        <span style="font-size: 11.5px; color: #2E7D32; display: flex; align-items: center; gap: 5px;">
+          <i class="fa-solid fa-shield-halved"></i> সেভ বাটনে চাপলে তবেই Cloudflare R2-এ আপলোড হবে
+        </span>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closePrivacyCropModal()" style="padding: 8px 18px; font-size: 13.5px; border-radius: 8px; cursor: pointer;">বাতিল</button>
+          <button type="button" class="btn btn-primary" onclick="confirmPrivacyCrop()" style="padding: 8px 22px; font-size: 13.5px; font-weight: 700; border-radius: 8px; cursor: pointer; background: var(--primary); color: #fff; border: none;">
+            <i class="fa-solid fa-check"></i> ক্রপ নিশ্চিত করুন
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2151,14 +2252,37 @@
             const lastUpdated = d.last_updated || 'সর্বশেষ হালনাগাদ: নভেম্বর ২০২৬ • সংস্করণ ১.০.০';
             const bannerText = d.banner_text || 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
             const content = d.policy_content || getDefaultPolicyText();
+            const bannerImgUrl = d.banner_image_url || d.image_url || '';
 
             if (!window.privacyEditorDirty) {
               const luEl = document.getElementById('settingPrivacyLastUpdated');
               const btEl = document.getElementById('settingPrivacyBanner');
               const pcEl = document.getElementById('settingPrivacyContent');
+              const bImgEl = document.getElementById('settingPrivacyBannerUrl');
+              const pBox = document.getElementById('privacyBannerPreviewBox');
+              const pImg = document.getElementById('privacyBannerPreviewImg');
+              const appWrap = document.getElementById('previewAppBannerWrap');
+              const appImg = document.getElementById('previewAppBannerImg');
+
               if (luEl) luEl.value = lastUpdated;
               if (btEl) btEl.value = bannerText;
               if (pcEl) pcEl.value = content;
+              if (bImgEl) bImgEl.value = bannerImgUrl;
+
+              if (bannerImgUrl) {
+                if (pBox && pImg) {
+                  pBox.style.display = 'block';
+                  pImg.src = bannerImgUrl;
+                }
+                if (appWrap && appImg) {
+                  appWrap.style.display = 'block';
+                  appImg.src = bannerImgUrl;
+                }
+              } else {
+                if (pBox) pBox.style.display = 'none';
+                if (appWrap) appWrap.style.display = 'none';
+              }
+
               updatePolicyCounters();
               updatePolicyPreview();
             }
@@ -2254,6 +2378,372 @@
       if (pcPrev) pcPrev.innerText = pc;
     }
 
+    // ==================== 16:9 BANNER CROPPER & PRIVACY POLICY CONTROLS ====================
+    const privacyCropperState = {
+      rawImg: null,
+      rawFile: null,
+      scale: 1,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      canvasW: 580,
+      canvasH: 326,
+      listenersAttached: false
+    };
+
+    function handlePrivacyImageSelected(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      privacyCropperState.rawFile = file;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          privacyCropperState.rawImg = img;
+          openPrivacyCropModal();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    function reopenPrivacyCropper() {
+      if (privacyCropperState.rawImg) {
+        openPrivacyCropModal();
+      } else {
+        const fileInput = document.getElementById('privacyBannerFileInput');
+        if (fileInput) fileInput.click();
+      }
+    }
+
+    function openPrivacyCropModal() {
+      const modal = document.getElementById('privacyCropModal');
+      if (!modal) return;
+      modal.classList.add('active');
+      setTimeout(() => {
+        initPrivacyCropCanvas();
+      }, 50);
+    }
+
+    function closePrivacyCropModal() {
+      const modal = document.getElementById('privacyCropModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+
+    function initPrivacyCropCanvas() {
+      const canvas = document.getElementById('privacyCropCanvas');
+      if (!canvas || !privacyCropperState.rawImg) return;
+
+      const container = document.getElementById('cropCanvasContainer');
+      const w = container ? container.clientWidth || 580 : 580;
+      const h = Math.round(w * 9 / 16);
+      canvas.width = w;
+      canvas.height = h;
+      privacyCropperState.canvasW = w;
+      privacyCropperState.canvasH = h;
+
+      const img = privacyCropperState.rawImg;
+      // 16:9 Cover Scale
+      const scaleX = w / img.width;
+      const scaleY = h / img.height;
+      const fitScale = Math.max(scaleX, scaleY);
+
+      privacyCropperState.scale = fitScale;
+      privacyCropperState.zoom = 1;
+      const zoomRange = document.getElementById('cropZoomRange');
+      if (zoomRange) zoomRange.value = 1;
+
+      // Center
+      privacyCropperState.panX = (w - img.width * fitScale) / 2;
+      privacyCropperState.panY = (h - img.height * fitScale) / 2;
+
+      renderPrivacyCropCanvas();
+
+      if (!privacyCropperState.listenersAttached) {
+        attachCropCanvasListeners(canvas);
+        privacyCropperState.listenersAttached = true;
+      }
+    }
+
+    function attachCropCanvasListeners(canvas) {
+      // Mouse drag
+      canvas.addEventListener('mousedown', (e) => {
+        privacyCropperState.isDragging = true;
+        privacyCropperState.startX = e.clientX - privacyCropperState.panX;
+        privacyCropperState.startY = e.clientY - privacyCropperState.panY;
+        canvas.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!privacyCropperState.isDragging) return;
+        privacyCropperState.panX = e.clientX - privacyCropperState.startX;
+        privacyCropperState.panY = e.clientY - privacyCropperState.startY;
+        renderPrivacyCropCanvas();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (privacyCropperState.isDragging) {
+          privacyCropperState.isDragging = false;
+          canvas.style.cursor = 'grab';
+        }
+      });
+
+      // Touch drag
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          privacyCropperState.isDragging = true;
+          privacyCropperState.startX = e.touches[0].clientX - privacyCropperState.panX;
+          privacyCropperState.startY = e.touches[0].clientY - privacyCropperState.panY;
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (!privacyCropperState.isDragging || e.touches.length !== 1) return;
+        e.preventDefault();
+        privacyCropperState.panX = e.touches[0].clientX - privacyCropperState.startX;
+        privacyCropperState.panY = e.touches[0].clientY - privacyCropperState.startY;
+        renderPrivacyCropCanvas();
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', () => {
+        privacyCropperState.isDragging = false;
+      });
+
+      // Wheel zoom
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        adjustCropZoom(delta);
+      }, { passive: false });
+    }
+
+    function adjustCropZoom(delta) {
+      let newZoom = Math.min(3.0, Math.max(0.5, privacyCropperState.zoom + delta));
+      newZoom = Math.round(newZoom * 100) / 100;
+      privacyCropperState.zoom = newZoom;
+      const zoomRange = document.getElementById('cropZoomRange');
+      if (zoomRange) zoomRange.value = newZoom;
+      renderPrivacyCropCanvas();
+    }
+
+    function onCropZoomSlider(val) {
+      privacyCropperState.zoom = parseFloat(val) || 1;
+      renderPrivacyCropCanvas();
+    }
+
+    function resetCropTransform() {
+      if (!privacyCropperState.rawImg) return;
+      const w = privacyCropperState.canvasW;
+      const h = privacyCropperState.canvasH;
+      const img = privacyCropperState.rawImg;
+      const fitScale = Math.max(w / img.width, h / img.height);
+      privacyCropperState.scale = fitScale;
+      privacyCropperState.zoom = 1;
+      privacyCropperState.panX = (w - img.width * fitScale) / 2;
+      privacyCropperState.panY = (h - img.height * fitScale) / 2;
+      const zoomRange = document.getElementById('cropZoomRange');
+      if (zoomRange) zoomRange.value = 1;
+      renderPrivacyCropCanvas();
+    }
+
+    function renderPrivacyCropCanvas() {
+      const canvas = document.getElementById('privacyCropCanvas');
+      if (!canvas || !privacyCropperState.rawImg) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(0, 0, w, h);
+
+      const img = privacyCropperState.rawImg;
+      const curScale = privacyCropperState.scale * privacyCropperState.zoom;
+
+      ctx.save();
+      ctx.drawImage(
+        img,
+        privacyCropperState.panX,
+        privacyCropperState.panY,
+        img.width * curScale,
+        img.height * curScale
+      );
+      ctx.restore();
+
+      // Draw subtle grid / overlay (rule of thirds)
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      // 1/3 and 2/3 vertical
+      ctx.beginPath();
+      ctx.moveTo(w / 3, 0); ctx.lineTo(w / 3, h);
+      ctx.moveTo(2 * w / 3, 0); ctx.lineTo(2 * w / 3, h);
+      // 1/3 and 2/3 horizontal
+      ctx.moveTo(0, h / 3); ctx.lineTo(w, h / 3);
+      ctx.moveTo(0, 2 * h / 3); ctx.lineTo(w, 2 * h / 3);
+      ctx.stroke();
+
+      // Border outline
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#2E7D32';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, w, h);
+      ctx.restore();
+    }
+
+    async function confirmPrivacyCrop() {
+      if (!privacyCropperState.rawImg) {
+        closePrivacyCropModal();
+        return;
+      }
+
+      const outW = 1280;
+      const outH = 720;
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = outW;
+      outCanvas.height = outH;
+      const outCtx = outCanvas.getContext('2d');
+
+      outCtx.fillStyle = '#000';
+      outCtx.fillRect(0, 0, outW, outH);
+
+      const ratio = outW / privacyCropperState.canvasW;
+      const curScale = privacyCropperState.scale * privacyCropperState.zoom * ratio;
+      const outPanX = privacyCropperState.panX * ratio;
+      const outPanY = privacyCropperState.panY * ratio;
+
+      outCtx.drawImage(
+        privacyCropperState.rawImg,
+        outPanX,
+        outPanY,
+        privacyCropperState.rawImg.width * curScale,
+        privacyCropperState.rawImg.height * curScale
+      );
+
+      outCanvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast('ক্রপ সম্পন্ন করা যায়নি!');
+          return;
+        }
+
+        const rawFile = new File([blob], `privacy_banner_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        
+        // Client-side auto optimization (Target 200KB - 380KB)
+        let optimizedFile = rawFile;
+        try {
+          const comp = await compressImageClientSide(rawFile, 350);
+          optimizedFile = comp.file;
+        } catch (e) {
+          console.warn("Client compression notice:", e);
+        }
+
+        // Zero-Orphan Local Memory Hold (Zero Cloud Calls)
+        if (pendingUploads.privacy && pendingUploads.privacy.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.privacy.blobUrl); } catch (_) {}
+        }
+        const localBlobUrl = URL.createObjectURL(optimizedFile);
+        pendingUploads.privacy = {
+          file: optimizedFile,
+          blobUrl: localBlobUrl,
+          isNew: true,
+          isDeleted: false
+        };
+
+        // Update Editor 16:9 Preview Box
+        const pBox = document.getElementById('privacyBannerPreviewBox');
+        const pImg = document.getElementById('privacyBannerPreviewImg');
+        if (pBox && pImg) {
+          pBox.style.display = 'block';
+          pImg.src = localBlobUrl;
+        }
+
+        // Update User App Smartphone Simulated Preview
+        const appWrap = document.getElementById('previewAppBannerWrap');
+        const appImg = document.getElementById('previewAppBannerImg');
+        if (appWrap && appImg) {
+          appWrap.style.display = 'block';
+          appImg.src = localBlobUrl;
+        }
+
+        const statusEl = document.getElementById('privacyUploadStatus');
+        if (statusEl) {
+          const kb = (optimizedFile.size / 1024).toFixed(1);
+          statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ১৬:৯ ক্রপ ও অপ্টিমাইজড (${kb} KB) — লোকাল মেমোরি প্রিভিউ সক্রিয় (চূড়ান্ত সংরক্ষণ চাপলে Cloudflare R2-এ আপলোড হবে)</span>`;
+        }
+
+        const bannerInput = document.getElementById('settingPrivacyBannerUrl');
+        if (bannerInput) {
+          bannerInput.value = '(লোকাল প্রিভিউ - আপলোডের অপেক্ষায়)';
+        }
+
+        window.privacyEditorDirty = true;
+        closePrivacyCropModal();
+        showToast('১৬:৯ ব্যানার ক্রপ সফল! সংরক্ষণের জন্য "সংরক্ষণ করুন" চাপুন।');
+      }, 'image/jpeg', 0.85);
+    }
+
+    function removePrivacyBannerImage() {
+      if (pendingUploads.privacy && pendingUploads.privacy.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.privacy.blobUrl); } catch (_) {}
+      }
+      pendingUploads.privacy = { file: null, blobUrl: null, isDeleted: true };
+
+      const pBox = document.getElementById('privacyBannerPreviewBox');
+      if (pBox) pBox.style.display = 'none';
+
+      const bannerInput = document.getElementById('settingPrivacyBannerUrl');
+      if (bannerInput) bannerInput.value = '';
+
+      const appWrap = document.getElementById('previewAppBannerWrap');
+      if (appWrap) appWrap.style.display = 'none';
+
+      const statusEl = document.getElementById('privacyUploadStatus');
+      if (statusEl) statusEl.innerHTML = '';
+
+      window.privacyEditorDirty = true;
+      showToast('ব্যানার ছবি সরানো হয়েছে। চূড়ান্ত করতে "সংরক্ষণ করুন" চাপুন।');
+    }
+
+    function handleBannerUrlInput() {
+      const bannerInput = document.getElementById('settingPrivacyBannerUrl');
+      const val = bannerInput ? bannerInput.value.trim() : '';
+
+      window.privacyEditorDirty = true;
+
+      if (pendingUploads.privacy && pendingUploads.privacy.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.privacy.blobUrl); } catch (_) {}
+      }
+      pendingUploads.privacy = { file: null, blobUrl: null, isDeleted: false };
+
+      const pBox = document.getElementById('privacyBannerPreviewBox');
+      const pImg = document.getElementById('privacyBannerPreviewImg');
+      const appWrap = document.getElementById('previewAppBannerWrap');
+      const appImg = document.getElementById('previewAppBannerImg');
+
+      if (val && (val.startsWith('http://') || val.startsWith('https://'))) {
+        if (pBox && pImg) {
+          pBox.style.display = 'block';
+          pImg.src = val;
+        }
+        if (appWrap && appImg) {
+          appWrap.style.display = 'block';
+          appImg.src = val;
+        }
+      } else {
+        if (pBox) pBox.style.display = 'none';
+        if (appWrap) appWrap.style.display = 'none';
+      }
+    }
+
     function resetPrivacyToDefault(confirmPrompt = true) {
       if (confirmPrompt && !confirm('আপনি কি ডিফল্ট গোপনীয় নীতি টেমপ্লেট লোড করতে চান?')) {
         return;
@@ -2261,10 +2751,21 @@
       const luEl = document.getElementById('settingPrivacyLastUpdated');
       const btEl = document.getElementById('settingPrivacyBanner');
       const pcEl = document.getElementById('settingPrivacyContent');
+      const bImgEl = document.getElementById('settingPrivacyBannerUrl');
+      const pBox = document.getElementById('privacyBannerPreviewBox');
+      const appWrap = document.getElementById('previewAppBannerWrap');
 
       if (luEl) luEl.value = 'সর্বশেষ হালনাগাদ: নভেম্বর ২০২৬ • সংস্করণ ১.০.০';
       if (btEl) btEl.value = 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
       if (pcEl) pcEl.value = getDefaultPolicyText();
+      if (bImgEl) bImgEl.value = '';
+      if (pBox) pBox.style.display = 'none';
+      if (appWrap) appWrap.style.display = 'none';
+
+      if (pendingUploads.privacy && pendingUploads.privacy.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.privacy.blobUrl); } catch (_) {}
+      }
+      pendingUploads.privacy = { file: null, blobUrl: null, isDeleted: true };
 
       window.privacyEditorDirty = true;
       updatePolicyCounters();
@@ -2287,7 +2788,7 @@
       const saveBtn = document.getElementById('savePrivacyBtn');
       const originalHtml = saveBtn ? saveBtn.innerHTML : '';
       if (saveBtn) {
-        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>সংরক্ষণ হচ্ছে...</span>';
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>সংরক্ষণ ও আপলোড হচ্ছে...</span>';
         saveBtn.disabled = true;
       }
 
@@ -2296,16 +2797,45 @@
           throw new Error('ফায়ারবেস সংযোগ সক্রিয় নেই');
         }
 
+        let finalBannerUrl = '';
+        const bannerInput = document.getElementById('settingPrivacyBannerUrl');
+        const rawInputValue = bannerInput ? bannerInput.value.trim() : '';
+
+        // Step 1: Upload to Cloudflare R2 ONLY IF there is a pending cropped file (Zero-Orphan Policy)
+        if (pendingUploads.privacy && pendingUploads.privacy.file) {
+          const statusEl = document.getElementById('privacyUploadStatus');
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<span style="color: #0288D1;"><i class="fa-solid fa-spinner fa-spin"></i> Cloudflare R2-এ ব্যানার আপলোড হচ্ছে...</span>';
+          }
+          finalBannerUrl = await uploadFileToR2Pipeline(pendingUploads.privacy.file, 'privacy_banner', 'privacyUploadStatus');
+          if (bannerInput) bannerInput.value = finalBannerUrl;
+
+          // Cleanup pending blob
+          if (pendingUploads.privacy.blobUrl) {
+            try { URL.revokeObjectURL(pendingUploads.privacy.blobUrl); } catch (_) {}
+          }
+          pendingUploads.privacy = { file: null, blobUrl: null, isDeleted: false };
+        } else if (pendingUploads.privacy && pendingUploads.privacy.isDeleted) {
+          finalBannerUrl = '';
+        } else {
+          // Keep existing or manual URL if not a temporary placeholder
+          if (rawInputValue && !rawInputValue.includes('(লোকাল প্রিভিউ')) {
+            finalBannerUrl = rawInputValue;
+          }
+        }
+
         await db.collection('settings').doc('privacy_policy').set({
           last_updated: lu,
           banner_text: bt,
           policy_content: pc,
+          banner_image_url: finalBannerUrl,
           updated_at: firebase.firestore.FieldValue.serverTimestamp(),
           updated_by: 'সুপার এডমিন'
         }, { merge: true });
 
         window.privacyEditorDirty = false;
-        showToast('গোপনীয় নীতি সফলভাবে সংরক্ষিত ও ক্লাউডে আপডেট হয়েছে! ইউজার অ্যাপে রিয়েল-টাইমে সিঙ্ক সম্পন্ন।');
+        showToast('গোপনীয় নীতি ও ব্যানার সফলভাবে সংরক্ষিত ও ক্লাউডে আপডেট হয়েছে! ইউজার অ্যাপে রিয়েল-টাইমে সিঙ্ক সম্পন্ন।');
         updatePolicyPreview();
       } catch (err) {
         console.error("Save privacy policy error:", err);
@@ -2503,7 +3033,8 @@
       crop: { file: null, blobUrl: null },
       pest: { file: null, blobUrl: null },
       notif: { file: null, blobUrl: null },
-      market: { file: null, blobUrl: null }
+      market: { file: null, blobUrl: null },
+      privacy: { file: null, blobUrl: null, rawImg: null, isDeleted: false }
     };
 
     // Step 1: Pre-upload Local Memory Hold (Local File Preview Only)

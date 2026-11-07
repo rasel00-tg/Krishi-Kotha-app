@@ -1893,42 +1893,63 @@
       background: #E8F5E9;
     }
 
-    /* Policy Document Page Styles */
+    /* Policy Document Page Styles (Compact, Modern, Premium 12-14px radius) */
     .policy-doc-card {
       background: #fff;
       border: 1px solid #E2E8E2;
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      border-radius: 13px;
+      padding: 14px 16px;
+      margin-bottom: 11px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.025);
     }
 
     .policy-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .policy-icon {
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       flex-shrink: 0;
     }
 
     .policy-bullets {
-      padding-left: 20px;
+      padding-left: 0;
+      list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 13px;
+      gap: 5px;
+      font-size: 12.8px;
       color: #37474F;
-      line-height: 1.45;
+      line-height: 1.4;
+    }
+
+    .policy-bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .policy-bullet-badge {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #E8F5E9;
+      color: #2E7D32;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
     /* Premium Floating Modal Loading Popup (True Center, Dimmed Barrier & Full Vibrant Gradient) */
@@ -2972,14 +2993,19 @@
               সংস্করণ ১.০.০</p>
           </div>
 
+          <!-- 16:9 Banner Image (Cloudflare R2 Super-fast CDN Cache) -->
+          <div id="privacyBannerImageWrap" style="display: none; margin-bottom: 16px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.06); aspect-ratio: 16/9; width: 100%;">
+            <img id="privacyBannerImage" src="" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="গোপনীয় নীতি ব্যানার">
+          </div>
+
           <!-- Security Highlight Card -->
           <div
-            style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start;">
-            <i class="fa-solid fa-shield-halved" style="color: var(--primary); font-size: 24px; margin-top: 2px;"></i>
+            style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 14px; padding: 14px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-start;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--primary); font-size: 22px; margin-top: 2px;"></i>
             <div>
-              <h4 style="font-size: 15px; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px;">কৃষকের
+              <h4 style="font-size: 14.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 3px;">কৃষকের
                 তথ্যের পূর্ণ নিরাপত্তা ও সুরক্ষা</h4>
-              <p id="privacyBannerText" style="font-size: 12.5px; color: #2E7D32; line-height: 1.45;">কৃষি কথা অ্যাপ কৃষকদের আস্থার
+              <p id="privacyBannerText" style="font-size: 12.5px; color: #2E7D32; line-height: 1.42;">কৃষি কথা অ্যাপ কৃষকদের আস্থার
                 প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা
                 শেয়ার করা হয় না।</p>
             </div>
@@ -12015,13 +12041,26 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const lu = data.last_updated || 'সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ • সংস্করণ ১.০.০';
       const bt = data.banner_text || 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
       const pc = data.policy_content;
+      const bImg = (data.banner_image_url || data.image_url || '').trim();
 
       const luEl = document.getElementById('privacyLastUpdated');
       const btEl = document.getElementById('privacyBannerText');
       const secContainer = document.getElementById('privacySectionsContainer');
+      const bImgWrap = document.getElementById('privacyBannerImageWrap');
+      const bImgEl = document.getElementById('privacyBannerImage');
 
       if (luEl) luEl.innerText = lu;
       if (btEl) btEl.innerText = bt;
+
+      // Handle 16:9 Banner Image (Cloudflare R2 Super-fast CDN Cache)
+      if (bImgWrap && bImgEl) {
+        if (bImg) {
+          bImgEl.src = bImg;
+          bImgWrap.style.display = 'block';
+        } else {
+          bImgWrap.style.display = 'none';
+        }
+      }
 
       if (!pc || !pc.trim() || !secContainer) return;
 
@@ -12039,7 +12078,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (rawSections.length === 0) {
         secContainer.innerHTML = `
-          <div class="policy-doc-card" style="padding: 18px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">
+          <div class="policy-doc-card" style="padding: 14px 16px; line-height: 1.5; color: var(--text-secondary); white-space: pre-wrap; font-size: 13px;">
             ${escapeHtml(pc)}
           </div>
         `;
@@ -12086,12 +12125,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               <div class="policy-icon" style="background: ${iconConfig.bg}; color: ${iconConfig.color};">
                 <i class="fa-solid ${iconConfig.icon}"></i>
               </div>
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">${escapeHtml(numStr + title)}</h3>
+              <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0;">${escapeHtml(numStr + title)}</h3>
             </div>
-            ${paragraphs.length ? `<p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">${escapeHtml(paragraphs.join(' '))}</p>` : ''}
+            ${paragraphs.length ? `<p style="font-size: 13px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 8px;">${escapeHtml(paragraphs.join(' '))}</p>` : ''}
             ${bullets.length ? `
               <ul class="policy-bullets">
-                ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+                ${bullets.map(b => `
+                  <li>
+                    <span class="policy-bullet-badge" style="background: ${iconConfig.bg}; color: ${iconConfig.color};">
+                      <i class="fa-solid fa-check"></i>
+                    </span>
+                    <span style="flex: 1;">${escapeHtml(b)}</span>
+                  </li>
+                `).join('')}
               </ul>
             ` : ''}
           </div>
