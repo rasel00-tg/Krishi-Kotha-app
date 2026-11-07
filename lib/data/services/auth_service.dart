@@ -411,6 +411,8 @@ class AuthService {
         throw Exception('জিমেইল এড্রেসটি সঠিক নয়!');
       } else if (e.code == 'network-request-failed') {
         throw Exception('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।');
+      } else if (e.code == 'too-many-requests') {
+        throw Exception('অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।');
       } else if (e.code == 'user-disabled') {
         throw Exception('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।');
       } else {

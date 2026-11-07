@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/bangla_number_converter.dart';
 import '../../core/widgets/app_warning_dialog.dart';
 import '../../providers/auth_provider.dart';
 
@@ -58,6 +60,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
+    // ১ ঘণ্টার কঠোর রেট-লিমিট (Rate Limiting) যাচাই
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get()
+          .timeout(const Duration(seconds: 6));
+
+      if (query.docs.isNotEmpty) {
+        final docData = query.docs.first.data();
+        final lastResetRaw = docData['lastPasswordReset'];
+        DateTime? lastReset;
+        if (lastResetRaw is Timestamp) {
+          lastReset = lastResetRaw.toDate();
+        } else if (lastResetRaw is String) {
+          lastReset = DateTime.tryParse(lastResetRaw);
+        }
+        if (lastReset != null) {
+          final diff = DateTime.now().difference(lastReset);
+          if (diff.inMinutes < 60) {
+            final remainingMin = 60 - diff.inMinutes;
+            final bnMin = BanglaNumberConverter.toBangla(remainingMin.toString());
+            showAppWarningDialog(
+              context,
+              title: 'অপেক্ষা করুন!',
+              message: 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্ট পাঠাতে আরো $bnMin মিনিট অপেক্ষা করতে হবে।',
+            );
+            return;
+          }
+        }
+      }
+    } catch (_) {}
+
     setState(() => _isSending = true);
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -67,6 +103,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isSending = false);
 
     if (success) {
+      // ফায়ারস্টোরে টাইমস্ট্যাম্প সংরক্ষণ
+      try {
+        final query = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+        if (query.docs.isNotEmpty) {
+          await FirebaseFirestore.instance.collection('users').doc(query.docs.first.id).update({
+            'lastPasswordReset': FieldValue.serverTimestamp(),
+          });
+        }
+      } catch (_) {}
       showDialog(
         context: context,
         barrierDismissible: false,

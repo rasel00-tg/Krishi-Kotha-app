@@ -2835,7 +2835,10 @@
             <div style="display: flex; flex-direction: column; gap: 15px;">
               <!-- Identifier Field with Stable Font & Checkmark -->
               <div>
-                <label id="gatewayLoginLabel" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">জিমেইল অ্যাড্রেস *</label>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <label id="gatewayLoginLabel" style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">জিমেইল অ্যাড্রেস *</label>
+                  <a href="javascript:void(0)" onclick="openForgotGmailModal()" style="font-size: 12.5px; color: var(--primary); font-weight: 700; text-decoration: none;">জিমেইল ভুলে গেছেন?</a>
+                </div>
                 <div style="position: relative;">
                   <i id="gatewayLoginIcon" class="fa-solid fa-envelope" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 16px;"></i>
                   <input type="text" id="gatewayLoginId" oninput="onGatewayIdInput(this.value)" placeholder="example@gmail.com" style="width: 100%; box-sizing: border-box; padding: 14px 40px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
@@ -3885,7 +3888,10 @@
 
           <div style="display: flex; flex-direction: column; gap: 14px;">
             <div>
-              <label style="display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">ইমেইল বা মোবাইল নম্বর *</label>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <label style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">ইমেইল বা মোবাইল নম্বর *</label>
+                <a href="javascript:void(0)" onclick="closeModal('authModal'); openForgotGmailModal()" style="font-size: 12.5px; color: var(--primary); font-weight: 700; text-decoration: none;">জিমেইল ভুলে গেছেন?</a>
+              </div>
               <div style="position: relative;">
                 <i class="fa-solid fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
                 <input type="text" id="authLoginId" placeholder="user@gmail.com অথবা ০১৭১XXXXXXX" style="width: 100%; box-sizing: border-box; padding: 14px 14px 14px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 16px; font-weight: 500; line-height: 1.25; font-family: 'Roboto', sans-serif;">
@@ -3923,6 +3929,71 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
+
+    <!-- MODAL: FORGOT GMAIL & RATE LIMITED PASSWORD RESET -->
+    <div class="modal-overlay" id="forgotGmailModal" style="z-index: 100015;">
+      <div class="bottom-sheet" style="max-width: 440px;">
+        <div class="modal-title">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-envelope-circle-check" style="color: var(--primary); font-size: 18px;"></i>
+            <span>জিমেইল পুনরুদ্ধার</span>
+          </div>
+          <button class="close-modal-btn" onclick="closeModal('forgotGmailModal')">&times;</button>
+        </div>
+
+        <div style="padding: 6px 0 12px 0;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 14px 0; line-height: 1.4;">
+            আপনার একাউন্টে ব্যবহৃত ১১ ডিজিটের মোবাইল নম্বরটি লিখুন:
+          </p>
+
+          <div style="position: relative; margin-bottom: 12px;">
+            <i class="fa-solid fa-phone" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 15px;"></i>
+            <input type="tel" id="fgmPhone" maxlength="11" placeholder="01XXXXXXXXX" style="width: 100%; box-sizing: border-box; padding: 13px 14px 13px 40px; border-radius: 14px; border: 1px solid #CFD8DC; font-size: 15px; font-weight: 500; font-family: 'Roboto', sans-serif;">
+          </div>
+
+          <button type="button" id="btnFgmSearch" onclick="searchGmailByPhoneWeb()" style="width: 100%; height: 44px; border-radius: 12px; border: none; background: var(--primary); color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>জিমেইল খুঁজুন</span>
+          </button>
+
+          <!-- Result Box -->
+          <div id="fgmResultBox" style="display: none; margin-top: 14px;">
+            <div style="padding: 14px; border-radius: 14px; background: #F1F8F1; border: 1.2px solid #A5D6A7;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #1B5E20; margin-bottom: 8px;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>নিবন্ধিত জিমেইল পাওয়া গেছে:</span>
+              </div>
+              <div style="background: white; border: 1px solid #C8E6C9; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <span id="fgmMaskedEmail" style="font-size: 15.5px; font-weight: 800; color: #1B5E20; letter-spacing: 0.5px;">-</span>
+                <i class="fa-solid fa-lock" style="color: #9E9E9E; font-size: 14px;"></i>
+              </div>
+              <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">নিরাপত্তার স্বার্থে ইমেইলের মাঝের অক্ষরগুলো গোপন রাখা হয়েছে।</p>
+            </div>
+
+            <div id="fgmCooldownBox" style="display: none; margin-top: 12px; padding: 12px; border-radius: 12px; background: #FFF8E1; border: 1px solid #FFE082; color: #E65100; font-size: 12.5px; font-weight: 600; line-height: 1.35;">
+              <i class="fa-solid fa-clock" style="margin-right: 6px; color: #F57C00;"></i>
+              <span id="fgmCooldownMsg">আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। অনুগ্রহ করে আরো কিছুক্ষণ অপেক্ষা করুন।</span>
+            </div>
+
+            <button type="button" id="btnFgmSendReset" onclick="sendResetFromFgmModal()" style="width: 100%; height: 46px; border-radius: 12px; border: none; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>পাসওয়ার্ড রিসেট মেইল পাঠান</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE LOGIN LOADING DIALOG -->
+    <div id="loginLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 100020; align-items: center; justify-content: center; pointer-events: auto;">
+      <div style="background: white; border-radius: 20px; padding: 22px 26px; display: flex; align-items: center; gap: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.22); max-width: 320px; width: 85%;">
+        <div style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">লগইন হচ্ছে...</div>
+          <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">অনুগ্রহ করে অপেক্ষা করুন</div>
+        </div>
       </div>
     </div>
 
@@ -9489,6 +9560,199 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    // ==========================================
+    // ১. ইন্টারেক্টিভ লগইন লোডিং পপ-আপ কন্ট্রোলার
+    // ==========================================
+    function showLoginLoadingDialog() {
+      const o = document.getElementById('loginLoadingOverlay');
+      if (o) o.style.display = 'flex';
+    }
+
+    function hideLoginLoadingDialog() {
+      const o = document.getElementById('loginLoadingOverlay');
+      if (o) o.style.display = 'none';
+    }
+
+    // ==========================================
+    // ২ ও ৩. "জিমেইল ভুলে গেছেন?" ও রেট লিমিট মডিউল
+    // ==========================================
+    let fgmFoundEmail = null;
+    let fgmUserDocId = null;
+    let fgmCooldownMinutes = null;
+
+    function openForgotGmailModal() {
+      fgmFoundEmail = null;
+      fgmUserDocId = null;
+      fgmCooldownMinutes = null;
+      const inp = document.getElementById('fgmPhone');
+      if (inp) inp.value = '';
+      const rBox = document.getElementById('fgmResultBox');
+      if (rBox) rBox.style.display = 'none';
+      const cdBox = document.getElementById('fgmCooldownBox');
+      if (cdBox) cdBox.style.display = 'none';
+      openModal('forgotGmailModal');
+    }
+
+    function maskEmailStr(email) {
+      const clean = (email || '').trim().toLowerCase();
+      const atIdx = clean.indexOf('@');
+      if (atIdx <= 1) return clean;
+      const name = clean.substring(0, atIdx);
+      const domain = clean.substring(atIdx);
+      if (name.length <= 2) return name[0] + '****' + domain;
+      if (name.length <= 4) return name[0] + '****' + name[name.length - 1] + domain;
+      return name.substring(0, 2) + '****' + name[name.length - 1] + domain;
+    }
+
+    async function searchGmailByPhoneWeb() {
+      const phone = (document.getElementById('fgmPhone')?.value || '').trim();
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+        showWarningDialog('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!', 'সতর্কতা');
+        return;
+      }
+
+      const btn = document.getElementById('btnFgmSearch');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div style="width: 18px; height: 18px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div><span>অনুসন্ধান চলছে...</span>';
+      }
+
+      try {
+        let foundDoc = null;
+        if (window.firebase && firebase.firestore) {
+          const altPhone = '+88' + cleanPhone;
+          let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+          if ((!snap || snap.empty) && altPhone !== cleanPhone) {
+            snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+          }
+          if (snap && !snap.empty) {
+            foundDoc = snap.docs[0];
+          }
+        }
+
+        if (!foundDoc) {
+          showWarningDialog('এই মোবাইল নম্বরে কোনো নিবন্ধিত একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          return;
+        }
+
+        const data = foundDoc.data();
+        const email = (data.email || '').trim();
+        if (!email) {
+          showWarningDialog('এই একাউন্টে কোনো নিবন্ধিত জিমেইল পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+          return;
+        }
+
+        fgmFoundEmail = email;
+        fgmUserDocId = foundDoc.id;
+
+        // ১ ঘণ্টার কঠোর রেট-লিমিট যাচাই
+        fgmCooldownMinutes = null;
+        let lastReset = null;
+        if (data.lastPasswordReset) {
+          if (typeof data.lastPasswordReset.toDate === 'function') {
+            lastReset = data.lastPasswordReset.toDate();
+          } else if (typeof data.lastPasswordReset === 'string') {
+            lastReset = new Date(data.lastPasswordReset);
+          }
+        }
+
+        if (lastReset && !isNaN(lastReset.getTime())) {
+          const diffMinutes = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
+          if (diffMinutes < 60) {
+            fgmCooldownMinutes = 60 - diffMinutes;
+          }
+        }
+
+        // রেন্ডার রেজাল্ট
+        const rBox = document.getElementById('fgmResultBox');
+        const maskedSpan = document.getElementById('fgmMaskedEmail');
+        const cdBox = document.getElementById('fgmCooldownBox');
+        const cdMsg = document.getElementById('fgmCooldownMsg');
+        const sendBtn = document.getElementById('btnFgmSendReset');
+
+        if (maskedSpan) maskedSpan.innerText = maskEmailStr(email);
+
+        if (fgmCooldownMinutes && fgmCooldownMinutes > 0) {
+          if (cdBox) cdBox.style.display = 'block';
+          if (cdMsg) cdMsg.innerText = 'আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্টের জন্য আরো ' + toBangla(fgmCooldownMinutes) + ' মিনিট অপেক্ষা করতে হবে।';
+          if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.style.cursor = 'not-allowed';
+          }
+        } else {
+          if (cdBox) cdBox.style.display = 'none';
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.style.opacity = '1';
+            sendBtn.style.cursor = 'pointer';
+          }
+        }
+
+        if (rBox) rBox.style.display = 'block';
+      } catch (err) {
+        showWarningDialog('তথ্য অনুসন্ধানে সমস্যা হয়েছে: ' + (err.message || err), 'ব্যর্থ হয়েছে!');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>জিমেইল খুঁজুন</span>';
+        }
+      }
+    }
+
+    async function sendResetFromFgmModal() {
+      if (!fgmFoundEmail || !fgmUserDocId) return;
+
+      if (fgmCooldownMinutes && fgmCooldownMinutes > 0) {
+        showWarningDialog('আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। অনুগ্রহ করে আরো ' + toBangla(fgmCooldownMinutes) + ' মিনিট অপেক্ষা করুন।', 'অপেক্ষা করুন!');
+        return;
+      }
+
+      const btn = document.getElementById('btnFgmSendReset');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div style="width: 18px; height: 18px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div><span>লিঙ্ক পাঠানো হচ্ছে...</span>';
+      }
+
+      try {
+        if (window.firebase && firebase.auth) {
+          await firebase.auth().sendPasswordResetEmail(fgmFoundEmail);
+        }
+        if (window.firebase && firebase.firestore) {
+          await firebase.firestore().collection('users').doc(fgmUserDocId).update({
+            lastPasswordReset: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+
+        const masked = maskEmailStr(fgmFoundEmail);
+        closeModal('forgotGmailModal');
+
+        // ফিল্ডে প্রি-ফিল
+        const idInp = document.getElementById('gatewayLoginId');
+        if (idInp) {
+          setGatewayLoginTab('email');
+          idInp.value = fgmFoundEmail;
+          onGatewayIdInput(fgmFoundEmail);
+        }
+
+        showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে!', 'আপনার (' + masked + ') জিমেইল ঠিকানায় অফিশিয়াল পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
+      } catch (err) {
+        console.warn('Password reset error:', err);
+        let msg = 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।';
+        const code = err.code || '';
+        if (code === 'auth/user-not-found') msg = 'এই জিমেইল ঠিকানায় কোনো একাউন্ট পাওয়া যায়নি!';
+        else if (code === 'auth/too-many-requests') msg = 'অতিরিক্ত চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।';
+        else if (code === 'auth/network-request-failed') msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+        showWarningDialog(msg, 'ব্যর্থ হয়েছে!');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>পাসওয়ার্ড রিসেট মেইল পাঠান</span>';
+        }
+      }
+    }
+
     async function executeFullForgotPassword() {
       const email = (document.getElementById('fullForgotEmail')?.value || '').trim().toLowerCase();
 
@@ -9497,16 +9761,52 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
+      // ১ ঘণ্টার কঠোর রেট-লিমিট যাচাই
+      if (window.firebase && firebase.firestore) {
+        try {
+          const snap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
+          if (snap && !snap.empty) {
+            const uData = snap.docs[0].data();
+            let lastReset = null;
+            if (uData.lastPasswordReset) {
+              if (typeof uData.lastPasswordReset.toDate === 'function') {
+                lastReset = uData.lastPasswordReset.toDate();
+              } else if (typeof uData.lastPasswordReset === 'string') {
+                lastReset = new Date(uData.lastPasswordReset);
+              }
+            }
+            if (lastReset && !isNaN(lastReset.getTime())) {
+              const diffMin = Math.floor((Date.now() - lastReset.getTime()) / (1000 * 60));
+              if (diffMin < 60) {
+                const rem = 60 - diffMin;
+                showWarningDialog('আপনি সম্প্রতি পাসওয়ার্ড রিসেট লিংক পাঠিয়েছেন। নতুন রিকোয়েস্টের জন্য অনুগ্রহ করে আরো ' + toBangla(rem) + ' মিনিট অপেক্ষা করুন।', 'অপেক্ষা করুন!');
+                return;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       try {
         if (window.firebase && firebase.auth) {
           await firebase.auth().sendPasswordResetEmail(email);
+        }
+        if (window.firebase && firebase.firestore) {
+          try {
+            const snap = await firebase.firestore().collection('users').where('email', '==', email).limit(1).get();
+            if (snap && !snap.empty) {
+              await firebase.firestore().collection('users').doc(snap.docs[0].id).update({
+                lastPasswordReset: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          } catch (_) {}
         }
       } catch (err) {
         console.warn('Password reset notice:', err);
       }
 
       closeForgotPasswordPage();
-      showWarningDialog('আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।', 'রিসেট লিঙ্ক পাঠানো হয়েছে');
+      showSuccessDialog('রিসেট লিঙ্ক পাঠানো হয়েছে', 'আপনার জিমেইলে একটি অফিশিয়াল পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। ইনবক্স চেক করে নতুন পাসওয়ার্ড নির্ধারণ করুন।');
     }
 
     async function executeWebAuthRegister() {
@@ -9526,88 +9826,106 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
+      showLoginLoadingDialog();
+
       const isEmail = identifier.includes('@');
       let targetEmail = identifier.toLowerCase();
       let foundUser = null;
 
-      if (!isEmail) {
-        const cleanPhone = identifier.replace(/[^0-9]/g, '');
-        const altPhone = '+88' + cleanPhone;
-        if (window.firebase && firebase.firestore) {
-          try {
-            let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
-            if ((!snap || snap.empty) && altPhone !== cleanPhone) {
-              snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+      try {
+        if (!isEmail) {
+          const cleanPhone = identifier.replace(/[^0-9]/g, '');
+          const altPhone = '+88' + cleanPhone;
+          if (window.firebase && firebase.firestore) {
+            try {
+              let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+              if ((!snap || snap.empty) && altPhone !== cleanPhone) {
+                snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+              }
+              if (snap && !snap.empty) {
+                foundUser = snap.docs[0].data();
+                foundUser.uid = snap.docs[0].id;
+                targetEmail = (foundUser.email || '').toLowerCase().trim();
+              }
+            } catch (err) {
+              console.warn('Firestore phone query notice:', err);
             }
-            if (snap && !snap.empty) {
-              foundUser = snap.docs[0].data();
-              foundUser.uid = snap.docs[0].id;
-              targetEmail = (foundUser.email || '').toLowerCase().trim();
-            }
-          } catch (err) {
-            console.warn('Firestore phone query notice:', err);
+          }
+
+          if (!foundUser || !targetEmail) {
+            hideLoginLoadingDialog();
+            showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            return;
           }
         }
 
-        if (!foundUser || !targetEmail) {
-          showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          return;
-        }
-      }
-
-      if (window.firebase && firebase.auth) {
-        try {
-          const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
-          if (cred && cred.user) {
-            const uid = cred.user.uid;
-            if (window.firebase && firebase.firestore) {
-              const uDoc = await firebase.firestore().collection('users').doc(uid).get();
-              if (uDoc && uDoc.exists) {
-                foundUser = uDoc.data();
-                foundUser.uid = uid;
+        if (window.firebase && firebase.auth) {
+          try {
+            const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+            if (cred && cred.user) {
+              const uid = cred.user.uid;
+              if (window.firebase && firebase.firestore) {
+                const uDoc = await firebase.firestore().collection('users').doc(uid).get();
+                if (uDoc && uDoc.exists) {
+                  foundUser = uDoc.data();
+                  foundUser.uid = uid;
+                }
+              }
+              if (!foundUser) {
+                foundUser = {
+                  uid: uid,
+                  name: cred.user.displayName || 'কৃষক ভাই',
+                  email: cred.user.email || targetEmail,
+                  phone: isEmail ? '' : identifier,
+                  district: '',
+                  upazila: '',
+                  village: '',
+                  occupation: 'কৃষক',
+                  preferred_crops: [],
+                  createdAt: new Date().toISOString()
+                };
               }
             }
-            if (!foundUser) {
-              foundUser = {
-                uid: uid,
-                name: cred.user.displayName || 'কৃষক ভাই',
-                email: cred.user.email || targetEmail,
-                phone: isEmail ? '' : identifier,
-                district: '',
-                upazila: '',
-                village: '',
-                occupation: 'কৃষক',
-                preferred_crops: [],
-                createdAt: new Date().toISOString()
-              };
+          } catch (authErr) {
+            console.warn('Firebase auth failed:', authErr);
+            hideLoginLoadingDialog();
+            const errCode = authErr.code || '';
+            if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
+              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/user-not-found') {
+              showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/invalid-email') {
+              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/network-request-failed') {
+              showWarningDialog('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/too-many-requests') {
+              showWarningDialog('অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/user-disabled') {
+              showWarningDialog('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।', 'ব্যর্থ হয়েছে!');
+            } else {
+              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
             }
+            return;
           }
-        } catch (authErr) {
-          console.warn('Firebase auth failed:', authErr);
-          const errCode = authErr.code || '';
-          if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
-          } else if (errCode === 'auth/user-not-found') {
-            showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          } else {
+        } else {
+          if (!foundUser) {
+            hideLoginLoadingDialog();
             showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            return;
           }
-          return;
         }
-      } else {
-        if (!foundUser) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          return;
-        }
+
+        localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
+        closeModal('authModal');
+        updateWebProfileHeader();
+
+        hideLoginLoadingDialog();
+        showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+          setTab('menu');
+        });
+      } finally {
+        hideLoginLoadingDialog();
       }
-
-      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
-      closeModal('authModal');
-      updateWebProfileHeader();
-
-      showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
-        setTab('menu');
-      });
     }
 
     async function executeWebAuthForgot() {
@@ -9723,87 +10041,105 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         localStorage.removeItem('krishi_kotha_remembered_mode');
       }
 
+      showLoginLoadingDialog();
+
       const isEmail = identifier.includes('@');
       let targetEmail = identifier.toLowerCase();
       let foundUser = null;
 
-      if (!isEmail) {
-        const cleanPhone = identifier.replace(/[^0-9]/g, '');
-        const altPhone = '+88' + cleanPhone;
-        if (window.firebase && firebase.firestore) {
-          try {
-            let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
-            if ((!snap || snap.empty) && altPhone !== cleanPhone) {
-              snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+      try {
+        if (!isEmail) {
+          const cleanPhone = identifier.replace(/[^0-9]/g, '');
+          const altPhone = '+88' + cleanPhone;
+          if (window.firebase && firebase.firestore) {
+            try {
+              let snap = await firebase.firestore().collection('users').where('phone', '==', cleanPhone).limit(1).get();
+              if ((!snap || snap.empty) && altPhone !== cleanPhone) {
+                snap = await firebase.firestore().collection('users').where('phone', '==', altPhone).limit(1).get();
+              }
+              if (snap && !snap.empty) {
+                foundUser = snap.docs[0].data();
+                foundUser.uid = snap.docs[0].id;
+                targetEmail = (foundUser.email || '').toLowerCase().trim();
+              }
+            } catch (err) {
+              console.warn('Firestore phone query notice:', err);
             }
-            if (snap && !snap.empty) {
-              foundUser = snap.docs[0].data();
-              foundUser.uid = snap.docs[0].id;
-              targetEmail = (foundUser.email || '').toLowerCase().trim();
-            }
-          } catch (err) {
-            console.warn('Firestore phone query notice:', err);
+          }
+
+          if (!foundUser || !targetEmail) {
+            hideLoginLoadingDialog();
+            showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            return;
           }
         }
 
-        if (!foundUser || !targetEmail) {
-          showWarningDialog('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          return;
-        }
-      }
-
-      if (window.firebase && firebase.auth) {
-        try {
-          const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
-          if (cred && cred.user) {
-            const uid = cred.user.uid;
-            if (window.firebase && firebase.firestore) {
-              const uDoc = await firebase.firestore().collection('users').doc(uid).get();
-              if (uDoc && uDoc.exists) {
-                foundUser = uDoc.data();
-                foundUser.uid = uid;
+        if (window.firebase && firebase.auth) {
+          try {
+            const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+            if (cred && cred.user) {
+              const uid = cred.user.uid;
+              if (window.firebase && firebase.firestore) {
+                const uDoc = await firebase.firestore().collection('users').doc(uid).get();
+                if (uDoc && uDoc.exists) {
+                  foundUser = uDoc.data();
+                  foundUser.uid = uid;
+                }
+              }
+              if (!foundUser) {
+                foundUser = {
+                  uid: uid,
+                  name: cred.user.displayName || 'কৃষক ভাই',
+                  email: cred.user.email || targetEmail,
+                  phone: isEmail ? '' : identifier,
+                  district: '',
+                  upazila: '',
+                  village: '',
+                  occupation: 'কৃষক',
+                  preferred_crops: [],
+                  createdAt: new Date().toISOString()
+                };
               }
             }
-            if (!foundUser) {
-              foundUser = {
-                uid: uid,
-                name: cred.user.displayName || 'কৃষক ভাই',
-                email: cred.user.email || targetEmail,
-                phone: isEmail ? '' : identifier,
-                district: '',
-                upazila: '',
-                village: '',
-                occupation: 'কৃষক',
-                preferred_crops: [],
-                createdAt: new Date().toISOString()
-              };
+          } catch (authErr) {
+            console.warn('Firebase auth failed:', authErr);
+            hideLoginLoadingDialog();
+            const errCode = authErr.code || '';
+            if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
+              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/user-not-found') {
+              showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/invalid-email') {
+              showWarningDialog('জিমেইল এড্রেসটি সঠিক নয়!', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/network-request-failed') {
+              showWarningDialog('ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/too-many-requests') {
+              showWarningDialog('অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।', 'ব্যর্থ হয়েছে!');
+            } else if (errCode === 'auth/user-disabled') {
+              showWarningDialog('এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।', 'ব্যর্থ হয়েছে!');
+            } else {
+              showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
             }
+            return;
           }
-        } catch (authErr) {
-          console.warn('Firebase auth failed:', authErr);
-          const errCode = authErr.code || '';
-          if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-            showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!', 'ব্যর্থ হয়েছে!');
-          } else if (errCode === 'auth/user-not-found') {
-            showWarningDialog(isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          } else {
+        } else {
+          if (!foundUser) {
+            hideLoginLoadingDialog();
             showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
+            return;
           }
-          return;
         }
-      } else {
-        if (!foundUser) {
-          showWarningDialog('আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!', 'ব্যর্থ হয়েছে!');
-          return;
-        }
+
+        localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
+        updateWebProfileHeader();
+
+        hideLoginLoadingDialog();
+        showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
+          setTab('menu');
+        });
+      } finally {
+        hideLoginLoadingDialog();
       }
-
-      localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
-      updateWebProfileHeader();
-
-      showSuccessDialog('লগইন সফল হয়েছে!', 'কৃষি কথা অ্যাপে আপনাকে স্বাগতম।', () => {
-        setTab('menu');
-      });
     }
 
     let userDocUnsubscribe = null;
