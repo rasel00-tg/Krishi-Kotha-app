@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/widgets/custom_app_bar.dart';
 import '../../core/widgets/app_unified_dialog.dart';
 import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
-import '../auth/phone_login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -39,10 +37,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _handleBiometricToggle(bool enable) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final user = authProvider.user;
+    final fbUser = FirebaseAuth.instance.currentUser;
+    var user = authProvider.user;
 
     if (enable) {
-      if (user == null || user.uid.startsWith('guest_')) {
+      String activeUid = user?.uid ?? fbUser?.uid ?? '';
+      String userPhone = user?.phone ?? fbUser?.phoneNumber ?? '';
+      String userEmail = user?.email ?? fbUser?.email ?? '';
+      String userName = user?.name ?? fbUser?.displayName ?? 'সম্মানিত কৃষক';
+      String userDistrict = user?.district ?? '';
+      String userUpazila = user?.upazila ?? '';
+      String userVillage = user?.village ?? '';
+      String userOccupation = user?.occupation ?? '';
+
+      // ফায়ারবেস কারেন্ট ইউজার থাকলে সরাসরি ফায়ারস্টোর থেকে ইউজারের বিস্তারিত লোড করা
+      if (fbUser != null && !fbUser.isAnonymous) {
+        activeUid = fbUser.uid;
+        try {
+          final doc = await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
+          if (doc.exists && doc.data() != null) {
+            final d = doc.data()!;
+            userName = d['name'] ?? userName;
+            userPhone = d['phone'] ?? userPhone;
+            userEmail = d['email'] ?? userEmail;
+            userDistrict = d['district'] ?? userDistrict;
+            userUpazila = d['upazila'] ?? userUpazila;
+            userVillage = d['village'] ?? userVillage;
+            userOccupation = d['occupation'] ?? userOccupation;
+          }
+        } catch (_) {}
+      }
+
+      final isGuest = activeUid.isEmpty || activeUid.startsWith('guest_');
+      if (isGuest) {
         await AppUnifiedDialog.showWarning(
           context,
           title: 'লগইন প্রয়োজন',
@@ -64,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
 
-      // ২. নেটিভ ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ডায়ালগ প্রদর্শন
+      // ২. সরাসরি ডিভাইসের নেটিভ ফিঙ্গারপ্রিন্ট স্ক্যানার (local_auth) ওপেন
       final success = await BiometricAuthService.showBiometricScanDialog(
         context,
         title: 'বায়োমেট্রিক ভেরিফিকেশন',
@@ -73,18 +100,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (success && mounted) {
         final userData = {
-          'uid': user.uid,
-          'name': user.name,
-          'phone': user.phone,
-          'email': user.email,
-          'district': user.district,
-          'upazila': user.upazila,
-          'village': user.village,
-          'occupation': user.occupation,
+          'uid': activeUid,
+          'name': userName,
+          'phone': userPhone,
+          'email': userEmail,
+          'district': userDistrict,
+          'upazila': userUpazila,
+          'village': userVillage,
+          'occupation': userOccupation,
         };
         await BiometricAuthService.enableBiometrics(
-          phone: user.phone,
-          uid: user.uid,
+          phone: userPhone,
+          uid: activeUid,
           userData: userData,
         );
         setState(() => _biometricEnabled = true);
@@ -122,62 +149,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  /// সফল লগআউট ফ্লো (Logout Confirmation & Success Popup)
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await AppUnifiedDialog.showConfirmation(
-      context,
-      title: 'লগআউট নিশ্চিতকরণ',
-      message: 'আপনি কি নিশ্চিতভাবে একাউন্ট থেকে লগআউট করতে চান?',
-      confirmText: 'হ্যাঁ, লগআউট করুন',
-      cancelText: 'না',
-      icon: Icons.logout_rounded,
-      confirmColor: const Color(0xFFD32F2F),
-    );
-
-    if (confirmed == true && context.mounted) {
-      try {
-        try {
-          await FirebaseAuth.instance.signOut();
-        } catch (e) {
-          debugPrint('FirebaseAuth signOut error: $e');
-        }
-
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.signOut();
-
-        // SharedPreferences সেশন ক্লিয়ারিং
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('krishi_kotha_cached_user');
-        } catch (_) {}
-
-        if (context.mounted) {
-          await AppUnifiedDialog.showSuccess(
-            context,
-            title: 'সফলভাবে লগআউট হয়েছে!',
-            message: 'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
-            buttonText: 'লগইন করুন',
-          );
-        }
-      } catch (e) {
-        debugPrint('Logout error: $e');
-      } finally {
-        if (context.mounted) {
-          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const PhoneLoginScreen(isGatewayForMenu: false),
-            ),
-            (route) => false,
-          );
-        }
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
       appBar: CustomAppBar(
@@ -294,12 +267,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ]);
             },
           ),
-
-          // Section: Logout (if user is authenticated)
-          if (authProvider.isAuthenticated) ...[
-            const SizedBox(height: 22),
-            _buildLogoutCard(context),
-          ],
 
           const SizedBox(height: 20),
         ],
@@ -486,83 +453,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  /// মার্জিত লগআউট কার্ড (Sleek Logout Card for Settings Screen)
-  Widget _buildLogoutCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF5F5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFCDD2), width: 1.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _handleLogout(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFEBEE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.logout_rounded,
-                      color: Color(0xFFD32F2F),
-                      size: 22,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'লগআউট (Logout)',
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFD32F2F),
-                        ),
-                      ),
-                      SizedBox(height: 2.5),
-                      Text(
-                        'একাউন্ট থেকে নিরাপদে বের হয়ে যান',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Color(0xFFEF9A9A),
-                  size: 14,
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

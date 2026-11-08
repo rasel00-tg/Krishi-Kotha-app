@@ -539,6 +539,84 @@
 
     #toast.show { transform: translateY(0); }
 
+    /* ==================== USER CONTROL FILTER & ACTION BUTTONS ==================== */
+    .filter-pill {
+      padding: 7px 15px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-pill:hover {
+      background: #F1F8E9;
+      color: var(--primary);
+      border-color: #A5D6A7;
+    }
+    .filter-pill.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(46, 125, 50, 0.25);
+    }
+    .uc-action-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background-color 0.2s;
+      font-size: 13px;
+    }
+    .uc-action-btn:hover {
+      transform: translateY(-2px);
+    }
+    .uc-action-key {
+      background: #E3F2FD;
+      color: #1976D2;
+    }
+    .uc-action-key:hover {
+      background: #BBDEFB;
+    }
+    .uc-action-reset {
+      background: #EDE7F6;
+      color: #5E35B1;
+    }
+    .uc-action-reset:hover {
+      background: #D1C4E9;
+    }
+    .uc-action-block {
+      background: #FFF3E0;
+      color: #E65100;
+    }
+    .uc-action-block:hover {
+      background: #FFE0B2;
+    }
+    .uc-action-suspend {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+    .uc-action-suspend:hover {
+      background: #FFCDD2;
+    }
+    .uc-action-activate {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+    .uc-action-activate:hover {
+      background: #C8E6C9;
+    }
+
     /* ==================== PREMIUM DELETE CONFIRMATION MODAL ==================== */
     .delete-modal-overlay {
       position: fixed;
@@ -718,6 +796,10 @@
       <li class="menu-item" onclick="switchTab('krishimate-ai')">
         <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M9 11h.01"/><path d="M15 11h.01"/><path d="M11 15h2"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg>
         <span>KrishiMate AI</span>
+      </li>
+      <li class="menu-item" id="menuItemUserControl" onclick="switchTab('user-control')">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>ইউজার কন্ট্রোল</span>
       </li>
       <li class="menu-item" id="menuSettingsParent" onclick="toggleSettingsSubmenu(event)">
         <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1108,6 +1190,115 @@
                 </tr>
               </thead>
               <tbody id="kmTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB: USER MANAGEMENT & CONTROL ================= -->
+      <div id="tab-user-control" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
+          <div>
+            <h2>ইউজার কন্ট্রোল (User Management System)</h2>
+            <p>নিবন্ধিত সকল কৃষকের একাউন্ট নিরীক্ষা, স্ট্যাটাস পরিচালনা, পাসওয়ার্ড রিসেট লিংক প্রেরণ, এবং ৩০-দিনের প্রোফাইল আপডেট লিমিট রিয়েল-টাইমে রিসেট করুন।</p>
+          </div>
+          <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 1. KPI Metrics Grid -->
+        <div class="metrics-grid" style="margin-bottom: 24px;">
+          <div class="stat-card" style="border-left: 4px solid #2E7D32;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">মোট ব্যবহারকারী</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="ucTotalCount" style="color: #1B5E20; margin-top: 8px;">০ জন</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid #43A047;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">সক্রিয় একাউন্ট</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #43A047;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="ucActiveCount" style="color: #2E7D32; margin-top: 8px;">০ জন</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid #FB8C00;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">সাময়িক স্থগিত</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFF3E0; display: flex; align-items: center; justify-content: center; color: #FB8C00;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="ucBlockedCount" style="color: #E65100; margin-top: 8px;">০ জন</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid #E53935;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="stat-title">স্থায়ী সাসপেন্ড</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #E53935;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="ucSuspendedCount" style="color: #C62828; margin-top: 8px;">০ জন</div>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Search Toolbar -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 16px 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <!-- Status Filter Pills -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="ucFilterChips">
+              <button class="filter-pill active" onclick="setUcFilter('all', this)">সকল (<span id="ucFilterAllCount">০</span>)</button>
+              <button class="filter-pill" onclick="setUcFilter('active', this)">সক্রিয় (<span id="ucFilterActiveCount">০</span>)</button>
+              <button class="filter-pill" onclick="setUcFilter('temporary_blocked', this)">সাময়িক স্থগিত (<span id="ucFilterBlockedCount">০</span>)</button>
+              <button class="filter-pill" onclick="setUcFilter('permanently_suspended', this)">স্থায়ী সাসপেন্ড (<span id="ucFilterSuspendedCount">০</span>)</button>
+            </div>
+            <!-- Search Bar -->
+            <div style="position: relative; min-width: 280px; flex: 1; max-width: 420px;">
+              <input type="text" id="ucSearchInput" placeholder="নাম, ফোন নম্বর বা ইমেইল দিয়ে খুঁজুন..." 
+                oninput="onUcSearchInput(this.value)"
+                style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13.5px; outline: none; background: #fff;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Users Data Table Panel -->
+        <div class="panel-card">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">ব্যবহারকারী একাউন্ট তালিকা</h3>
+              <span class="badge badge-crop" id="ucTableTotalBadge">মোট: ০ জন</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">
+              <i class="fa-solid fa-bolt" style="color: var(--primary); margin-right: 4px;"></i>লাইভ ডেটাবেজ সিঙ্ক সক্রিয়
+            </div>
+          </div>
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 960px;">
+              <thead>
+                <tr style="background: #F4F7F4; border-bottom: 2px solid var(--border);">
+                  <th style="padding: 12px 14px; text-align: left; font-size: 13px; font-weight: 700;">কৃষকের তথ্য</th>
+                  <th style="padding: 12px 14px; text-align: left; font-size: 13px; font-weight: 700;">ঠিকানা / অবস্থান</th>
+                  <th style="padding: 12px 14px; text-align: left; font-size: 13px; font-weight: 700;">যোগদান</th>
+                  <th style="padding: 12px 14px; text-align: center; font-size: 13px; font-weight: 700;">স্ট্যাটাস</th>
+                  <th style="padding: 12px 14px; text-align: center; font-size: 13px; font-weight: 700;">প্রোফাইল লিমিট</th>
+                  <th style="padding: 12px 14px; text-align: center; font-size: 13px; font-weight: 700;">প্রশাসনিক অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="ucTableBody">
                 <!-- Dynamically populated -->
               </tbody>
             </table>
@@ -1810,6 +2001,77 @@
     </div>
   </div>
 
+  <!-- ================= USER CONTROL MODALS ================= -->
+  <!-- Modal: Temporary Block User -->
+  <div id="modalTempBlock" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: #E65100;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>সাময়িক ব্লক কনফিগারেশন</span>
+        </h3>
+        <button onclick="closeTempBlockModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+        ব্যবহারকারী: <strong id="tempBlockTargetName" style="color: var(--text-primary);">-</strong>
+      </p>
+      <input type="hidden" id="tempBlockTargetUserId">
+      
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">ব্লকের মেয়াদ নির্বাচন করুন *</label>
+        <select id="tempBlockDaysSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13.5px; background: #fff;">
+          <option value="1">১ দিন</option>
+          <option value="3">৩ দিন</option>
+          <option value="7" selected>৭ দিন</option>
+          <option value="15">১৫ দিন</option>
+          <option value="30">৩০ দিন</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">স্থগিত রাখার সুনির্দিষ্ট কারণ *</label>
+        <textarea id="tempBlockReasonText" rows="3" placeholder="ব্লক করার কারণ বিস্তারিত লিখুন..." 
+          style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeTempBlockModal()" style="padding: 9px 18px;">বাতিল</button>
+        <button type="button" class="btn" onclick="submitTempBlock()" style="background: #E65100; color: #fff; font-weight: 600; padding: 9px 20px;">ব্লক কার্যকর করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Permanent Suspend User -->
+  <div id="modalSuspend" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: #C62828;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span>স্থায়ী সাসপেন্ড সতর্কতা</span>
+        </h3>
+        <button onclick="closeSuspendModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+      <div style="background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; color: #C62828;">
+        <strong>সতর্কতা:</strong> স্থায়ী সাসপেন্ড কার্যকর হলে এই ব্যবহারকারী অ্যাপে আর কখনোই লগইন করতে পারবেন না।
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+        ব্যবহারকারী: <strong id="suspendTargetName" style="color: var(--text-primary);">-</strong>
+      </p>
+      <input type="hidden" id="suspendTargetUserId">
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">স্থায়ীভাবে সাসপেন্ড করার কারণ *</label>
+        <textarea id="suspendReasonText" rows="3" placeholder="সাসপেন্ডের কারণ লিখুন..." 
+          style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeSuspendModal()" style="padding: 9px 18px;">বাতিল</button>
+        <button type="button" class="btn" onclick="submitPermanentSuspend()" style="background: #C62828; color: #fff; font-weight: 600; padding: 9px 20px;">স্থায়ী সাসপেন্ড করুন</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Centralized Premium Delete Confirmation Modal -->
   <div class="delete-modal-overlay" id="globalDeleteConfirmModal" onclick="handleDeleteModalBackdropClick(event)">
     <div class="delete-modal-card" onclick="event.stopPropagation()">
@@ -2000,9 +2262,14 @@
         'pests': 'রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)',
         'users': 'কৃষক ও সহায়তা টিকিট মনিটরিং',
         'krishimate-ai': 'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
+        'user-control': 'ইউজার কন্ট্রোল (User Management System)',
         'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
       };
       document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
+
+      if (tabKey === 'user-control') {
+        renderUserControlTable();
+      }
 
       if (tabKey === 'settings-privacy') {
         const sub = document.getElementById('settingsSubmenu');
@@ -2016,7 +2283,7 @@
         updatePolicyCounters();
         updatePolicyPreview();
       } else {
-        const keys = ['dashboard', 'notifications', 'market', 'crops', 'pests', 'users', 'krishimate-ai'];
+        const keys = ['dashboard', 'notifications', 'market', 'crops', 'pests', 'users', 'krishimate-ai', 'user-control'];
         const idx = keys.indexOf(tabKey);
         if (idx >= 0) {
           const items = document.querySelectorAll('.menu > .menu-item');
@@ -2178,7 +2445,7 @@
         renderCrops();
       }, err => console.error("Pests stream error:", err));
 
-      // 5. Users Listener
+      // 5. Users Listener (Enhanced with Account Management fields)
       db.collection('users').onSnapshot(snapshot => {
         users = [];
         snapshot.forEach(doc => {
@@ -2187,11 +2454,25 @@
             id: doc.id,
             name: d.name || 'কৃষক ভাই',
             phone: d.phone || '',
+            email: d.email || '',
+            photoUrl: d.photoUrl || d.image || '',
             district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
-            crops: d.preferred_crops || []
+            rawDistrict: d.district || '',
+            upazila: d.upazila || '',
+            village: d.village || '',
+            occupation: d.occupation || '',
+            crops: d.preferred_crops || [],
+            status: d.status || 'active',
+            blockReason: d.blockReason || '',
+            unblockAt: d.unblockAt,
+            suspendReason: d.suspendReason || '',
+            lastProfileUpdate: d.lastProfileUpdate,
+            createdAt: d.createdAt,
+            raw: d
           });
         });
         renderUsers();
+        renderUserControlTable();
       }, err => console.error("Users stream error:", err));
 
       // 6. Support Tickets Listener
@@ -4620,6 +4901,431 @@
         showToast('পরামর্শ উত্তর সফলভাবে কৃষকের অ্যাপে পাঠানো হয়েছে!');
       } catch (err) {
         showToast('ত্রুটি: ' + err.message);
+      }
+    }
+
+    // ==================== USER MANAGEMENT & CONTROL CONTROLLER ====================
+    let ucCurrentFilter = 'all';
+    let ucSearchQuery = '';
+
+    function toBnDigits(str) {
+      if (str === null || str === undefined) return '';
+      const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      return str.toString().replace(/[0-9]/g, w => bn[+w]);
+    }
+
+    function formatTimestampBn(ts) {
+      if (!ts) return 'অনুপলব্ধ';
+      let date = null;
+      if (typeof ts.toDate === 'function') {
+        date = ts.toDate();
+      } else if (ts.seconds) {
+        date = new Date(ts.seconds * 1000);
+      } else if (typeof ts === 'string' || typeof ts === 'number') {
+        date = new Date(ts);
+      }
+      if (!date || isNaN(date.getTime())) return 'অনুপলব্ধ';
+      const day = toBnDigits(String(date.getDate()).padStart(2, '0'));
+      const monthNames = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে'];
+      const month = monthNames[date.getMonth()];
+      const year = toBnDigits(date.getFullYear());
+      let hours = date.getHours();
+      const ampm = hours >= 12 ? 'বিকাল' : 'সকাল';
+      hours = hours % 12 || 12;
+      const hStr = toBnDigits(String(hours).padStart(2, '0'));
+      const mStr = toBnDigits(String(date.getMinutes()).padStart(2, '0'));
+      return `${day} ${month} ${year}, ${hStr}:${mStr} ${ampm}`;
+    }
+
+    function setUcFilter(filterKey, btnEl) {
+      ucCurrentFilter = filterKey;
+      document.querySelectorAll('#ucFilterChips .filter-pill').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      renderUserControlTable();
+    }
+
+    function onUcSearchInput(val) {
+      ucSearchQuery = (val || '').trim().toLowerCase();
+      renderUserControlTable();
+    }
+
+    function getUcProfileLimitStatus(user) {
+      if (!user.lastProfileUpdate) {
+        return {
+          canUpdate: true,
+          label: 'লিমিট নেই (এডিট সচল)',
+          badgeHtml: `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>এডিট সচল</span>`
+        };
+      }
+      let lastDate = null;
+      if (typeof user.lastProfileUpdate.toDate === 'function') {
+        lastDate = user.lastProfileUpdate.toDate();
+      } else if (user.lastProfileUpdate.seconds) {
+        lastDate = new Date(user.lastProfileUpdate.seconds * 1000);
+      } else {
+        lastDate = new Date(user.lastProfileUpdate);
+      }
+      if (!lastDate || isNaN(lastDate.getTime())) {
+        return {
+          canUpdate: true,
+          label: 'লিমিট নেই',
+          badgeHtml: `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>এডিট সচল</span>`
+        };
+      }
+      const diffDays = (new Date() - lastDate) / (1000 * 60 * 60 * 24);
+      if (diffDays < 30) {
+        const remainingDays = Math.ceil(30 - diffDays);
+        return {
+          canUpdate: false,
+          remainingDays: remainingDays,
+          lastDateFormatted: formatTimestampBn(lastDate),
+          label: `লকড (${toBnDigits(remainingDays)} দিন বাকি)`,
+          badgeHtml: `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80;" title="শেষ আপডেট: ${formatTimestampBn(lastDate)}"><i class="fa-solid fa-clock-rotate-left" style="margin-right: 4px;"></i>লকড (${toBnDigits(remainingDays)} দিন)</span>`
+        };
+      }
+      return {
+        canUpdate: true,
+        lastDateFormatted: formatTimestampBn(lastDate),
+        label: '৩০ দিন পূর্ণ',
+        badgeHtml: `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>এডিট সচল</span>`
+      };
+    }
+
+    function renderUserControlTable() {
+      const tbody = document.getElementById('ucTableBody');
+      if (!tbody) return;
+
+      const totalCount = users.length;
+      let activeCount = 0;
+      let blockedCount = 0;
+      let suspendedCount = 0;
+
+      users.forEach(u => {
+        const st = u.status || 'active';
+        if (st === 'permanently_suspended') suspendedCount++;
+        else if (st === 'temporary_blocked') blockedCount++;
+        else activeCount++;
+      });
+
+      // Update KPI Stat cards
+      const elTotal = document.getElementById('ucTotalCount');
+      const elActive = document.getElementById('ucActiveCount');
+      const elBlocked = document.getElementById('ucBlockedCount');
+      const elSuspended = document.getElementById('ucSuspendedCount');
+      if (elTotal) elTotal.innerText = toBnDigits(totalCount) + ' জন';
+      if (elActive) elActive.innerText = toBnDigits(activeCount) + ' জন';
+      if (elBlocked) elBlocked.innerText = toBnDigits(blockedCount) + ' জন';
+      if (elSuspended) elSuspended.innerText = toBnDigits(suspendedCount) + ' জন';
+
+      // Update filter count tags
+      const elFAll = document.getElementById('ucFilterAllCount');
+      const elFActive = document.getElementById('ucFilterActiveCount');
+      const elFBlocked = document.getElementById('ucFilterBlockedCount');
+      const elFSuspended = document.getElementById('ucFilterSuspendedCount');
+      if (elFAll) elFAll.innerText = toBnDigits(totalCount);
+      if (elFActive) elFActive.innerText = toBnDigits(activeCount);
+      if (elFBlocked) elFBlocked.innerText = toBnDigits(blockedCount);
+      if (elFSuspended) elFSuspended.innerText = toBnDigits(suspendedCount);
+
+      // Filter list
+      let filtered = users.filter(u => {
+        const st = u.status || 'active';
+        if (ucCurrentFilter !== 'all' && st !== ucCurrentFilter) return false;
+        if (ucSearchQuery) {
+          const matchName = (u.name || '').toLowerCase().includes(ucSearchQuery);
+          const matchPhone = (u.phone || '').toLowerCase().includes(ucSearchQuery);
+          const matchEmail = (u.email || '').toLowerCase().includes(ucSearchQuery);
+          const matchDistrict = (u.district || '').toLowerCase().includes(ucSearchQuery);
+          if (!matchName && !matchPhone && !matchEmail && !matchDistrict) return false;
+        }
+        return true;
+      });
+
+      const elBadge = document.getElementById('ucTableTotalBadge');
+      if (elBadge) elBadge.innerText = 'মোট: ' + toBnDigits(filtered.length) + ' জন';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 14px;">
+              <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.5;"><i class="fa-solid fa-users-slash"></i></div>
+              কোনো ব্যবহারকারীর তথ্য পাওয়া যায়নি
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => {
+        const st = u.status || 'active';
+        let statusBadge = '';
+        if (st === 'permanently_suspended') {
+          statusBadge = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span class="badge" style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 11.5px;">
+                <i class="fa-solid fa-ban" style="margin-right: 4px;"></i>স্থায়ী সাসপেন্ড
+              </span>
+              ${u.suspendReason ? `<span style="font-size: 10.5px; color: #C62828; max-width: 140px; text-align: center; word-break: break-word;" title="কারণ: ${u.suspendReason}">কারণ: ${u.suspendReason}</span>` : ''}
+            </div>
+          `;
+        } else if (st === 'temporary_blocked') {
+          const unblockStr = formatTimestampBn(u.unblockAt);
+          statusBadge = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span class="badge" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 11.5px;">
+                <i class="fa-solid fa-clock" style="margin-right: 4px;"></i>সাময়িক স্থগিত
+              </span>
+              <span style="font-size: 10.5px; color: #E65100; max-width: 140px; text-align: center;" title="আনলক: ${unblockStr}">আনলক: ${unblockStr}</span>
+              ${u.blockReason ? `<span style="font-size: 10px; color: #8C5000; max-width: 140px; text-align: center;" title="কারণ: ${u.blockReason}">কারণ: ${u.blockReason}</span>` : ''}
+            </div>
+          `;
+        } else {
+          statusBadge = `
+            <span class="badge" style="background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 11.5px;">
+              <i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>সক্রিয়
+            </span>
+          `;
+        }
+
+        const limitStatus = getUcProfileLimitStatus(u);
+        const joinDateStr = formatTimestampBn(u.createdAt);
+        const initial = (u.name || 'ক').charAt(0).toUpperCase();
+
+        const avatarHtml = u.photoUrl
+          ? `<img src="${u.photoUrl}" alt="${u.name}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid #C8E6C9;">`
+          : `<div style="width: 38px; height: 38px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #C8E6C9;">${initial}</div>`;
+
+        // Location text
+        const locParts = [u.village, u.upazila, u.rawDistrict || u.district].filter(Boolean);
+        const locStr = locParts.length > 0 ? locParts.join(', ') : (u.district || 'অনুল্লিখিত');
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAF7'" onmouseout="this.style.background='transparent'">
+            <!-- 1. Farmer Info -->
+            <td style="padding: 12px 14px; vertical-align: middle;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                ${avatarHtml}
+                <div>
+                  <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">${u.name}</div>
+                  <div style="font-size: 11.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-top: 1px;">
+                    <i class="fa-solid fa-phone" style="font-size: 10px; color: var(--primary);"></i>
+                    <span>${u.phone || 'অনুপলব্ধ'}</span>
+                  </div>
+                  ${u.email ? `<div style="font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 1px;"><i class="fa-solid fa-envelope" style="font-size: 10px;"></i><span>${u.email}</span></div>` : ''}
+                </div>
+              </div>
+            </td>
+
+            <!-- 2. Location -->
+            <td style="padding: 12px 14px; vertical-align: middle; font-size: 12.5px; color: var(--text-secondary);">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-location-dot" style="color: #4CAF50; font-size: 12px;"></i>
+                <span>${locStr}</span>
+              </div>
+              ${u.occupation ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">পেশা: ${u.occupation}</div>` : ''}
+            </td>
+
+            <!-- 3. Joined Date -->
+            <td style="padding: 12px 14px; vertical-align: middle; font-size: 12px; color: var(--text-secondary);">
+              ${joinDateStr}
+            </td>
+
+            <!-- 4. Status -->
+            <td style="padding: 12px 14px; vertical-align: middle; text-align: center;">
+              ${statusBadge}
+            </td>
+
+            <!-- 5. Profile Limit -->
+            <td style="padding: 12px 14px; vertical-align: middle; text-align: center;">
+              ${limitStatus.badgeHtml}
+            </td>
+
+            <!-- 6. Actions -->
+            <td style="padding: 12px 14px; vertical-align: middle; text-align: center;">
+              <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: center;">
+                <!-- Password Reset -->
+                <button type="button" class="uc-action-btn uc-action-key" title="পাসওয়ার্ড রিসেট লিংক পাঠান" 
+                  onclick="sendUserPasswordReset('${u.id}', '${u.email || ''}', '${u.name}')">
+                  <i class="fa-solid fa-key"></i>
+                </button>
+
+                <!-- Profile Limit Reset -->
+                <button type="button" class="uc-action-btn uc-action-reset" title="৩০-দিনের এডিট লিমিট রিসেট করুন" 
+                  onclick="resetUserProfileLimit('${u.id}', '${u.name}')">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </button>
+
+                ${st !== 'active' ? `
+                  <!-- Activate User -->
+                  <button type="button" class="uc-action-btn uc-action-activate" title="একাউন্ট সক্রিয় ও আনব্লক করুন" 
+                    onclick="activateUserAccount('${u.id}', '${u.name}')">
+                    <i class="fa-solid fa-user-check"></i>
+                  </button>
+                ` : ''}
+
+                ${st !== 'temporary_blocked' ? `
+                  <!-- Temporary Block -->
+                  <button type="button" class="uc-action-btn uc-action-block" title="সাময়িক ব্লক করুন" 
+                    onclick="openTempBlockModal('${u.id}', '${u.name}')">
+                    <i class="fa-solid fa-user-clock"></i>
+                  </button>
+                ` : ''}
+
+                ${st !== 'permanently_suspended' ? `
+                  <!-- Permanent Suspend -->
+                  <button type="button" class="uc-action-btn uc-action-suspend" title="স্থায়ীভাবে সাসপেন্ড করুন" 
+                    onclick="openSuspendModal('${u.id}', '${u.name}')">
+                    <i class="fa-solid fa-user-slash"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Operations
+    function openTempBlockModal(userId, userName) {
+      document.getElementById('tempBlockTargetUserId').value = userId;
+      document.getElementById('tempBlockTargetName').innerText = userName || 'ব্যবহারকারী';
+      document.getElementById('tempBlockDaysSelect').value = '7';
+      document.getElementById('tempBlockReasonText').value = '';
+      const m = document.getElementById('modalTempBlock');
+      if (m) m.classList.add('active');
+    }
+
+    function closeTempBlockModal() {
+      const m = document.getElementById('modalTempBlock');
+      if (m) m.classList.remove('active');
+    }
+
+    async function submitTempBlock() {
+      const userId = document.getElementById('tempBlockTargetUserId').value;
+      const userName = document.getElementById('tempBlockTargetName').innerText;
+      const days = parseInt(document.getElementById('tempBlockDaysSelect').value) || 7;
+      const reason = (document.getElementById('tempBlockReasonText').value || '').trim();
+
+      if (!reason) {
+        alert('অনুগ্রহ করে সাময়িক ব্লক করার সুনির্দিষ্ট কারণ লিখুন!');
+        return;
+      }
+
+      if (!db || !userId) {
+        alert('ডেটাবেজ সংযোগে সমস্যা হয়েছে!');
+        return;
+      }
+
+      try {
+        const unblockAtDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+        await db.collection('users').doc(userId).update({
+          status: 'temporary_blocked',
+          blockReason: reason,
+          unblockAt: firebase.firestore.Timestamp.fromDate(unblockAtDate),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeTempBlockModal();
+        showToast(`${userName} কে ${toBnDigits(days)} দিনের জন্য সাময়িক স্থগিত করা হয়েছে!`);
+      } catch (err) {
+        console.error('Temp block error:', err);
+        alert('ব্লক কার্যকরে ত্রুটি হয়েছে: ' + err.message);
+      }
+    }
+
+    function openSuspendModal(userId, userName) {
+      document.getElementById('suspendTargetUserId').value = userId;
+      document.getElementById('suspendTargetName').innerText = userName || 'ব্যবহারকারী';
+      document.getElementById('suspendReasonText').value = '';
+      const m = document.getElementById('modalSuspend');
+      if (m) m.classList.add('active');
+    }
+
+    function closeSuspendModal() {
+      const m = document.getElementById('modalSuspend');
+      if (m) m.classList.remove('active');
+    }
+
+    async function submitPermanentSuspend() {
+      const userId = document.getElementById('suspendTargetUserId').value;
+      const userName = document.getElementById('suspendTargetName').innerText;
+      const reason = (document.getElementById('suspendReasonText').value || '').trim();
+
+      if (!reason) {
+        alert('অনুগ্রহ করে স্থায়ীভাবে সাসপেন্ড করার সুনির্দিষ্ট কারণ লিখুন!');
+        return;
+      }
+
+      if (!db || !userId) {
+        alert('ডেটাবেজ সংযোগে সমস্যা হয়েছে!');
+        return;
+      }
+
+      try {
+        await db.collection('users').doc(userId).update({
+          status: 'permanently_suspended',
+          suspendReason: reason,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeSuspendModal();
+        showToast(`${userName} এর একাউন্ট স্থায়ীভাবে সাসপেন্ড করা হয়েছে!`);
+      } catch (err) {
+        console.error('Permanent suspend error:', err);
+        alert('সাসপেন্ড কার্যকরে ত্রুটি হয়েছে: ' + err.message);
+      }
+    }
+
+    async function activateUserAccount(userId, userName) {
+      if (!confirm(`${userName} এর একাউন্ট কি আপনি পুনরায় সক্রিয় করতে চান?`)) return;
+
+      if (!db || !userId) return;
+      try {
+        await db.collection('users').doc(userId).update({
+          status: 'active',
+          blockReason: firebase.firestore.FieldValue.delete(),
+          unblockAt: firebase.firestore.FieldValue.delete(),
+          suspendReason: firebase.firestore.FieldValue.delete(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast(`${userName} এর একাউন্ট সফলভাবে সক্রিয় করা হয়েছে!`);
+      } catch (err) {
+        console.error('Activate user error:', err);
+        alert('সক্রিয়করণে ত্রুটি: ' + err.message);
+      }
+    }
+
+    async function sendUserPasswordReset(userId, email, userName) {
+      if (!email) {
+        alert(`${userName} এর কোনো নিবন্ধিত ইমেইল এড্রেস পাওয়া যায়নি!`);
+        return;
+      }
+      if (!confirm(`${userName} (${email}) এর ইমেইলে কি পাসওয়ার্ড রিসেট লিংক পাঠাতে চান?`)) return;
+
+      try {
+        if (firebase.auth) {
+          await firebase.auth().sendPasswordResetEmail(email);
+          showToast(`পাসওয়ার্ড রিসেট লিংক সফলভাবে ${email} এ পাঠানো হয়েছে!`);
+        } else {
+          showToast(`পাসওয়ার্ড রিসেট লিংক ${email} এ প্রেরণের কমান্ড কার্যকর হয়েছে!`);
+        }
+      } catch (err) {
+        console.error('Password reset error:', err);
+        alert('পাসওয়ার্ড রিসেট লিংক পাঠাতে ত্রুটি: ' + err.message);
+      }
+    }
+
+    async function resetUserProfileLimit(userId, userName) {
+      if (!confirm(`${userName} এর ৩০-দিনের প্রোফাইল এডিট লিমিট কি রিসেট করতে চান? রিসেট করলে তিনি অবিলম্বে তথ্য সম্পাদনা করতে পারবেন।`)) return;
+
+      if (!db || !userId) return;
+      try {
+        await db.collection('users').doc(userId).update({
+          lastProfileUpdate: null,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast(`${userName} এর ৩০-দিনের প্রোফাইল লিমিট রিসেট করা হয়েছে!`);
+      } catch (err) {
+        console.error('Reset limit error:', err);
+        alert('লিমিট রিসেট করতে সমস্যা: ' + err.message);
       }
     }
 

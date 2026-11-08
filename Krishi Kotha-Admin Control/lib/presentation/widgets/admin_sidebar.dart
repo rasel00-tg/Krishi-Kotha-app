@@ -21,13 +21,13 @@ class _AdminSidebarState extends State<AdminSidebar> {
   @override
   void initState() {
     super.initState();
-    _settingsExpanded = widget.selectedIndex == 7;
+    _settingsExpanded = widget.selectedIndex == 8;
   }
 
   @override
   void didUpdateWidget(covariant AdminSidebar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedIndex == 7 && !_settingsExpanded) {
+    if (widget.selectedIndex == 8 && !_settingsExpanded) {
       _settingsExpanded = true;
     }
   }
@@ -148,6 +148,12 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   label: 'KrishiMate AI',
                   subtitle: 'এআই প্রেসক্রিপশন ও হিস্ট্রি',
                 ),
+                _buildMenuItem(
+                  index: 7,
+                  icon: Icons.manage_accounts_rounded,
+                  label: 'ইউজার কন্ট্রোল',
+                  subtitle: 'ব্যবহারকারী একাউন্ট ও স্ট্যাটাস',
+                ),
 
                 const SizedBox(height: 8),
 
@@ -267,7 +273,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
   }
 
   Widget _buildSettingsParentItem() {
-    final isSettingsActive = widget.selectedIndex == 7;
+    final isSettingsActive = widget.selectedIndex == 8;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -280,7 +286,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
               _settingsExpanded = !_settingsExpanded;
             });
             if (!isSettingsActive) {
-              widget.onItemSelected(7);
+              widget.onItemSelected(8);
             }
           },
           hoverColor: AdminColors.sidebarHover,
@@ -342,22 +348,22 @@ class _AdminSidebarState extends State<AdminSidebar> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: () => widget.onItemSelected(7),
+          onTap: () => widget.onItemSelected(8),
           hoverColor: AdminColors.sidebarHover,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: widget.selectedIndex == 7 ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              color: widget.selectedIndex == 8 ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: widget.selectedIndex == 7 ? const Color(0x44FFFFFF) : Colors.transparent,
+                color: widget.selectedIndex == 8 ? const Color(0x44FFFFFF) : Colors.transparent,
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.policy_rounded,
-                  color: widget.selectedIndex == 7 ? Colors.white : AdminColors.sidebarTextMuted,
+                  color: widget.selectedIndex == 8 ? Colors.white : AdminColors.sidebarTextMuted,
                   size: 19,
                 ),
                 const SizedBox(width: 10),

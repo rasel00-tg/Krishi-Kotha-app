@@ -384,6 +384,12 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     if (!mounted) return;
 
     if (success) {
+      final activeUid = FirebaseAuth.instance.currentUser?.uid ?? authProvider.user?.uid;
+      if (activeUid != null) {
+        final allowed = await _validateUserAccountStatus(context, activeUid);
+        if (!allowed) return;
+      }
+
       showAppSuccessDialog(
         context,
         title: 'লগইন সফল হয়েছে!',
@@ -405,6 +411,91 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         title: 'লগইন ব্যর্থ হয়েছে!',
         message: msg,
       );
+    }
+  }
+
+  /// ব্লক বা সাসপেন্ড একাউন্ট স্ট্যাটাস ভ্যালিডেশন
+  Future<bool> _validateUserAccountStatus(BuildContext context, String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (!doc.exists || doc.data() == null) return true;
+
+      final data = doc.data()!;
+      final status = data['status']?.toString();
+
+      // ১. স্থায়ী সাসপেন্ড চেক (Permanently Suspended)
+      if (status == 'permanently_suspended') {
+        final reason = data['suspendReason']?.toString() ?? 'নীতিমালা লঙ্ঘনের কারণে';
+        try {
+          await FirebaseAuth.instance.signOut();
+        } catch (_) {}
+        if (context.mounted) {
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          await authProvider.signOut();
+        }
+
+        if (context.mounted) {
+          await AppUnifiedDialog.showError(
+            context,
+            title: 'আপনার একাউন্টটি স্থায়ীভাবে সাসপেন্ড করা হয়েছে!',
+            message: 'কারণ: $reason\n\nসহায়তার জন্য হেল্পলাইনে যোগাযোগ করুন।',
+            buttonText: 'বুঝেছি',
+          );
+        }
+        return false;
+      }
+
+      // ২. অস্থায়ী ব্লক চেক (Temporary Blocked)
+      if (status == 'temporary_blocked') {
+        final blockReason = data['blockReason']?.toString() ?? 'সাময়িক বিধিনিষেধ আরোপ করা হয়েছে';
+        final unblockAt = data['unblockAt'];
+        DateTime? unblockDate;
+        if (unblockAt is Timestamp) {
+          unblockDate = unblockAt.toDate();
+        } else if (unblockAt is String) {
+          unblockDate = DateTime.tryParse(unblockAt);
+        }
+
+        final now = DateTime.now();
+        if (unblockDate != null && now.isBefore(unblockDate)) {
+          try {
+            await FirebaseAuth.instance.signOut();
+          } catch (_) {}
+          if (context.mounted) {
+            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            await authProvider.signOut();
+          }
+
+          final formattedDate =
+              "${BanglaNumberConverter.toBangla(unblockDate.day.toString().padLeft(2, '0'))}-${BanglaNumberConverter.toBangla(unblockDate.month.toString().padLeft(2, '0'))}-${BanglaNumberConverter.toBangla(unblockDate.year.toString())} (${BanglaNumberConverter.toBangla(unblockDate.hour.toString().padLeft(2, '0'))}:${BanglaNumberConverter.toBangla(unblockDate.minute.toString().padLeft(2, '0'))})";
+
+          if (context.mounted) {
+            await AppUnifiedDialog.showWarning(
+              context,
+              title: 'আপনার একাউন্ট সাময়িকভাবে স্থগিত রয়েছে!',
+              message: 'কারণ: $blockReason\n\nএকাউন্ট আনলক হওয়ার সময়: $formattedDate',
+              buttonText: 'বুঝেছি',
+            );
+          }
+          return false;
+        } else {
+          // নির্ধারিত সময় পার হয়ে গেছে, স্বয়ংক্রিয়ভাবে সক্রিয় করা
+          try {
+            await FirebaseFirestore.instance.collection('users').doc(uid).update({
+              'status': 'active',
+              'blockReason': FieldValue.delete(),
+              'unblockAt': FieldValue.delete(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          } catch (_) {}
+          return true;
+        }
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('Error validating account status: $e');
+      return true;
     }
   }
 
@@ -434,6 +525,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final success = await authProvider.loginWithBiometrics(savedUser);
         if (success && mounted) {
+          final activeUid = FirebaseAuth.instance.currentUser?.uid ?? savedUser.uid;
+          final allowed = await _validateUserAccountStatus(context, activeUid);
+          if (!allowed) return;
+
           await AppUnifiedDialog.showSuccess(
             context,
             title: 'লগইন সফল!',

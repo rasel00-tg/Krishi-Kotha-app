@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/constants/bangladesh_locations.dart';
 import '../../core/utils/admin_error_handler.dart';
@@ -447,6 +448,75 @@ class AdminFirestoreService {
           });
     }
     return Stream.value(const []);
+  }
+
+  /// ইউজার পাসওয়ার্ড রিসেট ইমেইল প্রেরণ (Send Official Password Reset Email)
+  Future<void> sendPasswordReset(String email) async {
+    if (email.trim().isEmpty) {
+      throw Exception('ইউজারের কোনো নিবন্ধিত ইমেইল পাওয়া যায়নি।');
+    }
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+  }
+
+  /// ইউজার প্রোফাইল আপডেট লিমিট রিসেট (Reset 30-Day Edit Limit)
+  Future<void> resetProfileUpdateLimit(String uid) async {
+    final db = _db;
+    if (db != null) {
+      await db.collection('users').doc(uid).update({
+        'lastProfileUpdate': FieldValue.delete(),
+        'last_profile_update': FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// ইউজার সাময়িক ব্লক (Temporary Block User)
+  Future<void> temporaryBlockUser({
+    required String uid,
+    required int days,
+    required String reason,
+  }) async {
+    final db = _db;
+    if (db != null) {
+      final unblockDate = DateTime.now().add(Duration(days: days));
+      await db.collection('users').doc(uid).update({
+        'status': 'temporary_blocked',
+        'blockReason': reason,
+        'blockedAt': FieldValue.serverTimestamp(),
+        'unblockAt': Timestamp.fromDate(unblockDate),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// ইউজার স্থায়ী সাসপেন্ড (Permanently Suspend User)
+  Future<void> permanentlySuspendUser({
+    required String uid,
+    required String reason,
+  }) async {
+    final db = _db;
+    if (db != null) {
+      await db.collection('users').doc(uid).update({
+        'status': 'permanently_suspended',
+        'suspendReason': reason,
+        'suspendedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// ইউজার সক্রিয়করণ / আনব্লক (Activate / Unblock User)
+  Future<void> activateUser(String uid) async {
+    final db = _db;
+    if (db != null) {
+      await db.collection('users').doc(uid).update({
+        'status': 'active',
+        'blockReason': FieldValue.delete(),
+        'unblockAt': FieldValue.delete(),
+        'suspendReason': FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   Stream<List<AdminSupportTicketModel>> getSupportTicketsStream() {

@@ -269,33 +269,68 @@ class AdminUserModel {
   final String uid;
   final String name;
   final String phone;
+  final String email;
+  final String? photoUrl;
   final String district;
   final String upazila;
+  final String village;
+  final String occupation;
   final List<String> preferredCrops;
+  final String status; // 'active', 'temporary_blocked', 'permanently_suspended'
+  final String? blockReason;
+  final DateTime? unblockAt;
+  final String? suspendReason;
+  final DateTime? lastProfileUpdate;
+  final DateTime? updatedAt;
   final DateTime createdAt;
 
   const AdminUserModel({
     required this.uid,
     required this.name,
     required this.phone,
+    this.email = '',
+    this.photoUrl,
     required this.district,
     required this.upazila,
+    this.village = '',
+    this.occupation = '',
     this.preferredCrops = const [],
+    this.status = 'active',
+    this.blockReason,
+    this.unblockAt,
+    this.suspendReason,
+    this.lastProfileUpdate,
+    this.updatedAt,
     required this.createdAt,
   });
 
   factory AdminUserModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+
+    DateTime? parseDate(dynamic val) {
+      if (val is Timestamp) return val.toDate();
+      if (val is String) return DateTime.tryParse(val);
+      return null;
+    }
+
     return AdminUserModel(
       uid: doc.id,
       name: data['name'] as String? ?? 'কৃষক ভাই',
       phone: data['phone'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      photoUrl: data['photo_url'] ?? data['photoUrl'] ?? data['image_url'],
       district: data['district'] as String? ?? 'ঢাকা',
       upazila: data['upazila'] as String? ?? '',
+      village: data['village'] ?? data['village_name'] ?? '',
+      occupation: data['occupation'] ?? '',
       preferredCrops: List<String>.from(data['preferred_crops'] ?? []),
-      createdAt: (data['createdAt'] is Timestamp)
-          ? (data['createdAt'] as Timestamp).toDate()
-          : DateTime.now(),
+      status: data['status'] as String? ?? 'active',
+      blockReason: data['blockReason'] as String?,
+      unblockAt: parseDate(data['unblockAt']),
+      suspendReason: data['suspendReason'] as String?,
+      lastProfileUpdate: parseDate(data['lastProfileUpdate'] ?? data['last_profile_update']),
+      updatedAt: parseDate(data['updatedAt'] ?? data['updated_at']),
+      createdAt: parseDate(data['createdAt']) ?? DateTime.now(),
     );
   }
 }
