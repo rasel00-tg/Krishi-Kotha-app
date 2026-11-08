@@ -4286,67 +4286,131 @@
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS -->
-  <div class="modal-overlay" id="settingsModal">
-    <div class="bottom-sheet" style="max-width: 600px;">
-      <div class="modal-title">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-gear" style="color: #1565C0;"></i>
-          <span>সেটিংস (Settings)</span>
-        </div>
-        <button class="close-modal-btn" onclick="closeModal('settingsModal')">&times;</button>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-        <!-- Biometric Fingerprint Toggle -->
-        <div
-          style="background: #F8FAF7; padding: 12px 14px; border-radius: 12px; border: 1.2px solid #C8E6C9; display: flex; justify-content: space-between; align-items: center;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-fingerprint" style="color: var(--primary); font-size: 24px;"></i>
-            <div>
-              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">ফিঙ্গারপ্রিন্ট লগইন (Biometric)</h4>
-              <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">দ্রুত ও নিরাপদ ফিঙ্গারপ্রিন্ট লগইন</p>
-            </div>
-          </div>
-          <input type="checkbox" id="settingsBiometricToggle" onchange="handleBiometricToggleWeb(this.checked)" style="accent-color: var(--primary); width: 18px; height: 18px; cursor: pointer;">
-        </div>
-
-        <div
-          style="background: #F8FAF7; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">জরুরি আবহাওয়া সতর্কতা</h4>
-            <p style="font-size: 11.5px; color: var(--text-secondary);">ঝড়-বৃষ্টির নোটিফিকেশন অ্যালার্ট</p>
-          </div>
-          <input type="checkbox" checked style="accent-color: var(--primary); width: 18px; height: 18px;">
-        </div>
-        <div
-          style="background: #F8FAF7; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">দৈনিক বাজার দর বার্তা</h4>
-            <p style="font-size: 11.5px; color: var(--text-secondary);">প্রতিদিন সকালে নতুন দর নোটিফিকেশন</p>
-          </div>
-          <input type="checkbox" checked style="accent-color: var(--primary); width: 18px; height: 18px;">
-        </div>
-        <div
-          style="background: #F8FAF7; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">অ্যাপের ভাষা</h4>
-            <p style="font-size: 11.5px; color: var(--text-secondary);">বাংলা (বাংলাদেশ)</p>
-          </div>
-          <span
-            style="background: var(--primary-container); color: var(--primary-dark); font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
-        </div>
-        <div
-          style="background: #F8FAF7; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">টাইপোগ্রাফি ফন্ট</h4>
-            <p style="font-size: 11.5px; color: var(--text-secondary);">Tiro Bangla (গ্লোবাল ফন্ট)</p>
-          </div>
-          <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 18px;"></i>
-        </div>
+  <!-- DEDICATED FULL SCREEN SETTINGS PAGE (EDGE-TO-EDGE, NO NAVBAR OVERLAP) -->
+  <div class="full-screen-page" id="settingsPage" style="background: #F7FAF7; z-index: 100010; overflow-y: auto;">
+    <!-- Top Bar with Back Button & Title (Emerald Green Theme) -->
+    <div
+      style="background: #2E7D32; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 8px rgba(46,125,50,0.25); color: white;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="icon-btn" onclick="closeSettingsPage()"
+          style="color: white; background: rgba(255,255,255,0.18); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="ফিরে যান">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h2 style="font-size: 18px; font-weight: 700; color: white; margin: 0;">সেটিংস</h2>
       </div>
     </div>
-  </div>
 
+    <div style="padding: 16px; max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+      <!-- Category 1: নিরাপত্তা ও বায়োমেট্রিক -->
+      <div>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নিরাপত্তা ও বায়োমেট্রিক</h3>
+        <!-- Dedicated Biometric Card with Live Status Badge -->
+        <div id="webBiometricCard"
+          style="background: white; padding: 16px; border-radius: 16px; border: 1.2px solid #C8E6C9; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-size: 24px; border: 1.5px solid #A5D6A7;">
+                <i class="fa-solid fa-fingerprint"></i>
+              </div>
+              <div>
+                <h4 style="font-size: 15px; font-weight: 700; color: #212121; margin: 0;">বায়োমেট্রিক সেটিংস</h4>
+                <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন</p>
+              </div>
+            </div>
+            <input type="checkbox" id="settingsBiometricToggle" onchange="handleBiometricToggleWeb(this.checked)"
+              style="accent-color: #2E7D32; width: 20px; height: 20px; cursor: pointer;">
+          </div>
+
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #EFF3EF; display: flex; justify-content: space-between; align-items: center;">
+            <div id="biometricStatusBadge">
+              <!-- Rendered dynamically -->
+            </div>
+            <button type="button" id="biometricActionBtn" onclick="handleBiometricToggleWeb(true)"
+              style="padding: 6px 14px; border-radius: 10px; border: none; background: #2E7D32; color: white; font-size: 12.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-fingerprint"></i>
+              <span>চালু করুন</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 2: নোটিফিকেশন ও অ্যালার্ট -->
+      <div>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নোটিফিকেশন ও অ্যালার্ট</h3>
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">জরুরি আবহাওয়া সতর্কতা</h4>
+              <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ঝড়-বৃষ্টি ও দুর্যোগের জরুরি নোটিফিকেশন</p>
+            </div>
+            <input type="checkbox" checked style="accent-color: #2E7D32; width: 18px; height: 18px; cursor: pointer;">
+          </div>
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">দৈনিক বাজার দর বার্তা</h4>
+              <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">প্রতিদিন সকালে নতুন মোকামের দর</p>
+            </div>
+            <input type="checkbox" checked style="accent-color: #2E7D32; width: 18px; height: 18px; cursor: pointer;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 3: ভাষা ও ফন্ট -->
+      <div>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">ভাষা ও ফন্ট</h3>
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">অ্যাপের ভাষা</h4>
+              <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">বাংলা (বাংলাদেশ)</p>
+            </div>
+            <span style="background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">টাইপোগ্রাফি ফন্ট</h4>
+              <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">Tiro Bangla (গ্লোবাল বাংলা ফন্ট)</p>
+            </div>
+            <i class="fa-solid fa-circle-check" style="color: #2E7D32; font-size: 18px;"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 4: অ্যাপ তথ্য -->
+      <div>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">অ্যাপ তথ্য</h3>
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-circle-info" style="color: #2E7D32; font-size: 20px;"></i>
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">অ্যাপ সংস্করণ</h4>
+              <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">কৃষি কথা – Krishi Kotha (Build 1.0.0+1)</p>
+            </div>
+          </div>
+          <span style="font-size: 12.5px; font-weight: 700; color: #78909C;">v1.0.0</span>
+        </div>
+      </div>
+
+      <!-- Category 5: লগআউট বাটন (লগইন করা থাকলে দৃশ্যমান) -->
+      <div id="settingsLogoutSection" style="margin-top: 10px;">
+        <button type="button" onclick="confirmWebLogout()"
+          style="width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #FFCDD2; background: #FFF5F5; color: #D32F2F; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(211,47,47,0.08);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #D32F2F; font-size: 18px;">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+            <div style="text-align: left;">
+              <div style="font-size: 14.5px; font-weight: 700;">লগআউট (Logout)</div>
+              <div style="font-size: 11.5px; color: #E57373; font-weight: normal;">একাউন্ট থেকে নিরাপদে বের হয়ে যান</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="color: #EF9A9A; font-size: 14px;"></i>
+        </button>
+      </div>
+
+      <div style="height: 30px;"></div>
+    </div>
+  </div>
 
   <!-- MODAL: LOGOUT CONFIRMATION POPUP -->
   <div class="modal-overlay" id="webLogoutModal"
@@ -4363,7 +4427,7 @@
         </div>
       </div>
       <p style="font-size: 14.5px; color: #455A64; margin-bottom: 24px; line-height: 1.45;">
-        আপনি কি লগআউট করতে চান?
+        আপনি কি নিশ্চিতভাবে একাউন্ট থেকে লগআউট করতে চান?
       </p>
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button type="button" onclick="closeModal('webLogoutModal')"
@@ -11599,15 +11663,66 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       openEditProfilePage();
     }
 
-    function openSettingsModal() {
-      const modal = document.getElementById('settingsModal');
-      if (modal) {
-        modal.classList.add('active');
-        const bioToggle = document.getElementById('settingsBiometricToggle');
-        if (bioToggle) {
-          bioToggle.checked = localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
+    function updateBiometricStatusInSettings() {
+      const isEnabled = localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
+      const toggle = document.getElementById('settingsBiometricToggle');
+      const badge = document.getElementById('biometricStatusBadge');
+      const actionBtn = document.getElementById('biometricActionBtn');
+      const card = document.getElementById('webBiometricCard');
+
+      if (toggle) toggle.checked = isEnabled;
+      if (badge) {
+        if (isEnabled) {
+          badge.innerHTML = `
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #81C784; padding: 4px 10px; border-radius: 20px;">
+              <i class="fa-solid fa-circle-check" style="color: #2E7D32; font-size: 13px;"></i>
+              <span style="font-size: 12px; font-weight: 700; color: #1B5E20;">সেট করা আছে</span>
+            </div>
+          `;
+        } else {
+          badge.innerHTML = `
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: #ECEFF1; border: 1px solid #CFD8DC; padding: 4px 10px; border-radius: 20px;">
+              <i class="fa-solid fa-circle-info" style="color: #78909C; font-size: 13px;"></i>
+              <span style="font-size: 12px; font-weight: 600; color: #546E7A;">নিষ্ক্রিয় আছে</span>
+            </div>
+          `;
         }
       }
+      if (actionBtn) {
+        actionBtn.style.display = isEnabled ? 'none' : 'flex';
+      }
+      if (card) {
+        card.style.borderColor = isEnabled ? '#81C784' : '#E2E8E2';
+      }
+    }
+
+    function openSettingsPage() {
+      const page = document.getElementById('settingsPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        updateBiometricStatusInSettings();
+        const logoutSec = document.getElementById('settingsLogoutSection');
+        if (logoutSec) {
+          logoutSec.style.display = isWebUserLoggedIn() ? 'block' : 'none';
+        }
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeSettingsPage() {
+      const page = document.getElementById('settingsPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    function openSettingsModal() {
+      openSettingsPage();
     }
 
     let biometricScanTimer = null;
@@ -11640,15 +11755,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           closeModal('biometricScanModal');
           localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
           localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(currentUser));
-          if (bioToggle) bioToggle.checked = true;
-          showSuccessDialog('বায়োমেট্রিক সক্রিয় হয়েছে!', 'ফিঙ্গারপ্রিন্ট অথেনটিকেশন সফলভাবে সম্পন্ন হয়েছে। এখন থেকে আপনি এক ক্লিকেই লগইন করতে পারবেন।');
+          updateBiometricStatusInSettings();
+          showSuccessDialog('বায়োমেট্রিক সক্রিয় হয়েছে!', 'বায়োমেট্রিক সফলভাবে সেট করা হয়েছে!');
         }, 1200);
       } else {
         const confirmDeactivate = confirm('আপনি কি সত্যিই ফিঙ্গারপ্রিন্ট লগইন বন্ধ করতে চান?');
         if (confirmDeactivate) {
           localStorage.setItem('krishi_kotha_biometric_enabled', 'false');
           localStorage.removeItem('krishi_kotha_biometric_user');
-          if (bioToggle) bioToggle.checked = false;
+          updateBiometricStatusInSettings();
           showWarningDialog('ফিঙ্গারপ্রিন্ট লগইন নিষ্ক্রিয় করা হয়েছে।', 'বায়োমেট্রিক বন্ধ');
         } else {
           if (bioToggle) bioToggle.checked = true;
@@ -11709,6 +11824,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     async function executeWebLogout() {
       closeModal('webLogoutModal');
+      closeSettingsPage();
+      closeEditProfilePage();
+
       if (userDocUnsubscribe) {
         userDocUnsubscribe();
         userDocUnsubscribe = null;
@@ -11718,9 +11836,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           await firebase.auth().signOut();
         }
       } catch (_) { }
-      localStorage.removeItem('krishi_kotha_cached_user');
-      showToast('সফলভাবে লগআউট সম্পন্ন হয়েছে');
+
+      try {
+        localStorage.removeItem('krishi_kotha_cached_user');
+      } catch (_) { }
+      currentUser = null;
       updateWebProfileHeader();
+
+      // Show global unified animated green checkmark success popup
+      showSuccessDialog(
+        'সফলভাবে লগআউট হয়েছে!',
+        'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
+        function() {
+          openAuthModal('login');
+        }
+      );
     }
 
     function updateWebProfileHeader() {
@@ -11831,6 +11961,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function closeModal(id) {
+      if (id === 'settingsModal' || id === 'settingsPage') {
+        closeSettingsPage();
+        return;
+      }
       if (id === 'warningDialogModal') {
         closeWarningDialog();
         return;

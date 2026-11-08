@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/widgets/custom_app_bar.dart';
 import '../../core/widgets/app_unified_dialog.dart';
 import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/phone_login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -62,8 +67,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // ২. নেটিভ ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ডায়ালগ প্রদর্শন
       final success = await BiometricAuthService.showBiometricScanDialog(
         context,
-        title: 'ফিঙ্গারপ্রিন্ট ভেরিফাই করুন',
-        subtitle: 'আপনার ফিঙ্গারপ্রিন্ট সেন্সরে আঙুল রেখে শনাক্তকরণ সম্পন্ন করুন',
+        title: 'বায়োমেট্রিক ভেরিফিকেশন',
+        subtitle: 'সক্রিয় করতে সেন্সরে আঙুল রাখুন',
       );
 
       if (success && mounted) {
@@ -87,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppUnifiedDialog.showSuccess(
             context,
             title: 'সফল হয়েছে!',
-            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে সক্রিয় করা হয়েছে। এখন থেকে আপনি ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে লগইন করতে পারবেন।',
+            message: 'বায়োমেট্রিক সফলভাবে সেট করা হয়েছে!',
             buttonText: 'ঠিক আছে',
           );
         }
@@ -117,37 +122,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// সফল লগআউট ফ্লো (Logout Confirmation & Success Popup)
+  Future<void> _handleLogout(BuildContext context) async {
+    final confirmed = await AppUnifiedDialog.showConfirmation(
+      context,
+      title: 'লগআউট নিশ্চিতকরণ',
+      message: 'আপনি কি নিশ্চিতভাবে একাউন্ট থেকে লগআউট করতে চান?',
+      confirmText: 'হ্যাঁ, লগআউট করুন',
+      cancelText: 'না',
+      icon: Icons.logout_rounded,
+      confirmColor: const Color(0xFFD32F2F),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        try {
+          await FirebaseAuth.instance.signOut();
+        } catch (e) {
+          debugPrint('FirebaseAuth signOut error: $e');
+        }
+
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.signOut();
+
+        // SharedPreferences সেশন ক্লিয়ারিং
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('krishi_kotha_cached_user');
+        } catch (_) {}
+
+        if (context.mounted) {
+          await AppUnifiedDialog.showSuccess(
+            context,
+            title: 'সফলভাবে লগআউট হয়েছে!',
+            message: 'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
+            buttonText: 'লগইন করুন',
+          );
+        }
+      } catch (e) {
+        debugPrint('Logout error: $e');
+      } finally {
+        if (context.mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const PhoneLoginScreen(isGatewayForMenu: false),
+            ),
+            (route) => false,
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'সেটিংস'),
+      backgroundColor: const Color(0xFFF7FAF7),
+      appBar: CustomAppBar(
+        title: 'সেটিংস',
+        showBackButton: true,
+        onBackPressed: () => Navigator.pop(context),
+      ),
       body: ListView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         children: [
           // Section 1: Security & Biometrics (Prominently Placed at the Top)
           _buildSectionHeader('নিরাপত্তা ও বায়োমেট্রিক'),
-          _buildCardWrapper([
-            SwitchListTile(
-              activeColor: AppColors.primary,
-              secondary: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1.0),
-                ),
-                child: const Center(
-                  child: Icon(Icons.fingerprint_rounded, color: AppColors.primary, size: 24),
-                ),
-              ),
-              title: const Text('ফিঙ্গারপ্রিন্ট লগইন (Biometric Login)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              subtitle: const Text('দ্রুত ও সুরক্ষিতভাবে ফিঙ্গারপ্রিন্ট দিয়ে একাউন্টে প্রবেশ করুন', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
-              value: _biometricEnabled,
-              onChanged: _handleBiometricToggle,
-            ),
-          ]),
+          _buildBiometricCard(),
 
           const SizedBox(height: 20),
 
@@ -226,16 +270,299 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 20),
 
-          // Section: App Version
-          _buildCardWrapper([
-            const ListTile(
-              leading: Icon(Icons.info_outline_rounded, color: AppColors.primary),
-              title: Text('অ্যাপ সংস্করণ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: Text('কৃষি কথা – Krishi Kotha (Build 1.0.0+1)', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
-              trailing: Text('v1.0.0', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMuted)),
-            ),
-          ]),
+          // Section: App Version with Real-time Firestore StreamBuilder
+          _buildSectionHeader('অ্যাপ তথ্য'),
+          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('settings')
+                .doc('app_config')
+                .snapshots(),
+            builder: (context, snapshot) {
+              final appVer = (snapshot.hasData &&
+                      snapshot.data?.data() != null &&
+                      snapshot.data!.data()!['version'] != null)
+                  ? snapshot.data!.data()!['version'].toString()
+                  : AppStrings.appVersion;
+
+              return _buildCardWrapper([
+                ListTile(
+                  leading: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+                  title: const Text('অ্যাপ সংস্করণ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  subtitle: Text('কৃষি কথা – Krishi Kotha (Build $appVer)', style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+                  trailing: Text('v$appVer', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMuted)),
+                ),
+              ]);
+            },
+          ),
+
+          // Section: Logout (if user is authenticated)
+          if (authProvider.isAuthenticated) ...[
+            const SizedBox(height: 22),
+            _buildLogoutCard(context),
+          ],
+
+          const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+
+  /// ডেডিকেটেড বায়োমেট্রিক সেটিংস কার্ড (Dedicated Biometric Settings Card with Live Status)
+  Widget _buildBiometricCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _biometricEnabled ? const Color(0xFF81C784) : const Color(0xFFE2E8E2),
+          width: _biometricEnabled ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _biometricEnabled ? const Color(0xFF2E7D32).withOpacity(0.08) : const Color(0x0A000000),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: _biometricEnabled ? const Color(0xFFE8F5E9) : const Color(0xFFF1F8E9),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _biometricEnabled ? const Color(0xFF2E7D32) : const Color(0xFF81C784).withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.fingerprint_rounded,
+                    color: Color(0xFF2E7D32),
+                    size: 26,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'বায়োমেট্রিক সেটিংস',
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 2.5),
+                    Text(
+                      'ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Transform.scale(
+                scale: 0.9,
+                child: Switch(
+                  value: _biometricEnabled,
+                  activeColor: const Color(0xFF2E7D32),
+                  activeTrackColor: const Color(0xFFA5D6A7),
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: const Color(0xFFCFD8DC),
+                  onChanged: _handleBiometricToggle,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFEFF3EF)),
+          const SizedBox(height: 10),
+
+          // Live Status Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (_biometricEnabled)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF81C784), width: 1.0),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 14),
+                      SizedBox(width: 5),
+                      Text(
+                        'সেট করা আছে',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECEFF1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFCFD8DC), width: 1.0),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: Color(0xFF78909C), size: 14),
+                      SizedBox(width: 5),
+                      Text(
+                        'নিষ্ক্রিয় আছে',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF546E7A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              if (!_biometricEnabled)
+                InkWell(
+                  onTap: () => _handleBiometricToggle(true),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2E7D32).withOpacity(0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.fingerprint_rounded, color: Colors.white, size: 15),
+                        SizedBox(width: 6),
+                        Text(
+                          'চালু করুন',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// মার্জিত লগআউট কার্ড (Sleek Logout Card for Settings Screen)
+  Widget _buildLogoutCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF5F5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFCDD2), width: 1.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _handleLogout(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFEBEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.logout_rounded,
+                      color: Color(0xFFD32F2F),
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'লগআউট (Logout)',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFD32F2F),
+                        ),
+                      ),
+                      SizedBox(height: 2.5),
+                      Text(
+                        'একাউন্ট থেকে নিরাপদে বের হয়ে যান',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Color(0xFFEF9A9A),
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

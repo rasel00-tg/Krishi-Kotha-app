@@ -100,8 +100,7 @@ class AppMenuScreen extends StatelessWidget {
                             title: 'সেটিংস (Settings)',
                             subtitle: 'অ্যাপ সেটিংস ও ভাষা',
                             onTap: () {
-                              Navigator.push(
-                                context,
+                              Navigator.of(context, rootNavigator: true).push(
                                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
                               );
                             },
@@ -221,10 +220,9 @@ class AppMenuScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
   }
 
   /// Category Header Text
@@ -641,8 +639,6 @@ class AppMenuScreen extends StatelessWidget {
       ),
     );
   }
-    );
-  }
 
   Widget _buildFallbackAvatar(String name) {
     return Container(
@@ -855,105 +851,54 @@ class AppMenuScreen extends StatelessWidget {
     );
   }
 
-  /// ৩. লগআউট কনফার্মেশন ডায়ালগ (Confirmation Popup)
+  /// ৩. লগআউট কনফার্মেশন ও সফল লগআউট ফ্লো (Unified Confirmation & Success Flow)
   Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 10,
-        backgroundColor: Colors.white,
-        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 10),
-        contentPadding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFEBEE),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFD32F2F),
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'লগআউট নিশ্চিতকরণ',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFFD32F2F),
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'আপনি কি লগআউট করতে চান?',
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF455A64),
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            child: const Text(
-              'না',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF78909C),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD32F2F),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'হ্যাঁ, লগআউট করুন',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await AppUnifiedDialog.showConfirmation(
+      context,
+      title: 'লগআউট নিশ্চিতকরণ',
+      message: 'আপনি কি নিশ্চিতভাবে একাউন্ট থেকে লগআউট করতে চান?',
+      confirmText: 'হ্যাঁ, লগআউট করুন',
+      cancelText: 'না',
+      icon: Icons.logout_rounded,
+      confirmColor: const Color(0xFFD32F2F),
     );
 
     if (confirmed == true && context.mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.signOut();
-
-      // SharedPreferences সেশন ক্লিয়ারিং
       try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('krishi_kotha_cached_user');
-      } catch (_) {}
+        try {
+          await FirebaseAuth.instance.signOut();
+        } catch (e) {
+          debugPrint('FirebaseAuth signOut error: $e');
+        }
 
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 4)),
-          (route) => false,
-        );
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.signOut();
+
+        // SharedPreferences সেশন ক্লিয়ারিং
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('krishi_kotha_cached_user');
+        } catch (_) {}
+
+        if (context.mounted) {
+          await AppUnifiedDialog.showSuccess(
+            context,
+            title: 'সফলভাবে লগআউট হয়েছে!',
+            message: 'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
+            buttonText: 'লগইন করুন',
+          );
+        }
+      } catch (e) {
+        debugPrint('Logout error: $e');
+      } finally {
+        if (context.mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const PhoneLoginScreen(isGatewayForMenu: false),
+            ),
+            (route) => false,
+          );
+        }
       }
     }
   }
