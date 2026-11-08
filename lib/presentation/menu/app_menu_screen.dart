@@ -531,22 +531,33 @@ class AppMenuScreen extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // User Name (Large, bold and clear white)
-                  Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 21.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 0.2,
-                      height: 1.2,
-                    ),
+                  // User Name with Glowing Animated Verified Badge
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          name,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 21.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                            height: 1.25,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      const AnimatedGlowingVerifiedBadge(),
+                    ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   // District, Upazila & Phone Chips
                   Wrap(
@@ -945,5 +956,76 @@ class AppMenuScreen extends StatelessWidget {
         );
       }
     }
+  }
+}
+
+/// অ্যানিমেটেড জ্বলজ্বলে ভেরিফাইড ব্যাজ (Glowing Animated Verified Badge)
+/// মৃদু পালস এবং সফট গ্লোয়িং বর্ডার রিং সংবলিত প্রিমিয়াম ব্যাজ
+class AnimatedGlowingVerifiedBadge extends StatefulWidget {
+  const AnimatedGlowingVerifiedBadge({super.key});
+
+  @override
+  State<AnimatedGlowingVerifiedBadge> createState() => _AnimatedGlowingVerifiedBadgeState();
+}
+
+class _AnimatedGlowingVerifiedBadgeState extends State<AnimatedGlowingVerifiedBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _glowAnimation = Tween<double>(begin: 0.35, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        final glow = _glowAnimation.value;
+        return Container(
+          width: 21,
+          height: 21,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF00E676),
+            border: Border.all(color: Colors.white, width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00E676).withOpacity(glow),
+                blurRadius: 8.0 + 8.0 * glow,
+                spreadRadius: 1.0 + 2.0 * glow,
+              ),
+              BoxShadow(
+                color: Colors.white.withOpacity(0.4 * glow),
+                blurRadius: 4.0 * glow,
+                spreadRadius: 0.5 * glow,
+              ),
+            ],
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.check_rounded,
+              color: Color(0xFF063309),
+              size: 13,
+            ),
+          ),
+        );
+      },
+    );
   }
 }

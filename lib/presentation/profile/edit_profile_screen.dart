@@ -722,6 +722,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   static const TextStyle _uniformInputStyle = TextStyle(
+    fontFamily: 'HindSiliguri',
+    fontFamilyFallback: ['Roboto', 'sans-serif'],
     fontSize: 15.0,
     height: 1.3,
     fontWeight: FontWeight.w500,
@@ -729,10 +731,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     color: AppColors.textPrimary,
     fontFeatures: [
       ui.FontFeature.tabularFigures(),
+      ui.FontFeature.liningFigures(),
     ],
   );
 
   static const StrutStyle _uniformStrutStyle = StrutStyle(
+    fontFamily: 'HindSiliguri',
     fontSize: 15.0,
     height: 1.3,
     leading: 0,
