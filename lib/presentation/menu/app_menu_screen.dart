@@ -11,6 +11,7 @@ import '../../providers/auth_provider.dart';
 import '../auth/phone_login_screen.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../profile/user_profile_screen.dart';
+import '../profile/edit_profile_screen.dart';
 import '../support/expert_helpline_screen.dart';
 import 'settings_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -55,7 +56,7 @@ class AppMenuScreen extends StatelessWidget {
               children: [
                 // ================= 1. PINNED / FIXED NON-SCROLLING PROFILE CARD =================
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 18.0, 16.0, 12.0),
                   child: _buildLargeProfileCard(context, user, activeUid),
                 ),
 
@@ -68,32 +69,9 @@ class AppMenuScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // CATEGORY 1: ব্যবহারকারী ও অ্যাকাউন্ট
-                        _buildCategoryHeader('ব্যবহারকারী ও অ্যাকাউন্ট'),
-                        _buildCardWrapper(
-                          children: [
-                            _buildMenuItem(
-                              context: context,
-                              icon: Icons.person_outline_rounded,
-                              iconColor: const Color(0xFF2E7D32),
-                              iconBgColor: const Color(0xFFE8F5E9),
-                              title: 'প্রোফাইল (Profile)',
-                              subtitle: 'আপনার তথ্য ও জেলা নির্বাচন',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const UserProfileScreen()),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                        // [প্রোফাইল ট্যাব ও নোটিফিকেশন অপশন মেনু লিস্ট থেকে অপসারিত]
 
-                        const SizedBox(height: 16),
-
-                        // [নোটিফিকেশন অপশনটি হোমপেজে বিদ্যমান থাকায় এখান থেকে সফলভাবে অপসারিত]
-
-                        // CATEGORY 2: পছন্দ ও সেটিংস
+                        // CATEGORY 1: পছন্দ ও সেটিংস
                         _buildCategoryHeader('পছন্দ ও সেটিংস'),
                         _buildCardWrapper(
                           children: [
@@ -366,7 +344,6 @@ class AppMenuScreen extends StatelessWidget {
           String phone = user?.phone ?? '';
           String email = user?.email ?? '';
           String? photoUrl;
-          String roleBadge = 'ভেরিফায়েড ইউজার';
 
           if (snapshot.hasData && snapshot.data?.exists == true) {
             final data = snapshot.data!.data();
@@ -378,16 +355,6 @@ class AppMenuScreen extends StatelessWidget {
               phone = data['phone'] ?? phone;
               email = data['email'] ?? email;
               photoUrl = data['photo_url'] ?? data['photoUrl'] ?? data['image_url'];
-              final rawRole = data['role']?.toString();
-              if (rawRole != null && rawRole.isNotEmpty) {
-                if (rawRole == 'admin') {
-                  roleBadge = 'এডমিন';
-                } else if (rawRole == 'expert') {
-                  roleBadge = 'কৃষি বিশেষজ্ঞ';
-                } else {
-                  roleBadge = 'ভেরিফায়েড ইউজার';
-                }
-              }
             }
           }
 
@@ -400,7 +367,6 @@ class AppMenuScreen extends StatelessWidget {
             phone: phone,
             email: email,
             photoUrl: photoUrl,
-            roleBadge: roleBadge,
           );
         },
       );
@@ -415,7 +381,6 @@ class AppMenuScreen extends StatelessWidget {
       phone: user?.phone ?? '',
       email: user?.email ?? '',
       photoUrl: null,
-      roleBadge: 'ভেরিফায়েড ইউজার',
     );
   }
 
@@ -428,7 +393,6 @@ class AppMenuScreen extends StatelessWidget {
     required String phone,
     required String email,
     String? photoUrl,
-    String roleBadge = 'ভেরিফায়েড ইউজার',
   }) {
     final List<String> locParts = [];
     if (village.trim().isNotEmpty) locParts.add(village.trim());
@@ -437,25 +401,11 @@ class AppMenuScreen extends StatelessWidget {
     final locationText = locParts.join(', ');
 
     final formattedPhone = phone.trim().isNotEmpty ? BanglaNumberConverter.toBangla(phone.trim()) : '';
-    
-    // Primary contact / location line
-    String subInfo = '';
-    if (formattedPhone.isNotEmpty && locationText.isNotEmpty) {
-      subInfo = '$formattedPhone • $locationText';
-    } else if (formattedPhone.isNotEmpty) {
-      subInfo = formattedPhone;
-    } else if (locationText.isNotEmpty) {
-      subInfo = locationText;
-    } else if (email.trim().isNotEmpty) {
-      subInfo = email.trim();
-    } else {
-      subInfo = 'কৃষি তথ্য ও সেবা প্রোফাইল';
-    }
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -467,13 +417,13 @@ class AppMenuScreen extends StatelessWidget {
           ],
           stops: [0.0, 0.35, 0.75, 1.0],
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.22), width: 1.2),
+        border: Border.all(color: Colors.white.withOpacity(0.24), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1B5E20).withOpacity(0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-            spreadRadius: -2,
+            color: const Color(0xFF1B5E20).withOpacity(0.38),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
+            spreadRadius: -1,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -483,7 +433,7 @@ class AppMenuScreen extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
             // Ambient Decorative Glass Circles for Modern Depth
@@ -491,127 +441,101 @@ class AppMenuScreen extends StatelessWidget {
               top: -30,
               right: -30,
               child: Container(
-                width: 120,
-                height: 120,
+                width: 130,
+                height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.07),
+                  color: Colors.white.withOpacity(0.08),
                 ),
               ),
             ),
             Positioned(
-              bottom: -40,
+              bottom: -45,
               left: -20,
               child: Container(
-                width: 110,
-                height: 110,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF81C784).withOpacity(0.08),
+                  color: const Color(0xFF81C784).withOpacity(0.09),
                 ),
               ),
             ),
 
-            // Card Content
+            // Card Content (Spacious, prominent and balanced)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Avatar with Bright Glowing Ring & Soft Shadow
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Container(
-                        width: 66,
-                        height: 66,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFE8F5E9),
-                              Color(0xFFA5D6A7),
-                              Color(0xFF69F0AE),
-                              Color(0xFF00E676),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF69F0AE).withOpacity(0.40),
-                              blurRadius: 12,
-                              spreadRadius: 1.5,
-                            ),
-                          ],
+                  // Prominent Avatar with Bright Glowing Ring & Soft Shadow
+                  Container(
+                    width: 74,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFFE8F5E9),
+                          Color(0xFFA5D6A7),
+                          Color(0xFF69F0AE),
+                          Color(0xFF00E676),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF69F0AE).withOpacity(0.42),
+                          blurRadius: 14,
+                          spreadRadius: 2,
                         ),
-                        padding: const EdgeInsets.all(2.5),
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                          padding: const EdgeInsets.all(1.5),
-                          child: ClipOval(
-                            child: (photoUrl != null && photoUrl.trim().isNotEmpty)
-                                ? CachedNetworkImage(
-                                    imageUrl: photoUrl.trim(),
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      color: const Color(0xFFE8F5E9),
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                                        ),
-                                      ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(3.0),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      padding: const EdgeInsets.all(2.0),
+                      child: ClipOval(
+                        child: (photoUrl != null && photoUrl.trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: photoUrl.trim(),
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Container(
+                                  color: const Color(0xFFE8F5E9),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                                     ),
-                                    errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
-                                  )
-                                : _buildFallbackAvatar(name),
-                          ),
-                        ),
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
+                              )
+                            : _buildFallbackAvatar(name),
                       ),
-
-                      // Verified badge pin
-                      Container(
-                        padding: const EdgeInsets.all(3.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00E676),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF1B5E20), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Color(0xFF0A3D0E),
-                          size: 11,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
 
-                  const SizedBox(width: 15),
+                  const SizedBox(width: 16),
 
-                  // Center Info Column (Name, Subtitle, Verified Pill)
+                  // Center Info Column (Name, Location, Mobile Number)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // User Name
+                        // User Name (Large, bold and clear)
                         Text(
                           name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 19.5,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: 0.2,
@@ -619,80 +543,94 @@ class AppMenuScreen extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 5),
 
-                        // Subtitle: Phone / Location
-                        Text(
-                          subInfo,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12.2,
-                            color: Colors.white.withOpacity(0.90),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-
-                        const SizedBox(height: 7),
-
-                        // Account Type Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.30), width: 0.8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        // District / Location
+                        if (locationText.isNotEmpty) ...[
+                          Row(
                             children: [
-                              const Icon(Icons.verified_rounded, size: 11.5, color: Color(0xFFB9F6CA)),
+                              const Icon(Icons.location_on_rounded, size: 13.5, color: Color(0xFFB9F6CA)),
                               const SizedBox(width: 4),
-                              Text(
-                                roleBadge,
-                                style: const TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.2,
+                              Expanded(
+                                child: Text(
+                                  locationText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.8,
+                                    color: Colors.white.withOpacity(0.92),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 3),
+                        ],
+
+                        // Mobile Number
+                        if (formattedPhone.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.phone_rounded, size: 12.5, color: Color(0xFFB9F6CA)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  formattedPhone,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.8,
+                                    color: Colors.white.withOpacity(0.92),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else if (email.isNotEmpty) ...[
+                          Text(
+                            email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.85),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
 
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
 
-                  // Sleek "প্রোফাইল এডিট" Button
+                  // Sleek "প্রোফাইল এডিট" Button (Navigates to Full-Screen Edit Page)
                   Material(
                     color: Colors.white.withOpacity(0.20),
                     borderRadius: BorderRadius.circular(16),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.35), width: 0.9),
+                          border: Border.all(color: Colors.white.withOpacity(0.38), width: 1.0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
-                            Icon(Icons.edit_outlined, size: 12.5, color: Colors.white),
+                            Icon(Icons.edit_outlined, size: 13, color: Colors.white),
                             SizedBox(width: 4),
                             Text(
                               'এডিট',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
@@ -718,7 +656,7 @@ class AppMenuScreen extends StatelessWidget {
         child: Text(
           name.trim().isNotEmpty ? name.trim().substring(0, 1) : 'ক',
           style: const TextStyle(
-            fontSize: 27,
+            fontSize: 32,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1B5E20),
           ),

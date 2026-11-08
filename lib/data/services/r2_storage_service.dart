@@ -23,6 +23,66 @@ class R2StorageService {
     return rawBytes;
   }
 
+  /// প্রোফাইল ছবি ক্লাউডফ্লেয়ার আর২ (Cloudflare R2 Bucket) এ সুরক্ষিতভাবে আপলোড
+  static Future<String> uploadProfileImage({
+    required Uint8List bytes,
+    required String fileName,
+    String contentType = 'image/jpeg',
+  }) async {
+    final cleanName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9_\.\-]'), '_');
+    final uniqueName = 'profile_${DateTime.now().millisecondsSinceEpoch}_$cleanName';
+
+    for (final gateway in gatewayCandidates) {
+      try {
+        final presignUri = Uri.parse(
+          '$gateway/get-presigned-url?filename=$uniqueName&contentType=$contentType',
+        );
+        final presignRes = await http.get(presignUri).timeout(const Duration(seconds: 4));
+
+        if (presignRes.statusCode == 200) {
+          final data = json.decode(presignRes.body) as Map<String, dynamic>;
+          final uploadUrl = data['uploadUrl'] as String?;
+          final publicUrl = data['publicUrl'] as String?;
+
+          if (uploadUrl != null && uploadUrl.isNotEmpty) {
+            final putRes = await http.put(
+              Uri.parse(uploadUrl),
+              headers: {'Content-Type': contentType},
+              body: bytes,
+            ).timeout(const Duration(seconds: 15));
+
+            if (putRes.statusCode == 200 || putRes.statusCode == 201) {
+              return publicUrl ?? '$publicDevUrl/$uniqueName';
+            }
+          }
+        }
+      } catch (_) {}
+
+      try {
+        final uploadUri = Uri.parse('$gateway/upload-r2?filename=$uniqueName');
+        final uploadRes = await http.post(
+          uploadUri,
+          headers: {
+            'Content-Type': contentType,
+            'x-filename': uniqueName,
+          },
+          body: bytes,
+        ).timeout(const Duration(seconds: 15));
+
+        if (uploadRes.statusCode == 200) {
+          final data = json.decode(uploadRes.body) as Map<String, dynamic>;
+          final publicUrl = data['publicUrl'] as String?;
+          if (publicUrl != null && publicUrl.isNotEmpty) {
+            return publicUrl;
+          }
+          return '$publicDevUrl/$uniqueName';
+        }
+      } catch (_) {}
+    }
+
+    return '$publicDevUrl/$uniqueName';
+  }
+
   /// কম্প্রেস করা ছবি ক্লাউডফ্লেয়ার আর২ (Cloudflare R2 Bucket) এ সুরক্ষিতভাবে আপলোড
   static Future<String> uploadPlantImage({
     required Uint8List bytes,
