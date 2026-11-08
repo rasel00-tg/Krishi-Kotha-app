@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/bangla_number_converter.dart';
 import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/phone_login_screen.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../profile/user_profile_screen.dart';
 import '../support/expert_helpline_screen.dart';
-import '../notifications/notifications_screen.dart';
 import 'settings_screen.dart';
 import 'privacy_policy_screen.dart';
 
@@ -49,195 +50,184 @@ class AppMenuScreen extends StatelessWidget {
           // No topbar in Menu screen as requested
           appBar: null,
           body: SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ================= REDESIGNED LARGE PROFILE CARD (FIRESTORE STREAMBUILDER) =================
-                  _buildLargeProfileCard(context, user, activeUid),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ================= 1. PINNED / FIXED NON-SCROLLING PROFILE CARD =================
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+                  child: _buildLargeProfileCard(context, user, activeUid),
+                ),
 
-              const SizedBox(height: 22),
-
-              // ================= CATEGORY 1: ব্যবহারকারী ও অ্যাকাউন্ট =================
-              _buildCategoryHeader('ব্যবহারকারী ও অ্যাকাউন্ট'),
-              _buildCardWrapper(
-                children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.person_outline,
-                    iconColor: const Color(0xFF2E7D32),
-                    iconBgColor: const Color(0xFFE8F5E9),
-                    title: 'প্রোফাইল (Profile)',
-                    subtitle: 'আপনার তথ্য ও জেলা নির্বাচন',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const UserProfileScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              // ================= CATEGORY: নোটিফিকেশন ও বার্তা =================
-              _buildCategoryHeader('নোটিফিকেশন ও বার্তা'),
-              _buildCardWrapper(
-                children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.notifications_none_rounded,
-                    iconColor: const Color(0xFF2E7D32),
-                    iconBgColor: const Color(0xFFE8F5E9),
-                    title: 'নোটিফিকেশন (Notifications)',
-                    subtitle: 'জরুরি বার্তা ও সতর্কতা',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              // ================= CATEGORY 2: পছন্দ ও সেটিংস =================
-              _buildCategoryHeader('পছন্দ ও সেটিংস'),
-              _buildCardWrapper(
-                children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.settings_outlined,
-                    iconColor: const Color(0xFF1565C0),
-                    iconBgColor: const Color(0xFFE3F2FD),
-                    title: 'সেটিংস (Settings)',
-                    subtitle: 'অ্যাপ সেটিংস ও ভাষা',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              // ================= CATEGORY 3: সহায়তা ও নিয়মাবলী =================
-              _buildCategoryHeader('সহায়তা ও নিয়মাবলী'),
-              _buildCardWrapper(
-                children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.headset_mic_outlined,
-                    iconColor: const Color(0xFF7B1FA2),
-                    iconBgColor: const Color(0xFFF3E5F5),
-                    title: 'সাপোর্ট ও যোগাযোগ (Support & Contact)',
-                    subtitle: 'কৃষি হেল্পলাইন ও সহায়তা',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(
-                    height: 1,
-                    thickness: 0.8,
-                    indent: 68,
-                    endIndent: 16,
-                    color: Color(0xFFEFF3EF),
-                  ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.privacy_tip_outlined,
-                    iconColor: const Color(0xFFE65100),
-                    iconBgColor: const Color(0xFFFFF3E0),
-                    title: 'গোপনীয় নীতি (Privacy Policy)',
-                    subtitle: 'ব্যবহারের শর্ত ও নীতিমালা',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              // ================= CATEGORY 4: লগআউট বাটন (Sleek Logout Button - Logged in Only) =================
-              if (isLoggedIn) ...[
-                const SizedBox(height: 18),
-                _buildLogoutButton(context),
-              ],
-
-              const SizedBox(height: 28),
-
-              // ================= APP BRANDING FOOTER =================
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Padding(
-                          padding: const EdgeInsets.all(3.0),
-                          child: Image.asset(
-                            'assets/icons/pnglogo.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.eco_rounded,
-                              color: AppColors.primary,
-                              size: 28,
+                // ================= 2. SCROLLABLE MENU LIST =================
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    // Generous bottom padding to ensure smooth scroll above fixed bottom navbar
+                    padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, kBottomNavigationBarHeight + 40.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // CATEGORY 1: ব্যবহারকারী ও অ্যাকাউন্ট
+                        _buildCategoryHeader('ব্যবহারকারী ও অ্যাকাউন্ট'),
+                        _buildCardWrapper(
+                          children: [
+                            _buildMenuItem(
+                              context: context,
+                              icon: Icons.person_outline_rounded,
+                              iconColor: const Color(0xFF2E7D32),
+                              iconBgColor: const Color(0xFFE8F5E9),
+                              title: 'প্রোফাইল (Profile)',
+                              subtitle: 'আপনার তথ্য ও জেলা নির্বাচন',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                                );
+                              },
                             ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // [নোটিফিকেশন অপশনটি হোমপেজে বিদ্যমান থাকায় এখান থেকে সফলভাবে অপসারিত]
+
+                        // CATEGORY 2: পছন্দ ও সেটিংস
+                        _buildCategoryHeader('পছন্দ ও সেটিংস'),
+                        _buildCardWrapper(
+                          children: [
+                            _buildMenuItem(
+                              context: context,
+                              icon: Icons.settings_outlined,
+                              iconColor: const Color(0xFF1565C0),
+                              iconBgColor: const Color(0xFFE3F2FD),
+                              title: 'সেটিংস (Settings)',
+                              subtitle: 'অ্যাপ সেটিংস ও ভাষা',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // CATEGORY 3: সহায়তা ও নিয়মাবলী
+                        _buildCategoryHeader('সহায়তা ও নিয়মাবলী'),
+                        _buildCardWrapper(
+                          children: [
+                            _buildMenuItem(
+                              context: context,
+                              icon: Icons.headset_mic_outlined,
+                              iconColor: const Color(0xFF7B1FA2),
+                              iconBgColor: const Color(0xFFF3E5F5),
+                              title: 'সাপোর্ট ও যোগাযোগ (Support & Contact)',
+                              subtitle: 'কৃষি হেল্পলাইন ও সহায়তা',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
+                                );
+                              },
+                            ),
+                            const Divider(
+                              height: 1,
+                              thickness: 0.8,
+                              indent: 68,
+                              endIndent: 16,
+                              color: Color(0xFFEFF3EF),
+                            ),
+                            _buildMenuItem(
+                              context: context,
+                              icon: Icons.privacy_tip_outlined,
+                              iconColor: const Color(0xFFE65100),
+                              iconBgColor: const Color(0xFFFFF3E0),
+                              title: 'গোপনীয় নীতি (Privacy Policy)',
+                              subtitle: 'ব্যবহারের শর্ত ও নীতিমালা',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+
+                        // CATEGORY 4: লগআউট বাটন (Sleek Logout Button - Logged in Only)
+                        if (isLoggedIn) ...[
+                          const SizedBox(height: 18),
+                          _buildLogoutButton(context),
+                        ],
+
+                        const SizedBox(height: 28),
+
+                        // APP BRANDING FOOTER
+                        Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(3.0),
+                                    child: Image.asset(
+                                      'assets/icons/pnglogo.png',
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Icon(
+                                        Icons.eco_rounded,
+                                        color: AppColors.primary,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'কৃষি কথা – Krishi Kotha',
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ ১.০.০',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'কৃষি কথা – Krishi Kotha',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ ১.০.০',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
       },
     );
   }
@@ -297,21 +287,24 @@ class AppMenuScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        splashColor: iconColor.withOpacity(0.12),
+        highlightColor: iconBgColor.withOpacity(0.35),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left Circular Icon
+              // Left Themed Icon Container
               Container(
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   shape: BoxShape.circle,
+                  border: Border.all(color: iconColor.withOpacity(0.15), width: 1.0),
                 ),
                 child: Center(
-                  child: Icon(icon, color: iconColor, size: 22),
+                  child: Icon(icon, color: iconColor, size: 21),
                 ),
               ),
 
@@ -331,7 +324,7 @@ class AppMenuScreen extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2.5),
                     Text(
                       subtitle,
                       style: const TextStyle(
@@ -348,7 +341,7 @@ class AppMenuScreen extends StatelessWidget {
 
               // Right Arrow Icon
               const Icon(
-                Icons.arrow_forward_ios,
+                Icons.arrow_forward_ios_rounded,
                 color: Color(0xFFB0BEC5),
                 size: 14,
               ),
@@ -359,7 +352,7 @@ class AppMenuScreen extends StatelessWidget {
     );
   }
 
-  /// Large, Centered Profile Header Card with Firestore StreamBuilder
+  /// Large, Vibrant Emerald Glassmorphic Profile Card with Firestore StreamBuilder
   Widget _buildLargeProfileCard(BuildContext context, dynamic user, [String? activeUid]) {
     final String? uid = activeUid ?? (user != null ? (user.uid ?? user.userId) : null);
     if (FirebaseService.isFirebaseInitialized && uid != null && uid.isNotEmpty) {
@@ -371,6 +364,9 @@ class AppMenuScreen extends StatelessWidget {
           String upazila = user?.upazila ?? '';
           String village = user?.village ?? '';
           String phone = user?.phone ?? '';
+          String email = user?.email ?? '';
+          String? photoUrl;
+          String roleBadge = 'ভেরিফায়েড ইউজার';
 
           if (snapshot.hasData && snapshot.data?.exists == true) {
             final data = snapshot.data!.data();
@@ -380,6 +376,18 @@ class AppMenuScreen extends StatelessWidget {
               upazila = data['upazila'] ?? upazila;
               village = data['village'] ?? data['village_name'] ?? village;
               phone = data['phone'] ?? phone;
+              email = data['email'] ?? email;
+              photoUrl = data['photo_url'] ?? data['photoUrl'] ?? data['image_url'];
+              final rawRole = data['role']?.toString();
+              if (rawRole != null && rawRole.isNotEmpty) {
+                if (rawRole == 'admin') {
+                  roleBadge = 'এডমিন';
+                } else if (rawRole == 'expert') {
+                  roleBadge = 'কৃষি বিশেষজ্ঞ';
+                } else {
+                  roleBadge = 'ভেরিফায়েড ইউজার';
+                }
+              }
             }
           }
 
@@ -390,6 +398,9 @@ class AppMenuScreen extends StatelessWidget {
             upazila: upazila,
             village: village,
             phone: phone,
+            email: email,
+            photoUrl: photoUrl,
+            roleBadge: roleBadge,
           );
         },
       );
@@ -402,6 +413,9 @@ class AppMenuScreen extends StatelessWidget {
       upazila: user?.upazila ?? '',
       village: user?.village ?? '',
       phone: user?.phone ?? '',
+      email: user?.email ?? '',
+      photoUrl: null,
+      roleBadge: 'ভেরিফায়েড ইউজার',
     );
   }
 
@@ -412,6 +426,9 @@ class AppMenuScreen extends StatelessWidget {
     required String upazila,
     required String village,
     required String phone,
+    required String email,
+    String? photoUrl,
+    String roleBadge = 'ভেরিফায়েড ইউজার',
   }) {
     final List<String> locParts = [];
     if (village.trim().isNotEmpty) locParts.add(village.trim());
@@ -420,99 +437,292 @@ class AppMenuScreen extends StatelessWidget {
     final locationText = locParts.join(', ');
 
     final formattedPhone = phone.trim().isNotEmpty ? BanglaNumberConverter.toBangla(phone.trim()) : '';
-    final subInfo = locationText.isNotEmpty
-        ? (formattedPhone.isNotEmpty ? '$locationText • $formattedPhone' : locationText)
-        : (formattedPhone.isNotEmpty ? formattedPhone : 'কৃষি তথ্য ও সেবা প্রোফাইল');
+    
+    // Primary contact / location line
+    String subInfo = '';
+    if (formattedPhone.isNotEmpty && locationText.isNotEmpty) {
+      subInfo = '$formattedPhone • $locationText';
+    } else if (formattedPhone.isNotEmpty) {
+      subInfo = formattedPhone;
+    } else if (locationText.isNotEmpty) {
+      subInfo = locationText;
+    } else if (email.trim().isNotEmpty) {
+      subInfo = email.trim();
+    } else {
+      subInfo = 'কৃষি তথ্য ও সেবা প্রোফাইল';
+    }
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8E2), width: 1.0),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0F4316),
+            Color(0xFF1B5E20),
+            Color(0xFF2E7D32),
+            Color(0xFF388E3C),
+          ],
+          stops: [0.0, 0.35, 0.75, 1.0],
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.22), width: 1.2),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0C000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
+            color: const Color(0xFF1B5E20).withOpacity(0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+            spreadRadius: -2,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Centered Avatar Badge
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            // Ambient Decorative Glass Circles for Modern Depth
+            Positioned(
+              top: -30,
+              right: -30,
+              child: Container(
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryContainer,
-                  border: Border.all(color: AppColors.primaryLight, width: 2.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.12),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  color: Colors.white.withOpacity(0.07),
                 ),
-                child: Center(
-                  child: Text(
-                    name.isNotEmpty ? name.substring(0, 1) : 'ক',
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryDark,
+              ),
+            ),
+            Positioned(
+              bottom: -40,
+              left: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF81C784).withOpacity(0.08),
+                ),
+              ),
+            ),
+
+            // Card Content
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Avatar with Bright Glowing Ring & Soft Shadow
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        width: 66,
+                        height: 66,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFE8F5E9),
+                              Color(0xFFA5D6A7),
+                              Color(0xFF69F0AE),
+                              Color(0xFF00E676),
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF69F0AE).withOpacity(0.40),
+                              blurRadius: 12,
+                              spreadRadius: 1.5,
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(2.5),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          padding: const EdgeInsets.all(1.5),
+                          child: ClipOval(
+                            child: (photoUrl != null && photoUrl.trim().isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: photoUrl.trim(),
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => Container(
+                                      color: const Color(0xFFE8F5E9),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
+                                  )
+                                : _buildFallbackAvatar(name),
+                          ),
+                        ),
+                      ),
+
+                      // Verified badge pin
+                      Container(
+                        padding: const EdgeInsets.all(3.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E676),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFF1B5E20), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Color(0xFF0A3D0E),
+                          size: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  // Center Info Column (Name, Subtitle, Verified Pill)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // User Name
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                            height: 1.2,
+                          ),
+                        ),
+
+                        const SizedBox(height: 3),
+
+                        // Subtitle: Phone / Location
+                        Text(
+                          subInfo,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12.2,
+                            color: Colors.white.withOpacity(0.90),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+
+                        const SizedBox(height: 7),
+
+                        // Account Type Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.30), width: 0.8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.verified_rounded, size: 11.5, color: Color(0xFFB9F6CA)),
+                              const SizedBox(width: 4),
+                              Text(
+                                roleBadge,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+
+                  const SizedBox(width: 8),
+
+                  // Sleek "প্রোফাইল এডিট" Button
+                  Material(
+                    color: Colors.white.withOpacity(0.20),
+                    borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withOpacity(0.35), width: 0.9),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.edit_outlined, size: 12.5, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              'এডিট',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.verified,
-                  color: Colors.white,
-                  size: 14,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // User Name
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
             ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          const SizedBox(height: 4),
-
-          // Mobile Number / Location
-          Text(
-            subInfo,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+  Widget _buildFallbackAvatar(String name) {
+    return Container(
+      color: const Color(0xFFE8F5E9),
+      child: Center(
+        child: Text(
+          name.trim().isNotEmpty ? name.trim().substring(0, 1) : 'ক',
+          style: const TextStyle(
+            fontSize: 27,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1B5E20),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1826,71 +1826,169 @@
       margin-left: 70px;
     }
 
-    /* Large Centered Profile Header Card */
-    .menu-profile-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 22px 18px;
-      text-align: center;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-      margin-top: 10px;
+    /* Sticky Non-scrolling Profile Card Container & Emerald Glassmorphic Styling */
+    .menu-profile-sticky-wrap {
+      position: sticky;
+      top: -12px;
+      z-index: 25;
+      background: #F7FAF7;
+      padding-top: 4px;
+      padding-bottom: 8px;
       margin-bottom: 8px;
+    }
+
+    .menu-profile-card {
+      background: linear-gradient(135deg, #0F4316 0%, #1B5E20 35%, #2E7D32 75%, #388E3C 100%);
+      border: 1.2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 22px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 24px rgba(27, 94, 32, 0.32), 0 2px 6px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      color: #fff;
       width: 100%;
       box-sizing: border-box;
     }
 
-    .menu-avatar-badge {
-      width: 80px;
-      height: 80px;
+    .menu-card-decor-1 {
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      background: var(--primary-container);
-      border: 2.5px solid var(--primary-light);
+      background: rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    .menu-card-decor-2 {
+      position: absolute;
+      bottom: -40px;
+      left: -20px;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: rgba(129, 199, 132, 0.09);
+      pointer-events: none;
+    }
+
+    .menu-profile-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .menu-avatar-glow-ring {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #E8F5E9, #A5D6A7, #69F0AE, #00E676);
+      box-shadow: 0 0 16px rgba(105, 240, 174, 0.45);
+      padding: 2.5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 34px;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin: 0 auto 12px auto;
-      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
       position: relative;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .menu-avatar-badge {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1B5E20;
     }
 
     .menu-avatar-verified {
       position: absolute;
-      bottom: 0;
-      right: 0;
-      background: var(--primary);
-      color: #fff;
+      bottom: -1px;
+      right: -1px;
+      background: #00E676;
+      color: #0A3D0E;
       border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 11px;
+      width: 19px;
+      height: 19px;
+      font-size: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #fff;
+      border: 1.5px solid #1B5E20;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .menu-edit-btn {
+    .menu-user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-user-info h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 3px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.2px;
+    }
+
+    .menu-user-info p {
+      font-size: 12.2px;
+      color: rgba(255, 255, 255, 0.90);
+      font-weight: 500;
+      margin: 0 0 6px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-badge-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: #F1F8E9;
-      color: var(--primary-dark);
-      border: 1px solid #C8E6C9;
-      border-radius: 20px;
-      padding: 7px 18px;
-      font-size: 12.5px;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 0.8px solid rgba(255, 255, 255, 0.30);
+      border-radius: 12px;
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.2px;
+    }
+
+    .menu-badge-pill i {
+      color: #B9F6CA;
+      font-size: 11px;
+    }
+
+    .menu-profile-edit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.20);
+      color: #fff;
+      border: 0.9px solid rgba(255, 255, 255, 0.35);
+      border-radius: 16px;
+      padding: 7px 12px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 12px;
+      flex-shrink: 0;
       transition: all 0.2s;
     }
 
-    .menu-edit-btn:hover {
-      background: #E8F5E9;
+    .menu-profile-edit-btn:hover {
+      background: rgba(255, 255, 255, 0.30);
+      transform: translateY(-1px);
     }
 
     /* Policy Document Page Styles (Compact, Modern, Premium 12-14px radius) */
@@ -2715,17 +2813,35 @@
       </div>
 
       <!-- TAB 4: APP MENU -->
-      <div class="tab-pane" id="tab-menu">
+      <div class="tab-pane" id="tab-menu" style="padding-top: 4px;">
         <!-- 1. AUTHORIZED FULL MENU VIEW (Shown only when logged in) -->
         <div id="webMenuAuthorizedContainer" style="display: none;">
-          <!-- Redesigned Large Centered Farmer Profile Card -->
-          <div class="menu-profile-card" id="webMenuProfileCard">
-            <div class="menu-avatar-badge">
-              <span id="menuAvatarChar">ক</span>
-              <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
+          <!-- Redesigned Sticky Emerald Glassmorphic Profile Card -->
+          <div class="menu-profile-sticky-wrap">
+            <div class="menu-profile-card" id="webMenuProfileCard">
+              <div class="menu-card-decor-1"></div>
+              <div class="menu-card-decor-2"></div>
+              <div class="menu-profile-inner">
+                <div class="menu-avatar-glow-ring">
+                  <div class="menu-avatar-badge">
+                    <span id="menuAvatarChar">ক</span>
+                  </div>
+                  <div class="menu-avatar-verified"><i class="fa-solid fa-check"></i></div>
+                </div>
+                <div class="menu-user-info">
+                  <h3 id="menuUserName">কৃষক ভাই</h3>
+                  <p id="menuUserSub">প্রোফাইল লোড হচ্ছে...</p>
+                  <div class="menu-badge-pill">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span id="menuUserRoleBadge">ভেরিফায়েড ইউজার</span>
+                  </div>
+                </div>
+                <button type="button" class="menu-profile-edit-btn" onclick="openProfileModal()">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                  <span>এডিট</span>
+                </button>
+              </div>
             </div>
-            <h3 id="menuUserName" style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">কৃষক ভাই</h3>
-            <p id="menuUserSub" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">প্রোফাইল লোড হচ্ছে...</p>
           </div>
 
           <!-- Category 1: ব্যবহারকারী ও অ্যাকাউন্ট (USER & ACCOUNT) -->
@@ -2743,20 +2859,7 @@
             </div>
           </div>
 
-          <!-- Category: নোটিফিকেশন ও বার্তা -->
-          <div class="menu-category-title">নোটিফিকেশন ও বার্তা</div>
-          <div class="menu-group-card">
-            <div class="menu-item-row" onclick="openNotificationsPage()">
-              <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
-                <i class="fa-solid fa-bell"></i>
-              </div>
-              <div class="menu-item-text">
-                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">নোটিফিকেশন (Notifications)</h4>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">জরুরি বার্তা ও সতর্কতা</p>
-              </div>
-              <i class="fa-solid fa-chevron-right menu-arrow"></i>
-            </div>
-          </div>
+          <!-- [নোটিফিকেশন অপশনটি হোমপেজে বিদ্যমান থাকায় এখান থেকে সফলভাবে অপসারিত] -->
 
           <!-- Category 2: পছন্দ ও সেটিংস (PREFERENCES) -->
           <div class="menu-category-title">পছন্দ ও সেটিংস</div>
@@ -10423,6 +10526,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const locStr = locParts.join(', ');
       if (uSub) uSub.innerText = (locStr ? locStr + ' • ' : '') + (phone ? toBangla(phone) : '');
       if (uChar) uChar.innerText = name.charAt(0) || 'ক';
+
+      const roleBadge = document.getElementById('menuUserRoleBadge');
+      if (roleBadge) {
+        if (u.role === 'admin') {
+          roleBadge.innerText = 'এডমিন';
+        } else if (u.role === 'expert') {
+          roleBadge.innerText = 'কৃষি বিশেষজ্ঞ';
+        } else {
+          roleBadge.innerText = 'ভেরিফায়েড ইউজার';
+        }
+      }
 
       if (pmName) pmName.innerText = name;
       if (pmPhone) pmPhone.innerText = phone ? toBangla(phone) : 'তথ্য দেওয়া হয়নি';
