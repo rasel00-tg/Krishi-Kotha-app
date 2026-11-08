@@ -23,17 +23,41 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         backgroundColor: isError ? AdminColors.alertCritical : AdminColors.primary,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
+  String _toBn(String s) {
+    const eng = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bng = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    for (int i = 0; i < eng.length; i++) {
+      s = s.replaceAll(eng[i], bng[i]);
+    }
+    return s;
+  }
+
+  String _formatDateBn(DateTime? dt) {
+    if (dt == null) return 'অনুপলব্ধ';
+    final months = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে'];
+    final d = _toBn(dt.day.toString().padLeft(2, '0'));
+    final m = months[dt.month - 1];
+    final y = _toBn(dt.year.toString());
+    final hr = _toBn((dt.hour % 12 == 0 ? 12 : dt.hour % 12).toString().padLeft(2, '0'));
+    final min = _toBn(dt.minute.toString().padLeft(2, '0'));
+    final ampm = dt.hour >= 12 ? 'বিকাল' : 'সকাল';
+    return '$d $m $y, $hr:$min $ampm';
+  }
+
   // ================= 1. PASSWORD RESET =================
-  Future<void> _handlePasswordReset(AdminUserModel user) async {
+  Future<void> _handlePasswordReset(AdminUserModel user, {BuildContext? dialogCtx}) async {
     if (user.email.isEmpty) {
       _showSnackBar('এই ইউজারের কোনো নিবন্ধিত ইমেইল নেই।', isError: true);
       return;
@@ -43,30 +67,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.lock_reset_rounded, color: AdminColors.primary),
-            SizedBox(width: 10),
-            Text('পাসওয়ার্ড রিসেট', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_reset_rounded, color: AdminColors.primary, size: 22),
+            SizedBox(width: 8),
+            Text('পাসওয়ার্ড রিসেট', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Text(
-          'আপনি কি "${user.name}" (${user.email})-এর একাউন্টের জন্য অফিসিয়াল পাসওয়ার্ড রিসেট ইমেইল পাঠাতে চান?',
-          style: const TextStyle(fontSize: 14, height: 1.4),
+          'আপনি কি "${user.name}" (${user.email})-এর ইমেইলে অফিশিয়াল পাসওয়ার্ড রিসেট লিংক পাঠাতে চান?',
+          style: const TextStyle(fontSize: 13.5, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AdminColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('ইমেইল পাঠান'),
+            child: const Text('ইমেইল পাঠান', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -86,35 +110,35 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   // ================= 2. PROFILE EDIT LIMIT RESET =================
-  Future<void> _handleProfileLimitReset(AdminUserModel user) async {
+  Future<void> _handleProfileLimitReset(AdminUserModel user, {BuildContext? dialogCtx}) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.restart_alt_rounded, color: AdminColors.alertWarning),
-            SizedBox(width: 10),
-            Text('এডিট লিমিট রিসেট', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: const Row(
+          children: [
+            Icon(Icons.restart_alt_rounded, color: AdminColors.alertWarning, size: 22),
+            SizedBox(width: 8),
+            Text('এডিট লিমিট রিসেট', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Text(
-          'আপনি কি "${user.name}"-এর ৩০ দিনের প্রোফাইল এডিট লিমিট রিসেট করতে চান? রিসেট করার সাথে সাথে তিনি প্রোফাইল সংশোধন করতে পারবেন।',
-          style: const TextStyle(fontSize: 14, height: 1.4),
+          'আপনি কি "${user.name}"-এর ৩০ দিনের প্রোফাইল এডিট সীমাবদ্ধতা রিসেট করতে চান? রিসেট করলে তিনি অবিলম্বে তার তথ্য সম্পাদনা করতে পারবেন।',
+          style: const TextStyle(fontSize: 13.5, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AdminColors.alertWarning,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('লিমিট রিসেট করুন'),
+            child: const Text('রিসেট করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -124,7 +148,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       setState(() => _isLoading = true);
       try {
         await AdminFirestoreService.instance.resetProfileUpdateLimit(user.uid);
-        _showSnackBar('প্রোফাইল এডিট লিমিট সফলভাবে রিসেট করা হয়েছে।');
+        _showSnackBar('ইউজারের প্রোফাইল এডিট লিমিট সফলভাবে রিসেট করা হয়েছে।');
+        if (dialogCtx != null && dialogCtx.mounted) {
+          Navigator.pop(dialogCtx);
+        }
       } catch (e) {
         _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
       } finally {
@@ -134,73 +161,73 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   // ================= 3. TEMPORARY BLOCK =================
-  Future<void> _handleTemporaryBlock(AdminUserModel user) async {
-    int selectedDays = 3;
+  Future<void> _handleTemporaryBlock(AdminUserModel user, {BuildContext? dialogCtx}) async {
+    int selectedDays = 7;
     final reasonController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+        builder: (context, setModalState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: const [
-              Icon(Icons.timer_outlined, color: AdminColors.alertWarning),
-              SizedBox(width: 10),
-              Text('সাময়িক স্থগিত (Temporary Block)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          title: const Row(
+            children: [
+              Icon(Icons.timer_outlined, color: AdminColors.alertWarning, size: 22),
+              SizedBox(width: 8),
+              Text('সাময়িক ব্লক (Temporary Block)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('ইউজার: ${user.name} (${user.phone})', style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 14),
-                const Text('স্থগিতের মেয়াদ:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<int>(
-                  value: selectedDays,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('১ দিন (২৪ ঘণ্টা)')),
-                    DropdownMenuItem(value: 3, child: Text('৩ দিন (৭২ ঘণ্টা)')),
-                    DropdownMenuItem(value: 7, child: Text('৭ দিন (১ সপ্তাহ)')),
-                    DropdownMenuItem(value: 14, child: Text('১৪ দিন (২ সপ্তাহ)')),
-                    DropdownMenuItem(value: 30, child: Text('৩০ দিন (১ মাস)')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setDialogState(() => selectedDays = val);
-                  },
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('ইউজার: ${user.name} (${user.phone})', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              const SizedBox(height: 12),
+              const Text('ব্লকের মেয়াদ নির্ধারণ করুন:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5)),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<int>(
+                value: selectedDays,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                const SizedBox(height: 14),
-                const Text('ব্লকের কারণ:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: reasonController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    hintText: 'ব্লক করার সুনির্দিষ্ট কারণ লিখুন...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                items: const [
+                  DropdownMenuItem(value: 1, child: Text('১ দিন', style: TextStyle(fontSize: 13))),
+                  DropdownMenuItem(value: 3, child: Text('৩ দিন', style: TextStyle(fontSize: 13))),
+                  DropdownMenuItem(value: 7, child: Text('৭ দিন', style: TextStyle(fontSize: 13))),
+                  DropdownMenuItem(value: 15, child: Text('১৫ দিন', style: TextStyle(fontSize: 13))),
+                  DropdownMenuItem(value: 30, child: Text('৩০ দিন', style: TextStyle(fontSize: 13))),
+                ],
+                onChanged: (val) {
+                  if (val != null) setModalState(() => selectedDays = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              const Text('ব্লক করার সুনির্দিষ্ট কারণ:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: reasonController,
+                maxLines: 2,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'ব্লক করার কারণ বিস্তারিত লিখুন...',
+                  hintStyle: const TextStyle(fontSize: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.all(10),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+              child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AdminColors.alertWarning,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {
                 if (reasonController.text.trim().isEmpty) {
@@ -211,7 +238,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 }
                 Navigator.pop(ctx, true);
               },
-              child: const Text('সাময়িক ব্লক করুন'),
+              child: const Text('ব্লক কার্যকর করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -226,7 +253,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           days: selectedDays,
           reason: reasonController.text.trim(),
         );
-        _showSnackBar('ইউজারকে $selectedDays দিনের জন্য সাময়িক ব্লক করা হয়েছে।');
+        _showSnackBar('ইউজারকে ${_toBn(selectedDays.toString())} দিনের জন্য সাময়িক ব্লক করা হয়েছে।');
+        if (dialogCtx != null && dialogCtx.mounted) {
+          Navigator.pop(dialogCtx);
+        }
       } catch (e) {
         _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
       } finally {
@@ -236,40 +266,50 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   // ================= 4. PERMANENT SUSPEND =================
-  Future<void> _handlePermanentSuspend(AdminUserModel user) async {
+  Future<void> _handlePermanentSuspend(AdminUserModel user, {BuildContext? dialogCtx}) async {
     final reasonController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.block_rounded, color: AdminColors.alertCritical),
-            SizedBox(width: 10),
-            Text('স্থায়ী সাসপেন্ড (Permanent Suspend)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: AdminColors.alertCritical)),
+        title: const Row(
+          children: [
+            Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 22),
+            SizedBox(width: 8),
+            Text('স্থায়ী সাসপেন্ড সতর্কতা', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AdminColors.alertCritical)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ইউজার: ${user.name} (${user.phone})', style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            const Text(
-              'সতর্কবার্তা: স্থায়ী সাসপেন্ড করলে ইউজার কখনোই আর এই একাউন্টে লগইন করতে পারবেন না।',
-              style: TextStyle(color: AdminColors.alertCritical, fontSize: 12.5),
+            Text('ইউজার: ${user.name} (${user.phone})', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminColors.alertCriticalBg,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFFCDD2)),
+              ),
+              child: const Text(
+                'সতর্কবার্তা: স্থায়ী সাসপেন্ড কার্যকর হলে ইউজার কখনোই আর অ্যাপে লগইন করতে পারবেন না।',
+                style: TextStyle(color: AdminColors.alertCritical, fontSize: 11.5, height: 1.3),
+              ),
             ),
-            const SizedBox(height: 14),
-            const Text('সাসপেন্ডের কারণ:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+            const SizedBox(height: 12),
+            const Text('সাসপেন্ডের কারণ:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5)),
             const SizedBox(height: 6),
             TextField(
               controller: reasonController,
               maxLines: 2,
+              style: const TextStyle(fontSize: 13),
               decoration: InputDecoration(
-                hintText: 'নীতিমালা লঙ্ঘনের বিস্তারিত বিবরণ লিখুন...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
+                hintText: 'নীতিমালা লঙ্ঘনের বিবরণ লিখুন...',
+                hintStyle: const TextStyle(fontSize: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                contentPadding: const EdgeInsets.all(10),
               ),
             ),
           ],
@@ -277,13 +317,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AdminColors.alertCritical,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               if (reasonController.text.trim().isEmpty) {
@@ -294,7 +334,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               }
               Navigator.pop(ctx, true);
             },
-            child: const Text('স্থায়ী সাসপেন্ড করুন'),
+            child: const Text('স্থায়ী সাসপেন্ড করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -308,6 +348,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           reason: reasonController.text.trim(),
         );
         _showSnackBar('ইউজারকে স্থায়ীভাবে সাসপেন্ড করা হয়েছে।', isError: true);
+        if (dialogCtx != null && dialogCtx.mounted) {
+          Navigator.pop(dialogCtx);
+        }
       } catch (e) {
         _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
       } finally {
@@ -317,35 +360,35 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   // ================= 5. ACTIVATE / UNBLOCK =================
-  Future<void> _handleActivateUser(AdminUserModel user) async {
+  Future<void> _handleActivateUser(AdminUserModel user, {BuildContext? dialogCtx}) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.check_circle_rounded, color: AdminColors.primary),
-            SizedBox(width: 10),
-            Text('একাউন্ট সক্রিয় করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: AdminColors.primary, size: 22),
+            SizedBox(width: 8),
+            Text('একাউন্ট সক্রিয় করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Text(
-          'আপনি কি "${user.name}"-এর একাউন্টের সমস্ত ব্লক/সাসপেন্ড প্রত্যাহার করে পুনরায় "সক্রিয় (Active)" করতে চান?',
-          style: const TextStyle(fontSize: 14, height: 1.4),
+          'আপনি কি "${user.name}"-এর একাউন্টের সমস্ত বিধিনিষেধ প্রত্যাহার করে পুনরায় "সক্রিয় (Active)" করতে চান?',
+          style: const TextStyle(fontSize: 13.5, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AdminColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('সক্রিয় করুন'),
+            child: const Text('সক্রিয় করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -356,12 +399,275 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       try {
         await AdminFirestoreService.instance.activateUser(user.uid);
         _showSnackBar('ইউজার একাউন্ট সফলভাবে সক্রিয় করা হয়েছে।');
+        if (dialogCtx != null && dialogCtx.mounted) {
+          Navigator.pop(dialogCtx);
+        }
       } catch (e) {
         _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
     }
+  }
+
+  // ================= 6. USER DETAILS DIALOG (বিস্তারিত মডাল) =================
+  void _showUserDetailsDialog(AdminUserModel user) {
+    bool isRateLimited = false;
+    int remainingDays = 0;
+    if (user.lastProfileUpdate != null) {
+      final daysSinceUpdate = DateTime.now().difference(user.lastProfileUpdate!).inDays;
+      if (daysSinceUpdate < 30) {
+        isRateLimited = true;
+        remainingDays = 30 - daysSinceUpdate;
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 580),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dialog Header with Avatar & Status
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: AdminColors.primaryContainer,
+                        backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                        child: user.photoUrl.isEmpty
+                            ? Text(
+                                user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AdminColors.primaryDark),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(user.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AdminColors.textPrimary)),
+                            const SizedBox(height: 3),
+                            Text(user.phone.isNotEmpty ? user.phone : 'ফোন নেই', style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                      _buildStatusBadge(user.status),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20, color: AdminColors.textMuted),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Divider(color: AdminColors.divider),
+                  const SizedBox(height: 14),
+
+                  // Information Grid (Compact)
+                  _buildDetailRow(Icons.email_outlined, 'ইমেইল এড্রেস', user.email.isNotEmpty ? user.email : 'নিবন্ধিত ইমেইল নেই'),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(Icons.location_on_outlined, 'ঠিকানা / এলাকা', [
+                    if (user.village.isNotEmpty) 'গ্রাম: ${user.village}',
+                    if (user.upazila.isNotEmpty) 'উপজেলা: ${user.upazila}',
+                    if (user.district.isNotEmpty) 'জেলা: ${user.district}',
+                  ].join(', ').ifEmpty('ঠিকানা অনুল্লিখিত')),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(Icons.work_outline_rounded, 'পেশা', user.occupation.isNotEmpty ? user.occupation : 'কৃষক'),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(Icons.calendar_today_outlined, 'যোগদানের তারিখ', _formatDateBn(user.createdAt)),
+                  const SizedBox(height: 8),
+
+                  // Profile Edit Rate-Limit Status
+                  _buildDetailRow(
+                    Icons.history_rounded,
+                    'প্রোফাইল লিমিট',
+                    isRateLimited
+                        ? 'লকড (${_toBn(remainingDays.toString())} দিন বাকি) • শেষ আপডেট: ${_formatDateBn(user.lastProfileUpdate)}'
+                        : 'লিমিট নেই (এডিট সচল)',
+                    highlightColor: isRateLimited ? AdminColors.alertWarning : AdminColors.primary,
+                  ),
+
+                  // Block / Suspend Details Notice (if any)
+                  if (user.status == 'temporary_blocked') ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AdminColors.alertWarningBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFE0B2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: AdminColors.alertWarning, size: 18),
+                              SizedBox(width: 6),
+                              Text('সাময়িক স্থগিতের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text('কারণ: ${user.blockReason.ifEmpty("অনির্দিষ্ট")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFF5D4037))),
+                          if (user.unblockAt != null) ...[
+                            const SizedBox(height: 2),
+                            Text('আনলক হওয়ার সময়: ${_formatDateBn(user.unblockAt)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFE65100))),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ] else if (user.status == 'permanently_suspended') ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AdminColors.alertCriticalBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFCDD2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 18),
+                              SizedBox(width: 6),
+                              Text('স্থায়ী সাসপেন্ডের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.alertCritical)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text('কারণ: ${user.suspendReason.ifEmpty("নীতিমালা লঙ্ঘনের কারণে")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFFB71C1C))),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+                  const Divider(color: AdminColors.divider),
+                  const SizedBox(height: 14),
+
+                  // Admin Action Buttons inside Details Dialog
+                  const Text('প্রশাসনিক অ্যাকশন কন্ট্রোলস:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.textPrimary)),
+                  const SizedBox(height: 10),
+
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // 1. Password Reset Button
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          foregroundColor: const Color(0xFF1976D2),
+                          side: const BorderSide(color: Color(0xFF90CAF9)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.lock_reset_rounded, size: 16),
+                        label: const Text('পাসওয়ার্ড রিসেট', style: TextStyle(fontSize: 12.5)),
+                        onPressed: () => _handlePasswordReset(user, dialogCtx: ctx),
+                      ),
+
+                      // 2. Profile Limit Reset Button
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          foregroundColor: const Color(0xFF5E35B1),
+                          side: const BorderSide(color: Color(0xFFD1C4E9)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                        label: const Text('এডিট লিমিট রিসেট', style: TextStyle(fontSize: 12.5)),
+                        onPressed: () => _handleProfileLimitReset(user, dialogCtx: ctx),
+                      ),
+
+                      // 3. Status Change Buttons
+                      if (user.status != 'active')
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            backgroundColor: AdminColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                          label: const Text('একাউন্ট সক্রিয় করুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                          onPressed: () => _handleActivateUser(user, dialogCtx: ctx),
+                        ),
+
+                      if (user.status != 'temporary_blocked')
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            foregroundColor: const Color(0xFFE65100),
+                            side: const BorderSide(color: Color(0xFFFFCC80)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          icon: const Icon(Icons.timer_outlined, size: 16),
+                          label: const Text('সাময়িক ব্লক', style: TextStyle(fontSize: 12.5)),
+                          onPressed: () => _handleTemporaryBlock(user, dialogCtx: ctx),
+                        ),
+
+                      if (user.status != 'permanently_suspended')
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            foregroundColor: AdminColors.alertCritical,
+                            side: const BorderSide(color: Color(0xFFFFCDD2)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          icon: const Icon(Icons.block_rounded, size: 16),
+                          label: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 12.5)),
+                          onPressed: () => _handlePermanentSuspend(user, dialogCtx: ctx),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value, {Color? highlightColor}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AdminColors.textMuted),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 110,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AdminColors.textSecondary),
+          ),
+        ),
+        const Text(': ', style: TextStyle(fontSize: 12.5, color: AdminColors.textMuted)),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: highlightColor != null ? FontWeight.bold : FontWeight.normal,
+              color: highlightColor ?? AdminColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -397,24 +703,24 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           final suspendedCount = allUsers.where((u) => u.status == 'permanently_suspended').length;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top KPI Summary Cards
-                _buildSummaryStats(totalCount, activeCount, blockedCount, suspendedCount),
+                // Top Compact KPI Summary Cards
+                _buildCompactSummaryStats(totalCount, activeCount, blockedCount, suspendedCount),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Main Controls Card
+                // Main Controls & Table Card
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AdminColors.border),
                     boxShadow: const [
-                      BoxShadow(color: AdminColors.cardShadow, blurRadius: 10, offset: Offset(0, 4)),
+                      BoxShadow(color: Color(0x06000000), blurRadius: 6, offset: Offset(0, 2)),
                     ],
                   ),
                   child: Column(
@@ -422,76 +728,108 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     children: [
                       // Header & Search Filter Row
                       Wrap(
-                        spacing: 16,
-                        runSpacing: 12,
+                        spacing: 12,
+                        runSpacing: 10,
                         alignment: WrapAlignment.spaceBetween,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text(
-                                'নিবন্ধিত ব্যবহারকারী ও একাউন্ট কন্ট্রোল',
-                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AdminColors.textPrimary),
+                                'ইউজার তালিকা ও অ্যাকশন',
+                                style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.bold, color: AdminColors.textPrimary),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'রিয়েল-টাইম ফায়ারস্টোর ডেটাবেজ থেকে মোট ${allUsers.length} জন ইউজার লোড হয়েছে',
-                                style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AdminColors.primaryContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'মোট ${_toBn(filteredUsers.length.toString())} জন',
+                                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AdminColors.primaryDark),
+                                ),
                               ),
                             ],
                           ),
                           SizedBox(
-                            width: 320,
+                            width: 280,
+                            height: 38,
                             child: TextField(
                               controller: _searchController,
                               onChanged: (_) => setState(() {}),
+                              style: const TextStyle(fontSize: 12.5),
                               decoration: InputDecoration(
-                                hintText: 'নাম, ফোন, ইমেইল বা জেলা দিয়ে খুঁজুন...',
-                                hintStyle: const TextStyle(fontSize: 12.5),
-                                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AdminColors.primary),
+                                hintText: 'নাম, ফোন বা জেলা দিয়ে খুঁজুন...',
+                                hintStyle: const TextStyle(fontSize: 12, color: AdminColors.textMuted),
+                                prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AdminColors.primary),
                                 suffixIcon: _searchController.text.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 18),
+                                        icon: const Icon(Icons.clear, size: 16),
                                         onPressed: () {
                                           _searchController.clear();
                                           setState(() {});
                                         },
                                       )
                                     : null,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AdminColors.border)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AdminColors.border)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AdminColors.border)),
                               ),
                             ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
-                      // Status Filter Chips
+                      // Status Filter Pills
                       Wrap(
-                        spacing: 8,
+                        spacing: 6,
+                        runSpacing: 6,
                         children: [
-                          _buildFilterChip('all', 'সকল ইউজার ($totalCount)'),
-                          _buildFilterChip('active', 'সক্রিয় ($activeCount)'),
-                          _buildFilterChip('temporary_blocked', 'সাময়িক স্থগিত ($blockedCount)'),
-                          _buildFilterChip('permanently_suspended', 'স্থায়ী সাসপেন্ড ($suspendedCount)'),
+                          _buildFilterPill('all', 'সকল (${_toBn(totalCount.toString())})'),
+                          _buildFilterPill('active', 'সক্রিয় (${_toBn(activeCount.toString())})'),
+                          _buildFilterPill('temporary_blocked', 'সাময়িক স্থগিত (${_toBn(blockedCount.toString())})'),
+                          _buildFilterPill('permanently_suspended', 'স্থায়ী সাসপেন্ড (${_toBn(suspendedCount.toString())})'),
                         ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
-                      // Users List / Table
+                      // Compact Table Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F7F4),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AdminColors.border),
+                        ),
+                        child: const Row(
+                          children: [
+                            Expanded(flex: 3, child: Text('নাম', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AdminColors.textPrimary))),
+                            Expanded(flex: 2, child: Text('মোবাইল নম্বর', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AdminColors.textPrimary))),
+                            Expanded(flex: 2, child: Text('জেলা', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AdminColors.textPrimary))),
+                            Expanded(flex: 2, child: Center(child: Text('স্ট্যাটাস', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AdminColors.textPrimary)))),
+                            SizedBox(width: 80, child: Center(child: Text('অ্যাকশন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AdminColors.textPrimary)))),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      // Compact Table Rows
                       if (filteredUsers.isEmpty)
                         Container(
-                          padding: const EdgeInsets.all(40),
+                          padding: const EdgeInsets.symmetric(vertical: 36),
                           alignment: Alignment.center,
-                          child: Column(
-                            children: const [
-                              Icon(Icons.person_search_rounded, size: 48, color: AdminColors.textMuted),
-                              SizedBox(height: 12),
-                              Text('কোনো ব্যবহারকারী পাওয়া যায়নি', style: TextStyle(fontWeight: FontWeight.bold, color: AdminColors.textMuted)),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.person_search_rounded, size: 36, color: AdminColors.textMuted),
+                              SizedBox(height: 8),
+                              Text('কোনো ব্যবহারকারী পাওয়া যায়নি', style: TextStyle(fontSize: 13, color: AdminColors.textMuted)),
                             ],
                           ),
                         )
@@ -500,10 +838,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filteredUsers.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1, color: AdminColors.divider),
+                          separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF0F0F0)),
                           itemBuilder: (context, index) {
                             final user = filteredUsers[index];
-                            return _buildUserTile(user);
+                            return _buildCompactUserRow(user);
                           },
                         ),
                     ],
@@ -517,294 +855,217 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  Widget _buildFilterChip(String key, String label) {
+  Widget _buildFilterPill(String key, String label) {
     final isSelected = _selectedStatusFilter == key;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => setState(() => _selectedStatusFilter = key),
-      selectedColor: AdminColors.primaryContainer,
-      labelStyle: TextStyle(
-        fontSize: 12.5,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        color: isSelected ? AdminColors.primaryDark : AdminColors.textSecondary,
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => setState(() => _selectedStatusFilter = key),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? AdminColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AdminColors.primary : AdminColors.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : AdminColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildSummaryStats(int total, int active, int blocked, int suspended) {
+  Widget _buildCompactSummaryStats(int total, int active, int blocked, int suspended) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth > 700;
+      final cardWidth = isWide ? (constraints.maxWidth - 36) / 4 : (constraints.maxWidth - 12) / 2;
+
       return Wrap(
-        spacing: 16,
-        runSpacing: 16,
+        spacing: 12,
+        runSpacing: 10,
         children: [
-          _buildStatCard('মোট ইউজার', total.toString(), Icons.people_alt_rounded, AdminColors.primary, AdminColors.primaryContainer, isWide),
-          _buildStatCard('সক্রিয় একাউন্ট', active.toString(), Icons.check_circle_rounded, const Color(0xFF2E7D32), const Color(0xFFE8F5E9), isWide),
-          _buildStatCard('সাময়িক ব্লক', blocked.toString(), Icons.timer_outlined, AdminColors.alertWarning, AdminColors.alertWarningBg, isWide),
-          _buildStatCard('স্থায়ী সাসপেন্ড', suspended.toString(), Icons.block_rounded, AdminColors.alertCritical, AdminColors.alertCriticalBg, isWide),
+          _buildCompactStatCard('মোট ইউজার', _toBn(total.toString()), Icons.people_alt_rounded, AdminColors.primary, AdminColors.primaryContainer, cardWidth),
+          _buildCompactStatCard('সক্রিয়', _toBn(active.toString()), Icons.check_circle_rounded, const Color(0xFF2E7D32), const Color(0xFFE8F5E9), cardWidth),
+          _buildCompactStatCard('সাময়িক স্থগিত', _toBn(blocked.toString()), Icons.timer_outlined, const Color(0xFFE65100), const Color(0xFFFFF3E0), cardWidth),
+          _buildCompactStatCard('স্থায়ী সাসপেন্ড', _toBn(suspended.toString()), Icons.block_rounded, AdminColors.alertCritical, AdminColors.alertCriticalBg, cardWidth),
         ],
       );
     });
   }
 
-  Widget _buildStatCard(String title, String count, IconData icon, Color color, Color bg, bool isWide) {
+  Widget _buildCompactStatCard(String title, String count, IconData icon, Color color, Color bg, double width) {
     return Container(
-      width: isWide ? 220 : double.infinity,
-      padding: const EdgeInsets.all(16),
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AdminColors.border),
         boxShadow: const [
-          BoxShadow(color: AdminColors.cardShadow, blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(color: Color(0x04000000), blurRadius: 4, offset: Offset(0, 1)),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(count, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-              Text(title, style: const TextStyle(fontSize: 12, color: AdminColors.textSecondary)),
-            ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(count, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color, height: 1.1)),
+                Text(title, style: const TextStyle(fontSize: 11, color: AdminColors.textSecondary)),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUserTile(AdminUserModel user) {
-    // 30 days profile rate limit check
-    bool isRateLimited = false;
-    if (user.lastProfileUpdate != null) {
-      final daysSinceUpdate = DateTime.now().difference(user.lastProfileUpdate!).inDays;
-      if (daysSinceUpdate < 30) {
-        isRateLimited = true;
-      }
-    }
+  Widget _buildCompactUserRow(AdminUserModel user) {
+    final districtName = user.district.isNotEmpty ? user.district : (user.upazila.isNotEmpty ? user.upazila : 'অনুল্লিখিত');
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Avatar
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AdminColors.primaryContainer,
-            backgroundImage: (user.photoUrl != null && user.photoUrl!.isNotEmpty)
-                ? NetworkImage(user.photoUrl!)
-                : null,
-            child: (user.photoUrl == null || user.photoUrl!.isEmpty)
-                ? Text(user.name.isNotEmpty ? user.name[0] : 'ক', style: const TextStyle(color: AdminColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 18))
-                : null,
-          ),
-          const SizedBox(width: 14),
-
-          // User Info
+          // 1. Name & Avatar
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            flex: 3,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      user.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AdminColors.textPrimary),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildStatusBadge(user),
-                    if (isRateLimited) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF3E0),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFFB74D)),
-                        ),
-                        child: const Text('এডিট লিমিটেড (৩০ দিন)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFE65100))),
-                      ),
-                    ],
-                  ],
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AdminColors.primaryContainer,
+                  backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                  child: user.photoUrl.isEmpty
+                      ? Text(
+                          user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AdminColors.primaryDark),
+                        )
+                      : null,
                 ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 4,
-                  children: [
-                    if (user.phone.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.phone_rounded, size: 13, color: AdminColors.textMuted),
-                          const SizedBox(width: 4),
-                          Text(user.phone, style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
-                        ],
-                      ),
-                    if (user.email.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.email_outlined, size: 13, color: AdminColors.textMuted),
-                          const SizedBox(width: 4),
-                          Text(user.email, style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
-                        ],
-                      ),
-                    if (user.district.isNotEmpty)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.location_on_outlined, size: 13, color: AdminColors.textMuted),
-                          const SizedBox(width: 4),
-                          Text('${user.village.isNotEmpty ? "${user.village}, " : ""}${user.upazila.isNotEmpty ? "${user.upazila}, " : ""}${user.district}',
-                              style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
-                        ],
-                      ),
-                  ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    user.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AdminColors.textPrimary),
+                  ),
                 ),
-
-                // Specific Reason display if blocked or suspended
-                if (user.status == 'temporary_blocked' && user.blockReason != null) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(6)),
-                    child: Text(
-                      'ব্লকের কারণ: ${user.blockReason} | আনলক হবে: ${user.unblockAt != null ? "${user.unblockAt!.day}-${user.unblockAt!.month}-${user.unblockAt!.year}" : ""}',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFF57F17), fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-                if (user.status == 'permanently_suspended' && user.suspendReason != null) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(6)),
-                    child: Text(
-                      'সাসপেন্ডের কারণ: ${user.suspendReason}',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFC62828), fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
 
-          // Action Buttons
-          PopupMenuButton<String>(
-            tooltip: 'এডমিন অ্যাকশন মেনু',
-            icon: const Icon(Icons.more_vert_rounded, color: AdminColors.textPrimary),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            onSelected: (action) {
-              if (action == 'reset_password') _handlePasswordReset(user);
-              if (action == 'reset_limit') _handleProfileLimitReset(user);
-              if (action == 'temp_block') _handleTemporaryBlock(user);
-              if (action == 'perm_suspend') _handlePermanentSuspend(user);
-              if (action == 'activate') _handleActivateUser(user);
-            },
-            itemBuilder: (context) => [
-              if (user.email.isNotEmpty)
-                const PopupMenuItem(
-                  value: 'reset_password',
-                  child: Row(
-                    children: [
-                      Icon(Icons.lock_reset_rounded, size: 18, color: AdminColors.primary),
-                      SizedBox(width: 10),
-                      Text('পাসওয়ার্ড রিসেট লিংক পাঠান'),
-                    ],
+          // 2. Phone
+          Expanded(
+            flex: 2,
+            child: Text(
+              user.phone.isNotEmpty ? user.phone : 'ফোন নেই',
+              style: const TextStyle(fontSize: 12, color: AdminColors.textSecondary),
+            ),
+          ),
+
+          // 3. District
+          Expanded(
+            flex: 2,
+            child: Text(
+              districtName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12, color: AdminColors.textSecondary),
+            ),
+          ),
+
+          // 4. Status Badge
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: _buildStatusBadge(user.status),
+            ),
+          ),
+
+          // 5. "বিস্তারিত" Button
+          SizedBox(
+            width: 80,
+            child: Center(
+              child: SizedBox(
+                height: 28,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    side: const BorderSide(color: AdminColors.primary, width: 1.2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    foregroundColor: AdminColors.primaryDark,
                   ),
-                ),
-              const PopupMenuItem(
-                value: 'reset_limit',
-                child: Row(
-                  children: [
-                    Icon(Icons.restart_alt_rounded, size: 18, color: Color(0xFFE65100)),
-                    SizedBox(width: 10),
-                    Text('প্রোফাইল এডিট লিমিট রিসেট'),
-                  ],
+                  onPressed: () => _showUserDetailsDialog(user),
+                  child: const Text('বিস্তারিত', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                 ),
               ),
-              const PopupMenuDivider(),
-              if (user.status != 'active')
-                const PopupMenuItem(
-                  value: 'activate',
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_rounded, size: 18, color: AdminColors.primary),
-                      SizedBox(width: 10),
-                      Text('একাউন্ট সক্রিয় করুন (Active)'),
-                    ],
-                  ),
-                ),
-              if (user.status != 'temporary_blocked')
-                const PopupMenuItem(
-                  value: 'temp_block',
-                  child: Row(
-                    children: [
-                      Icon(Icons.timer_outlined, size: 18, color: AdminColors.alertWarning),
-                      SizedBox(width: 10),
-                      Text('সাময়িক স্থগিত (Temporary Block)'),
-                    ],
-                  ),
-                ),
-              if (user.status != 'permanently_suspended')
-                const PopupMenuItem(
-                  value: 'perm_suspend',
-                  child: Row(
-                    children: [
-                      Icon(Icons.block_rounded, size: 18, color: AdminColors.alertCritical),
-                      SizedBox(width: 10),
-                      Text('স্থায়ী সাসপেন্ড (Permanent Suspend)'),
-                    ],
-                  ),
-                ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusBadge(AdminUserModel user) {
-    if (user.status == 'permanently_suspended') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: AdminColors.alertCriticalBg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AdminColors.alertCritical.withOpacity(0.4)),
-        ),
-        child: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AdminColors.alertCritical)),
-      );
+  Widget _buildStatusBadge(String status) {
+    Color bg;
+    Color fg;
+    String text;
+    IconData icon;
+
+    switch (status) {
+      case 'temporary_blocked':
+        bg = const Color(0xFFFFF3E0);
+        fg = const Color(0xFFE65100);
+        text = 'সাময়িক স্থগিত';
+        icon = Icons.timer_outlined;
+        break;
+      case 'permanently_suspended':
+        bg = const Color(0xFFFFEBEE);
+        fg = const Color(0xFFC62828);
+        text = 'স্থায়ী সাসপেন্ড';
+        icon = Icons.block_rounded;
+        break;
+      default:
+        bg = const Color(0xFFE8F5E9);
+        fg = const Color(0xFF2E7D32);
+        text = 'সক্রিয়';
+        icon = Icons.check_circle_rounded;
     }
-    if (user.status == 'temporary_blocked') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: AdminColors.alertWarningBg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AdminColors.alertWarning.withOpacity(0.4)),
-        ),
-        child: const Text('সাময়িক স্থগিত', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AdminColors.alertWarning)),
-      );
-    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AdminColors.successBg,
+        color: bg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AdminColors.success.withOpacity(0.4)),
       ),
-      child: const Text('সক্রিয় (Active)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AdminColors.success)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: fg),
+          const SizedBox(width: 4),
+          Text(text, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: fg)),
+        ],
+      ),
     );
   }
+}
+
+extension StringExtension on String {
+  String ifEmpty(String fallback) => isEmpty ? fallback : this;
 }

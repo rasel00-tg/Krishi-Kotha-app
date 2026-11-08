@@ -25,13 +25,13 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
 
   final List<String> _titles = [
     'ড্যাশবোর্ড ওভারভিউ',
+    'ইউজার কন্ট্রোল (User Management System)',
     'লাইভ নোটিফিকেশন ম্যানেজমেন্ট',
     'বাজার দর ইনপুট ও আপডেট',
     'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
     'রোগবালাই ও দমন গাইড (Pests & Diseases)',
     'কৃষক ও সহায়তা টিকিট মনিটরিং',
     'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
-    'ইউজার কন্ট্রোল (User Management System)',
     'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)',
   ];
 
@@ -47,19 +47,19 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       case 0:
         return DashboardScreen(onNavigate: _onNavigate);
       case 1:
-        return const NotificationsManagementScreen();
-      case 2:
-        return const MarketPricesManagementScreen();
-      case 3:
-        return const CropsManagementScreen(initialTabIndex: 0);
-      case 4:
-        return const CropsManagementScreen(initialTabIndex: 1);
-      case 5:
-        return const UsersFeedbackScreen();
-      case 6:
-        return const KrishiMateAiReportingScreen();
-      case 7:
         return const UserManagementScreen();
+      case 2:
+        return const NotificationsManagementScreen();
+      case 3:
+        return const MarketPricesManagementScreen();
+      case 4:
+        return const CropsManagementScreen(initialTabIndex: 0);
+      case 5:
+        return const CropsManagementScreen(initialTabIndex: 1);
+      case 6:
+        return const UsersFeedbackScreen();
+      case 7:
+        return const KrishiMateAiReportingScreen();
       case 8:
         return const AppSettingsScreen();
       default:

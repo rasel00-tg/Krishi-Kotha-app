@@ -864,42 +864,52 @@ class AppMenuScreen extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
+      // ১. ব্যাকগ্রাউন্ডে নন-ব্লকিংভাবে FirebaseAuth.instance.signOut() কল
+      FirebaseAuth.instance.signOut().catchError((e) {
+        debugPrint('Non-blocking FirebaseAuth signOut error: $e');
+      });
+
+      // ২. তাৎক্ষণিকভাবে লোকাল স্টেট ও প্রোভাইডার সেশন ক্লিয়ার
       try {
-        try {
-          await FirebaseAuth.instance.signOut();
-        } catch (e) {
-          debugPrint('FirebaseAuth signOut error: $e');
-        }
-
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.signOut();
+        authProvider.signOut();
+      } catch (_) {}
 
-        // SharedPreferences সেশন ক্লিয়ারিং
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('krishi_kotha_cached_user');
-        } catch (_) {}
+      // ৩. লোকাল ক্যাশ ও বায়োমেট্রিক সেশন প্রিফারেন্সেস ক্লিয়ার
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.remove('krishi_kotha_cached_user');
+        prefs.remove('krishi_kotha_biometric_user');
+      }).catchError((_) {});
 
-        if (context.mounted) {
-          await AppUnifiedDialog.showSuccess(
-            context,
-            title: 'সফলভাবে লগআউট হয়েছে!',
-            message: 'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
-            buttonText: 'লগইন করুন',
-          );
-        }
-      } catch (e) {
-        debugPrint('Logout error: $e');
-      } finally {
-        if (context.mounted) {
-          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const PhoneLoginScreen(isGatewayForMenu: false),
+      // ৪. সমস্ত রুট ক্লিয়ার করে সরাসরি শূন্য বিলম্বে লগইন পেজে রিডাইরেক্ট
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const PhoneLoginScreen(isGatewayForMenu: false),
+        ),
+        (route) => false,
+      );
+
+      // ৫. সফল লগআউটের তাৎক্ষণিক সবুজ বার্তা
+      try {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 10),
+                Text(
+                  'সফলভাবে লগআউট সম্পন্ন হয়েছে!',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                ),
+              ],
             ),
-            (route) => false,
-          );
-        }
-      }
+            backgroundColor: const Color(0xFF2E7D32),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } catch (_) {}
     }
   }
 }

@@ -3,17 +3,39 @@ import '../constants/app_colors.dart';
 
 /// Single Unified Loading Dialog Controller for 100% Guaranteed Dismissal
 class AppLoadingDialogController {
-  final BuildContext _dialogContext;
+  final BuildContext _parentContext;
+  BuildContext? _dialogContext;
   bool _isDismissed = false;
 
-  AppLoadingDialogController(this._dialogContext);
+  AppLoadingDialogController(this._parentContext);
+
+  void attachDialogContext(BuildContext ctx) {
+    _dialogContext = ctx;
+    if (_isDismissed) {
+      _safelyPop();
+    }
+  }
 
   void dismiss() {
     if (_isDismissed) return;
     _isDismissed = true;
+    _safelyPop();
+  }
+
+  void _safelyPop() {
     try {
-      if (_dialogContext.mounted && Navigator.of(_dialogContext, rootNavigator: true).canPop()) {
-        Navigator.of(_dialogContext, rootNavigator: true).pop();
+      if (_dialogContext != null && _dialogContext!.mounted) {
+        final nav = Navigator.of(_dialogContext!, rootNavigator: true);
+        if (nav.canPop()) {
+          nav.pop();
+          return;
+        }
+      }
+      if (_parentContext.mounted) {
+        final nav = Navigator.of(_parentContext, rootNavigator: true);
+        if (nav.canPop()) {
+          nav.pop();
+        }
       }
     } catch (e) {
       debugPrint('Error dismissing loading dialog: $e');
@@ -30,17 +52,18 @@ class AppUnifiedDialog {
   static AppLoadingDialogController showLoading(
     BuildContext context, {
     required String message,
+    Duration timeout = const Duration(seconds: 12),
   }) {
-    late BuildContext dialogCtx;
+    final controller = AppLoadingDialogController(context);
 
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       useRootNavigator: true,
       builder: (dCtx) {
-        dialogCtx = dCtx;
-        return WillPopScope(
-          onWillPop: () async => false,
+        controller.attachDialogContext(dCtx);
+        return PopScope(
+          canPop: true,
           child: Dialog(
             backgroundColor: Colors.white,
             elevation: 10,
@@ -92,7 +115,12 @@ class AppUnifiedDialog {
       },
     );
 
-    return AppLoadingDialogController(dialogCtx);
+    // 100% Fail-safe auto-timeout to prevent any frozen screen
+    Future.delayed(timeout, () {
+      controller.dismiss();
+    });
+
+    return controller;
   }
 
   // ================= 2. SUCCESS STATE =================
@@ -102,7 +130,7 @@ class AppUnifiedDialog {
     required String message,
     VoidCallback? onConfirm,
     String buttonText = 'ঠিক আছে',
-    bool barrierDismissible = false,
+    bool barrierDismissible = true,
   }) async {
     await showDialog(
       context: context,

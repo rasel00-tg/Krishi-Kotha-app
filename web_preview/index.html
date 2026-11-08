@@ -1850,7 +1850,6 @@
       from {
         transform: rotate(0deg);
       }
-
       to {
         transform: rotate(360deg);
       }
@@ -4294,41 +4293,35 @@
       style="background: #2E7D32; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 8px rgba(46,125,50,0.25); color: white;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <button type="button" class="icon-btn" onclick="closeSettingsPage()"
-          style="color: white; background: rgba(255,255,255,0.18); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          title="ফিরে যান">
+          style="color: white; background: rgba(255,255,255,0.18); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="ফিরে যান">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
         <h2 style="font-size: 18px; font-weight: 700; color: white; margin: 0;">সেটিংস</h2>
       </div>
     </div>
 
-    <div
-      style="padding: 16px; max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+    <div style="padding: 16px; max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
       <!-- Category 1: নিরাপত্তা ও বায়োমেট্রিক -->
       <div>
-        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নিরাপত্তা ও বায়োমেট্রিক
-        </h3>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নিরাপত্তা ও বায়োমেট্রিক</h3>
         <!-- Dedicated Biometric Card with Live Status Badge -->
         <div id="webBiometricCard"
           style="background: white; padding: 16px; border-radius: 16px; border: 1.2px solid #C8E6C9; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div
-                style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-size: 24px; border: 1.5px solid #A5D6A7;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-size: 24px; border: 1.5px solid #A5D6A7;">
                 <i class="fa-solid fa-fingerprint"></i>
               </div>
               <div>
                 <h4 style="font-size: 15px; font-weight: 700; color: #212121; margin: 0;">বায়োমেট্রিক সেটিংস</h4>
-                <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন
-                </p>
+                <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন</p>
               </div>
             </div>
             <input type="checkbox" id="settingsBiometricToggle" onchange="handleBiometricToggleWeb(this.checked)"
               style="accent-color: #2E7D32; width: 20px; height: 20px; cursor: pointer;">
           </div>
 
-          <div
-            style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #EFF3EF; display: flex; justify-content: space-between; align-items: center;">
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #EFF3EF; display: flex; justify-content: space-between; align-items: center;">
             <div id="biometricStatusBadge">
               <!-- Rendered dynamically -->
             </div>
@@ -4343,12 +4336,9 @@
 
       <!-- Category 2: নোটিফিকেশন ও অ্যালার্ট -->
       <div>
-        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নোটিফিকেশন ও অ্যালার্ট
-        </h3>
-        <div
-          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div
-            style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নোটিফিকেশন ও অ্যালার্ট</h3>
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
             <div>
               <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">জরুরি আবহাওয়া সতর্কতা</h4>
               <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ঝড়-বৃষ্টি ও দুর্যোগের জরুরি নোটিফিকেশন</p>
@@ -4368,16 +4358,13 @@
       <!-- Category 3: ভাষা ও ফন্ট -->
       <div>
         <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">ভাষা ও ফন্ট</h3>
-        <div
-          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div
-            style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
             <div>
               <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">অ্যাপের ভাষা</h4>
               <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">বাংলা (বাংলাদেশ)</p>
             </div>
-            <span
-              style="background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
+            <span style="background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
           </div>
           <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -4392,8 +4379,7 @@
       <!-- Category 4: অ্যাপ তথ্য -->
       <div>
         <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">অ্যাপ তথ্য</h3>
-        <div
-          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
           <div style="display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-circle-info" style="color: #2E7D32; font-size: 20px;"></i>
             <div>
@@ -4403,6 +4389,23 @@
           </div>
           <span style="font-size: 12.5px; font-weight: 700; color: #78909C;">v1.0.0</span>
         </div>
+      </div>
+
+      <!-- Category 5: লগআউট বাটন (লগইন করা থাকলে দৃশ্যমান) -->
+      <div id="settingsLogoutSection" style="margin-top: 10px;">
+        <button type="button" onclick="confirmWebLogout()"
+          style="width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #FFCDD2; background: #FFF5F5; color: #D32F2F; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(211,47,47,0.08);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #D32F2F; font-size: 18px;">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+            <div style="text-align: left;">
+              <div style="font-size: 14.5px; font-weight: 700;">লগআউট (Logout)</div>
+              <div style="font-size: 11.5px; color: #E57373; font-weight: normal;">একাউন্ট থেকে নিরাপদে বের হয়ে যান</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="color: #EF9A9A; font-size: 14px;"></i>
+        </button>
       </div>
 
       <div style="height: 30px;"></div>
@@ -4463,13 +4466,10 @@
     style="display: none; align-items: center; justify-content: center; z-index: 10000002; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
     <div class="modal-box" onclick="event.stopPropagation()"
       style="max-width: 340px; width: 86%; border-radius: 24px; padding: 26px 20px 22px 20px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
-      <h3 id="biometricScanTitle" style="color: #2E7D32; font-size: 18.5px; font-weight: 800; margin: 0 0 6px 0;">
-        ফিঙ্গারপ্রিন্ট ভেরিফিকেশন</h3>
-      <p id="biometricScanSubtitle" style="font-size: 13px; color: #555; margin: 0 0 16px 0;">অনুগ্রহ করে সেন্সরে আঙুল
-        স্পর্শ করুন</p>
-
-      <div
-        style="width: 100px; height: 100px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; background: #F1F8E9; border-radius: 50%; border: 2px dashed #81C784;">
+      <h3 id="biometricScanTitle" style="color: #2E7D32; font-size: 18.5px; font-weight: 800; margin: 0 0 6px 0;">ফিঙ্গারপ্রিন্ট ভেরিফিকেশন</h3>
+      <p id="biometricScanSubtitle" style="font-size: 13px; color: #555; margin: 0 0 16px 0;">অনুগ্রহ করে সেন্সরে আঙুল স্পর্শ করুন</p>
+      
+      <div style="width: 100px; height: 100px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; background: #F1F8E9; border-radius: 50%; border: 2px dashed #81C784;">
         <lottie-player src="assets/animation/Fingerprint.json" background="transparent" speed="1"
           style="width: 80px; height: 80px;" loop autoplay>
           <i class="fa-solid fa-fingerprint" style="font-size: 44px; color: #2E7D32;"></i>
@@ -11843,20 +11843,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function handleBiometricToggleWeb(enable) {
       const bioToggle = document.getElementById('settingsBiometricToggle');
       if (enable) {
-        let u = currentUser;
-        if (!u || !u.uid || u.uid.startsWith('guest_')) {
-          const cached = localStorage.getItem('krishi_kotha_cached_user');
-          if (cached) {
-            try { u = JSON.parse(cached); currentUser = u; } catch(e){}
-          }
-        }
-        if (!u && window.firebase && firebase.auth && firebase.auth().currentUser) {
-          const fbU = firebase.auth().currentUser;
-          u = { uid: fbU.uid, phone: fbU.phoneNumber || '', email: fbU.email || '', name: fbU.displayName || 'সম্মানিত কৃষক' };
-          currentUser = u;
-        }
-
-        if (!u || !u.uid || u.uid.startsWith('guest_')) {
+        if (!currentUser || (currentUser.uid && currentUser.uid.startsWith('guest_'))) {
           showWarningDialog('ফিঙ্গারপ্রিন্ট সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।', 'লগইন প্রয়োজন');
           if (bioToggle) bioToggle.checked = false;
           return;
@@ -11929,7 +11916,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           applyUserToUI(u);
           checkAuthState();
           showSuccessDialog('লগইন সফল হয়েছে!', 'স্বাগতম, ' + (u.name || 'সম্মানিত কৃষক ভাই') + '!');
-        } catch (e) {
+        } catch(e) {
           showWarningDialog('ফিঙ্গারপ্রিন্ট দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।', 'ভেরিফিকেশন ব্যর্থ');
         }
       }, 1200);
@@ -11944,20 +11931,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       openModal('webLogoutModal');
     }
 
-    async function executeWebLogout() {
+    function executeWebLogout() {
       closeModal('webLogoutModal');
       closeSettingsPage();
       closeEditProfilePage();
 
       if (userDocUnsubscribe) {
-        userDocUnsubscribe();
+        try { userDocUnsubscribe(); } catch (_) { }
         userDocUnsubscribe = null;
       }
-      try {
-        if (window.firebase && firebase.auth) {
-          await firebase.auth().signOut();
-        }
-      } catch (_) { }
+      // Non-blocking background signOut
+      if (window.firebase && firebase.auth) {
+        firebase.auth().signOut().catch(function(e) { console.warn('Non-blocking signOut error:', e); });
+      }
 
       try {
         localStorage.removeItem('krishi_kotha_cached_user');
@@ -11969,7 +11955,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       showSuccessDialog(
         'সফলভাবে লগআউট হয়েছে!',
         'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
-        function () {
+        function() {
           openAuthModal('login');
         }
       );
