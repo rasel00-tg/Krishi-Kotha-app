@@ -56,7 +56,7 @@ class AppMenuScreen extends StatelessWidget {
               children: [
                 // ================= 1. PINNED / FIXED NON-SCROLLING PROFILE CARD =================
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 18.0, 16.0, 12.0),
+                  padding: const EdgeInsets.only(top: 20.0, left: 16.0, right: 16.0, bottom: 12.0),
                   child: _buildLargeProfileCard(context, user, activeUid),
                 ),
 
@@ -464,14 +464,14 @@ class AppMenuScreen extends StatelessWidget {
 
             // Card Content (Spacious, prominent and balanced)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Prominent Avatar with Bright Glowing Ring & Soft Shadow
                   Container(
-                    width: 74,
-                    height: 74,
+                    width: 78,
+                    height: 78,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
@@ -535,7 +535,7 @@ class AppMenuScreen extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 19.5,
+                            fontSize: 20.0,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: 0.2,
@@ -549,7 +549,7 @@ class AppMenuScreen extends StatelessWidget {
                         if (locationText.isNotEmpty) ...[
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 13.5, color: Color(0xFFB9F6CA)),
+                              const Icon(Icons.location_on_rounded, size: 14.5, color: Color(0xFFB9F6CA)),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -557,7 +557,7 @@ class AppMenuScreen extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 12.8,
+                                    fontSize: 13.5,
                                     color: Colors.white.withOpacity(0.92),
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -572,7 +572,7 @@ class AppMenuScreen extends StatelessWidget {
                         if (formattedPhone.isNotEmpty) ...[
                           Row(
                             children: [
-                              const Icon(Icons.phone_rounded, size: 12.5, color: Color(0xFFB9F6CA)),
+                              const Icon(Icons.phone_rounded, size: 13.5, color: Color(0xFFB9F6CA)),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -580,7 +580,7 @@ class AppMenuScreen extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 12.8,
+                                    fontSize: 13.5,
                                     color: Colors.white.withOpacity(0.92),
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -594,7 +594,7 @@ class AppMenuScreen extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.5,
                               color: Colors.white.withOpacity(0.85),
                             ),
                           ),

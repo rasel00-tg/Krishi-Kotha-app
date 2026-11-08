@@ -1832,7 +1832,7 @@
       top: -12px;
       z-index: 25;
       background: #F7FAF7;
-      padding-top: 14px;
+      padding-top: 20px;
       padding-bottom: 12px;
       margin-bottom: 12px;
     }
@@ -1841,7 +1841,7 @@
       background: linear-gradient(135deg, #0F4316 0%, #1B5E20 35%, #2E7D32 75%, #388E3C 100%);
       border: 1.2px solid rgba(255, 255, 255, 0.24);
       border-radius: 24px;
-      padding: 20px 20px;
+      padding: 20px 18px;
       box-shadow: 0 9px 24px rgba(27, 94, 32, 0.38), 0 2px 6px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
@@ -1881,8 +1881,8 @@
     }
 
     .menu-avatar-glow-ring {
-      width: 74px;
-      height: 74px;
+      width: 78px;
+      height: 78px;
       border-radius: 50%;
       background: linear-gradient(135deg, #E8F5E9, #A5D6A7, #69F0AE, #00E676);
       box-shadow: 0 0 16px rgba(105, 240, 174, 0.45);
@@ -1922,7 +1922,7 @@
     }
 
     .menu-user-info h3 {
-      font-size: 19.5px;
+      font-size: 20px;
       font-weight: 700;
       color: #fff;
       margin: 0 0 5px 0;
@@ -1937,7 +1937,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 12.8px;
+      font-size: 13.5px;
       color: rgba(255, 255, 255, 0.92);
       font-weight: 500;
       white-space: nowrap;
@@ -1947,7 +1947,7 @@
 
     .menu-user-meta-row i {
       color: #B9F6CA;
-      font-size: 12.5px;
+      font-size: 13.5px;
       flex-shrink: 0;
     }
 
@@ -1970,6 +1970,23 @@
     .menu-profile-edit-btn:hover {
       background: rgba(255, 255, 255, 0.30);
       transform: translateY(-1px);
+    }
+
+    .edit-profile-input {
+      font-size: 15px !important;
+      line-height: 1.3 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.5px !important;
+      padding: 14px 14px !important;
+      font-variant-numeric: tabular-nums !important;
+      font-family: inherit !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      border-radius: 12px !important;
+      border: 1px solid var(--border) !important;
+      outline: none !important;
+      background: #FAFCFA !important;
+      color: var(--text-primary) !important;
     }
 
     /* Policy Document Page Styles (Compact, Modern, Premium 12-14px radius) */
@@ -3286,8 +3303,7 @@
               <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-regular fa-user" style="color: var(--primary); margin-right: 4px;"></i> আপনার পুরো নাম *
               </label>
-              <input type="text" id="editProfileName" required placeholder="আপনার নাম লিখুন"
-                style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; outline: none; background: #FAFCFA;" />
+              <input type="text" id="editProfileName" class="edit-profile-input" required placeholder="আপনার নাম লিখুন" />
             </div>
 
             <!-- Phone Number -->
@@ -3295,8 +3311,7 @@
               <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> ফোন নম্বর *
               </label>
-              <input type="tel" id="editProfilePhone" required placeholder="০১XXXXXXXXX"
-                style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; outline: none; background: #FAFCFA;" />
+              <input type="tel" id="editProfilePhone" class="edit-profile-input" required placeholder="০১XXXXXXXXX" />
             </div>
 
             <!-- Email (Optional) -->
@@ -3304,8 +3319,7 @@
               <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> ইমেইল (ঐচ্ছিক)
               </label>
-              <input type="email" id="editProfileEmail" placeholder="example@email.com"
-                style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; outline: none; background: #FAFCFA;" />
+              <input type="email" id="editProfileEmail" class="edit-profile-input" placeholder="example@email.com" />
             </div>
 
             <!-- District & Upazila -->
@@ -3314,16 +3328,14 @@
                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                   <i class="fa-solid fa-location-dot" style="color: var(--primary); margin-right: 4px;"></i> জেলা *
                 </label>
-                <select id="editProfileDistrict" onchange="onEditProfileDistrictChange(this.value)" required
-                  style="width: 100%; box-sizing: border-box; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 13.5px; outline: none; background: #FAFCFA; cursor: pointer;">
+                <select id="editProfileDistrict" class="edit-profile-input" onchange="onEditProfileDistrictChange(this.value)" required style="cursor: pointer;">
                 </select>
               </div>
               <div>
                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                   <i class="fa-solid fa-map-pin" style="color: var(--primary); margin-right: 4px;"></i> উপজেলা *
                 </label>
-                <select id="editProfileUpazila" required
-                  style="width: 100%; box-sizing: border-box; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 13.5px; outline: none; background: #FAFCFA; cursor: pointer;">
+                <select id="editProfileUpazila" class="edit-profile-input" required style="cursor: pointer;">
                 </select>
               </div>
             </div>
@@ -3333,8 +3345,7 @@
               <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-solid fa-house" style="color: var(--primary); margin-right: 4px;"></i> গ্রাম / ইউনিয়ন / ডাকঘর
               </label>
-              <input type="text" id="editProfileVillage" placeholder="গ্রাম বা ইউনিয়নের নাম লিখুন"
-                style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; outline: none; background: #FAFCFA;" />
+              <input type="text" id="editProfileVillage" class="edit-profile-input" placeholder="গ্রাম বা ইউনিয়নের নাম লিখুন" />
             </div>
 
             <!-- Occupation -->
@@ -3342,8 +3353,7 @@
               <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-solid fa-briefcase" style="color: var(--primary); margin-right: 4px;"></i> পেশা
               </label>
-              <select id="editProfileOccupation"
-                style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 13.5px; outline: none; background: #FAFCFA; cursor: pointer;">
+              <select id="editProfileOccupation" class="edit-profile-input" style="cursor: pointer;">
                 <option value="কৃষক">কৃষক</option>
                 <option value="কৃষি উদ্যোক্তা">কৃষি উদ্যোক্তা</option>
                 <option value="কৃষি কর্মকর্তা">কৃষি কর্মকর্তা</option>
@@ -3413,6 +3423,64 @@
           style="width: 100%; background: #D32F2F; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 10px rgba(211,47,47,0.25);">
           ঠিক আছে
         </button>
+      </div>
+    </div>
+
+    <!-- MODAL: PROFILE UPDATE RATE LIMIT (1 Month / 30 Days) -->
+    <div class="modal-overlay" id="editProfileRateLimitModal"
+      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center;">
+      <div class="bottom-sheet"
+        style="max-width: 400px; border-radius: 20px; padding: 26px 22px; background: white; text-align: center; margin: auto;">
+        <div
+          style="width: 64px; height: 64px; border-radius: 50%; background: #FFF3E0; border: 2px solid #FFB74D; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 16px auto;">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div style="font-size: 18px; font-weight: 800; color: #E65100; margin-bottom: 8px;">প্রোফাইল আপডেট সীমাবদ্ধতা</div>
+        <div id="editProfileRateLimitMsg" style="font-size: 13.5px; color: #455A64; line-height: 1.45; margin-bottom: 22px;">
+          আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর ৩০ দিন অপেক্ষা করুন।
+        </div>
+        <button type="button" onclick="closeModal('editProfileRateLimitModal')"
+          style="width: 100%; background: #E65100; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 10px rgba(230,81,0,0.25);">
+          বুঝেছি
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL: 1:1 SQUARE IMAGE CROPPER -->
+    <div class="modal-overlay" id="profileSquareCropModal"
+      style="z-index: 100030; backdrop-filter: blur(8px); background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 16px;">
+      <div
+        style="max-width: 400px; width: 100%; background: #1E1E1E; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; background: #181818;">
+          <span style="font-size: 15px; font-weight: 700; color: #fff;">ছবি ক্রপ করুন (১:১)</span>
+          <button type="button" onclick="closeProfileSquareCropModal()" style="background: none; border: none; color: #aaa; font-size: 22px; cursor: pointer;">&times;</button>
+        </div>
+        <!-- Crop Canvas Container -->
+        <div style="padding: 18px; text-align: center; background: #121212;">
+          <div style="font-size: 12px; color: #aaa; margin-bottom: 12px;">ছবিটি ড্র্যাগ ও জুম করে বৃত্তাকার ফ্রেমে সাজান</div>
+          <div id="profileCropCanvasWrap" style="width: 270px; height: 270px; margin: 0 auto; border-radius: 16px; border: 2.2px solid #00E676; position: relative; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,230,118,0.2);">
+            <canvas id="profileCropCanvas" width="270" height="270" style="cursor: move; display: block;"></canvas>
+            <div style="position: absolute; inset: 0; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.7); pointer-events: none;"></div>
+          </div>
+          <!-- Zoom Slider -->
+          <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="fa-solid fa-magnifying-glass-minus" style="color: #aaa; font-size: 13px;"></i>
+            <input type="range" id="profileCropZoom" min="1" max="4" step="0.05" value="1" oninput="onProfileCropZoom(this.value)" style="width: 170px; accent-color: #00E676; cursor: pointer;">
+            <i class="fa-solid fa-magnifying-glass-plus" style="color: #aaa; font-size: 13px;"></i>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="padding: 14px 18px; display: flex; gap: 12px; border-top: 1px solid #333; background: #181818;">
+          <button type="button" onclick="closeProfileSquareCropModal()"
+            style="flex: 1; padding: 11px; border-radius: 10px; background: #333; color: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">
+            বাতিল
+          </button>
+          <button type="button" onclick="confirmProfileSquareCrop()"
+            style="flex: 1; padding: 11px; border-radius: 10px; background: #2E7D32; color: #fff; border: none; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(46,125,50,0.4);">
+            <i class="fa-solid fa-crop-simple"></i> ক্রপ সম্পন্ন
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -11018,6 +11086,18 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       pendingProfileImageDataUrl = null;
     }
 
+    const profileSquareCropperState = {
+      rawImg: null,
+      rawFile: null,
+      scale: 1,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+      isDragging: false,
+      startX: 0,
+      startY: 0
+    };
+
     function handleProfilePhotoSelect(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -11026,45 +11106,156 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          // Client-side background auto-compression: maxWidth 1024, maxHeight 1024, quality 0.82 (Target ~200-350 KB)
-          const maxDim = 1024;
-          let width = img.width;
-          let height = img.height;
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(function(blob) {
-            if (blob) {
-              pendingProfileImageBlob = blob;
-              pendingProfileImageDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-
-              // Update local in-memory preview ONLY (Zero Orphan Safety: NO network upload before submit)
-              const avatarImg = document.getElementById('editProfileAvatarImg');
-              const avatarChar = document.getElementById('editProfileAvatarChar');
-              if (avatarImg && avatarChar) {
-                avatarImg.src = pendingProfileImageDataUrl;
-                avatarImg.style.display = 'block';
-                avatarChar.style.display = 'none';
-              }
-            }
-          }, 'image/jpeg', 0.82);
+          profileSquareCropperState.rawImg = img;
+          profileSquareCropperState.rawFile = file;
+          openProfileSquareCropModal();
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    function openProfileSquareCropModal() {
+      const modal = document.getElementById('profileSquareCropModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      initProfileSquareCropCanvas();
+    }
+
+    function closeProfileSquareCropModal() {
+      const modal = document.getElementById('profileSquareCropModal');
+      if (modal) modal.style.display = 'none';
+      const fileInput = document.getElementById('editProfileFileInput');
+      if (fileInput) fileInput.value = '';
+    }
+
+    function initProfileSquareCropCanvas() {
+      const canvas = document.getElementById('profileCropCanvas');
+      if (!canvas || !profileSquareCropperState.rawImg) return;
+      const ctx = canvas.getContext('2d');
+      const w = 270;
+      const h = 270;
+      canvas.width = w;
+      canvas.height = h;
+
+      const img = profileSquareCropperState.rawImg;
+      const fitScale = Math.max(w / img.width, h / img.height);
+      profileSquareCropperState.scale = fitScale;
+      profileSquareCropperState.zoom = 1;
+      profileSquareCropperState.panX = (w - img.width * fitScale) / 2;
+      profileSquareCropperState.panY = (h - img.height * fitScale) / 2;
+
+      const zoomSlider = document.getElementById('profileCropZoom');
+      if (zoomSlider) zoomSlider.value = 1;
+
+      renderProfileSquareCropCanvas();
+      attachProfileCropDragListeners(canvas);
+    }
+
+    function attachProfileCropDragListeners(canvas) {
+      if (canvas._hasDragListeners) return;
+      canvas._hasDragListeners = true;
+
+      const onStart = (clientX, clientY) => {
+        profileSquareCropperState.isDragging = true;
+        profileSquareCropperState.startX = clientX - profileSquareCropperState.panX;
+        profileSquareCropperState.startY = clientY - profileSquareCropperState.panY;
+      };
+
+      const onMove = (clientX, clientY) => {
+        if (!profileSquareCropperState.isDragging) return;
+        profileSquareCropperState.panX = clientX - profileSquareCropperState.startX;
+        profileSquareCropperState.panY = clientY - profileSquareCropperState.startY;
+        renderProfileSquareCropCanvas();
+      };
+
+      const onEnd = () => {
+        profileSquareCropperState.isDragging = false;
+      };
+
+      canvas.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
+      window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', onEnd);
+
+      canvas.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) onStart(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      window.addEventListener('touchmove', e => {
+        if (e.touches.length === 1) onMove(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    function onProfileCropZoom(val) {
+      profileSquareCropperState.zoom = parseFloat(val) || 1;
+      renderProfileSquareCropCanvas();
+    }
+
+    function renderProfileSquareCropCanvas() {
+      const canvas = document.getElementById('profileCropCanvas');
+      if (!canvas || !profileSquareCropperState.rawImg) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const img = profileSquareCropperState.rawImg;
+      const curScale = profileSquareCropperState.scale * profileSquareCropperState.zoom;
+
+      ctx.save();
+      ctx.drawImage(
+        img,
+        profileSquareCropperState.panX,
+        profileSquareCropperState.panY,
+        img.width * curScale,
+        img.height * curScale
+      );
+      ctx.restore();
+    }
+
+    function confirmProfileSquareCrop() {
+      if (!profileSquareCropperState.rawImg) {
+        closeProfileSquareCropModal();
+        return;
+      }
+      // Render to clean 1:1 square canvas (512x512)
+      const outCanvas = document.createElement('canvas');
+      const outSize = 512;
+      outCanvas.width = outSize;
+      outCanvas.height = outSize;
+      const outCtx = outCanvas.getContext('2d');
+
+      const ratio = outSize / 270;
+      const img = profileSquareCropperState.rawImg;
+      const curScale = profileSquareCropperState.scale * profileSquareCropperState.zoom * ratio;
+      const outPanX = profileSquareCropperState.panX * ratio;
+      const outPanY = profileSquareCropperState.panY * ratio;
+
+      outCtx.drawImage(
+        img,
+        outPanX,
+        outPanY,
+        img.width * curScale,
+        img.height * curScale
+      );
+
+      outCanvas.toBlob(function(blob) {
+        if (blob) {
+          pendingProfileImageBlob = blob;
+          pendingProfileImageDataUrl = outCanvas.toDataURL('image/jpeg', 0.85);
+
+          // Update local in-memory preview ONLY (Zero Orphan safety)
+          const avatarImg = document.getElementById('editProfileAvatarImg');
+          const avatarChar = document.getElementById('editProfileAvatarChar');
+          if (avatarImg && avatarChar) {
+            avatarImg.src = pendingProfileImageDataUrl;
+            avatarImg.style.display = 'block';
+            avatarChar.style.display = 'none';
+          }
+        }
+      }, 'image/jpeg', 0.85);
+
+      closeProfileSquareCropModal();
     }
 
     async function submitProfileUpdate() {
@@ -11097,9 +11288,48 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // Show Loading Modal
+      // 1. Rate Limit Check: 30 days (1 month)
+      if (activeUid && window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        try {
+          const userDoc = await db.collection('users').doc(activeUid).get();
+          if (userDoc && userDoc.exists) {
+            const data = userDoc.data() || {};
+            const rawTs = data.lastProfileUpdate || data.last_profile_update;
+            let lastUpdateDate = null;
+            if (rawTs) {
+              if (rawTs.toDate) {
+                lastUpdateDate = rawTs.toDate();
+              } else {
+                lastUpdateDate = new Date(rawTs);
+              }
+            }
+            if (lastUpdateDate && !isNaN(lastUpdateDate.getTime())) {
+              const diffMs = Date.now() - lastUpdateDate.getTime();
+              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              const limitDays = 30;
+              if (diffDays < limitDays) {
+                const remaining = limitDays - diffDays;
+                const remDaysBangla = toBangla(remaining > 0 ? remaining : 1);
+                const msgEl = document.getElementById('editProfileRateLimitMsg');
+                if (msgEl) {
+                  msgEl.innerText = `আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর ${remDaysBangla} দিন অপেক্ষা করুন।`;
+                }
+                const rlModal = document.getElementById('editProfileRateLimitModal');
+                if (rlModal) rlModal.style.display = 'flex';
+                return; // Immediately cancel update process!
+              }
+            }
+          }
+        } catch (chkErr) {
+          console.warn('Rate limit check notice:', chkErr);
+        }
+      }
+
+      // 2. Show Loading Modal
       const loadModal = document.getElementById('editProfileLoadingModal');
       if (loadModal) loadModal.style.display = 'flex';
+
+      let isSuccess = false;
 
       try {
         let uploadedUrl = null;
@@ -11140,7 +11370,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           village: village,
           village_name: village,
           occupation: occupation,
-          updated_at: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+          updated_at: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+          lastProfileUpdate: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+          last_profile_update: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
         };
 
         if (uploadedUrl) {
@@ -11167,19 +11399,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(updatedUser));
         applyUserToUI(updatedUser);
 
-        // 5. Hide Loading Modal
-        if (loadModal) loadModal.style.display = 'none';
-
-        // 6. Show Success Modal
-        const successModal = document.getElementById('editProfileSuccessModal');
-        if (successModal) successModal.style.display = 'flex';
-
+        isSuccess = true;
       } catch (err) {
         console.error('Profile update error:', err);
+        isSuccess = false;
+      } finally {
+        // GUARANTEED: close loading dialog
         if (loadModal) loadModal.style.display = 'none';
+      }
+
+      // 5. Show Success or Failure Modal
+      if (isSuccess) {
+        const successModal = document.getElementById('editProfileSuccessModal');
+        if (successModal) successModal.style.display = 'flex';
+      } else {
         const failModal = document.getElementById('editProfileFailureModal');
         if (failModal) failModal.style.display = 'flex';
       }
+    }
     }
 
     function closeEditProfileSuccessModal() {

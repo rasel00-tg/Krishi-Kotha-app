@@ -1,11 +1,14 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/bangla_number_converter.dart';
 import '../../core/utils/district_data.dart';
 import '../../data/services/firebase_service.dart';
 import '../../data/services/r2_storage_service.dart';
@@ -85,24 +88,111 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      // Client-side background auto-compression: maxWidth 1024, imageQuality 82 (Target ~200-350 KB)
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 82,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 90,
       );
 
-      if (pickedFile != null) {
-        final bytes = await pickedFile.readAsBytes();
-        setState(() {
-          _pickedImageBytes = bytes;
-          _pickedImageName = pickedFile.name;
-        });
+      if (pickedFile != null && mounted) {
+        final rawBytes = await pickedFile.readAsBytes();
+
+        // 1:1 Square Image Cropper Interface
+        final croppedBytes = await Navigator.of(context, rootNavigator: true).push<Uint8List>(
+          MaterialPageRoute(
+            builder: (_) => SquareImageCropperScreen(
+              imageBytes: rawBytes,
+            ),
+          ),
+        );
+
+        if (croppedBytes != null && mounted) {
+          setState(() {
+            _pickedImageBytes = croppedBytes;
+            _pickedImageName = pickedFile.name;
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error picking profile image: $e');
     }
+  }
+
+  void _showRateLimitDialog(int remainingDays) {
+    final remainingDaysBangla = BanglaNumberConverter.toBangla(remainingDays.toString());
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        elevation: 10,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3E0),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFB74D), width: 2),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.access_time_rounded,
+                    color: Color(0xFFE65100),
+                    size: 36,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'প্রোফাইল আপডেট সীমাবদ্ধতা',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFE65100),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর $remainingDaysBangla দিন অপেক্ষা করুন।',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF455A64),
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE65100),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'বুঝেছি',
+                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showImageSourceSheet() {
@@ -180,10 +270,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
-    // Show Loading Dialog
+    // 1. Rate-Limit Check: 30 days (1 month)
+    if (FirebaseService.isFirebaseInitialized && activeUid.isNotEmpty) {
+      try {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(activeUid).get();
+        if (userDoc.exists && userDoc.data() != null) {
+          final data = userDoc.data()!;
+          final dynamic rawTimestamp = data['lastProfileUpdate'] ?? data['last_profile_update'];
+          DateTime? lastUpdateDate;
+          if (rawTimestamp is Timestamp) {
+            lastUpdateDate = rawTimestamp.toDate();
+          } else if (rawTimestamp is String) {
+            lastUpdateDate = DateTime.tryParse(rawTimestamp);
+          }
+
+          if (lastUpdateDate != null) {
+            final now = DateTime.now();
+            final difference = now.difference(lastUpdateDate);
+            const int limitDays = 30;
+            if (difference.inDays < limitDays) {
+              final remainingDays = limitDays - difference.inDays;
+              if (mounted) {
+                _showRateLimitDialog(remainingDays > 0 ? remainingDays : 1);
+              }
+              return; // Cancel update immediately!
+            }
+          }
+        }
+      } catch (checkErr) {
+        debugPrint('Rate limit check error: $checkErr');
+      }
+    }
+
+    // 2. Show Loading Dialog
+    bool isLoadingDialogShown = false;
     showDialog(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
       builder: (_) => WillPopScope(
         onWillPop: () async => false,
         child: Dialog(
@@ -206,7 +330,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 SizedBox(width: 18),
                 Expanded(
                   child: Text(
-                    'তথ্য আপডেট করা হচ্ছে....',
+                    'প্রোফাইল আপডেট হচ্ছে....',
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.bold,
@@ -220,6 +344,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+    isLoadingDialogShown = true;
+
+    bool isSuccess = false;
 
     try {
       String? uploadedUrl;
@@ -243,6 +370,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'village_name': _villageController.text.trim(),
         'occupation': _occupationController.text.trim().isNotEmpty ? _occupationController.text.trim() : 'কৃষক',
         'updated_at': FieldValue.serverTimestamp(),
+        'lastProfileUpdate': FieldValue.serverTimestamp(),
+        'last_profile_update': FieldValue.serverTimestamp(),
       };
 
       if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
@@ -265,171 +394,171 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         weatherProvider.updateDistrict(_selectedDistrict);
       }
 
-      // 5. Close Loading Dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // 6. Show Animated Success Dialog
-      if (mounted) {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            backgroundColor: Colors.white,
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF81C784), width: 2),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.check_rounded,
-                        color: Color(0xFF2E7D32),
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'সফল হয়েছে!',
-                    style: TextStyle(
-                      fontSize: 18.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B5E20),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'আপনার প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      color: Color(0xFF455A64),
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx); // Close dialog
-                        Navigator.pop(context); // Return to menu screen
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'ঠিক আছে',
-                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
+      isSuccess = true;
     } catch (err) {
       debugPrint("Profile update error: $err");
-      // Close Loading Dialog if open
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Show Animated Failure Dialog
-      if (mounted) {
-        await showDialog(
-          context: context,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            backgroundColor: Colors.white,
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFEBEE),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE57373), width: 2),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.close_rounded,
-                        color: Color(0xFFD32F2F),
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'আপডেট ব্যর্থ হয়েছে',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFD32F2F),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'প্রোফাইল আপডেট ব্যর্থ হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      color: Color(0xFF455A64),
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'ঠিক আছে',
-                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
+      isSuccess = false;
+    } finally {
+      // Guaranteed dismiss of Loading Dialog via rootNavigator: true
+      if (isLoadingDialogShown && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        isLoadingDialogShown = false;
       }
     }
+
+    // 3. Show Animated Success or Failure Dialog
+    if (isSuccess && mounted) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        useRootNavigator: true,
+        builder: (ctx) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          elevation: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF81C784), width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: Color(0xFF2E7D32),
+                      size: 40,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'সফল হয়েছে!',
+                  style: TextStyle(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1B5E20),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'আপনার প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF455A64),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(ctx, rootNavigator: true).pop(); // Close dialog
+                      Navigator.of(context).pop(); // Return to menu screen
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'ঠিক আছে',
+                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else if (mounted) {
+      await showDialog(
+        context: context,
+        useRootNavigator: true,
+        builder: (ctx) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          elevation: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE57373), width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFFD32F2F),
+                      size: 40,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'আপডেট ব্যর্থ হয়েছে',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD32F2F),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'প্রোফাইল আপডেট ব্যর্থ হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF455A64),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD32F2F),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'ঠিক আছে',
+                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
   }
 
   @override
@@ -609,7 +738,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _nameController,
-                            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'আপনার নাম লিখুন',
                               prefixIcon: Icons.person_outline_rounded,
@@ -630,7 +759,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: '০১৭১২XXXXXX',
                               prefixIcon: Icons.phone_android_rounded,
@@ -651,7 +780,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'example@gmail.com',
                               prefixIcon: Icons.email_outlined,
@@ -665,6 +794,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
                             value: _selectedDistrict,
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'জেলা নির্বাচন করুন',
                               prefixIcon: Icons.location_on_outlined,
@@ -673,7 +803,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             items: BangladeshLocationData.districts.map((d) {
                               return DropdownMenuItem(
                                 value: d,
-                                child: Text(d, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                child: Text(d, style: _uniformInputStyle),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -694,6 +824,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
                             value: _selectedUpazila,
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'উপজেলা নির্বাচন করুন',
                               prefixIcon: Icons.holiday_village_outlined,
@@ -702,7 +833,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             items: upazilas.map((u) {
                               return DropdownMenuItem(
                                 value: u,
-                                child: Text(u, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                child: Text(u, style: _uniformInputStyle),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -719,7 +850,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _villageController,
-                            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'উদা: চকগোবিন্দপুর, শেরপুর',
                               prefixIcon: Icons.home_outlined,
@@ -733,7 +864,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _occupationController,
-                            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                            style: _uniformInputStyle,
                             decoration: _buildInputDecoration(
                               hint: 'উদা: কৃষক / কৃষি উদ্যোক্তা',
                               prefixIcon: Icons.work_outline_rounded,
@@ -794,17 +925,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  static const TextStyle _uniformInputStyle = TextStyle(
+    fontSize: 15,
+    height: 1.3,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.5,
+    color: AppColors.textPrimary,
+  );
+
   InputDecoration _buildInputDecoration({
     required String hint,
     required IconData prefixIcon,
   }) {
     return InputDecoration(
+      isDense: true,
       hintText: hint,
       hintStyle: const TextStyle(fontSize: 13.5, color: AppColors.textMuted, fontWeight: FontWeight.normal),
       prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 20),
       filled: true,
       fillColor: const Color(0xFFF9FBF9),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFDCE5DC)),
@@ -847,3 +987,178 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 }
+
+/// 1:1 Aspect Ratio Square Image Cropper Screen
+class SquareImageCropperScreen extends StatefulWidget {
+  final Uint8List imageBytes;
+  const SquareImageCropperScreen({super.key, required this.imageBytes});
+
+  @override
+  State<SquareImageCropperScreen> createState() => _SquareImageCropperScreenState();
+}
+
+class _SquareImageCropperScreenState extends State<SquareImageCropperScreen> {
+  final GlobalKey _cropKey = GlobalKey();
+  final TransformationController _controller = TransformationController();
+  bool _isCropping = false;
+
+  Future<void> _performCrop() async {
+    if (_isCropping) return;
+    setState(() => _isCropping = true);
+    try {
+      final boundary = _cropKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        Navigator.pop(context);
+        return;
+      }
+      final ui.Image image = await boundary.toImage(pixelRatio: 2.5);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        final Uint8List croppedBytes = byteData.buffer.asUint8List();
+        if (mounted) {
+          Navigator.pop(context, croppedBytes);
+        }
+        return;
+      }
+    } catch (e) {
+      debugPrint('Error cropping profile image: $e');
+    } finally {
+      if (mounted) setState(() => _isCropping = false);
+    }
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double cropBoxSize = (size.width - 48).clamp(240.0, 360.0);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'ছবি ক্রপ করুন (১:১)',
+          style: TextStyle(color: Colors.white, fontSize: 16.5, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          TextButton(
+            onPressed: _isCropping ? null : _performCrop,
+            child: _isCropping
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E676)),
+                  )
+                : const Text(
+                    'সম্পন্ন',
+                    style: TextStyle(
+                      color: Color(0xFF00E676),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const Text(
+              'ছবিটি ড্র্যাগ ও জুম করে ফ্রেমের ভেতরে সাজান',
+              style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+            const Spacer(),
+            Center(
+              child: Container(
+                width: cropBoxSize,
+                height: cropBoxSize,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF00E676), width: 2.2),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.6),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: RepaintBoundary(
+                    key: _cropKey,
+                    child: Container(
+                      color: Colors.black,
+                      child: InteractiveViewer(
+                        transformationController: _controller,
+                        minScale: 1.0,
+                        maxScale: 4.5,
+                        boundaryMargin: const EdgeInsets.all(200),
+                        child: Center(
+                          child: Image.memory(
+                            widget.imageBytes,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white38),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('বাতিল', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _isCropping ? null : _performCrop,
+                      icon: const Icon(Icons.crop_rounded, size: 18),
+                      label: const Text('ক্রপ সম্পন্ন করুন', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
