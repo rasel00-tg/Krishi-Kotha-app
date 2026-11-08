@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/bangla_number_converter.dart';
+import '../../core/widgets/app_unified_dialog.dart';
 import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/phone_login_screen.dart';
@@ -50,99 +51,115 @@ class AppMenuScreen extends StatelessWidget {
           backgroundColor: const Color(0xFFF7FAF7),
           // No topbar in Menu screen as requested
           appBar: null,
-          body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ================= 1. PINNED / FIXED NON-SCROLLING PROFILE CARD =================
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0, left: 16.0, right: 16.0, bottom: 12.0),
-                  child: _buildLargeProfileCard(context, user, activeUid),
-                ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ================= 1. MODERN CURVED PROFILE HEADER =================
+              _buildCurvedProfileHeader(context, user, activeUid),
 
-                // ================= 2. SCROLLABLE MENU LIST =================
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    // Generous bottom padding to ensure smooth scroll above fixed bottom navbar
-                    padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, kBottomNavigationBarHeight + 40.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // [প্রোফাইল ট্যাব ও নোটিফিকেশন অপশন মেনু লিস্ট থেকে অপসারিত]
-
-                        // CATEGORY 1: পছন্দ ও সেটিংস
-                        _buildCategoryHeader('পছন্দ ও সেটিংস'),
-                        _buildCardWrapper(
-                          children: [
-                            _buildMenuItem(
-                              context: context,
-                              icon: Icons.settings_outlined,
-                              iconColor: const Color(0xFF1565C0),
-                              iconBgColor: const Color(0xFFE3F2FD),
-                              title: 'সেটিংস (Settings)',
-                              subtitle: 'অ্যাপ সেটিংস ও ভাষা',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // CATEGORY 3: সহায়তা ও নিয়মাবলী
-                        _buildCategoryHeader('সহায়তা ও নিয়মাবলী'),
-                        _buildCardWrapper(
-                          children: [
-                            _buildMenuItem(
-                              context: context,
-                              icon: Icons.headset_mic_outlined,
-                              iconColor: const Color(0xFF7B1FA2),
-                              iconBgColor: const Color(0xFFF3E5F5),
-                              title: 'সাপোর্ট ও যোগাযোগ (Support & Contact)',
-                              subtitle: 'কৃষি হেল্পলাইন ও সহায়তা',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
-                                );
-                              },
-                            ),
-                            const Divider(
-                              height: 1,
-                              thickness: 0.8,
-                              indent: 68,
-                              endIndent: 16,
-                              color: Color(0xFFEFF3EF),
-                            ),
-                            _buildMenuItem(
-                              context: context,
-                              icon: Icons.privacy_tip_outlined,
-                              iconColor: const Color(0xFFE65100),
-                              iconBgColor: const Color(0xFFFFF3E0),
-                              title: 'গোপনীয় নীতি (Privacy Policy)',
-                              subtitle: 'ব্যবহারের শর্ত ও নীতিমালা',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-
-                        // CATEGORY 4: লগআউট বাটন (Sleek Logout Button - Logged in Only)
-                        if (isLoggedIn) ...[
-                          const SizedBox(height: 18),
-                          _buildLogoutButton(context),
+              // ================= 2. SCROLLABLE MENU LIST =================
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  // Generous bottom padding to ensure smooth scroll above fixed bottom navbar
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, kBottomNavigationBarHeight + 52.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // CATEGORY 1: ব্যবহারকারী ও একাউন্ট
+                      _buildCategoryHeader('ব্যবহারকারী ও একাউন্ট'),
+                      _buildCardWrapper(
+                        children: [
+                          _buildMenuItem(
+                            context: context,
+                            icon: Icons.person_outline_rounded,
+                            iconColor: const Color(0xFF2E7D32),
+                            iconBgColor: const Color(0xFFE8F5E9),
+                            title: 'প্রোফাইল সম্পাদনা (Edit Profile)',
+                            subtitle: 'নাম, ঠিকানা ও ব্যক্তিগত তথ্য আপডেট করুন',
+                            onTap: () {
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                              );
+                            },
+                          ),
                         ],
+                      ),
 
-                        const SizedBox(height: 28),
+                      const SizedBox(height: 16),
+
+                      // CATEGORY 2: পছন্দ ও সেটিংস
+                      _buildCategoryHeader('পছন্দ ও সেটিংস'),
+                      _buildCardWrapper(
+                        children: [
+                          _buildMenuItem(
+                            context: context,
+                            icon: Icons.settings_outlined,
+                            iconColor: const Color(0xFF1565C0),
+                            iconBgColor: const Color(0xFFE3F2FD),
+                            title: 'সেটিংস (Settings)',
+                            subtitle: 'অ্যাপ সেটিংস ও ভাষা',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // CATEGORY 3: সহায়তা ও নিয়মাবলী
+                      _buildCategoryHeader('সহায়তা ও নিয়মাবলী'),
+                      _buildCardWrapper(
+                        children: [
+                          _buildMenuItem(
+                            context: context,
+                            icon: Icons.headset_mic_outlined,
+                            iconColor: const Color(0xFF7B1FA2),
+                            iconBgColor: const Color(0xFFF3E5F5),
+                            title: 'সাপোর্ট ও যোগাযোগ (Support & Contact)',
+                            subtitle: 'কৃষি হেল্পলাইন ও সহায়তা',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
+                              );
+                            },
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 0.8,
+                            indent: 68,
+                            endIndent: 16,
+                            color: Color(0xFFEFF3EF),
+                          ),
+                          _buildMenuItem(
+                            context: context,
+                            icon: Icons.privacy_tip_outlined,
+                            iconColor: const Color(0xFFE65100),
+                            iconBgColor: const Color(0xFFFFF3E0),
+                            title: 'গোপনীয় নীতি (Privacy Policy)',
+                            subtitle: 'ব্যবহারের শর্ত ও নীতিমালা',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+
+                      // CATEGORY 4: লগআউট বাটন (Sleek Logout Button - Logged in Only)
+                      if (isLoggedIn) ...[
+                        const SizedBox(height: 18),
+                        _buildLogoutButton(context),
+                      ],
+
+                      const SizedBox(height: 28),
 
                         // APP BRANDING FOOTER
                         Center(
@@ -330,8 +347,8 @@ class AppMenuScreen extends StatelessWidget {
     );
   }
 
-  /// Large, Vibrant Emerald Glassmorphic Profile Card with Firestore StreamBuilder
-  Widget _buildLargeProfileCard(BuildContext context, dynamic user, [String? activeUid]) {
+  /// Modern Curved Profile Header Card with Real-time Firestore StreamBuilder
+  Widget _buildCurvedProfileHeader(BuildContext context, dynamic user, [String? activeUid]) {
     final String? uid = activeUid ?? (user != null ? (user.uid ?? user.userId) : null);
     if (FirebaseService.isFirebaseInitialized && uid != null && uid.isNotEmpty) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -358,7 +375,7 @@ class AppMenuScreen extends StatelessWidget {
             }
           }
 
-          return _buildProfileCardContent(
+          return _buildCurvedHeaderContent(
             context: context,
             name: name.isNotEmpty ? name : 'কৃষক ভাই',
             district: district,
@@ -372,7 +389,7 @@ class AppMenuScreen extends StatelessWidget {
       );
     }
 
-    return _buildProfileCardContent(
+    return _buildCurvedHeaderContent(
       context: context,
       name: user?.name.isNotEmpty == true ? user!.name : 'কৃষক ভাই',
       district: user?.district ?? '',
@@ -384,7 +401,7 @@ class AppMenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCardContent({
+  Widget _buildCurvedHeaderContent({
     required BuildContext context,
     required String name,
     required String district,
@@ -401,29 +418,29 @@ class AppMenuScreen extends StatelessWidget {
     final locationText = locParts.join(', ');
 
     final formattedPhone = phone.trim().isNotEmpty ? BanglaNumberConverter.toBangla(phone.trim()) : '';
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF0F4316),
+            Color(0xFF0B3310),
             Color(0xFF1B5E20),
             Color(0xFF2E7D32),
             Color(0xFF388E3C),
           ],
-          stops: [0.0, 0.35, 0.75, 1.0],
+          stops: [0.0, 0.30, 0.70, 1.0],
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.24), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1B5E20).withOpacity(0.38),
-            blurRadius: 20,
-            offset: const Offset(0, 9),
-            spreadRadius: -1,
+            color: const Color(0xFF1B5E20).withOpacity(0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+            spreadRadius: -2,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -433,7 +450,7 @@ class AppMenuScreen extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(34)),
         child: Stack(
           children: [
             // Ambient Decorative Glass Circles for Modern Depth
@@ -441,8 +458,8 @@ class AppMenuScreen extends StatelessWidget {
               top: -30,
               right: -30,
               child: Container(
-                width: 130,
-                height: 130,
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white.withOpacity(0.08),
@@ -450,195 +467,202 @@ class AppMenuScreen extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: -45,
-              left: -20,
+              bottom: -40,
+              left: -30,
               child: Container(
-                width: 120,
-                height: 120,
+                width: 130,
+                height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF81C784).withOpacity(0.09),
+                  color: const Color(0xFF81C784).withOpacity(0.10),
                 ),
               ),
             ),
 
-            // Card Content (Spacious, prominent and balanced)
+            // Header Content (Edge-to-edge, status bar padded, centered layout)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-              child: Row(
+              padding: EdgeInsets.only(top: topPadding + 14, bottom: 24, left: 20, right: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Prominent Avatar with Bright Glowing Ring & Soft Shadow
-                  Container(
-                    width: 78,
-                    height: 78,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFFE8F5E9),
-                          Color(0xFFA5D6A7),
-                          Color(0xFF69F0AE),
-                          Color(0xFF00E676),
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF69F0AE).withOpacity(0.42),
-                          blurRadius: 14,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(3.0),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      padding: const EdgeInsets.all(2.0),
-                      child: ClipOval(
-                        child: (photoUrl != null && photoUrl.trim().isNotEmpty)
-                            ? CachedNetworkImage(
-                                imageUrl: photoUrl.trim(),
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  color: const Color(0xFFE8F5E9),
-                                  child: const Center(
-                                    child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
-                              )
-                            : _buildFallbackAvatar(name),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 16),
-
-                  // Center Info Column (Name, Location, Mobile Number)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                  // Center Circle Avatar (Radius 44, Diameter 88) with Bright White Border & Edit Badge
+                  Center(
+                    child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        // User Name (Large, bold and clear)
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.2,
-                            height: 1.2,
+                        // Avatar Ring
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF69F0AE).withOpacity(0.40),
+                                blurRadius: 16,
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.18),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: (photoUrl != null && photoUrl.trim().isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: photoUrl.trim(),
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => Container(
+                                      color: const Color(0xFFE8F5E9),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
+                                  )
+                                : _buildFallbackAvatar(name),
                           ),
                         ),
 
-                        const SizedBox(height: 5),
-
-                        // District / Location
-                        if (locationText.isNotEmpty) ...[
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on_rounded, size: 14.5, color: Color(0xFFB9F6CA)),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  locationText,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    color: Colors.white.withOpacity(0.92),
-                                    fontWeight: FontWeight.w500,
+                        // Sleek Edit Button Badge on bottom-right of avatar
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Material(
+                            color: Colors.white,
+                            shape: const CircleBorder(),
+                            elevation: 4,
+                            shadowColor: Colors.black45,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                Navigator.of(context, rootNavigator: true).push(
+                                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                                );
+                              },
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF2E7D32),
+                                  border: Border.all(color: Colors.white, width: 2.2),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.edit_rounded,
+                                    color: Colors.white,
+                                    size: 15,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                        ],
-
-                        // Mobile Number
-                        if (formattedPhone.isNotEmpty) ...[
-                          Row(
-                            children: [
-                              const Icon(Icons.phone_rounded, size: 13.5, color: Color(0xFFB9F6CA)),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  formattedPhone,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    color: Colors.white.withOpacity(0.92),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else if (email.isNotEmpty) ...[
-                          Text(
-                            email,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: Colors.white.withOpacity(0.85),
                             ),
                           ),
-                        ],
+                        ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(height: 12),
 
-                  // Sleek "প্রোফাইল এডিট" Button (Navigates to Full-Screen Edit Page)
-                  Material(
-                    color: Colors.white.withOpacity(0.20),
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.38), width: 1.0),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.edit_outlined, size: 13, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text(
-                              'এডিট',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                  // User Name (Large, bold and clear white)
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 21.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
+                      height: 1.2,
                     ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // District, Upazila & Phone Chips
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      if (locationText.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.28), width: 0.8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.location_on_rounded, size: 13.5, color: Color(0xFFB9F6CA)),
+                              const SizedBox(width: 4),
+                              Text(
+                                locationText,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (formattedPhone.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.28), width: 0.8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.phone_rounded, size: 12.5, color: Color(0xFFB9F6CA)),
+                              const SizedBox(width: 4),
+                              Text(
+                                formattedPhone,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (email.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.28), width: 0.8),
+                          ),
+                          child: Text(
+                            email,
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withOpacity(0.95),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -646,6 +670,8 @@ class AppMenuScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
     );
   }
 

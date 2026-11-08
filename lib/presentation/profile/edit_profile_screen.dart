@@ -12,6 +12,7 @@ import '../../core/utils/bangla_number_converter.dart';
 import '../../core/utils/district_data.dart';
 import '../../data/services/firebase_service.dart';
 import '../../data/services/r2_storage_service.dart';
+import '../../core/widgets/app_unified_dialog.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/weather_provider.dart';
 
@@ -122,78 +123,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _showRateLimitDialog(int remainingDays) {
     final remainingDaysBangla = BanglaNumberConverter.toBangla(remainingDays.toString());
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      useRootNavigator: true,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: Colors.white,
-        elevation: 10,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3E0),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFB74D), width: 2),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.access_time_rounded,
-                    color: Color(0xFFE65100),
-                    size: 36,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'প্রোফাইল আপডেট সীমাবদ্ধতা',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFE65100),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর $remainingDaysBangla দিন অপেক্ষা করুন।',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF455A64),
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE65100),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'বুঝেছি',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    AppUnifiedDialog.showWarning(
+      context,
+      title: 'প্রোফাইল আপডেট সীমাবদ্ধতা',
+      message: 'আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর $remainingDaysBangla দিন অপেক্ষা করুন।',
+      buttonText: 'বুঝেছি',
     );
   }
 
@@ -315,51 +249,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _isSubmitting = true;
     });
 
-    // 5. Guaranteed Dismissal Architecture with captured dialog context
-    BuildContext? loadingDialogContext;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true,
-      builder: (dCtx) {
-        loadingDialogContext = dCtx;
-        return WillPopScope(
-          onWillPop: () async => false,
-          child: Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            backgroundColor: Colors.white,
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  SizedBox(width: 18),
-                  Expanded(
-                    child: Text(
-                      'প্রোফাইল আপডেট হচ্ছে....',
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1B5E20),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    // 5. Guaranteed Dismissal Architecture with AppUnifiedDialog
+    final loading = AppUnifiedDialog.showLoading(context, message: 'প্রোফাইল আপডেট হচ্ছে....');
 
     bool isSuccess = false;
 
@@ -415,12 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       isSuccess = false;
     } finally {
       // GUARANTEED 100% DISMISSAL of loading dialog
-      if (loadingDialogContext != null && loadingDialogContext!.mounted) {
-        Navigator.of(loadingDialogContext!, rootNavigator: true).pop();
-      } else if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-      loadingDialogContext = null;
+      loading.dismiss();
 
       // Always reset submitting state to instantly restore touch interactivity
       if (mounted) {
@@ -432,157 +318,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     // 6. Show Success or Non-blocking Failure Dialog
     if (isSuccess && mounted) {
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        useRootNavigator: true,
-        builder: (ctx) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.white,
-          elevation: 10,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF81C784), width: 2),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: Color(0xFF2E7D32),
-                      size: 40,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'সফল হয়েছে!',
-                  style: TextStyle(
-                    fontSize: 18.5,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B5E20),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'আপনার প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: Color(0xFF455A64),
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(ctx, rootNavigator: true).pop(); // Close dialog
-                      if (mounted) {
-                        Navigator.of(context).pop(); // Safely return to menu screen
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'ঠিক আছে',
-                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      await AppUnifiedDialog.showSuccess(
+        context,
+        title: 'সফল হয়েছে!',
+        message: 'আপনার প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!',
+        onConfirm: () {
+          if (mounted) {
+            Navigator.of(context).pop(); // Safely return to menu screen
+          }
+        },
       );
     } else if (mounted) {
-      await showDialog(
-        context: context,
-        barrierDismissible: true, // Non-blocking: touch outside or button dismisses
-        useRootNavigator: true,
-        builder: (ctx) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.white,
-          elevation: 10,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEBEE),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE57373), width: 2),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: Color(0xFFD32F2F),
-                      size: 40,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'আপডেট ব্যর্থ হয়েছে',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFD32F2F),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'প্রোফাইল আপডেট ব্যর্থ হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: Color(0xFF455A64),
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD32F2F),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'ঠিক আছে',
-                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      await AppUnifiedDialog.showError(
+        context,
+        title: 'আপডেট ব্যর্থ হয়েছে',
+        message: 'প্রোফাইল আপডেট ব্যর্থ হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।',
       );
     }
   }
@@ -609,8 +359,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _populateInitialData(null, user);
         }
 
-        return Scaffold(
-          backgroundColor: const Color(0xFFF7FAF7),
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.noScaling,
+          ),
+          child: Scaffold(
+            backgroundColor: const Color(0xFFF7FAF7),
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0.5,
@@ -769,6 +523,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _nameController,
                             style: _uniformInputStyle,
+                            strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: 'আপনার নাম লিখুন',
                               prefixIcon: Icons.person_outline_rounded,
@@ -790,6 +545,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             style: _uniformInputStyle,
+                            strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: '০১৭১২XXXXXX',
                               prefixIcon: Icons.phone_android_rounded,
@@ -811,6 +567,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             style: _uniformInputStyle,
+                            strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: 'example@gmail.com',
                               prefixIcon: Icons.email_outlined,
@@ -881,6 +638,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _villageController,
                             style: _uniformInputStyle,
+                            strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: 'উদা: চকগোবিন্দপুর, শেরপুর',
                               prefixIcon: Icons.home_outlined,
@@ -895,6 +653,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _occupationController,
                             style: _uniformInputStyle,
+                            strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: 'উদা: কৃষক / কৃষি উদ্যোক্তা',
                               prefixIcon: Icons.work_outline_rounded,
@@ -944,6 +703,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
+            ),
           ),
         );
       },
@@ -962,11 +722,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   static const TextStyle _uniformInputStyle = TextStyle(
-    fontSize: 15,
+    fontSize: 15.0,
     height: 1.3,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
     color: AppColors.textPrimary,
+    fontFeatures: [
+      ui.FontFeature.tabularFigures(),
+    ],
+  );
+
+  static const StrutStyle _uniformStrutStyle = StrutStyle(
+    fontSize: 15.0,
+    height: 1.3,
+    leading: 0,
+    forceStrutHeight: true,
   );
 
   InputDecoration _buildInputDecoration({
@@ -976,7 +746,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return InputDecoration(
       isDense: true,
       hintText: hint,
-      hintStyle: const TextStyle(fontSize: 13.5, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+      hintStyle: const TextStyle(
+        fontSize: 14.0,
+        height: 1.3,
+        color: AppColors.textMuted,
+        fontWeight: FontWeight.normal,
+      ),
       prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 20),
       filled: true,
       fillColor: const Color(0xFFF9FBF9),

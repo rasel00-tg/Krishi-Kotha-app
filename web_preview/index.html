@@ -1827,149 +1827,127 @@
     }
 
     /* Sticky Non-scrolling Profile Card Container & Emerald Glassmorphic Styling */
-    .menu-profile-sticky-wrap {
-      position: sticky;
-      top: -12px;
-      z-index: 25;
-      background: #F7FAF7;
-      padding-top: 20px;
-      padding-bottom: 12px;
-      margin-bottom: 12px;
+    #tab-menu {
+      padding: 0 !important;
     }
 
-    .menu-profile-card {
-      background: linear-gradient(135deg, #0F4316 0%, #1B5E20 35%, #2E7D32 75%, #388E3C 100%);
-      border: 1.2px solid rgba(255, 255, 255, 0.24);
-      border-radius: 24px;
-      padding: 20px 18px;
-      box-shadow: 0 9px 24px rgba(27, 94, 32, 0.38), 0 2px 6px rgba(0, 0, 0, 0.08);
+    .menu-curved-header {
+      width: 100%;
+      background: linear-gradient(135deg, #0B3310 0%, #1B5E20 30%, #2E7D32 70%, #388E3C 100%);
+      border-radius: 0 0 34px 34px;
+      padding: 26px 20px 24px 20px;
+      box-shadow: 0 8px 18px rgba(27, 94, 32, 0.35), 0 2px 6px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
       color: #fff;
-      width: 100%;
       box-sizing: border-box;
+      text-align: center;
     }
 
-    .menu-card-decor-1 {
+    .menu-curved-decor-1 {
       position: absolute;
       top: -30px;
       right: -30px;
-      width: 130px;
-      height: 130px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.08);
       pointer-events: none;
     }
 
-    .menu-card-decor-2 {
+    .menu-curved-decor-2 {
       position: absolute;
-      bottom: -45px;
-      left: -20px;
-      width: 120px;
-      height: 120px;
+      bottom: -40px;
+      left: -30px;
+      width: 130px;
+      height: 130px;
       border-radius: 50%;
-      background: rgba(129, 199, 132, 0.09);
+      background: rgba(129, 199, 132, 0.10);
       pointer-events: none;
     }
 
-    .menu-profile-inner {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    .menu-avatar-center-wrap {
       position: relative;
-      z-index: 2;
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 12px auto;
     }
 
-    .menu-avatar-glow-ring {
-      width: 78px;
-      height: 78px;
+    .menu-curved-avatar {
+      width: 88px;
+      height: 88px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #E8F5E9, #A5D6A7, #69F0AE, #00E676);
-      box-shadow: 0 0 16px rgba(105, 240, 174, 0.45);
-      padding: 3px;
+      border: 3.5px solid #FFFFFF;
+      box-shadow: 0 0 16px rgba(105, 240, 174, 0.40), 0 4px 10px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      background: #E8F5E9;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      flex-shrink: 0;
-      box-sizing: border-box;
-    }
-
-    .menu-avatar-badge {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
+      font-size: 34px;
       font-weight: 700;
       color: #1B5E20;
-      overflow: hidden;
     }
 
-    .menu-avatar-badge img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    .menu-avatar-badge-btn {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #2E7D32;
+      border: 2.2px solid #FFFFFF;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.15s ease;
     }
 
-    .menu-user-info {
-      flex: 1;
-      min-width: 0;
+    .menu-avatar-badge-btn:active {
+      transform: scale(0.92);
     }
 
-    .menu-user-info h3 {
-      font-size: 20px;
+    .menu-curved-name {
+      font-size: 21px;
       font-weight: 700;
-      color: #fff;
-      margin: 0 0 5px 0;
+      color: #FFFFFF;
+      margin: 0 0 8px 0;
+      line-height: 1.2;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       letter-spacing: 0.2px;
-      line-height: 1.2;
     }
 
-    .menu-user-meta-row {
+    .menu-chips-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 5px;
-      font-size: 13.5px;
-      color: rgba(255, 255, 255, 0.92);
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .menu-user-meta-row i {
-      color: #B9F6CA;
-      font-size: 13.5px;
-      flex-shrink: 0;
-    }
-
-    .menu-profile-edit-btn {
+    .menu-curved-chip {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(255, 255, 255, 0.20);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.38);
+      padding: 4.5px 10px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 0.8px solid rgba(255, 255, 255, 0.28);
       border-radius: 16px;
-      padding: 8px 12px;
       font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s;
+      font-weight: 600;
+      color: #FFFFFF;
     }
 
-    .menu-profile-edit-btn:hover {
-      background: rgba(255, 255, 255, 0.30);
-      transform: translateY(-1px);
+    .menu-curved-chip i {
+      color: #B9F6CA;
+      font-size: 13px;
     }
 
     .edit-profile-input {
@@ -2814,110 +2792,122 @@
       <div class="tab-pane" id="tab-menu" style="padding-top: 4px;">
         <!-- 1. AUTHORIZED FULL MENU VIEW (Shown only when logged in) -->
         <div id="webMenuAuthorizedContainer" style="display: none;">
-          <!-- Redesigned Sticky Emerald Glassmorphic Profile Card -->
-          <div class="menu-profile-sticky-wrap">
-            <div class="menu-profile-card" id="webMenuProfileCard">
-              <div class="menu-card-decor-1"></div>
-              <div class="menu-card-decor-2"></div>
-              <div class="menu-profile-inner">
-                <div class="menu-avatar-glow-ring">
-                  <div class="menu-avatar-badge" id="menuAvatarBadgeWrap">
-                    <span id="menuAvatarChar">ক</span>
-                    <img id="menuAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;"
-                      alt="User Avatar" />
-                  </div>
+          <!-- Modern Curved Profile Header Card (Edge-to-Edge) -->
+          <div class="menu-curved-header" id="webMenuProfileCard">
+            <div class="menu-curved-decor-1"></div>
+            <div class="menu-curved-decor-2"></div>
+            <div style="position: relative; z-index: 2;">
+              <!-- Center Circle Avatar (88px) with Bright White Border & Edit Badge -->
+              <div class="menu-avatar-center-wrap">
+                <div class="menu-curved-avatar" id="menuAvatarBadgeWrap">
+                  <span id="menuAvatarChar">ক</span>
+                  <img id="menuAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;"
+                    alt="User Avatar" />
                 </div>
-                <div class="menu-user-info">
-                  <h3 id="menuUserName">কৃষক ভাই</h3>
-                  <div class="menu-user-meta-row" id="menuUserLocRow" style="margin-bottom: 3px;">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <span id="menuUserLocation">লোকেশন লোড হচ্ছে...</span>
-                  </div>
-                  <div class="menu-user-meta-row" id="menuUserPhoneRow">
-                    <i class="fa-solid fa-phone"></i>
-                    <span id="menuUserPhone">০১৭XXXXXXXX</span>
-                  </div>
-                </div>
-                <button type="button" class="menu-profile-edit-btn" onclick="openEditProfilePage()">
-                  <i class="fa-regular fa-pen-to-square"></i>
-                  <span>এডিট</span>
+                <button type="button" class="menu-avatar-badge-btn" onclick="openEditProfilePage()" title="প্রোফাইল সম্পাদনা করুন">
+                  <i class="fa-solid fa-pen"></i>
                 </button>
               </div>
+
+              <!-- Large Bold White User Name -->
+              <h3 class="menu-curved-name" id="menuUserName">কৃষক ভাই</h3>
+
+              <!-- Frosted Glass Chips for Location & Phone -->
+              <div class="menu-chips-row">
+                <div class="menu-curved-chip" id="menuUserLocRow">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span id="menuUserLocation">লোকেশন লোড হচ্ছে...</span>
+                </div>
+                <div class="menu-curved-chip" id="menuUserPhoneRow">
+                  <i class="fa-solid fa-phone"></i>
+                  <span id="menuUserPhone">০১৭XXXXXXXX</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- [ব্যবহারকারী ও অ্যাকাউন্ট / প্রোফাইল অপশনটি প্রোফাইল কার্ডের সাথে সমন্বিত হওয়ায় এখান থেকে অপসারিত] -->
+          <!-- Menu Scroll Content with generous bottom padding -->
+          <div style="padding: 16px 16px 120px 16px;">
+            <!-- Category 1: ব্যবহারকারী ও একাউন্ট (USER & ACCOUNT) -->
+            <div class="menu-category-title">ব্যবহারকারী ও একাউন্ট</div>
+            <div class="menu-group-card">
+              <div class="menu-item-row" onclick="openEditProfilePage()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+                <div class="menu-item-text">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">প্রোফাইল সম্পাদনা (Edit Profile)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">নাম, ঠিকানা ও ব্যক্তিগত তথ্য আপডেট করুন</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
 
-          <!-- Category 2: পছন্দ ও সেটিংস (PREFERENCES) -->
-          <div class="menu-category-title">পছন্দ ও সেটিংস</div>
-          <div class="menu-group-card">
-            <div class="menu-item-row" onclick="openSettingsModal()">
-              <div class="menu-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
-                <i class="fa-solid fa-gear"></i>
+            <!-- Category 2: পছন্দ ও সেটিংস (PREFERENCES) -->
+            <div class="menu-category-title">পছন্দ ও সেটিংস</div>
+            <div class="menu-group-card">
+              <div class="menu-item-row" onclick="openSettingsModal()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
+                  <i class="fa-solid fa-gear"></i>
+                </div>
+                <div class="menu-item-text">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সেটিংস (Settings)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">অ্যাপ সেটিংস ও ভাষা</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
               </div>
-              <div class="menu-item-text">
-                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সেটিংস (Settings)</h4>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">অ্যাপ সেটিংস ও ভাষা</p>
-              </div>
-              <i class="fa-solid fa-chevron-right menu-arrow"></i>
             </div>
-          </div>
 
-          <!-- Category 3: সহায়তা ও নিয়মাবলী (SUPPORT & LEGAL) -->
-          <div class="menu-category-title">সহায়তা ও নিয়মাবলী</div>
-          <div class="menu-group-card">
-            <div class="menu-item-row" onclick="openHelplineModal()">
-              <div class="menu-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
-                <i class="fa-solid fa-headset"></i>
+            <!-- Category 3: সহায়তা ও নিয়মাবলী (SUPPORT & LEGAL) -->
+            <div class="menu-category-title">সহায়তা ও নিয়মাবলী</div>
+            <div class="menu-group-card">
+              <div class="menu-item-row" onclick="openHelplineModal()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
+                  <i class="fa-solid fa-headset"></i>
+                </div>
+                <div class="menu-item-text">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ (Support & Contact)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">কৃষি হেল্পলাইন ও সহায়তা</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
               </div>
-              <div class="menu-item-text">
-                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ (Support
-                  &
-                  Contact)</h4>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">কৃষি হেল্পলাইন ও সহায়তা</p>
+              <div class="menu-divider"></div>
+              <div class="menu-item-row" onclick="openPrivacyPage()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #FFF3E0; color: #E65100;">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="menu-item-text">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
               </div>
-              <i class="fa-solid fa-chevron-right menu-arrow"></i>
             </div>
-            <div class="menu-divider"></div>
-            <div class="menu-item-row" onclick="openPrivacyPage()">
-              <div class="menu-icon-wrap" style="background: #FFF3E0; color: #E65100;">
-                <i class="fa-solid fa-shield-halved"></i>
-              </div>
-              <div class="menu-item-text">
-                <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy
-                  Policy)</h4>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
-              </div>
-              <i class="fa-solid fa-chevron-right menu-arrow"></i>
-            </div>
-          </div>
 
-          <!-- Category 4: লগআউট বাটন (Sleek Logout Button) -->
-          <div class="menu-group-card" id="webMenuLogoutRow"
-            style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
-            <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
-              <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <!-- Category 4: লগআউট বাটন (Sleek Logout Button) -->
+            <div class="menu-group-card" id="webMenuLogoutRow"
+              style="margin-top: 18px; border: 1px solid #FFCDD2; background: #FFF5F5;">
+              <div class="menu-item-row" onclick="confirmWebLogout()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #FFEBEE; color: #D32F2F;">
+                  <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </div>
+                <div class="menu-item-text">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
+                  <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
               </div>
-              <div class="menu-item-text">
-                <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
-                <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন
-                </p>
-              </div>
-              <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
             </div>
-          </div>
 
-          <!-- App Branding Footer -->
-          <div style="text-align: center; margin: 32px 0 20px 0;">
-            <div
-              style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
-              <img src="pnglogo.png" style="width: 100%; height: 100%; object-fit: cover;" alt="কৃষি কথা লোগো">
+            <!-- App Branding Footer -->
+            <div style="text-align: center; margin: 32px 0 20px 0;">
+              <div
+                style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.12); background: white;">
+                <img src="pnglogo.png" style="width: 100%; height: 100%; object-fit: cover;" alt="কৃষি কথা লোগো">
+              </div>
+              <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary);">কৃষি কথা – Krishi Kotha</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ ১.০.০</p>
             </div>
-            <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary);">কৃষি কথা – Krishi Kotha</h4>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান •
-              সংস্করণ
-              ১.০.০</p>
           </div>
         </div>
 
