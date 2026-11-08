@@ -35,6 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _selectedUpazila = 'শেরপুর';
 
   bool _isInitialized = false;
+  bool _isSubmitting = false;
   Uint8List? _pickedImageBytes;
   String _pickedImageName = '';
   String _currentPhotoUrl = '';
@@ -123,6 +124,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final remainingDaysBangla = BanglaNumberConverter.toBangla(remainingDays.toString());
     showDialog(
       context: context,
+      barrierDismissible: true,
       useRootNavigator: true,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -263,14 +265,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _submitProfileUpdate(String activeUid) async {
+    // 1. Prevent multiple parallel submissions
+    if (_isSubmitting) return;
+
+    // 2. Validate form fields BEFORE showing any dialog
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // Dismiss keyboard
+    // Dismiss keyboard immediately
     FocusScope.of(context).unfocus();
 
-    // 1. Rate-Limit Check: 30 days (1 month)
+    // 3. Rate-Limit Check: 30 days (1 month) BEFORE showing any loading dialog
     if (FirebaseService.isFirebaseInitialized && activeUid.isNotEmpty) {
       try {
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(activeUid).get();
@@ -293,7 +299,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (mounted) {
                 _showRateLimitDialog(remainingDays > 0 ? remainingDays : 1);
               }
-              return; // Cancel update immediately!
+              return; // Cancel update immediately before loading dialog
             }
           }
         }
@@ -302,56 +308,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     }
 
-    // 2. Show Loading Dialog
-    bool isLoadingDialogShown = false;
+    if (!mounted) return;
+
+    // 4. Set submitting state to safely block duplicates without screen freezing
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    // 5. Guaranteed Dismissal Architecture with captured dialog context
+    BuildContext? loadingDialogContext;
     showDialog(
       context: context,
       barrierDismissible: false,
       useRootNavigator: true,
-      builder: (_) => WillPopScope(
-        onWillPop: () async => false,
-        child: Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          backgroundColor: Colors.white,
-          elevation: 10,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    color: AppColors.primary,
-                  ),
-                ),
-                SizedBox(width: 18),
-                Expanded(
-                  child: Text(
-                    'প্রোফাইল আপডেট হচ্ছে....',
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B5E20),
+      builder: (dCtx) {
+        loadingDialogContext = dCtx;
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            backgroundColor: Colors.white,
+            elevation: 10,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: AppColors.primary,
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(width: 18),
+                  Expanded(
+                    child: Text(
+                      'প্রোফাইল আপডেট হচ্ছে....',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1B5E20),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
-    isLoadingDialogShown = true;
 
     bool isSuccess = false;
 
     try {
       String? uploadedUrl;
 
-      // 1. Silent Background Cloudflare R2 Upload (Zero Orphan Safety - uploaded ONLY upon submit)
+      // Silent Background Cloudflare R2 Upload (Zero Orphan Safety - uploaded ONLY upon submit)
       if (_pickedImageBytes != null) {
         uploadedUrl = await R2StorageService.uploadProfileImage(
           bytes: _pickedImageBytes!,
@@ -359,7 +374,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       }
 
-      // 2. Prepare Firestore update map
+      // Prepare Firestore update map
       final Map<String, dynamic> updateData = {
         'name': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),
@@ -380,7 +395,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         updateData['image_url'] = uploadedUrl;
       }
 
-      // 3. Update Firestore Document
+      // Update Firestore Document
       if (FirebaseService.isFirebaseInitialized && activeUid.isNotEmpty) {
         await FirebaseFirestore.instance
             .collection('users')
@@ -388,7 +403,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             .set(updateData, SetOptions(merge: true));
       }
 
-      // 4. Update weather provider location
+      // Update weather provider location
       if (mounted) {
         final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
         weatherProvider.updateDistrict(_selectedDistrict);
@@ -399,14 +414,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       debugPrint("Profile update error: $err");
       isSuccess = false;
     } finally {
-      // Guaranteed dismiss of Loading Dialog via rootNavigator: true
-      if (isLoadingDialogShown && mounted) {
+      // GUARANTEED 100% DISMISSAL of loading dialog
+      if (loadingDialogContext != null && loadingDialogContext!.mounted) {
+        Navigator.of(loadingDialogContext!, rootNavigator: true).pop();
+      } else if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
-        isLoadingDialogShown = false;
+      }
+      loadingDialogContext = null;
+
+      // Always reset submitting state to instantly restore touch interactivity
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
       }
     }
 
-    // 3. Show Animated Success or Failure Dialog
+    // 6. Show Success or Non-blocking Failure Dialog
     if (isSuccess && mounted) {
       await showDialog(
         context: context,
@@ -463,7 +487,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx, rootNavigator: true).pop(); // Close dialog
-                      Navigator.of(context).pop(); // Return to menu screen
+                      if (mounted) {
+                        Navigator.of(context).pop(); // Safely return to menu screen
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2E7D32),
@@ -487,6 +513,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } else if (mounted) {
       await showDialog(
         context: context,
+        barrierDismissible: true, // Non-blocking: touch outside or button dismisses
         useRootNavigator: true,
         builder: (ctx) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -559,7 +586,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
     }
   }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -590,7 +616,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             elevation: 0.5,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 19),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                if (!_isSubmitting) {
+                  Navigator.pop(context);
+                }
+              },
               tooltip: 'ফিরে যান',
             ),
             title: const Text(
@@ -881,11 +911,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton.icon(
-                        onPressed: () => _submitProfileUpdate(activeUid),
-                        icon: const Icon(Icons.cloud_upload_outlined, size: 20),
-                        label: const Text(
-                          'আপডেট সাবমিট করুন',
-                          style: TextStyle(
+                        onPressed: _isSubmitting ? null : () => _submitProfileUpdate(activeUid),
+                        icon: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+                              )
+                            : const Icon(Icons.cloud_upload_outlined, size: 20),
+                        label: Text(
+                          _isSubmitting ? 'আপডেট হচ্ছে....' : 'আপডেট সাবমিট করুন',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.2,

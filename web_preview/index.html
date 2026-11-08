@@ -2823,7 +2823,8 @@
                 <div class="menu-avatar-glow-ring">
                   <div class="menu-avatar-badge" id="menuAvatarBadgeWrap">
                     <span id="menuAvatarChar">ক</span>
-                    <img id="menuAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+                    <img id="menuAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;"
+                      alt="User Avatar" />
                   </div>
                 </div>
                 <div class="menu-user-info">
@@ -3260,14 +3261,15 @@
       <div
         style="background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <button type="button" class="icon-btn" onclick="closeEditProfilePage()" style="color: var(--text-primary); background: #F1F3F4;"
-            title="ফিরে যান">
+          <button type="button" class="icon-btn" onclick="closeEditProfilePage()"
+            style="color: var(--text-primary); background: #F1F3F4;" title="ফিরে যান">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
           <h2 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0;">প্রোফাইল এডিট</h2>
         </div>
         <span
-          style="font-size: 11.5px; background: #E8F5E9; color: var(--primary-dark); font-weight: 700; padding: 4px 10px; border-radius: 12px;">ব্যক্তিগত তথ্য</span>
+          style="font-size: 11.5px; background: #E8F5E9; color: var(--primary-dark); font-weight: 700; padding: 4px 10px; border-radius: 12px;">ব্যক্তিগত
+          তথ্য</span>
       </div>
 
       <!-- Scrollable Edit Form Container (physics: BouncingScrollPhysics, eliminates overflow) -->
@@ -3280,14 +3282,16 @@
               <div id="editProfileAvatarWrap"
                 style="width: 88px; height: 88px; border-radius: 50%; background: #E8F5E9; border: 3px solid #81C784; box-shadow: 0 4px 16px rgba(46,125,50,0.18); display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 0 auto;">
                 <span id="editProfileAvatarChar" style="font-size: 36px; font-weight: 800; color: #1B5E20;">ক</span>
-                <img id="editProfileAvatarImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Profile Preview" />
+                <img id="editProfileAvatarImg" src=""
+                  style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Profile Preview" />
               </div>
               <button type="button" onclick="document.getElementById('editProfileFileInput').click()"
                 style="position: absolute; bottom: 0; right: -2px; width: 32px; height: 32px; border-radius: 50%; background: #2E7D32; color: white; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"
                 title="ছবি পরিবর্তন করুন">
                 <i class="fa-solid fa-camera" style="font-size: 13px;"></i>
               </button>
-              <input type="file" id="editProfileFileInput" accept="image/*" onchange="handleProfilePhotoSelect(event)" style="display: none;" />
+              <input type="file" id="editProfileFileInput" accept="image/*" onchange="handleProfilePhotoSelect(event)"
+                style="display: none;" />
             </div>
             <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 8px; font-weight: 500;">
               ছবি পরিবর্তন করতে ক্যামেরা আইকনে ট্যাপ করুন
@@ -3297,18 +3301,21 @@
           <!-- Form Fields Container -->
           <form id="editProfileForm" onsubmit="event.preventDefault(); submitProfileUpdate();"
             style="background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 20px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px;">
-            
+
             <!-- Full Name -->
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-regular fa-user" style="color: var(--primary); margin-right: 4px;"></i> আপনার পুরো নাম *
               </label>
-              <input type="text" id="editProfileName" class="edit-profile-input" required placeholder="আপনার নাম লিখুন" />
+              <input type="text" id="editProfileName" class="edit-profile-input" required
+                placeholder="আপনার নাম লিখুন" />
             </div>
 
             <!-- Phone Number -->
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> ফোন নম্বর *
               </label>
               <input type="tel" id="editProfilePhone" class="edit-profile-input" required placeholder="০১XXXXXXXXX" />
@@ -3316,7 +3323,8 @@
 
             <!-- Email (Optional) -->
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> ইমেইল (ঐচ্ছিক)
               </label>
               <input type="email" id="editProfileEmail" class="edit-profile-input" placeholder="example@email.com" />
@@ -3325,14 +3333,17 @@
             <!-- District & Upazila -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                   <i class="fa-solid fa-location-dot" style="color: var(--primary); margin-right: 4px;"></i> জেলা *
                 </label>
-                <select id="editProfileDistrict" class="edit-profile-input" onchange="onEditProfileDistrictChange(this.value)" required style="cursor: pointer;">
+                <select id="editProfileDistrict" class="edit-profile-input"
+                  onchange="onEditProfileDistrictChange(this.value)" required style="cursor: pointer;">
                 </select>
               </div>
               <div>
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                   <i class="fa-solid fa-map-pin" style="color: var(--primary); margin-right: 4px;"></i> উপজেলা *
                 </label>
                 <select id="editProfileUpazila" class="edit-profile-input" required style="cursor: pointer;">
@@ -3342,15 +3353,19 @@
 
             <!-- Village / Union / Post Office -->
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                <i class="fa-solid fa-house" style="color: var(--primary); margin-right: 4px;"></i> গ্রাম / ইউনিয়ন / ডাকঘর
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                <i class="fa-solid fa-house" style="color: var(--primary); margin-right: 4px;"></i> গ্রাম / ইউনিয়ন /
+                ডাকঘর
               </label>
-              <input type="text" id="editProfileVillage" class="edit-profile-input" placeholder="গ্রাম বা ইউনিয়নের নাম লিখুন" />
+              <input type="text" id="editProfileVillage" class="edit-profile-input"
+                placeholder="গ্রাম বা ইউনিয়নের নাম লিখুন" />
             </div>
 
             <!-- Occupation -->
             <div>
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+              <label
+                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
                 <i class="fa-solid fa-briefcase" style="color: var(--primary); margin-right: 4px;"></i> পেশা
               </label>
               <select id="editProfileOccupation" class="edit-profile-input" style="cursor: pointer;">
@@ -3376,11 +3391,13 @@
 
     <!-- MODAL: PROFILE UPDATE LOADING -->
     <div class="modal-overlay" id="editProfileLoadingModal"
-      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center;">
+      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
       <div class="bottom-sheet"
         style="max-width: 380px; border-radius: 18px; padding: 24px 22px; background: white; text-align: center; margin: auto;">
         <div style="display: flex; align-items: center; justify-content: center; gap: 14px;">
-          <div class="spinner" style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+          <div class="spinner"
+            style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; animation: spin 0.8s linear infinite;">
+          </div>
           <div style="font-size: 15px; font-weight: 700; color: #1B5E20;">তথ্য আপডেট করা হচ্ছে....</div>
         </div>
       </div>
@@ -3388,7 +3405,7 @@
 
     <!-- MODAL: PROFILE UPDATE SUCCESS -->
     <div class="modal-overlay" id="editProfileSuccessModal"
-      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center;">
+      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
       <div class="bottom-sheet"
         style="max-width: 400px; border-radius: 20px; padding: 26px 22px; background: white; text-align: center; margin: auto;">
         <div
@@ -3408,7 +3425,7 @@
 
     <!-- MODAL: PROFILE UPDATE FAILURE -->
     <div class="modal-overlay" id="editProfileFailureModal"
-      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center;">
+      style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
       <div class="bottom-sheet"
         style="max-width: 400px; border-radius: 20px; padding: 26px 22px; background: white; text-align: center; margin: auto;">
         <div
@@ -3428,15 +3445,17 @@
 
     <!-- MODAL: PROFILE UPDATE RATE LIMIT (1 Month / 30 Days) -->
     <div class="modal-overlay" id="editProfileRateLimitModal"
-      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center;">
+      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
       <div class="bottom-sheet"
         style="max-width: 400px; border-radius: 20px; padding: 26px 22px; background: white; text-align: center; margin: auto;">
         <div
           style="width: 64px; height: 64px; border-radius: 50%; background: #FFF3E0; border: 2px solid #FFB74D; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 16px auto;">
           <i class="fa-regular fa-clock"></i>
         </div>
-        <div style="font-size: 18px; font-weight: 800; color: #E65100; margin-bottom: 8px;">প্রোফাইল আপডেট সীমাবদ্ধতা</div>
-        <div id="editProfileRateLimitMsg" style="font-size: 13.5px; color: #455A64; line-height: 1.45; margin-bottom: 22px;">
+        <div style="font-size: 18px; font-weight: 800; color: #E65100; margin-bottom: 8px;">প্রোফাইল আপডেট সীমাবদ্ধতা
+        </div>
+        <div id="editProfileRateLimitMsg"
+          style="font-size: 13.5px; color: #455A64; line-height: 1.45; margin-bottom: 22px;">
           আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর ৩০ দিন অপেক্ষা করুন।
         </div>
         <button type="button" onclick="closeModal('editProfileRateLimitModal')"
@@ -3448,25 +3467,32 @@
 
     <!-- MODAL: 1:1 SQUARE IMAGE CROPPER -->
     <div class="modal-overlay" id="profileSquareCropModal"
-      style="z-index: 100030; backdrop-filter: blur(8px); background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 16px;">
+      style="z-index: 100030; backdrop-filter: blur(8px); background: rgba(0,0,0,0.85); display: none; pointer-events: none; align-items: center; justify-content: center; padding: 16px;">
       <div
         style="max-width: 400px; width: 100%; background: #1E1E1E; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
         <!-- Header -->
-        <div style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; background: #181818;">
+        <div
+          style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; background: #181818;">
           <span style="font-size: 15px; font-weight: 700; color: #fff;">ছবি ক্রপ করুন (১:১)</span>
-          <button type="button" onclick="closeProfileSquareCropModal()" style="background: none; border: none; color: #aaa; font-size: 22px; cursor: pointer;">&times;</button>
+          <button type="button" onclick="closeProfileSquareCropModal()"
+            style="background: none; border: none; color: #aaa; font-size: 22px; cursor: pointer;">&times;</button>
         </div>
         <!-- Crop Canvas Container -->
         <div style="padding: 18px; text-align: center; background: #121212;">
-          <div style="font-size: 12px; color: #aaa; margin-bottom: 12px;">ছবিটি ড্র্যাগ ও জুম করে বৃত্তাকার ফ্রেমে সাজান</div>
-          <div id="profileCropCanvasWrap" style="width: 270px; height: 270px; margin: 0 auto; border-radius: 16px; border: 2.2px solid #00E676; position: relative; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,230,118,0.2);">
+          <div style="font-size: 12px; color: #aaa; margin-bottom: 12px;">ছবিটি ড্র্যাগ ও জুম করে বৃত্তাকার ফ্রেমে সাজান
+          </div>
+          <div id="profileCropCanvasWrap"
+            style="width: 270px; height: 270px; margin: 0 auto; border-radius: 16px; border: 2.2px solid #00E676; position: relative; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,230,118,0.2);">
             <canvas id="profileCropCanvas" width="270" height="270" style="cursor: move; display: block;"></canvas>
-            <div style="position: absolute; inset: 0; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.7); pointer-events: none;"></div>
+            <div
+              style="position: absolute; inset: 0; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.7); pointer-events: none;">
+            </div>
           </div>
           <!-- Zoom Slider -->
           <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
             <i class="fa-solid fa-magnifying-glass-minus" style="color: #aaa; font-size: 13px;"></i>
-            <input type="range" id="profileCropZoom" min="1" max="4" step="0.05" value="1" oninput="onProfileCropZoom(this.value)" style="width: 170px; accent-color: #00E676; cursor: pointer;">
+            <input type="range" id="profileCropZoom" min="1" max="4" step="0.05" value="1"
+              oninput="onProfileCropZoom(this.value)" style="width: 170px; accent-color: #00E676; cursor: pointer;">
             <i class="fa-solid fa-magnifying-glass-plus" style="color: #aaa; font-size: 13px;"></i>
           </div>
         </div>
@@ -11028,7 +11054,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       let u = {};
       const cached = localStorage.getItem('krishi_kotha_cached_user');
       if (cached) {
-        try { u = JSON.parse(cached); } catch (_) {}
+        try { u = JSON.parse(cached); } catch (_) { }
       }
 
       const name = (u.name || '').trim();
@@ -11103,9 +11129,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
           profileSquareCropperState.rawImg = img;
           profileSquareCropperState.rawFile = file;
           openProfileSquareCropModal();
@@ -11116,15 +11142,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openProfileSquareCropModal() {
-      const modal = document.getElementById('profileSquareCropModal');
-      if (!modal) return;
-      modal.style.display = 'flex';
+      openModal('profileSquareCropModal');
       initProfileSquareCropCanvas();
     }
 
     function closeProfileSquareCropModal() {
-      const modal = document.getElementById('profileSquareCropModal');
-      if (modal) modal.style.display = 'none';
+      closeModal('profileSquareCropModal');
       const fileInput = document.getElementById('editProfileFileInput');
       if (fileInput) fileInput.value = '';
     }
@@ -11239,7 +11262,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         img.height * curScale
       );
 
-      outCanvas.toBlob(function(blob) {
+      outCanvas.toBlob(function (blob) {
         if (blob) {
           pendingProfileImageBlob = blob;
           pendingProfileImageDataUrl = outCanvas.toDataURL('image/jpeg', 0.85);
@@ -11258,14 +11281,18 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       closeProfileSquareCropModal();
     }
 
+    let isProfileSubmitting = false;
+
     async function submitProfileUpdate() {
+      if (isProfileSubmitting) return;
+
       let activeUid = '';
       const cached = localStorage.getItem('krishi_kotha_cached_user');
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.uid) activeUid = parsed.uid;
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!activeUid && window.firebase && firebase.auth && firebase.auth().currentUser) {
         activeUid = firebase.auth().currentUser.uid;
@@ -11288,7 +11315,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // 1. Rate Limit Check: 30 days (1 month)
+      // 1. Rate Limit Check: 30 days (1 month) BEFORE showing any loading dialog
       if (activeUid && window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
         try {
           const userDoc = await db.collection('users').doc(activeUid).get();
@@ -11314,9 +11341,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 if (msgEl) {
                   msgEl.innerText = `আপনি প্রতি ১ মাসে একবার প্রোফাইল আপডেট করতে পারবেন। পরবর্তী আপডেটের জন্য আর ${remDaysBangla} দিন অপেক্ষা করুন।`;
                 }
-                const rlModal = document.getElementById('editProfileRateLimitModal');
-                if (rlModal) rlModal.style.display = 'flex';
-                return; // Immediately cancel update process!
+                openModal('editProfileRateLimitModal');
+                return; // Immediately cancel update process without screen locking!
               }
             }
           }
@@ -11325,9 +11351,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
       }
 
-      // 2. Show Loading Modal
-      const loadModal = document.getElementById('editProfileLoadingModal');
-      if (loadModal) loadModal.style.display = 'flex';
+      // 2. Set submitting state & show Loading Modal with guaranteed pointer events
+      isProfileSubmitting = true;
+      openModal('editProfileLoadingModal');
 
       let isSuccess = false;
 
@@ -11389,7 +11415,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         // 4. Update Local Storage & UI
         let updatedUser = {};
         if (cached) {
-          try { updatedUser = JSON.parse(cached); } catch (_) {}
+          try { updatedUser = JSON.parse(cached); } catch (_) { }
         }
         updatedUser = {
           ...updatedUser,
@@ -11404,24 +11430,22 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         console.error('Profile update error:', err);
         isSuccess = false;
       } finally {
-        // GUARANTEED: close loading dialog
-        if (loadModal) loadModal.style.display = 'none';
+        // 100% GUARANTEED DISMISSAL: close loading modal and reset submission flag
+        closeModal('editProfileLoadingModal');
+        isProfileSubmitting = false;
       }
 
       // 5. Show Success or Failure Modal
       if (isSuccess) {
-        const successModal = document.getElementById('editProfileSuccessModal');
-        if (successModal) successModal.style.display = 'flex';
+        openModal('editProfileSuccessModal');
       } else {
-        const failModal = document.getElementById('editProfileFailureModal');
-        if (failModal) failModal.style.display = 'flex';
+        openModal('editProfileFailureModal');
       }
     }
-    }
+
 
     function closeEditProfileSuccessModal() {
-      const successModal = document.getElementById('editProfileSuccessModal');
-      if (successModal) successModal.style.display = 'none';
+      closeModal('editProfileSuccessModal');
       closeEditProfilePage();
     }
 
@@ -11449,7 +11473,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const photo = (u.photo_url || u.photoUrl || u.image_url || '').trim();
 
       if (uName) uName.innerText = name;
-      
+
       const locParts = [];
       if (village) locParts.push(village);
       if (upazila) locParts.push(upazila);
