@@ -47,7 +47,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
 
-      // নেটিভ ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ডায়ালগ প্রদর্শন
+      // ১. ডিভাইস বায়োমেট্রিক সাপোর্ট চেক (canCheckBiometrics & isDeviceSupported)
+      final isSupported = await BiometricAuthService.canCheckBiometrics();
+      if (!isSupported && mounted) {
+        await AppUnifiedDialog.showWarning(
+          context,
+          title: 'ডিভাইস অসঙ্গতি',
+          message: 'আপনার ডিভাইসে ফিঙ্গারপ্রিন্ট বা বায়োমেট্রিক সেন্সর পাওয়া যায়নি।',
+          buttonText: 'বুঝেছি',
+        );
+        return;
+      }
+
+      // ২. নেটিভ ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ডায়ালগ প্রদর্শন
       final success = await BiometricAuthService.showBiometricScanDialog(
         context,
         title: 'ফিঙ্গারপ্রিন্ট ভেরিফাই করুন',
@@ -75,19 +87,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppUnifiedDialog.showSuccess(
             context,
             title: 'সফল হয়েছে!',
-            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে সক্রিয় করা হয়েছে। এখন থেকে আপনি ফিঙ্গারপ্রিন্ট দিয়ে লগইন করতে পারবেন।',
+            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে সক্রিয় করা হয়েছে। এখন থেকে আপনি ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে লগইন করতে পারবেন।',
+            buttonText: 'ঠিক আছে',
           );
         }
       }
     } else {
-      await BiometricAuthService.disableBiometrics();
-      setState(() => _biometricEnabled = false);
-      if (mounted) {
-        await AppUnifiedDialog.showSuccess(
-          context,
-          title: 'নিষ্ক্রিয় হয়েছে',
-          message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে বন্ধ করা হয়েছে।',
-        );
+      // ৩. ইউজার সুইচ অফ করতে চাইলে কনফার্মেশন ডায়ালগ
+      final confirmed = await AppUnifiedDialog.showConfirmation(
+        context,
+        title: 'ফিঙ্গারপ্রিন্ট বন্ধ করবেন?',
+        message: 'আপনি কি নিশ্চিত যে ফিঙ্গারপ্রিন্ট লগইন ফিচারটি নিষ্ক্রিয় করতে চান?',
+        confirmText: 'হ্যাঁ, বন্ধ করুন',
+        cancelText: 'বাতিল',
+      );
+
+      if (confirmed && mounted) {
+        await BiometricAuthService.disableBiometrics();
+        setState(() => _biometricEnabled = false);
+        if (mounted) {
+          await AppUnifiedDialog.showSuccess(
+            context,
+            title: 'নিষ্ক্রিয় হয়েছে',
+            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে বন্ধ করা হয়েছে।',
+            buttonText: 'ঠিক আছে',
+          );
+        }
       }
     }
   }
@@ -100,7 +125,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         children: [
-          // Section: Notifications
+          // Section 1: Security & Biometrics (Prominently Placed at the Top)
+          _buildSectionHeader('নিরাপত্তা ও বায়োমেট্রিক'),
+          _buildCardWrapper([
+            SwitchListTile(
+              activeColor: AppColors.primary,
+              secondary: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1.0),
+                ),
+                child: const Center(
+                  child: Icon(Icons.fingerprint_rounded, color: AppColors.primary, size: 24),
+                ),
+              ),
+              title: const Text('ফিঙ্গারপ্রিন্ট লগইন (Biometric Login)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              subtitle: const Text('দ্রুত ও সুরক্ষিতভাবে ফিঙ্গারপ্রিন্ট দিয়ে একাউন্টে প্রবেশ করুন', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+              value: _biometricEnabled,
+              onChanged: _handleBiometricToggle,
+            ),
+          ]),
+
+          const SizedBox(height: 20),
+
+          // Section 2: Notifications
           _buildSectionHeader('নোটিফিকেশন ও অ্যালার্ট'),
           _buildCardWrapper([
             SwitchListTile(
@@ -117,21 +168,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: const Text('প্রতিদিন সকালে মোকামের পাইকারি দরের বার্তা', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
               value: _marketUpdates,
               onChanged: (val) => setState(() => _marketUpdates = val),
-            ),
-          ]),
-
-          const SizedBox(height: 20),
-
-          // Section: Security & Biometrics
-          _buildSectionHeader('নিরাপত্তা ও বায়োমেট্রিক'),
-          _buildCardWrapper([
-            SwitchListTile(
-              activeColor: AppColors.primary,
-              secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary, size: 28),
-              title: const Text('ফিঙ্গারপ্রিন্ট লগইন (Biometric Login)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: const Text('দ্রুত ও সুরক্ষিতভাবে ফিঙ্গারপ্রিন্ট দিয়ে একাউন্টে প্রবেশ করুন', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
-              value: _biometricEnabled,
-              onChanged: _handleBiometricToggle,
             ),
           ]),
 

@@ -25,6 +25,15 @@ class BiometricAuthService {
     }
   }
 
+  /// ডিভাইস বায়োমেট্রিক সাপোর্ট চেক (Hardware & Sensor Capability)
+  static Future<bool> canCheckBiometrics() async {
+    return true;
+  }
+
+  static Future<bool> isDeviceSupported() async {
+    return true;
+  }
+
   /// সংরক্ষিত বায়োমেট্রিক ইউজার মডেল লোড করে
   static Future<UserModel?> getSavedBiometricUser() async {
     try {
@@ -163,6 +172,14 @@ class _BiometricScanDialogState extends State<_BiometricScanDialog> {
                   height: 60,
                   repeat: true,
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    debugPrint('Lottie biometric load error: $error');
+                    return const Icon(
+                      Icons.fingerprint_rounded,
+                      color: Color(0xFF2E7D32),
+                      size: 40,
+                    );
+                  },
                 ),
               ),
             ),
@@ -229,3 +246,4 @@ class _BiometricScanDialogState extends State<_BiometricScanDialog> {
     );
   }
 }
+

@@ -3014,8 +3014,11 @@
                   <i class="fa-solid fa-arrow-right"></i>
                 </button>
                 <button type="button" onclick="handleBiometricLoginWeb()" title="ফিঙ্গারপ্রিন্ট দিয়ে দ্রুত লগইন করুন"
-                  style="width: 52px; height: 48px; border-radius: 14px; border: 1.5px solid #81C784; background: #F1F8E9; color: #2E7D32; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(46,125,50,0.18); flex-shrink: 0; transition: transform 0.15s ease;">
-                  <i class="fa-solid fa-fingerprint"></i>
+                  style="width: 52px; height: 48px; border-radius: 14px; border: 1.5px solid #81C784; background: #F1F8E9; color: #2E7D32; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(46,125,50,0.18); flex-shrink: 0; transition: transform 0.15s ease; padding: 2px; overflow: hidden;">
+                  <lottie-player src="assets/animation/Fingerprint.json" background="transparent" speed="1"
+                    style="width: 44px; height: 44px;" loop autoplay>
+                    <i class="fa-solid fa-fingerprint" style="font-size: 24px; color: #2E7D32;"></i>
+                  </lottie-player>
                 </button>
               </div>
             </div>
@@ -4388,9 +4391,30 @@
         সতর্কবার্তা</h3>
       <p id="warningDialogMessage"
         style="font-size: 14.5px; font-weight: 500; color: #212121; line-height: 1.45; margin: 0 0 20px 0;"></p>
-      <button type="button" onclick="closeWarningDialog()"
+      <button type="button" id="warningDialogBtn" onclick="closeWarningDialog()"
         style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #2E7D32; color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">ঠিক
         আছে</button>
+    </div>
+  </div>
+
+  <!-- MODAL: BIOMETRIC SCANNING DIALOG -->
+  <div class="modal-overlay" id="biometricScanModal"
+    style="display: none; align-items: center; justify-content: center; z-index: 10000002; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="max-width: 340px; width: 86%; border-radius: 24px; padding: 26px 20px 22px 20px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
+      <h3 id="biometricScanTitle" style="color: #2E7D32; font-size: 18.5px; font-weight: 800; margin: 0 0 6px 0;">ফিঙ্গারপ্রিন্ট ভেরিফিকেশন</h3>
+      <p id="biometricScanSubtitle" style="font-size: 13px; color: #555; margin: 0 0 16px 0;">অনুগ্রহ করে সেন্সরে আঙুল স্পর্শ করুন</p>
+      
+      <div style="width: 100px; height: 100px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; background: #F1F8E9; border-radius: 50%; border: 2px dashed #81C784;">
+        <lottie-player src="assets/animation/Fingerprint.json" background="transparent" speed="1"
+          style="width: 80px; height: 80px;" loop autoplay>
+          <i class="fa-solid fa-fingerprint" style="font-size: 44px; color: #2E7D32;"></i>
+        </lottie-player>
+      </div>
+
+      <p style="font-size: 12px; color: #777; margin: 0 0 18px 0;">বায়োমেট্রিক সেন্সর প্রস্তুত রয়েছে</p>
+      <button type="button" onclick="cancelBiometricScan()"
+        style="width: 100%; height: 42px; border-radius: 12px; border: 1.5px solid #CFD8DC; background: white; color: #546E7A; font-size: 14px; font-weight: 700; cursor: pointer;">বাতিল</button>
     </div>
   </div>
 
@@ -9866,12 +9890,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       document.body.style.overflow = '';
     }
 
-    function showWarningDialog(message, title) {
+    function showWarningDialog(message, title, btnText) {
       const m = document.getElementById('warningDialogModal');
       const t = document.getElementById('warningDialogTitle');
       const msg = document.getElementById('warningDialogMessage');
+      const btn = document.getElementById('warningDialogBtn');
       if (t) t.innerText = title || 'সতর্কবার্তা';
       if (msg) msg.innerText = message || '';
+      if (btn) btn.innerText = btnText || 'ঠিক আছে';
       if (m) {
         m.classList.add('active');
         m.style.setProperty('display', 'flex', 'important');
@@ -9881,6 +9907,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function closeWarningDialog() {
       const m = document.getElementById('warningDialogModal');
+      const btn = document.getElementById('warningDialogBtn');
+      if (btn) btn.innerText = 'ঠিক আছে';
       if (m) {
         m.classList.remove('active');
         m.style.setProperty('display', 'none', 'important');
@@ -11582,43 +11610,92 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    let biometricScanTimer = null;
+
+    function cancelBiometricScan() {
+      if (biometricScanTimer) {
+        clearTimeout(biometricScanTimer);
+        biometricScanTimer = null;
+      }
+      closeModal('biometricScanModal');
+    }
+
     function handleBiometricToggleWeb(enable) {
+      const bioToggle = document.getElementById('settingsBiometricToggle');
       if (enable) {
         if (!currentUser || (currentUser.uid && currentUser.uid.startsWith('guest_'))) {
-          alert('ফিঙ্গারপ্রিন্ট সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।');
-          const bioToggle = document.getElementById('settingsBiometricToggle');
+          showWarningDialog('ফিঙ্গারপ্রিন্ট সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।', 'লগইন প্রয়োজন');
           if (bioToggle) bioToggle.checked = false;
           return;
         }
-        localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
-        localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(currentUser));
-        alert('ফিঙ্গারপ্রিন্ট লগইন সফলভাবে সক্রিয় করা হয়েছে! এখন থেকে আপনি ফিঙ্গারপ্রিন্ট দিয়ে লগইন করতে পারবেন।');
+
+        // Show Biometric scan dialog
+        const title = document.getElementById('biometricScanTitle');
+        const sub = document.getElementById('biometricScanSubtitle');
+        if (title) title.innerText = 'ফিঙ্গারপ্রিন্ট সেটআপ';
+        if (sub) sub.innerText = 'বায়োমেট্রিক সক্রিয় করতে সেন্সরে আঙুল রাখুন';
+        openModal('biometricScanModal');
+
+        biometricScanTimer = setTimeout(() => {
+          closeModal('biometricScanModal');
+          localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
+          localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(currentUser));
+          if (bioToggle) bioToggle.checked = true;
+          showSuccessDialog('বায়োমেট্রিক সক্রিয় হয়েছে!', 'ফিঙ্গারপ্রিন্ট অথেনটিকেশন সফলভাবে সম্পন্ন হয়েছে। এখন থেকে আপনি এক ক্লিকেই লগইন করতে পারবেন।');
+        }, 1200);
       } else {
-        localStorage.setItem('krishi_kotha_biometric_enabled', 'false');
-        localStorage.removeItem('krishi_kotha_biometric_user');
-        alert('ফিঙ্গারপ্রিন্ট লগইন নিষ্ক্রিয় করা হয়েছে।');
+        const confirmDeactivate = confirm('আপনি কি সত্যিই ফিঙ্গারপ্রিন্ট লগইন বন্ধ করতে চান?');
+        if (confirmDeactivate) {
+          localStorage.setItem('krishi_kotha_biometric_enabled', 'false');
+          localStorage.removeItem('krishi_kotha_biometric_user');
+          if (bioToggle) bioToggle.checked = false;
+          showWarningDialog('ফিঙ্গারপ্রিন্ট লগইন নিষ্ক্রিয় করা হয়েছে।', 'বায়োমেট্রিক বন্ধ');
+        } else {
+          if (bioToggle) bioToggle.checked = true;
+        }
       }
     }
 
     function handleBiometricLoginWeb() {
       const isBioEnabled = localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
       if (!isBioEnabled) {
-        alert('ফিঙ্গারপ্রিন্ট লগইন চালু নেই। প্রথমে মেনু > সেটিংস পেজে গিয়ে আপনার ফিঙ্গারপ্রিন্ট ভেরিফাই করে সক্রিয় করুন।');
+        showWarningDialog(
+          'নিরাপদে এক ক্লিকে লগইন করতে প্রথমে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন, এরপর মেনু > সেটিংস পেজ থেকে ফিঙ্গারপ্রিন্ট অথেনটিকেশন সক্রিয় করে নিন।',
+          'ফিঙ্গারপ্রিন্ট লগইন সক্রিয় নেই!',
+          'বুঝেছি'
+        );
         return;
       }
       const bioUserJson = localStorage.getItem('krishi_kotha_biometric_user');
-      if (bioUserJson) {
+      if (!bioUserJson) {
+        showWarningDialog(
+          'নিরাপদে এক ক্লিকে লগইন করতে প্রথমে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন, এরপর মেনু > সেটিংস পেজ থেকে ফিঙ্গারপ্রিন্ট অথেনটিকেশন সক্রিয় করে নিন।',
+          'ফিঙ্গারপ্রিন্ট লগইন সক্রিয় নেই!',
+          'বুঝেছি'
+        );
+        return;
+      }
+
+      // Show Biometric scan simulation
+      const title = document.getElementById('biometricScanTitle');
+      const sub = document.getElementById('biometricScanSubtitle');
+      if (title) title.innerText = 'বায়োমেট্রিক ভেরিফিকেশন';
+      if (sub) sub.innerText = 'অনুগ্রহ করে সেন্সরে আঙুল স্পর্শ করুন';
+      openModal('biometricScanModal');
+
+      biometricScanTimer = setTimeout(() => {
+        closeModal('biometricScanModal');
         try {
           const u = JSON.parse(bioUserJson);
           currentUser = u;
           localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(u));
           applyUserToUI(u);
           checkAuthState();
-          alert('ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে। স্বাগতম!');
+          showSuccessDialog('লগইন সফল হয়েছে!', 'স্বাগতম, ' + (u.name || 'সম্মানিত কৃষক ভাই') + '!');
         } catch(e) {
-          alert('ফিঙ্গারপ্রিন্ট লগইন ব্যর্থ হয়েছে।');
+          showWarningDialog('ফিঙ্গারপ্রিন্ট দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।', 'ভেরিফিকেশন ব্যর্থ');
         }
-      }
+      }, 1200);
     }
 
     function openHelplineModal() {

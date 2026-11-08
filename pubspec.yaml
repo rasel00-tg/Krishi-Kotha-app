@@ -66,6 +66,7 @@ flutter:
     - assets/fonts/
     - assets/font/
     - assets/animation/
+    - assets/animation/Fingerprint.json
 
   fonts:
     - family: TiroBangla

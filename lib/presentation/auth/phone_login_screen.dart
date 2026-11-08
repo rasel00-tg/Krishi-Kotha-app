@@ -414,8 +414,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       if (!mounted) return;
       await AppUnifiedDialog.showWarning(
         context,
-        title: 'ফিঙ্গারপ্রিন্ট সক্রিয় নয়',
-        message: 'ফিঙ্গারপ্রিন্ট লগইন চালু নেই। প্রথমে মেনু > সেটিংস পেজে গিয়ে আপনার ফিঙ্গারপ্রিন্ট ভেরিফাই করে সক্রিয় করুন।',
+        title: 'ফিঙ্গারপ্রিন্ট লগইন সক্রিয় নেই!',
+        message: 'নিরাপদে এক ক্লিকে লগইন করতে প্রথমে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন, এরপর মেনু > সেটিংস পেজ থেকে ফিঙ্গারপ্রিন্ট অথেনটিকেশন সক্রিয় করে নিন।',
         buttonText: 'বুঝেছি',
       );
       return;
@@ -894,7 +894,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                       fontSize: 12.5,
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
                               ),
                             ),
                           ],
@@ -981,6 +982,14 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                                       height: 44,
                                       fit: BoxFit.contain,
                                       repeat: true,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        debugPrint('Lottie login button error: $error');
+                                        return const Icon(
+                                          Icons.fingerprint_rounded,
+                                          color: Color(0xFF2E7D32),
+                                          size: 28,
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
