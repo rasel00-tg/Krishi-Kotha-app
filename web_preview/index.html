@@ -1835,7 +1835,7 @@
       width: 100%;
       background: linear-gradient(135deg, #0B3310 0%, #1B5E20 30%, #2E7D32 70%, #388E3C 100%);
       border-radius: 0 0 34px 34px;
-      padding: 26px 20px 24px 20px;
+      padding: 34px 20px 28px 20px;
       box-shadow: 0 8px 18px rgba(27, 94, 32, 0.35), 0 2px 6px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
@@ -1868,17 +1868,17 @@
 
     .menu-avatar-center-wrap {
       position: relative;
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 12px auto;
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 14px auto;
     }
 
     .menu-curved-avatar {
-      width: 88px;
-      height: 88px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       border: 3.5px solid #FFFFFF;
-      box-shadow: 0 0 16px rgba(105, 240, 174, 0.40), 0 4px 10px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 0 18px rgba(105, 240, 174, 0.40), 0 4px 10px rgba(0, 0, 0, 0.18);
       overflow: hidden;
       background: #E8F5E9;
       display: flex;
@@ -1887,29 +1887,6 @@
       font-size: 34px;
       font-weight: 700;
       color: #1B5E20;
-    }
-
-    .menu-avatar-badge-btn {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #2E7D32;
-      border: 2.2px solid #FFFFFF;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform 0.15s ease;
-    }
-
-    .menu-avatar-badge-btn:active {
-      transform: scale(0.92);
     }
 
     .menu-curved-name {
@@ -2797,16 +2774,13 @@
             <div class="menu-curved-decor-1"></div>
             <div class="menu-curved-decor-2"></div>
             <div style="position: relative; z-index: 2;">
-              <!-- Center Circle Avatar (88px) with Bright White Border & Edit Badge -->
+              <!-- Center Circle Avatar (90px) with Bright White Border (NO pen/edit icon) -->
               <div class="menu-avatar-center-wrap">
                 <div class="menu-curved-avatar" id="menuAvatarBadgeWrap">
                   <span id="menuAvatarChar">ক</span>
                   <img id="menuAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;"
                     alt="User Avatar" />
                 </div>
-                <button type="button" class="menu-avatar-badge-btn" onclick="openEditProfilePage()" title="প্রোফাইল সম্পাদনা করুন">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
               </div>
 
               <!-- Large Bold White User Name -->
@@ -2836,8 +2810,10 @@
                   <i class="fa-regular fa-user"></i>
                 </div>
                 <div class="menu-item-text">
-                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">প্রোফাইল সম্পাদনা (Edit Profile)</h4>
-                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">নাম, ঠিকানা ও ব্যক্তিগত তথ্য আপডেট করুন</p>
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">প্রোফাইল সম্পাদনা (Edit
+                    Profile)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">নাম, ঠিকানা ও ব্যক্তিগত
+                    তথ্য আপডেট করুন</p>
                 </div>
                 <i class="fa-solid fa-chevron-right menu-arrow"></i>
               </div>
@@ -2866,7 +2842,8 @@
                   <i class="fa-solid fa-headset"></i>
                 </div>
                 <div class="menu-item-text">
-                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ (Support & Contact)</h4>
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ
+                    (Support & Contact)</h4>
                   <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">কৃষি হেল্পলাইন ও সহায়তা</p>
                 </div>
                 <i class="fa-solid fa-chevron-right menu-arrow"></i>
@@ -2877,8 +2854,10 @@
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div class="menu-item-text">
-                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy Policy)</h4>
-                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা</p>
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">গোপনীয় নীতি (Privacy
+                    Policy)</h4>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ব্যবহারের শর্ত ও নীতিমালা
+                  </p>
                 </div>
                 <i class="fa-solid fa-chevron-right menu-arrow"></i>
               </div>
@@ -2893,7 +2872,8 @@
                 </div>
                 <div class="menu-item-text">
                   <h4 style="font-size: 14.5px; font-weight: 700; color: #D32F2F;">লগআউট (Logout)</h4>
-                  <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান করুন</p>
+                  <p style="font-size: 12px; color: #E57373; margin-top: 2px;">অ্যাকাউন্ট থেকে সুরক্ষিতভাবে প্রস্থান
+                    করুন</p>
                 </div>
                 <i class="fa-solid fa-chevron-right menu-arrow" style="color: #EF9A9A;"></i>
               </div>
@@ -2906,7 +2886,8 @@
                 <img src="pnglogo.png" style="width: 100%; height: 100%; object-fit: cover;" alt="কৃষি কথা লোগো">
               </div>
               <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary);">কৃষি কথা – Krishi Kotha</h4>
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান • সংস্করণ ১.০.০</p>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">স্মার্ট কৃষিতে আধুনিক সমাধান •
+                সংস্করণ ১.০.০</p>
             </div>
           </div>
         </div>
@@ -3379,17 +3360,18 @@
       </div>
     </div>
 
-    <!-- MODAL: PROFILE UPDATE LOADING -->
+    <!-- MODAL: PROFILE UPDATE LOADING (Unified Centered Loading Architecture) -->
     <div class="modal-overlay" id="editProfileLoadingModal"
       style="z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
       <div class="bottom-sheet"
-        style="max-width: 380px; border-radius: 18px; padding: 24px 22px; background: white; text-align: center; margin: auto;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 14px;">
+        style="max-width: 380px; border-radius: 20px; padding: 28px 24px; background: white; text-align: center; margin: auto;">
+        <div
+          style="width: 60px; height: 60px; border-radius: 50%; background: #E8F5E9; border: 1.5px solid rgba(129,199,132,0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px auto;">
           <div class="spinner"
             style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; animation: spin 0.8s linear infinite;">
           </div>
-          <div style="font-size: 15px; font-weight: 700; color: #1B5E20;">তথ্য আপডেট করা হচ্ছে....</div>
         </div>
+        <div style="font-size: 15px; font-weight: 700; color: #1B5E20; letter-spacing: 0.2px;">তথ্য আপডেট করা হচ্ছে....</div>
       </div>
     </div>
 

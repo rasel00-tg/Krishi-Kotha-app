@@ -47,29 +47,41 @@ class AppUnifiedDialog {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      color: AppColors.primary,
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF81C784).withOpacity(0.4), width: 1.5),
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    child: Text(
-                      message,
-                      style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1B5E20),
-                      ),
+                  const SizedBox(height: 18),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1B5E20),
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
@@ -489,3 +501,4 @@ class AppUnifiedDialog {
     return result ?? false;
   }
 }
+

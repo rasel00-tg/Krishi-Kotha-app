@@ -479,99 +479,57 @@ class AppMenuScreen extends StatelessWidget {
               ),
             ),
 
-            // Header Content (Edge-to-edge, status bar padded, centered layout)
+            // Header Content (Edge-to-edge, status bar padded, centered layout, no edit icon on avatar)
             Padding(
-              padding: EdgeInsets.only(top: topPadding + 14, bottom: 24, left: 20, right: 20),
+              padding: EdgeInsets.only(top: topPadding + 22, bottom: 28, left: 20, right: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Center Circle Avatar (Radius 44, Diameter 88) with Bright White Border & Edit Badge
+                  // Center Circle Avatar (Radius 45, Diameter 90) with Bright White Border (NO pen/edit icon)
                   Center(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Avatar Ring
-                        Container(
-                          width: 88,
-                          height: 88,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF69F0AE).withOpacity(0.40),
-                                blurRadius: 16,
-                                spreadRadius: 2,
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.18),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF69F0AE).withOpacity(0.40),
+                            blurRadius: 18,
+                            spreadRadius: 2,
                           ),
-                          child: ClipOval(
-                            child: (photoUrl != null && photoUrl.trim().isNotEmpty)
-                                ? CachedNetworkImage(
-                                    imageUrl: photoUrl.trim(),
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      color: const Color(0xFFE8F5E9),
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                                        ),
-                                      ),
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: (photoUrl != null && photoUrl.trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: photoUrl.trim(),
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Container(
+                                  color: const Color(0xFFE8F5E9),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                                     ),
-                                    errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
-                                  )
-                                : _buildFallbackAvatar(name),
-                          ),
-                        ),
-
-                        // Sleek Edit Button Badge on bottom-right of avatar
-                        Positioned(
-                          right: -2,
-                          bottom: -2,
-                          child: Material(
-                            color: Colors.white,
-                            shape: const CircleBorder(),
-                            elevation: 4,
-                            shadowColor: Colors.black45,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: () {
-                                Navigator.of(context, rootNavigator: true).push(
-                                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-                                );
-                              },
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF2E7D32),
-                                  border: Border.all(color: Colors.white, width: 2.2),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.edit_rounded,
-                                    color: Colors.white,
-                                    size: 15,
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                                errorWidget: (_, __, ___) => _buildFallbackAvatar(name),
+                              )
+                            : _buildFallbackAvatar(name),
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // User Name (Large, bold and clear white)
                   Text(
