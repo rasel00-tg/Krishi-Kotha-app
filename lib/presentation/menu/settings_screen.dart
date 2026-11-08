@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/app_unified_dialog.dart';
+import '../../data/services/biometric_auth_service.dart';
+import '../../providers/auth_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,6 +17,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _weatherAlerts = true;
   bool _marketUpdates = true;
   bool _offlineCache = true;
+  bool _biometricEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricState();
+  }
+
+  Future<void> _loadBiometricState() async {
+    final enabled = await BiometricAuthService.isBiometricEnabled();
+    if (mounted) {
+      setState(() => _biometricEnabled = enabled);
+    }
+  }
+
+  Future<void> _handleBiometricToggle(bool enable) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
+
+    if (enable) {
+      if (user == null || user.uid.startsWith('guest_')) {
+        await AppUnifiedDialog.showWarning(
+          context,
+          title: 'লগইন প্রয়োজন',
+          message: 'ফিঙ্গারপ্রিন্ট সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।',
+          buttonText: 'বুঝেছি',
+        );
+        return;
+      }
+
+      // নেটিভ ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ডায়ালগ প্রদর্শন
+      final success = await BiometricAuthService.showBiometricScanDialog(
+        context,
+        title: 'ফিঙ্গারপ্রিন্ট ভেরিফাই করুন',
+        subtitle: 'আপনার ফিঙ্গারপ্রিন্ট সেন্সরে আঙুল রেখে শনাক্তকরণ সম্পন্ন করুন',
+      );
+
+      if (success && mounted) {
+        final userData = {
+          'uid': user.uid,
+          'name': user.name,
+          'phone': user.phone,
+          'email': user.email,
+          'district': user.district,
+          'upazila': user.upazila,
+          'village': user.village,
+          'occupation': user.occupation,
+        };
+        await BiometricAuthService.enableBiometrics(
+          phone: user.phone,
+          uid: user.uid,
+          userData: userData,
+        );
+        setState(() => _biometricEnabled = true);
+        if (mounted) {
+          await AppUnifiedDialog.showSuccess(
+            context,
+            title: 'সফল হয়েছে!',
+            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে সক্রিয় করা হয়েছে। এখন থেকে আপনি ফিঙ্গারপ্রিন্ট দিয়ে লগইন করতে পারবেন।',
+          );
+        }
+      }
+    } else {
+      await BiometricAuthService.disableBiometrics();
+      setState(() => _biometricEnabled = false);
+      if (mounted) {
+        await AppUnifiedDialog.showSuccess(
+          context,
+          title: 'নিষ্ক্রিয় হয়েছে',
+          message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে বন্ধ করা হয়েছে।',
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +117,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: const Text('প্রতিদিন সকালে মোকামের পাইকারি দরের বার্তা', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
               value: _marketUpdates,
               onChanged: (val) => setState(() => _marketUpdates = val),
+            ),
+          ]),
+
+          const SizedBox(height: 20),
+
+          // Section: Security & Biometrics
+          _buildSectionHeader('নিরাপত্তা ও বায়োমেট্রিক'),
+          _buildCardWrapper([
+            SwitchListTile(
+              activeColor: AppColors.primary,
+              secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary, size: 28),
+              title: const Text('ফিঙ্গারপ্রিন্ট লগইন (Biometric Login)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              subtitle: const Text('দ্রুত ও সুরক্ষিতভাবে ফিঙ্গারপ্রিন্ট দিয়ে একাউন্টে প্রবেশ করুন', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+              value: _biometricEnabled,
+              onChanged: _handleBiometricToggle,
             ),
           ]),
 

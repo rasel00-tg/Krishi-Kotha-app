@@ -544,8 +544,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            style: _uniformInputStyle,
-                            strutStyle: _uniformStrutStyle,
+                            style: _phoneInputStyle,
+                            strutStyle: _phoneStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: '০১৭১২XXXXXX',
                               prefixIcon: Icons.phone_android_rounded,
@@ -720,6 +720,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
+
+  static const TextStyle _phoneInputStyle = TextStyle(
+    fontSize: 15.0,
+    height: 1.25,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.8,
+    color: AppColors.textPrimary,
+    fontFeatures: [
+      ui.FontFeature.tabularFigures(),
+      ui.FontFeature.liningFigures(),
+    ],
+  );
+
+  static const StrutStyle _phoneStrutStyle = StrutStyle(
+    fontSize: 15.0,
+    height: 1.25,
+    leading: 0,
+    forceStrutHeight: true,
+  );
 
   static const TextStyle _uniformInputStyle = TextStyle(
     fontFamily: 'HindSiliguri',

@@ -959,8 +959,7 @@ class AppMenuScreen extends StatelessWidget {
   }
 }
 
-/// অ্যানিমেটেড জ্বলজ্বলে ভেরিফাইড ব্যাজ (Glowing Animated Verified Badge)
-/// মৃদু পালস এবং সফট গ্লোয়িং বর্ডার রিং সংবলিত প্রিমিয়াম ব্যাজ
+/// ভেরিফাইড ব্যাজের স্বচ্ছ ব্যাকগ্রাউন্ড ও অবিরাম ঘূর্ণন এনিমেশন (Transparent & Rotating Verified Badge)
 class AnimatedGlowingVerifiedBadge extends StatefulWidget {
   const AnimatedGlowingVerifiedBadge({super.key});
 
@@ -971,18 +970,15 @@ class AnimatedGlowingVerifiedBadge extends StatefulWidget {
 class _AnimatedGlowingVerifiedBadgeState extends State<AnimatedGlowingVerifiedBadge>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _glowAnimation;
 
   @override
   void initState() {
     super.initState();
+    // ৬ সেকেন্ডে ৩৬০ ডিগ্রি মসৃণ ও মার্জিত অবিরাম ঘূর্ণন
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-    _glowAnimation = Tween<double>(begin: 0.35, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+      duration: const Duration(seconds: 6),
+    )..repeat();
   }
 
   @override
@@ -993,39 +989,30 @@ class _AnimatedGlowingVerifiedBadgeState extends State<AnimatedGlowingVerifiedBa
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        final glow = _glowAnimation.value;
-        return Container(
-          width: 21,
-          height: 21,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF00E676),
-            border: Border.all(color: Colors.white, width: 1.8),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF00E676).withOpacity(glow),
-                blurRadius: 8.0 + 8.0 * glow,
-                spreadRadius: 1.0 + 2.0 * glow,
-              ),
-              BoxShadow(
-                color: Colors.white.withOpacity(0.4 * glow),
-                blurRadius: 4.0 * glow,
-                spreadRadius: 0.5 * glow,
-              ),
-            ],
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.check_rounded,
-              color: Color(0xFF063309),
-              size: 13,
+    return Container(
+      color: Colors.transparent,
+      width: 22,
+      height: 22,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // মার্জিত অবিরাম ঘূর্ণনরত এমারেল্ড রোজেট (কোনো সাদা বর্ডার বা অস্বচ্ছ গ্লো নেই)
+          RotationTransition(
+            turns: _controller,
+            child: const Icon(
+              Icons.verified_rounded,
+              color: Color(0xFF00E676),
+              size: 22,
             ),
           ),
-        );
-      },
+          // ক্রিস্টাল ক্লিয়ার প্রমিনেন্ট চেক আইকন যা সর্বদা সোজা ও সুস্পষ্ট থাকে
+          const Icon(
+            Icons.check_rounded,
+            color: Colors.white,
+            size: 13,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lottie/lottie.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../core/widgets/app_warning_dialog.dart';
+import '../../core/widgets/app_unified_dialog.dart';
+import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
 import '../menu/privacy_policy_screen.dart';
 import '../navigation/main_navigation_screen.dart';
@@ -402,6 +405,49 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         title: 'লগইন ব্যর্থ হয়েছে!',
         message: msg,
       );
+    }
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final isEnabled = await BiometricAuthService.isBiometricEnabled();
+    if (!isEnabled) {
+      if (!mounted) return;
+      await AppUnifiedDialog.showWarning(
+        context,
+        title: 'ফিঙ্গারপ্রিন্ট সক্রিয় নয়',
+        message: 'ফিঙ্গারপ্রিন্ট লগইন চালু নেই। প্রথমে মেনু > সেটিংস পেজে গিয়ে আপনার ফিঙ্গারপ্রিন্ট ভেরিফাই করে সক্রিয় করুন।',
+        buttonText: 'বুঝেছি',
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    final verified = await BiometricAuthService.showBiometricScanDialog(
+      context,
+      title: 'ফিঙ্গারপ্রিন্ট লগইন',
+      subtitle: 'লগইন করতে আপনার ফিঙ্গারপ্রিন্ট সেন্সরে আঙুল রাখুন',
+    );
+
+    if (verified && mounted) {
+      final savedUser = await BiometricAuthService.getSavedBiometricUser();
+      if (savedUser != null) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final success = await authProvider.loginWithBiometrics(savedUser);
+        if (success && mounted) {
+          await AppUnifiedDialog.showSuccess(
+            context,
+            title: 'লগইন সফল!',
+            message: 'ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে। স্বাগতম!',
+            buttonText: 'ঠিক আছে',
+          );
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+              (route) => false,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -855,54 +901,92 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
                           const SizedBox(height: 22),
 
-                        // সাইন-ইন বাটন (Sign In Button)
-                        Container(
-                          width: double.infinity,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF2E7D32).withOpacity(0.32),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ElevatedButton(
-                            onPressed: authProvider.isLoading ? null : _submitLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                            child: authProvider.isLoading
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
-                                  )
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'লগইন করুন',
-                                        style: TextStyle(
-                                          fontSize: 15.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 19),
-                                    ],
+                        // সাইন-ইন বাটন ও বায়োমেট্রিক বাটন (Sign In & Biometric Buttons)
+                        Row(
+                          children: [
+                            // মূল লগইন বাটন
+                            Expanded(
+                              child: Container(
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                          ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF2E7D32).withOpacity(0.32),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: authProvider.isLoading ? null : _submitLogin,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  child: authProvider.isLoading
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
+                                        )
+                                      : const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'লগইন করুন',
+                                              style: TextStyle(
+                                                fontSize: 15.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            SizedBox(width: 8),
+                                            Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 19),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            // মার্জিত Lottie ফিঙ্গারপ্রিন্ট বাটন
+                            Material(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              elevation: 2,
+                              shadowColor: const Color(0xFF2E7D32).withOpacity(0.20),
+                              child: InkWell(
+                                onTap: authProvider.isLoading ? null : _handleBiometricLogin,
+                                borderRadius: BorderRadius.circular(14),
+                                child: Container(
+                                  width: 52,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: const Color(0xFF81C784), width: 1.5),
+                                    color: const Color(0xFFF1F8E9),
+                                  ),
+                                  child: Center(
+                                    child: Lottie.asset(
+                                      'assets/animation/Fingerprint.json',
+                                      width: 44,
+                                      height: 44,
+                                      fit: BoxFit.contain,
+                                      repeat: true,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

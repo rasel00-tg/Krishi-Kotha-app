@@ -193,6 +193,25 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> loginWithBiometrics(UserModel user) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = user;
+      await _authService.cacheUser(user);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await _authService.signOut();
     _user = null;
