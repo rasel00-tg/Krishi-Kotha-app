@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@100..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- Firebase Web SDK (v10 compat) for Live Firestore Synchronization -->
@@ -50,8 +50,9 @@
       padding: 0;
     }
 
-    body, input, button, select, textarea, optgroup, option {
-      font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Tiro Bangla', sans-serif;
+    body, html, input, button, select, textarea, optgroup, option {
+      font-family: 'Anek Bangla', sans-serif;
+      font-optical-sizing: auto;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -1424,7 +1425,7 @@
                   </label>
                   <span id="privacyLineCounter" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">লাইন: ০ | শব্দ: ০</span>
                 </div>
-                <textarea id="settingPrivacyContent" oninput="window.privacyEditorDirty = true; updatePolicyCounters(); updatePolicyPreview();" rows="18" placeholder="এখানে পূর্ণ গোপনীয় নীতি টেক্সট লিখুন..." class="form-control" style="padding: 16px; font-size: 13.5px; border-radius: 12px; width: 100%; border: 1px solid var(--border); font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; line-height: 1.6; resize: vertical; background: #FCFDFC; box-sizing: border-box;"></textarea>
+                <textarea id="settingPrivacyContent" oninput="window.privacyEditorDirty = true; updatePolicyCounters(); updatePolicyPreview();" rows="18" placeholder="এখানে পূর্ণ গোপনীয় নীতি টেক্সট লিখুন..." class="form-control" style="padding: 16px; font-size: 13.5px; border-radius: 12px; width: 100%; border: 1px solid var(--border); font-family: 'Anek Bangla', sans-serif; font-optical-sizing: auto; line-height: 1.6; resize: vertical; background: #FCFDFC; box-sizing: border-box;"></textarea>
               </div>
 
               <!-- Action Buttons Bar -->

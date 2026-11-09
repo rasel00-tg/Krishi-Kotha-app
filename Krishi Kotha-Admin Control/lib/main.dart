@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'core/constants/admin_colors.dart';
 import 'presentation/admin_main_screen.dart';
@@ -36,7 +37,8 @@ class KrishiKothaAdminApp extends StatelessWidget {
           background: AdminColors.background,
         ),
         scaffoldBackgroundColor: AdminColors.background,
-        fontFamily: 'Hind Siliguri',
+        fontFamily: GoogleFonts.anekBangla().fontFamily,
+        textTheme: GoogleFonts.anekBanglaTextTheme(ThemeData.light().textTheme),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
