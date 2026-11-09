@@ -522,6 +522,44 @@
       border-color: #B0BEC5 !important;
     }
 
+    /* ================= UNIFIED BRANDED DIALOG SYSTEM ================= */
+    #adminUnifiedDialogOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.22s ease;
+    }
+
+    #adminDialogCard {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 30px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.25);
+      max-width: 380px;
+      width: 88%;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(46, 125, 50, 0.18);
+      animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes scaleIn {
+      0% { transform: scale(0.72); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     #toast {
       position: fixed;
       bottom: 24px;
@@ -1221,6 +1259,8 @@
 
       <!-- ================= TAB: USER MANAGEMENT & CONTROL ================= -->
       <div id="tab-user-control" class="tab-content">
+        <!-- 1. Table View (Compact KPI, Search & User List) -->
+        <div id="ucTableView">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
           <div>
@@ -1324,6 +1364,12 @@
               </tbody>
             </table>
           </div>
+        </div>
+        </div>
+
+        <!-- 2. Full-Screen User Details & Control View (Expanded beside fixed sidebar) -->
+        <div id="ucDetailView" style="display: none; width: 100%;">
+          <!-- Dynamically populated via renderUserDetailsView -->
         </div>
       </div>
 
@@ -2023,22 +2069,7 @@
   </div>
 
   <!-- ================= USER CONTROL MODALS ================= -->
-  <!-- Modal: User Details & Control -->
-  <div id="modalUserDetails" class="modal-overlay">
-    <div class="modal-box" style="max-width: 580px; width: 92%; max-height: 88vh; overflow-y: auto; padding: 22px; border-radius: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-        <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: #1B5E20; font-size: 16px;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>ব্যবহারকারীর বিস্তারিত তথ্য ও প্রশাসনিক নিয়ন্ত্রণ</span>
-        </h3>
-        <button onclick="closeUserDetailsModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
-      </div>
-
-      <div id="userDetailsContent">
-        <!-- Injected dynamically via openUserDetailsModal -->
-      </div>
-    </div>
-  </div>
+  <!-- User Details are rendered full-screen in #ucDetailView beside the sidebar -->
 
   <!-- Modal: Temporary Block User -->
   <div id="modalTempBlock" class="modal-overlay">
@@ -2137,6 +2168,57 @@
     </div>
   </div>
 
+  <!-- ================= UNIFIED BRANDED DIALOG OVERLAY ================= -->
+  <div id="adminUnifiedDialogOverlay" onclick="if(event.target === this) hideAdminDialogOnOverlayClick()"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.52); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; align-items: center; justify-content: center;">
+    <div id="adminDialogCard"
+      style="background: white; border-radius: 22px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 16px 45px rgba(0,0,0,0.25); max-width: 360px; width: 88%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid rgba(46, 125, 50, 0.18);">
+      
+      <!-- STATE 1: LOADING -->
+      <div id="adminStateLoading" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div style="position: relative; width: 92px; height: 92px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+          <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-right-color: #1B5E20; animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; box-shadow: 0 0 14px rgba(46,125,50,0.25);"></div>
+          <img src="pnglogo.png" style="width: 58px; height: 58px; object-fit: contain;" alt="কৃষি কথা">
+        </div>
+        <div id="adminLoadingTitle" style="font-size: 17px; font-weight: 800; color: #1B5E20; margin-bottom: 5px;">ডাটা সেভ হচ্ছে....</div>
+        <div id="adminLoadingSubtitle" style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">অনুগ্রহ করে অপেক্ষা করুন</div>
+      </div>
+
+      <!-- STATE 2: SUCCESS -->
+      <div id="adminStateSuccess" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 38px; margin-bottom: 16px; border: 2px solid #A5D6A7; animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div id="adminSuccessTitle" style="font-size: 18px; font-weight: 800; color: #1B5E20; margin-bottom: 6px;">সফল হয়েছে!</div>
+        <div id="adminSuccessMsg" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 6px;">অপারেশন সফলভাবে সম্পন্ন হয়েছে।</div>
+      </div>
+
+      <!-- STATE 3: ERROR / FAILURE -->
+      <div id="adminStateError" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 16px; border: 2px solid #FFCDD2; animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+        <div id="adminErrorTitle" style="font-size: 18px; font-weight: 800; color: #D32F2F; margin-bottom: 6px;">ব্যর্থ হয়েছে!</div>
+        <div id="adminErrorMsg" style="font-size: 13.5px; color: var(--text-primary); line-height: 1.5; margin-bottom: 20px; word-break: break-word;">একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।</div>
+        <button type="button" onclick="hideAdminDialog()" style="background: #2E7D32; color: white; border: none; border-radius: 12px; padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; transition: background 0.2s ease;">বুঝেছি</button>
+      </div>
+
+      <!-- STATE 4: CONFIRMATION -->
+      <div id="adminStateConfirm" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+        <div id="adminConfirmIconWrap" style="width: 72px; height: 72px; border-radius: 50%; background: #FFF8E1; color: #F57C00; display: flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 16px; border: 2px solid #FFE082; animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div id="adminConfirmTitle" style="font-size: 18px; font-weight: 800; color: #E65100; margin-bottom: 6px;">নিশ্চিতকরণ প্রয়োজন</div>
+        <div id="adminConfirmMsg" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 22px;">আপনি কি এই কাজটি নিশ্চিত করতে চান?</div>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button type="button" id="adminConfirmCancelBtn" onclick="onAdminConfirmCancel()" style="flex: 1; background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; border-radius: 12px; padding: 11px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">বাতিল</button>
+          <button type="button" id="adminConfirmActionBtn" onclick="onAdminConfirmAction()" style="flex: 1; background: #2E7D32; color: white; border: none; border-radius: 12px; padding: 11px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">হ্যাঁ, নিশ্চিত</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast">বার্তা সফলভাবে আপডেট হয়েছে!</div>
 
@@ -2160,6 +2242,165 @@
     } catch (err) {
       console.warn("Firebase initialization notice:", err);
       document.getElementById('firestoreStatusText').innerText = 'অফলাইন মোড';
+    }
+
+    // ================= UNIFIED BRANDED DIALOG CONTROLLER =================
+    let adminDialogResolve = null;
+    let adminSuccessTimer = null;
+    let adminDialogCanDismiss = false;
+    window.adminErrorDoneCb = null;
+
+    function showAdminLoading(title = 'ডাটা সেভ হচ্ছে....', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
+      if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      adminDialogCanDismiss = false;
+      const overlay = document.getElementById('adminUnifiedDialogOverlay');
+      if (!overlay) return;
+
+      document.getElementById('adminStateLoading').style.display = 'flex';
+      document.getElementById('adminStateSuccess').style.display = 'none';
+      document.getElementById('adminStateError').style.display = 'none';
+      document.getElementById('adminStateConfirm').style.display = 'none';
+
+      document.getElementById('adminLoadingTitle').innerText = title;
+      document.getElementById('adminLoadingSubtitle').innerText = subtitle;
+
+      overlay.style.display = 'flex';
+    }
+
+    function showAdminSuccess(title = 'সফল হয়েছে!', msg = '', onDone = null, duration = 1800) {
+      if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      adminDialogCanDismiss = true;
+      const overlay = document.getElementById('adminUnifiedDialogOverlay');
+      if (!overlay) return;
+
+      document.getElementById('adminStateLoading').style.display = 'none';
+      document.getElementById('adminStateSuccess').style.display = 'flex';
+      document.getElementById('adminStateError').style.display = 'none';
+      document.getElementById('adminStateConfirm').style.display = 'none';
+
+      document.getElementById('adminSuccessTitle').innerText = title;
+      document.getElementById('adminSuccessMsg').innerText = msg;
+
+      overlay.style.display = 'flex';
+
+      if (duration > 0) {
+        adminSuccessTimer = setTimeout(() => {
+          hideAdminDialog();
+          if (typeof onDone === 'function') onDone();
+        }, duration);
+      }
+    }
+
+    function showAdminError(title = 'ব্যর্থ হয়েছে!', msg = 'একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।', onDone = null) {
+      if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      adminDialogCanDismiss = true;
+      const overlay = document.getElementById('adminUnifiedDialogOverlay');
+      if (!overlay) return;
+
+      document.getElementById('adminStateLoading').style.display = 'none';
+      document.getElementById('adminStateSuccess').style.display = 'none';
+      document.getElementById('adminStateError').style.display = 'flex';
+      document.getElementById('adminStateConfirm').style.display = 'none';
+
+      document.getElementById('adminErrorTitle').innerText = title;
+      document.getElementById('adminErrorMsg').innerText = msg;
+
+      overlay.style.display = 'flex';
+      window.adminErrorDoneCb = onDone;
+    }
+
+    function showAdminConfirm(title, msg, onConfirm = null, confirmText = 'হ্যাঁ, নিশ্চিত', isDanger = false) {
+      if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      adminDialogCanDismiss = false;
+      const overlay = document.getElementById('adminUnifiedDialogOverlay');
+      if (!overlay) return Promise.resolve(false);
+
+      document.getElementById('adminStateLoading').style.display = 'none';
+      document.getElementById('adminStateSuccess').style.display = 'none';
+      document.getElementById('adminStateError').style.display = 'none';
+      document.getElementById('adminStateConfirm').style.display = 'flex';
+
+      document.getElementById('adminConfirmTitle').innerText = title || 'নিশ্চিতকরণ প্রয়োজন';
+      document.getElementById('adminConfirmMsg').innerText = msg || '';
+
+      const confirmBtn = document.getElementById('adminConfirmActionBtn');
+      const iconWrap = document.getElementById('adminConfirmIconWrap');
+      if (confirmBtn) confirmBtn.innerText = confirmText;
+
+      if (isDanger) {
+        if (confirmBtn) {
+          confirmBtn.style.background = '#D32F2F';
+          confirmBtn.style.color = '#fff';
+        }
+        if (iconWrap) {
+          iconWrap.style.background = '#FFEBEE';
+          iconWrap.style.color = '#D32F2F';
+          iconWrap.style.borderColor = '#FFCDD2';
+        }
+        const titleEl = document.getElementById('adminConfirmTitle');
+        if (titleEl) titleEl.style.color = '#D32F2F';
+      } else {
+        if (confirmBtn) {
+          confirmBtn.style.background = '#2E7D32';
+          confirmBtn.style.color = '#fff';
+        }
+        if (iconWrap) {
+          iconWrap.style.background = '#FFF8E1';
+          iconWrap.style.color = '#F57C00';
+          iconWrap.style.borderColor = '#FFE082';
+        }
+        const titleEl = document.getElementById('adminConfirmTitle');
+        if (titleEl) titleEl.style.color = '#E65100';
+      }
+
+      overlay.style.display = 'flex';
+
+      return new Promise((resolve) => {
+        adminDialogResolve = (result) => {
+          hideAdminDialog();
+          if (result && typeof onConfirm === 'function') {
+            onConfirm();
+          }
+          resolve(result);
+        };
+      });
+    }
+
+    function onAdminConfirmAction() {
+      if (adminDialogResolve) {
+        const res = adminDialogResolve;
+        adminDialogResolve = null;
+        res(true);
+      } else {
+        hideAdminDialog();
+      }
+    }
+
+    function onAdminConfirmCancel() {
+      if (adminDialogResolve) {
+        const res = adminDialogResolve;
+        adminDialogResolve = null;
+        res(false);
+      } else {
+        hideAdminDialog();
+      }
+    }
+
+    function hideAdminDialog() {
+      if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      const overlay = document.getElementById('adminUnifiedDialogOverlay');
+      if (overlay) overlay.style.display = 'none';
+      if (window.adminErrorDoneCb) {
+        const cb = window.adminErrorDoneCb;
+        window.adminErrorDoneCb = null;
+        try { cb(); } catch(_) {}
+      }
+    }
+
+    function hideAdminDialogOnOverlayClick() {
+      if (adminDialogCanDismiss) {
+        hideAdminDialog();
+      }
     }
 
     // Live Data State (Empty by default - NO Hardcoded Dummy Data)
@@ -2306,6 +2547,13 @@
       document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
 
       if (tabKey === 'user-control') {
+        if (!currentDetailUserId) {
+          const tView = document.getElementById('ucTableView');
+          const dView = document.getElementById('ucDetailView');
+          if (tView) tView.style.display = 'block';
+          if (dView) dView.style.display = 'none';
+          document.getElementById('pageTitle').innerText = 'ইউজার কন্ট্রোল (User Management System)';
+        }
         renderUserControlTable();
       }
 
@@ -3063,9 +3311,16 @@
       }
     }
 
-    function resetPrivacyToDefault(confirmPrompt = true) {
-      if (confirmPrompt && !confirm('আপনি কি ডিফল্ট গোপনীয় নীতি টেমপ্লেট লোড করতে চান?')) {
-        return;
+    async function resetPrivacyToDefault(confirmPrompt = true) {
+      if (confirmPrompt) {
+        const confirmed = await showAdminConfirm(
+          'ডিফল্ট টেমপ্লেট লোড করবেন?',
+          'আপনি কি নিশ্চিতভাবে ডিফল্ট গোপনীয় নীতি টেমপ্লেট লোড করতে চান? আপনার বর্তমান পরিবর্তন প্রতিস্থাপিত হবে।',
+          null,
+          'হ্যাঁ, লোড করুন',
+          false
+        );
+        if (!confirmed) return;
       }
       const luEl = document.getElementById('settingPrivacyLastUpdated');
       const btEl = document.getElementById('settingPrivacyBanner');
@@ -3090,7 +3345,7 @@
       updatePolicyCounters();
       updatePolicyPreview();
       if (confirmPrompt) {
-        showToast('ডিফল্ট টেমপ্লেট লোড হয়েছে। স্থায়ী করতে "সংরক্ষণ করুন" চাপুন।');
+        showAdminSuccess('টেমপ্লেট লোড সম্পন্ন!', 'ডিফল্ট নীতি টেমপ্লেট লোড হয়েছে। স্থায়ী করতে "সংরক্ষণ করুন" চাপুন।');
       }
     }
 
@@ -3100,14 +3355,15 @@
       const pc = document.getElementById('settingPrivacyContent')?.value.trim();
 
       if (!pc) {
-        showToast('গোপনীয় নীতির বিবরণ ফাঁকা রাখা যাবে না!');
+        showAdminError('বিবরণ আবশ্যক!', 'গোপনীয় নীতির বিবরণ কোনোভাবেই ফাঁকা রাখা যাবে না!');
         return;
       }
+
+      showAdminLoading('গোপনীয় নীতি সংরক্ষিত হচ্ছে....', 'Cloudflare R2 ও Firebase Firestore-এ সিঙ্ক হচ্ছে');
 
       const saveBtn = document.getElementById('savePrivacyBtn');
       const originalHtml = saveBtn ? saveBtn.innerHTML : '';
       if (saveBtn) {
-        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>সংরক্ষণ ও আপলোড হচ্ছে...</span>';
         saveBtn.disabled = true;
       }
 
@@ -3154,11 +3410,11 @@
         }, { merge: true });
 
         window.privacyEditorDirty = false;
-        showToast('গোপনীয় নীতি ও ব্যানার সফলভাবে সংরক্ষিত ও ক্লাউডে আপডেট হয়েছে! ইউজার অ্যাপে রিয়েল-টাইমে সিঙ্ক সম্পন্ন।');
         updatePolicyPreview();
+        showAdminSuccess('সংরক্ষণ সফল হয়েছে!', 'গোপনীয় নীতি ও ব্যানার সফলভাবে সংরক্ষিত হয়েছে। ইউজার অ্যাপে লাইভ সিঙ্ক সম্পন্ন!');
       } catch (err) {
         console.error("Save privacy policy error:", err);
-        showToast('সংরক্ষণ ত্রুটি: ' + (err.message || 'আবার চেষ্টা করুন'));
+        showAdminError('সংরক্ষণ ব্যর্থ!', 'গোপনীয় নীতি সংরক্ষণ করতে ত্রুটি হয়েছে: ' + (err.message || 'আবার চেষ্টা করুন'));
       } finally {
         if (saveBtn) {
           saveBtn.innerHTML = originalHtml;
@@ -5171,153 +5427,280 @@
         `;
       }).join('');
 
-      // Auto update open details modal if already active
-      const dModal = document.getElementById('modalUserDetails');
-      if (dModal && dModal.classList.contains('active') && currentDetailUserId) {
-        openUserDetailsModal(currentDetailUserId);
+      // Auto update open details view if already active
+      const dView = document.getElementById('ucDetailView');
+      if (dView && dView.style.display !== 'none' && currentDetailUserId) {
+        renderUserDetailsView(currentDetailUserId);
       }
     }
 
-    // Modal Operations
-    function openUserDetailsModal(userId) {
+    // ================= FULL-SCREEN USER DETAILS & CONTROL =================
+    function renderUserDetailsView(userId) {
       currentDetailUserId = userId;
       const u = users.find(x => x.id === userId);
-      const container = document.getElementById('userDetailsContent');
-      const modal = document.getElementById('modalUserDetails');
-      if (!u || !container || !modal) return;
+      const container = document.getElementById('ucDetailView');
+      const tableWrapper = document.getElementById('ucTableView');
+      if (!u || !container) return;
+
+      if (tableWrapper) tableWrapper.style.display = 'none';
+      container.style.display = 'block';
+
+      // Update Header Title
+      const pageTitleEl = document.getElementById('pageTitle');
+      if (pageTitleEl) pageTitleEl.innerText = 'ব্যবহারকারীর বিস্তারিত প্রোফাইল ও প্রশাসনিক নিয়ন্ত্রণ';
 
       const st = u.status || 'active';
       const initial = (u.name || 'ক').charAt(0).toUpperCase();
-      const avatarHtml = u.photoUrl
-        ? `<img src="${u.photoUrl}" alt="${u.name}" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #A5D6A7;">`
-        : `<div style="width: 52px; height: 52px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; border: 2px solid #A5D6A7;">${initial}</div>`;
+      const avatarHtmlLarge = u.photoUrl
+        ? `<img src="${u.photoUrl}" alt="${u.name}" style="width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid #2E7D32; box-shadow: 0 4px 12px rgba(46,125,50,0.2); flex-shrink: 0;">`
+        : `<div style="width: 76px; height: 76px; border-radius: 50%; background: #E8F5E9; color: #1B5E20; font-weight: 800; font-size: 32px; display: flex; align-items: center; justify-content: center; border: 3px solid #2E7D32; box-shadow: 0 4px 12px rgba(46,125,50,0.15); flex-shrink: 0;">${initial}</div>`;
 
-      let statusBadge = '';
+      let largeStatusBadge = '';
       if (st === 'permanently_suspended') {
-        statusBadge = `<span class="badge" style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 12px;"><i class="fa-solid fa-ban" style="margin-right: 4px;"></i>স্থায়ীভাবে সাসপেন্ড</span>`;
+        largeStatusBadge = `
+          <div style="background: #FFEBEE; color: #C62828; border: 1.5px solid #FFCDD2; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(198,40,40,0.15);">
+            <i class="fa-solid fa-ban" style="font-size: 16px;"></i>
+            <span>স্থায়ী সাসপেন্ড</span>
+          </div>`;
       } else if (st === 'temporary_blocked') {
-        statusBadge = `<span class="badge" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 12px;"><i class="fa-solid fa-clock" style="margin-right: 4px;"></i>সাময়িক স্থগিত</span>`;
+        largeStatusBadge = `
+          <div style="background: #FFF3E0; color: #E65100; border: 1.5px solid #FFCC80; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(230,81,0,0.15);">
+            <i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+            <span>সাময়িক স্থগিত</span>
+          </div>`;
       } else {
-        statusBadge = `<span class="badge" style="background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; font-weight: 600; padding: 4px 10px; border-radius: 12px; font-size: 12px;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>সক্রিয় একাউন্ট</span>`;
+        largeStatusBadge = `
+          <div style="background: #E8F5E9; color: #1B5E20; border: 1.5px solid #A5D6A7; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(46,125,50,0.15);">
+            <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+            <span>সক্রিয় একাউন্ট</span>
+          </div>`;
       }
 
       const limitStatus = getUcProfileLimitStatus(u);
       const joinDateStr = formatTimestampBn(u.createdAt);
       const lastUpdateStr = formatTimestampBn(u.lastProfileUpdate);
 
-      let statusInfoSection = '';
+      let statusAlertBanner = '';
       if (st === 'temporary_blocked') {
         const unblockStr = formatTimestampBn(u.unblockAt);
-        statusInfoSection = `
-          <div style="background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: #E65100; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <span>সাময়িক ব্লকের বিবরণ</span>
+        statusAlertBanner = `
+          <div style="background: #FFF8E1; border: 1.5px solid #FFE082; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: flex-start; gap: 14px;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: #FFE082; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 4px; font-size: 15px; color: #B78103; font-weight: 700;">সাময়িক স্থগিতাদেশ সক্রিয় রয়েছে</h4>
+                <div style="font-size: 13.5px; color: #5D4037; margin-bottom: 4px;"><strong>স্থগিতের কারণ:</strong> ${u.blockReason || 'কোনো কারণ উল্লেখ করা হয়নি'}</div>
+                <div style="font-size: 13px; color: #795548;"><strong>স্বয়ংক্রিয় আনলক হওয়ার সময়:</strong> ${unblockStr}</div>
+              </div>
             </div>
-            <div style="font-size: 12px; color: #8C5000; margin-bottom: 2px;"><strong>কারণ:</strong> ${u.blockReason || 'অনির্দিষ্ট'}</div>
-            <div style="font-size: 12px; color: #8C5000;"><strong>আনলক হওয়ার সময়:</strong> ${unblockStr}</div>
+            <button type="button" onclick="activateUserAccount('${u.id}', '${u.name}')" class="btn"
+              style="background: #2E7D32; color: #fff; border: none; padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.25);">
+              <i class="fa-solid fa-user-check"></i>
+              <span>এখনই আনব্লক করুন</span>
+            </button>
           </div>
         `;
       } else if (st === 'permanently_suspended') {
-        statusInfoSection = `
-          <div style="background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: #C62828; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <i class="fa-solid fa-ban"></i>
-              <span>স্থায়ী সাসপেনশন বিবরণ</span>
+        statusAlertBanner = `
+          <div style="background: #FFEBEE; border: 1.5px solid #FFCDD2; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: flex-start; gap: 14px;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: #FFCDD2; color: #C62828; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <i class="fa-solid fa-ban"></i>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 4px; font-size: 15px; color: #C62828; font-weight: 700;">স্থায়ী সাসপেনশন কার্যকর রয়েছে</h4>
+                <div style="font-size: 13.5px; color: #B71C1C;"><strong>সাসপেনশনের কারণ:</strong> ${u.suspendReason || 'কোনো কারণ উল্লেখ করা হয়নি'}</div>
+              </div>
             </div>
-            <div style="font-size: 12px; color: #B71C1C;"><strong>কারণ:</strong> ${u.suspendReason || 'অনির্দিষ্ট'}</div>
+            <button type="button" onclick="activateUserAccount('${u.id}', '${u.name}')" class="btn"
+              style="background: #2E7D32; color: #fff; border: none; padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.25);">
+              <i class="fa-solid fa-user-check"></i>
+              <span>সাসপেনশন প্রত্যাহার করুন</span>
+            </button>
           </div>
         `;
       }
 
+      const districtName = u.rawDistrict || (u.district ? u.district.split(',').pop().trim() : '') || 'অনুল্লিখিত';
+
       container.innerHTML = `
-        <!-- Profile Header -->
-        <div style="background: #F1F8F1; border: 1px solid #C8E6C9; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-          ${avatarHtml}
-          <div style="flex: 1; min-width: 0;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-              <h4 style="margin: 0; font-size: 15.5px; font-weight: 700; color: var(--text-primary);">${u.name}</h4>
-              ${statusBadge}
+        <!-- Top Navigation Bar with Back Button -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; background: #fff; padding: 14px 20px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button type="button" onclick="closeUserDetailsView()" class="btn"
+              style="background: #E8F5E9; color: #1B5E20; border: 1.5px solid #A5D6A7; border-radius: 10px; padding: 8px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(46,125,50,0.12); transition: all 0.2s ease;">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>ব্যবহারকারী তালিকায় ফিরে যান</span>
+            </button>
+            <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">/ ইউজার কন্ট্রোল / ${u.name}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2E7D32; background: #E8F5E9; padding: 6px 14px; border-radius: 20px; border: 1px solid #C8E6C9; font-weight: 600;">
+            <span class="live-dot"></span>
+            <span>লাইভ ডেটাবেজ সিঙ্ক সক্রিয়</span>
+          </div>
+        </div>
+
+        <!-- 1. Top Profile Hero Card -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 22px 28px; background: linear-gradient(135deg, #FFFFFF 0%, #F5FAF5 100%); border: 1.5px solid #C8E6C9; border-radius: 18px; box-shadow: 0 4px 16px rgba(46,125,50,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+              ${avatarHtmlLarge}
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #1B5E20;">${u.name}</h2>
+                  <span style="background: #E8F5E9; color: #2E7D32; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 6px; border: 1px solid #C8E6C9;">${u.role || 'কৃষক (Farmer)'}</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; font-size: 13.5px; color: var(--text-secondary);">
+                  <span style="display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-phone" style="color: #2E7D32;"></i> <strong>${u.phone || 'অনুপলব্ধ'}</strong></span>
+                  <span style="display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-envelope" style="color: #2E7D32;"></i> <strong>${u.email || 'অনুপলব্ধ'}</strong></span>
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-family: monospace; font-size: 12px; background: #E0E0E0; padding: 2px 8px; border-radius: 5px; color: #424242;"><i class="fa-solid fa-fingerprint"></i> UID: ${u.id}</span>
+                </div>
+              </div>
             </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-phone" style="color: var(--primary);"></i> ${u.phone || 'অনুপলব্ধ'}</span>
-              ${u.email ? `<span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-envelope" style="color: var(--primary);"></i> ${u.email}</span>` : ''}
+            <div>
+              ${largeStatusBadge}
             </div>
           </div>
         </div>
 
-        ${statusInfoSection}
+        ${statusAlertBanner}
 
-        <!-- Details Grid -->
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px;">
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">জেলা</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${u.rawDistrict || u.district || 'অনুল্লিখিত'}</span>
+        <!-- 2. Main Details Grid (Spacious 2-Column on Desktop) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 20px;">
+          
+          <!-- Card A: ব্যক্তিগত ও ভৌগোলিক তথ্য -->
+          <div class="panel-card" style="padding: 22px 24px; border-radius: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; border-bottom: 1.5px solid var(--border); padding-bottom: 12px;">
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-id-card"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1B5E20;">ব্যক্তিগত ও ভৌগোলিক তথ্য</h3>
+                <p style="margin: 0; font-size: 11.5px; color: var(--text-muted);">নিবন্ধিত কৃষকের স্থায়ী ঠিকানা ও পরিচিতি</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">জেলা</span>
+                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-location-dot" style="color: #4CAF50; margin-right: 5px; font-size: 12px;"></i>${districtName}</span>
+              </div>
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">উপজেলা / থানা</span>
+                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">${u.upazila || 'অনুল্লিখিত'}</span>
+              </div>
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">ইউনিয়ন / গ্রাম</span>
+                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">${u.village || 'অনুল্লিখিত'}</span>
+              </div>
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">পেশা</span>
+                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">${u.occupation || 'অনুল্লিখিত'}</span>
+              </div>
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">নিবন্ধনের সময়</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);"><i class="fa-regular fa-calendar-check" style="color: #2E7D32; margin-right: 5px;"></i>${joinDateStr}</span>
+              </div>
+              <div style="background: #F9FAF8; border: 1px solid #EBEFEB; border-radius: 10px; padding: 12px 14px;">
+                <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 3px;">শেষ প্রোফাইল আপডেট</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-clock-rotate-left" style="color: #FF9800; margin-right: 5px;"></i>${lastUpdateStr}</span>
+              </div>
+            </div>
           </div>
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">উপজেলা / থানা</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${u.upazila || 'অনুল্লিখিত'}</span>
-          </div>
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">ইউনিয়ন / গ্রাম</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${u.village || 'অনুল্লিখিত'}</span>
-          </div>
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">পেশা</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${u.occupation || 'অনুল্লিখিত'}</span>
-          </div>
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">নিবন্ধনের সময়</span>
-            <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">${joinDateStr}</span>
-          </div>
-          <div style="background: #FAFAFA; border: 1px solid #EEEEEE; border-radius: 8px; padding: 9px 12px;">
-            <span style="font-size: 11px; color: var(--text-muted); display: block;">শেষ প্রোফাইল আপডেট</span>
-            <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">${lastUpdateStr}</span>
+
+          <!-- Card B: নীতি ও একাউন্ট নিরাপত্তা -->
+          <div class="panel-card" style="padding: 22px 24px; border-radius: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; border-bottom: 1.5px solid var(--border); padding-bottom: 12px;">
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: #EDE7F6; color: #5E35B1; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #311B92;">প্রোফাইল পলিসি ও নিরাপত্তা নিয়ন্ত্রণ</h3>
+                <p style="margin: 0; font-size: 11.5px; color: var(--text-muted);">৩০ দিনের এডিট লিমিট ও লগইন ক্রেডেনশিয়াল</p>
+              </div>
+            </div>
+
+            <!-- 30-Day Edit Limit Card -->
+            <div style="background: #FFFDE7; border: 1.5px solid #FFF59D; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div style="font-size: 13.5px; font-weight: 700; color: #F57F17; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                  <span>৩০-দিনের প্রোফাইল আপডেট লিমিট</span>
+                </div>
+                <div>${limitStatus.badgeHtml}</div>
+              </div>
+              <p style="font-size: 12px; color: #5D4037; margin: 0 0 10px; line-height: 1.4;">কৃষকের সত্যতা নিশ্চিত রাখতে অ্যাপে প্রতি ৩০ দিনে একবার তথ্য এডিট অনুমোদিত। অ্যাডমিন প্যানেল থেকে এই সীমাবদ্ধতা তাৎক্ষণিক প্রত্যাহার করা যায়।</p>
+              <button type="button" class="btn btn-sm" onclick="resetUserProfileLimit('${u.id}', '${u.name}')"
+                style="background: #5E35B1; color: white; border: none; font-weight: 700; padding: 8px 16px; border-radius: 8px; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(94,53,177,0.25);">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>৩০-দিনের লিমিট রিসেট করুন (লক খোলা)</span>
+              </button>
+            </div>
+
+            <!-- Password Reset Box -->
+            <div style="background: #E3F2FD; border: 1.5px solid #BBDEFB; border-radius: 12px; padding: 14px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div style="font-size: 13.5px; font-weight: 700; color: #1565C0; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-key"></i>
+                  <span>পাসওয়ার্ড রিসেট ও নিরাপত্তা</span>
+                </div>
+                <span style="font-size: 11.5px; background: #BBDEFB; color: #0D47A1; padding: 2px 8px; border-radius: 6px; font-weight: 600;">Firebase Auth</span>
+              </div>
+              <p style="font-size: 12px; color: #1565C0; margin: 0 0 10px; line-height: 1.4;">
+                নিবন্ধিত ইমেইল: <strong>${u.email || 'কোনো ইমেইল পাওয়া যায়নি'}</strong>
+              </p>
+              <button type="button" class="btn btn-sm" onclick="sendUserPasswordReset('${u.id}', '${u.email || ''}', '${u.name}')"
+                style="background: #1565C0; color: white; border: none; font-weight: 700; padding: 8px 16px; border-radius: 8px; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(21,101,192,0.25);">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>পাসওয়ার্ড রিসেট লিংক পাঠান</span>
+              </button>
+            </div>
+
           </div>
         </div>
 
-        <!-- 30-Day Edit Limit Card -->
-        <div style="background: #FFFDE7; border: 1px solid #FFF59D; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-          <div>
-            <div style="font-size: 12.5px; font-weight: 700; color: #F57F17; display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-              <span>৩০-দিনের প্রোফাইল আপডেট লিমিট</span>
+        <!-- 3. Dedicated Admin Action Control Panel -->
+        <div class="panel-card" style="padding: 22px 24px; border-radius: 16px; background: #fff; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+            <div style="width: 34px; height: 34px; border-radius: 10px; background: #E8F5E9; color: #1B5E20; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+              <i class="fa-solid fa-sliders"></i>
             </div>
-            <div style="font-size: 12px; color: #795548; margin-top: 3px;">
-              বর্তমান অবস্থা: ${limitStatus.badgeHtml}
+            <div>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">প্রশাসনিক একাউন্ট পরিচালনা ও সিদ্ধান্ত গ্রহণ</h3>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">এই ব্যবহারকারীর একাউন্ট স্ট্যাটাস এবং অনুমতি অবিলম্বে প্রয়োগ করুন</p>
             </div>
           </div>
-          <button type="button" class="btn btn-sm" onclick="resetUserProfileLimit('${u.id}', '${u.name}')" 
-            style="background: #EDE7F6; color: #5E35B1; border: 1px solid #D1C4E9; font-weight: 600; padding: 6px 12px; border-radius: 7px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>লিমিট রিসেট করুন</span>
-          </button>
-        </div>
 
-        <!-- Admin Action Buttons Section -->
-        <div style="border-top: 1px solid var(--border); padding-top: 14px;">
-          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px;">প্রশাসনিক অ্যাকশন ও একাউন্ট নিয়ন্ত্রণ:</label>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
             <!-- Password Reset -->
-            <button type="button" class="btn btn-sm" onclick="sendUserPasswordReset('${u.id}', '${u.email || ''}', '${u.name}')"
-              style="background: #E3F2FD; color: #1565C0; border: 1px solid #90CAF9; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <button type="button" class="btn" onclick="sendUserPasswordReset('${u.id}', '${u.email || ''}', '${u.name}')"
+              style="background: #E3F2FD; color: #1565C0; border: 1.5px solid #90CAF9; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
               <i class="fa-solid fa-key"></i>
               <span>পাসওয়ার্ড রিসেট লিংক</span>
             </button>
 
+            <!-- Limit Reset -->
+            <button type="button" class="btn" onclick="resetUserProfileLimit('${u.id}', '${u.name}')"
+              style="background: #EDE7F6; color: #5E35B1; border: 1.5px solid #D1C4E9; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>৩০-দিনের লিমিট রিসেট</span>
+            </button>
+
             ${st !== 'active' ? `
               <!-- Activate / Unblock -->
-              <button type="button" class="btn btn-sm" onclick="activateUserAccount('${u.id}', '${u.name}')"
-                style="background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn" onclick="activateUserAccount('${u.id}', '${u.name}')"
+                style="background: #E8F5E9; color: #1B5E20; border: 1.5px solid #A5D6A7; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
                 <i class="fa-solid fa-user-check"></i>
-                <span>একাউন্ট সক্রিয় করুন</span>
+                <span>একাউন্ট সক্রিয় ও আনব্লক করুন</span>
               </button>
             ` : ''}
 
             ${st !== 'temporary_blocked' ? `
               <!-- Temp Block -->
-              <button type="button" class="btn btn-sm" onclick="closeUserDetailsModal(); openTempBlockModal('${u.id}', '${u.name}');"
-                style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn" onclick="openTempBlockModal('${u.id}', '${u.name}')"
+                style="background: #FFF3E0; color: #E65100; border: 1.5px solid #FFCC80; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
                 <i class="fa-solid fa-user-clock"></i>
                 <span>সাময়িক স্থগিত করুন</span>
               </button>
@@ -5325,24 +5708,47 @@
 
             ${st !== 'permanently_suspended' ? `
               <!-- Permanent Suspend -->
-              <button type="button" class="btn btn-sm" onclick="closeUserDetailsModal(); openSuspendModal('${u.id}', '${u.name}');"
-                style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn" onclick="openSuspendModal('${u.id}', '${u.name}')"
+                style="background: #FFEBEE; color: #C62828; border: 1.5px solid #FFCDD2; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
                 <i class="fa-solid fa-user-slash"></i>
-                <span>স্থায়ী সাসপেন্ড</span>
+                <span>স্থায়ীভাবে সাসপেন্ড</span>
               </button>
             ` : ''}
+
+            <!-- Back to List -->
+            <button type="button" class="btn" onclick="closeUserDetailsView()"
+              style="background: #F3F4F6; color: #374151; border: 1.5px solid #D1D5DB; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; margin-left: auto;">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>তালিকায় ফিরে যান</span>
+            </button>
           </div>
         </div>
       `;
 
-      modal.classList.add('active');
+      // Scroll to top of main wrapper
+      const mw = document.querySelector('.main-wrapper');
+      if (mw) mw.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeUserDetailsView() {
+      currentDetailUserId = null;
+      const tView = document.getElementById('ucTableView');
+      const dView = document.getElementById('ucDetailView');
+      if (tView) tView.style.display = 'block';
+      if (dView) dView.style.display = 'none';
+
+      const pageTitleEl = document.getElementById('pageTitle');
+      if (pageTitleEl) pageTitleEl.innerText = 'ইউজার কন্ট্রোল (User Management System)';
+    }
+
+    function openUserDetailsModal(userId) {
+      renderUserDetailsView(userId);
     }
 
     function closeUserDetailsModal() {
-      currentDetailUserId = null;
-      const m = document.getElementById('modalUserDetails');
-      if (m) m.classList.remove('active');
+      closeUserDetailsView();
     }
+
     function openTempBlockModal(userId, userName) {
       document.getElementById('tempBlockTargetUserId').value = userId;
       document.getElementById('tempBlockTargetName').innerText = userName || 'ব্যবহারকারী';
@@ -5364,14 +5770,17 @@
       const reason = (document.getElementById('tempBlockReasonText').value || '').trim();
 
       if (!reason) {
-        alert('অনুগ্রহ করে সাময়িক ব্লক করার সুনির্দিষ্ট কারণ লিখুন!');
+        showAdminError('কারণ উল্লেখ করুন!', 'অনুগ্রহ করে সাময়িক স্থগিতের সুনির্দিষ্ট কারণ লিখুন।');
         return;
       }
 
       if (!db || !userId) {
-        alert('ডেটাবেজ সংযোগে সমস্যা হয়েছে!');
+        showAdminError('ডেটাবেজ বিচ্ছিন্ন!', 'ডেটাবেজ সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
         return;
       }
+
+      closeTempBlockModal();
+      showAdminLoading('সাময়িক স্থগিত হচ্ছে....', 'ফায়ারস্টোর ডেটাবেজে স্থিতি আপডেট করা হচ্ছে');
 
       try {
         const unblockAtDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
@@ -5381,14 +5790,13 @@
           unblockAt: firebase.firestore.Timestamp.fromDate(unblockAtDate),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        closeTempBlockModal();
+        showAdminSuccess('সাময়িক স্থগিত সফল!', `${userName} কে ${toBnDigits(days)} দিনের জন্য সফলভাবে সাময়িক স্থগিত করা হয়েছে।`);
         if (currentDetailUserId === userId) {
-          openUserDetailsModal(userId);
+          renderUserDetailsView(userId);
         }
-        showToast(`${userName} কে ${toBnDigits(days)} দিনের জন্য সাময়িক স্থগিত করা হয়েছে!`);
       } catch (err) {
         console.error('Temp block error:', err);
-        alert('ব্লক কার্যকরে ত্রুটি হয়েছে: ' + err.message);
+        showAdminError('স্থগিতকরণ ব্যর্থ!', 'ব্লক কার্যকরে ত্রুটি হয়েছে: ' + err.message);
       }
     }
 
@@ -5411,14 +5819,17 @@
       const reason = (document.getElementById('suspendReasonText').value || '').trim();
 
       if (!reason) {
-        alert('অনুগ্রহ করে স্থায়ীভাবে সাসপেন্ড করার সুনির্দিষ্ট কারণ লিখুন!');
+        showAdminError('কারণ উল্লেখ করুন!', 'অনুগ্রহ করে একাউন্ট স্থায়ীভাবে সাসপেন্ড করার সুনির্দিষ্ট কারণ লিখুন।');
         return;
       }
 
       if (!db || !userId) {
-        alert('ডেটাবেজ সংযোগে সমস্যা হয়েছে!');
+        showAdminError('ডেটাবেজ বিচ্ছিন্ন!', 'ডেটাবেজ সংযোগে সমস্যা হয়েছে।');
         return;
       }
+
+      closeSuspendModal();
+      showAdminLoading('স্থায়ী সাসপেন্ড হচ্ছে....', 'ফায়ারস্টোর ডেটাবেজে স্থিতি আপডেট করা হচ্ছে');
 
       try {
         await db.collection('users').doc(userId).update({
@@ -5426,21 +5837,33 @@
           suspendReason: reason,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        closeSuspendModal();
+        showAdminSuccess('স্থায়ী সাসপেন্ড সম্পন্ন!', `${userName} এর একাউন্ট সফলভাবে স্থায়ীভাবে সাসপেন্ড করা হয়েছে।`);
         if (currentDetailUserId === userId) {
-          openUserDetailsModal(userId);
+          renderUserDetailsView(userId);
         }
-        showToast(`${userName} এর একাউন্ট স্থায়ীভাবে সাসপেন্ড করা হয়েছে!`);
       } catch (err) {
         console.error('Permanent suspend error:', err);
-        alert('সাসপেন্ড কার্যকরে ত্রুটি হয়েছে: ' + err.message);
+        showAdminError('সাসপেনশন ব্যর্থ!', 'সাসপেন্ড কার্যকরে ত্রুটি হয়েছে: ' + err.message);
       }
     }
 
     async function activateUserAccount(userId, userName) {
-      if (!confirm(`${userName} এর একাউন্ট কি আপনি পুনরায় সক্রিয় করতে চান?`)) return;
+      const confirmed = await showAdminConfirm(
+        'একাউন্ট সক্রিয় করতে চান?',
+        `${userName} এর একাউন্ট কি আপনি পুনরায় সক্রিয় ও আনব্লক করতে চান? এর ফলে ব্যবহারকারী অ্যাপের সকল সুবিধা স্বাভাবিকভাবে উপভোগ করতে পারবেন।`,
+        null,
+        'হ্যাঁ, সক্রিয় করুন',
+        false
+      );
+      if (!confirmed) return;
 
-      if (!db || !userId) return;
+      if (!db || !userId) {
+        showAdminError('ডেটাবেজ বিচ্ছিন্ন!', 'ডেটাবেজ সংযোগে সমস্যা হয়েছে।');
+        return;
+      }
+
+      showAdminLoading('একাউন্ট সক্রিয় করা হচ্ছে....', 'ফায়ারস্টোর ডেটাবেজে স্থিতি আপডেট করা হচ্ছে');
+
       try {
         await db.collection('users').doc(userId).update({
           status: 'active',
@@ -5449,52 +5872,75 @@
           suspendReason: firebase.firestore.FieldValue.delete(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        showAdminSuccess('একাউন্ট সক্রিয়করণ সফল!', `${userName} এর একাউন্ট সফলভাবে সক্রিয় ও আনব্লক করা হয়েছে।`);
         if (currentDetailUserId === userId) {
-          openUserDetailsModal(userId);
+          renderUserDetailsView(userId);
         }
-        showToast(`${userName} এর একাউন্ট সফলভাবে সক্রিয় করা হয়েছে!`);
       } catch (err) {
         console.error('Activate user error:', err);
-        alert('সক্রিয়করণে ত্রুটি: ' + err.message);
+        showAdminError('সক্রিয়করণ ব্যর্থ!', 'সক্রিয়করণে ত্রুটি: ' + err.message);
       }
     }
 
     async function sendUserPasswordReset(userId, email, userName) {
       if (!email) {
-        alert(`${userName} এর কোনো নিবন্ধিত ইমেইল এড্রেস পাওয়া যায়নি!`);
+        showAdminError('ইমেইল পাওয়া যায়নি!', `${userName} এর কোনো নিবন্ধিত ইমেইল এড্রেস পাওয়া যায়নি। পাসওয়ার্ড রিসেট করতে ইমেইল থাকা আবশ্যক।`);
         return;
       }
-      if (!confirm(`${userName} (${email}) এর ইমেইলে কি পাসওয়ার্ড রিসেট লিংক পাঠাতে চান?`)) return;
+
+      const confirmed = await showAdminConfirm(
+        'পাসওয়ার্ড রিসেট লিংক পাঠাবেন?',
+        `${userName} (${email}) এর নিবন্ধিত ঠিকানায় কি পাসওয়ার্ড রিসেট লিংক পাঠাতে চান?`,
+        null,
+        'হ্যাঁ, লিংক পাঠান',
+        false
+      );
+      if (!confirmed) return;
+
+      showAdminLoading('পাসওয়ার্ড রিসেট লিংক পাঠানো হচ্ছে....', 'Firebase Auth সার্ভারে রিসেট লিংক জেনারেট হচ্ছে');
 
       try {
         if (firebase.auth) {
           await firebase.auth().sendPasswordResetEmail(email);
-          showToast(`পাসওয়ার্ড রিসেট লিংক সফলভাবে ${email} এ পাঠানো হয়েছে!`);
+          showAdminSuccess('লিংক পাঠানো হয়েছে!', `পাসওয়ার্ড রিসেট লিংক সফলভাবে ${email} এ প্রেরণ করা হয়েছে।`);
         } else {
-          showToast(`পাসওয়ার্ড রিসেট লিংক ${email} এ প্রেরণের কমান্ড কার্যকর হয়েছে!`);
+          showAdminSuccess('কমান্ড কার্যকর হয়েছে!', `পাসওয়ার্ড রিসেট লিংক ${email} এ প্রেরণের কমান্ড কার্যকর হয়েছে।`);
         }
       } catch (err) {
         console.error('Password reset error:', err);
-        alert('পাসওয়ার্ড রিসেট লিংক পাঠাতে ত্রুটি: ' + err.message);
+        showAdminError('লিংক প্রেরণে ত্রুটি!', 'পাসওয়ার্ড রিসেট লিংক পাঠাতে সমস্যা হয়েছে: ' + err.message);
       }
     }
 
     async function resetUserProfileLimit(userId, userName) {
-      if (!confirm(`${userName} এর ৩০-দিনের প্রোফাইল এডিট লিমিট কি রিসেট করতে চান? রিসেট করলে তিনি অবিলম্বে তথ্য সম্পাদনা করতে পারবেন।`)) return;
+      const confirmed = await showAdminConfirm(
+        '৩০-দিনের লিমিট রিসেট করবেন?',
+        `${userName} এর ৩০-দিনের প্রোফাইল এডিট লিমিট কি রিসেট করতে চান? লিমিট প্রত্যাহার করলে তিনি অবিলম্বে ইউজার অ্যাপ থেকে তথ্য সম্পাদনা করতে পারবেন।`,
+        null,
+        'হ্যাঁ, লিমিট রিসেট করুন',
+        false
+      );
+      if (!confirmed) return;
 
-      if (!db || !userId) return;
+      if (!db || !userId) {
+        showAdminError('ডেটাবেজ বিচ্ছিন্ন!', 'ডেটাবেজ সংযোগে সমস্যা হয়েছে।');
+        return;
+      }
+
+      showAdminLoading('লিমিট রিসেট হচ্ছে....', 'ফায়ারস্টোর ডেটাবেজে আপডেট পাঠানো হচ্ছে');
+
       try {
         await db.collection('users').doc(userId).update({
           lastProfileUpdate: null,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        showAdminSuccess('লিমিট রিসেট সফল!', `${userName} এর ৩০-দিনের প্রোফাইল আপডেট লিমিট সফলভাবে রিসেট করা হয়েছে।`);
         if (currentDetailUserId === userId) {
-          openUserDetailsModal(userId);
+          renderUserDetailsView(userId);
         }
-        showToast(`${userName} এর ৩০-দিনের প্রোফাইল লিমিট রিসেট করা হয়েছে!`);
       } catch (err) {
         console.error('Reset limit error:', err);
-        alert('লিমিট রিসেট করতে সমস্যা: ' + err.message);
+        showAdminError('লিমিট রিসেট ব্যর্থ!', 'লিমিট রিসেট করতে সমস্যা: ' + err.message);
       }
     }
 
