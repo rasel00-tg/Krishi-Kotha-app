@@ -1837,9 +1837,8 @@
       border-radius: 0 0 34px 34px;
       padding: 34px 20px 28px 20px;
       box-shadow: 0 8px 18px rgba(27, 94, 32, 0.35), 0 2px 6px rgba(0, 0, 0, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: relative;
+      z-index: 10;
       overflow: hidden;
       color: #fff;
       box-sizing: border-box;
@@ -2356,7 +2355,7 @@
             <span>চাষ ক্যালেন্ডার</span>
           </div>
           <!-- ২. কৃষি বিশেষজ্ঞ -->
-          <div class="quick-card" onclick="openExpertHelplineModal()">
+          <div class="quick-card" onclick="openSupportContactPage()">
             <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
               <i class="fa-solid fa-user-doctor"></i>
             </div>
@@ -2870,8 +2869,8 @@
             <!-- Category 3: সহায়তা ও নিয়মাবলী (SUPPORT & LEGAL) -->
             <div class="menu-category-title">সহায়তা ও নিয়মাবলী</div>
             <div class="menu-group-card">
-              <div class="menu-item-row" onclick="openHelplineModal()" style="cursor: pointer;">
-                <div class="menu-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
+              <div class="menu-item-row" onclick="openSupportContactPage()" style="cursor: pointer;">
+                <div class="menu-icon-wrap" style="background: #E8F5E9; color: #00A86B;">
                   <i class="fa-solid fa-headset"></i>
                 </div>
                 <div class="menu-item-text">
@@ -3267,6 +3266,408 @@
         </div>
       </div>
     </div>
+
+    <!-- DEDICATED FULL SCREEN SUPPORT & CONTACT CENTER PAGE -->
+    <div class="full-screen-page" id="supportContactPage" style="background: #F6F8F5; z-index: 100010; overflow: hidden;">
+      <!-- Single Natural Scroll Container (Dynamic Scrolling) -->
+      <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Signature Emerald Green Header (Scrolls naturally) -->
+        <div style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
+          <!-- Top Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <button type="button" onclick="closeSupportContactPage()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+              <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
+              <span>ফিরে যান</span>
+            </button>
+            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+              <i class="fa-solid fa-headset" style="font-size: 13px;"></i>
+              <span>২৪/৭ সাপোর্ট সেন্টার</span>
+            </span>
+          </div>
+
+          <!-- Specific Lottie Animation: 'assets/animation/Connect with us.json' (Enlarged 150x150) -->
+          <div style="width: 150px; height: 150px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player src="assets/animation/Connect%20with%20us.json" background="transparent" speed="1"
+              style="width: 150px; height: 150px;" loop autoplay>
+              <i class="fa-solid fa-headset" style="font-size: 48px; color: white;"></i>
+            </lottie-player>
+          </div>
+          <div style="text-align: center;">
+            <h2 style="font-size: 20px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">কৃষি সহায়তা ও সাপোর্ট সেন্টার</h2>
+            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার যেকোনো সমস্যা বা পরামর্শের জন্য আমরা পাশে আছি</p>
+          </div>
+        </div>
+
+        <!-- Scrollable Content Body with 140px bottom padding -->
+        <div style="padding: 18px 16px 140px 16px;">
+          <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
+
+          <!-- Section: সহায়তা ও অ্যাকশন চ্যানেলসমূহ (Live Firestore Settings) -->
+          <div>
+            <!-- Direct Action Cards Container (Call, WhatsApp, Email only) -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- 1. কৃষি কল সেন্টার ও হটলাইন (Direct Call) -->
+              <div id="webCallCard" onclick="handleWebHelplineClick('hotline')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#00A86B'" onmouseout="this.style.borderColor='#E3EAE3'">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                    <i class="fa-solid fa-phone-volume"></i>
+                  </div>
+                  <div>
+                    <h4 id="webHotlineTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">কৃষি কল সেন্টার (১৬১২৩)</h4>
+                    <p id="webHotlineSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0; font-variant-numeric: tabular-nums;">সরাসরি সরকারি কর্মকর্তার সাথে কথা বলুন</p>
+                  </div>
+                </div>
+                <span style="background: #00A86B; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">কল করুন</span>
+              </div>
+
+              <!-- 2. হোয়াটসঅ্যাপ সাপোর্ট (WhatsApp Chat) -->
+              <div id="webWhatsappCard" onclick="handleWebHelplineClick('whatsapp')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#25D366'" onmouseout="this.style.borderColor='#E3EAE3'">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F8F0; color: #25D366; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </div>
+                  <div>
+                    <h4 id="webWhatsappTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">হোয়াটসঅ্যাপ সাপোর্ট</h4>
+                    <p id="webWhatsappSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0; font-variant-numeric: tabular-nums;">তাৎক্ষণিক চ্যাট ও দ্রুত পরামর্শ সেবা পেতে মেসেজ দিন</p>
+                  </div>
+                </div>
+                <span style="background: #25D366; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">চ্যাট করুন</span>
+              </div>
+
+              <!-- 3. ইমেইল সহায়তা (Direct Email) -->
+              <div id="webEmailCard" onclick="handleWebHelplineClick('email')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#00897B'" onmouseout="this.style.borderColor='#E3EAE3'">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E0F2F1; color: #00897B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                    <i class="fa-solid fa-envelope"></i>
+                  </div>
+                  <div>
+                    <h4 id="webEmailTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">ইমেইল সহায়তা</h4>
+                    <p id="webEmailSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">support@krishikotha.gov.bd</p>
+                  </div>
+                </div>
+                <span style="background: #00897B; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">ইমেইল পাঠান</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: ইন-অ্যাপ সাপোর্ট টিকিট ও লগইন তথ্য হালনাগাদ ফর্ম -->
+          <div style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.04);">
+            <!-- Form Header -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <div id="webFormHeaderIcon" style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </div>
+              <div>
+                <h3 id="webFormHeaderTitle" style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">আপনার অভিযোগ ও পরামর্শ লিখে পাঠিয়ে দিন</h3>
+                <p id="webFormHeaderSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">সমস্যা বা পরামর্শ লিখে পাঠালে সাপোর্ট টিম দ্রুত ব্যবস্থা নেবে</p>
+              </div>
+            </div>
+
+            <div style="height: 1px; background: #EFF3EF; margin-bottom: 16px;"></div>
+
+            <!-- Subject Dropdown -->
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সমস্যা বা বিষয়ের ক্যাটাগরি</label>
+              <div style="position: relative;">
+                <select id="webSupportSubject" onchange="handleSupportSubjectChange(this.value)" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+                  <option value="একাউন্ট সমস্যা" selected>একাউন্ট সমস্যা</option>
+                  <option value="লগইন তথ্য হালনাগাদ">লগইন তথ্য হালনাগাদ (আলাদা পেজ)</option>
+                  <option value="ফসলের রোগ সংক্রান্ত জিজ্ঞাসা">ফসলের রোগ সংক্রান্ত জিজ্ঞাসা</option>
+                  <option value="টেকনিক্যাল সমস্যা">টেকনিক্যাল সমস্যা</option>
+                  <option value="সাধারণ পরামর্শ">সাধারণ পরামর্শ</option>
+                  <option value="অন্যান্য">অন্যান্য</option>
+                </select>
+                <i class="fa-solid fa-chevron-down" style="position: absolute; right: 14px; top: 16px; font-size: 13px; color: #00A86B; pointer-events: none;"></i>
+              </div>
+            </div>
+
+            <!-- Dynamic Section A: Inline Credentials Update Flow (Dedicated page preferred) -->
+            <div id="webInlineCredentialsSection" style="display: none;">
+              <!-- Verification Card -->
+              <div id="webInlineVerifyCard" style="background: #F9FAF9; border: 1px solid #DCE4DC; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                  <i class="fa-solid fa-magnifying-glass" style="color: #00A86B; font-size: 14px;"></i>
+                  <strong style="font-size: 13px; color: var(--text-primary);">পুরাতন একাউন্ট যাচাই (Account Verification)</strong>
+                </div>
+                <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 10px 0;">আপনার পূর্বে নিবন্ধিত মোবাইল নম্বর বা ইমেইল এড্রেস লিখুন:</p>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="webInlineOldIdentifier" placeholder="যেমন: 017XXXXXXXX বা user@mail.com" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: white; padding: 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; outline: none;">
+                  <button type="button" id="webInlineVerifyBtn" onclick="verifyInlineOldAccount()" style="padding: 0 18px; height: 44px; border-radius: 12px; border: none; background: #00A86B; color: white; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;">
+                    যাচাই করুন
+                  </button>
+                </div>
+              </div>
+
+              <!-- Verified User Pill (Hidden until verified) -->
+              <div id="webInlineVerifiedPill" style="display: none; background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 12px; padding: 12px; margin-bottom: 14px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #00A86B; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fa-solid fa-user"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 13.5px; font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 5px;">
+                      <span id="webInlineVerifiedName">সম্মানিত কৃষক</span>
+                      <i class="fa-solid fa-circle-check" style="color: #00A86B; font-size: 13px;"></i>
+                    </div>
+                    <div id="webInlineVerifiedCurrentId" style="font-size: 11.5px; color: #2E7D32; font-variant-numeric: tabular-nums;">বর্তমান আইডি: </div>
+                  </div>
+                </div>
+                <button type="button" onclick="resetInlineCredentialsForm()" style="background: none; border: none; color: #2E7D32; font-size: 16px; cursor: pointer;" title="রিসেট করুন">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+              </div>
+
+              <!-- New Credentials Inputs (Hidden until verified) -->
+              <div id="webInlineNewInputsSection" style="display: none; margin-bottom: 14px;">
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন মোবাইল নম্বর (ঐচ্ছিক)</label>
+                  <input type="tel" id="webInlineNewPhone" placeholder="১১ ডিজিটের নতুন নম্বর (যেমন: 018XXXXXXXX)" style="width: 100%; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; outline: none; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ইমেইল এড্রেস (ঐচ্ছিক)</label>
+                  <input type="email" id="webInlineNewEmail" placeholder="নতুন ইমেইল এড্রেস (যেমন: newuser@gmail.com)" style="width: 100%; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 14px; outline: none; box-sizing: border-box;">
+                </div>
+
+                <button type="button" id="webInlineConfirmBtn" onclick="confirmInlineCredentialsUpdate()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25);">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>তথ্য হালনাগাদ সম্পন্ন করুন</span>
+                </button>
+              </div>
+
+              <!-- Digital Receipt Card (Hidden until update success) -->
+              <div id="webInlineReceiptCard" style="display: none; background: #F1F8F1; border: 1.3px solid #A5D6A7; border-radius: 16px; padding: 16px; text-align: center;">
+                <i class="fa-solid fa-circle-check" style="font-size: 44px; color: #00A86B; margin-bottom: 8px;"></i>
+                <h4 style="font-size: 16px; font-weight: 700; color: #1B5E20; margin: 0 0 4px 0;">লগইন তথ্য সফলভাবে হালনাগাদ হয়েছে!</h4>
+                <p style="font-size: 12px; color: #2E7D32; margin: 0 0 12px 0;">আপনার পূর্বের পুরাতন তথ্য বাতিল করে নতুন তথ্য কার্যকর করা হয়েছে।</p>
+                <div style="background: white; border: 1px solid #C8E6C9; border-radius: 10px; padding: 12px; text-align: left; font-size: 12.5px; margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="color: var(--text-secondary);">গ্রাহকের নাম:</span>
+                    <strong id="webInlineReceiptName">সম্মানিত কৃষক</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="color: var(--text-secondary);">নতুন লগইন আইডি:</span>
+                    <strong id="webInlineReceiptId" style="color: #00A86B; font-variant-numeric: tabular-nums;">-</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary);">তারিখ ও সময়:</span>
+                    <span id="webInlineReceiptTime" style="font-variant-numeric: tabular-nums;">-</span>
+                  </div>
+                </div>
+                <button type="button" onclick="resetInlineCredentialsForm()" style="width: 100%; height: 40px; border-radius: 10px; border: 1.5px solid #00A86B; background: transparent; color: #00A86B; font-weight: 700; font-size: 13px; cursor: pointer;">
+                  নতুন আরেকটি আবেদন করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Section B: Standard Ticket Message Box -->
+            <div id="webStandardTicketSection" style="display: block;">
+              <!-- Multi-line Textarea -->
+              <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সমস্যার বিস্তারিত বিবরণ</label>
+                <textarea id="webSupportDetails" rows="4" placeholder="আপনার সমস্যা, প্রশ্ন বা পরামর্শের বিস্তারিত এখানে লিখুন..." style="width: 100%; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 12px 14px; font-size: 14px; color: var(--text-primary); line-height: 1.45; outline: none; resize: vertical; box-sizing: border-box; font-variant-numeric: tabular-nums;"></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="button" id="webSupportSubmitBtn" onclick="submitWebSupportTicket()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25); transition: all 0.2s;">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>মেসেজ পাঠান</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section: পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস (Real-Time Stream) -->
+          <div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-clock-rotate-left" style="color: #00A86B;"></i>
+              <span>আপনার পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস</span>
+            </div>
+
+            <div id="webSupportTicketsList" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Populated dynamically via Firestore / Local stream -->
+              <div style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 22px 18px; text-align: center;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #F1F8F1; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px auto;">
+                  <i class="fa-solid fa-inbox"></i>
+                </div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">আপনার কোনো পূর্ববর্তী বার্তা নেই</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">যেকোনো সহায়তার জন্য উপরের ফর্ম থেকে নির্দ্বিধায় মেসেজ পাঠাতে পারেন।</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height: 40px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- DEDICATED FULL SCREEN UPDATE LOGIN CREDENTIALS PAGE -->
+    <div class="full-screen-page" id="updateCredentialsPage" style="background: #F6F8F5; z-index: 100012; overflow: hidden;">
+      <!-- Single Natural Scroll Container (Dynamic Scrolling) -->
+      <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Signature Emerald Green Header (Scrolls naturally) -->
+        <div style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 22px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
+          <!-- Top Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <button type="button" onclick="closeUpdateCredentialsPage()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+              <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
+              <span>ফিরে যান</span>
+            </button>
+            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+              <i class="fa-solid fa-shield-halved" style="font-size: 13px;"></i>
+              <span>নিরাপদ হালনাগাদ</span>
+            </span>
+          </div>
+
+          <!-- Specific Lottie Animation: 'assets/animation/Man and robot with computers sitting together in workplace.json' (Enlarged 145x145) -->
+          <div style="width: 145px; height: 145px; margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player src="assets/animation/Man%20and%20robot%20with%20computers%20sitting%20together%20in%20workplace.json" background="transparent" speed="1"
+              style="width: 145px; height: 145px;" loop autoplay>
+              <i class="fa-solid fa-user-shield" style="font-size: 38px; color: white;"></i>
+            </lottie-player>
+          </div>
+
+          <div style="text-align: center;">
+            <h2 style="font-size: 20.5px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">লগইন তথ্য হালনাগাদ</h2>
+            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার একাউন্টের ফোন নম্বর বা ইমেইল নিরাপদভাবে পরিবর্তন করুন</p>
+          </div>
+        </div>
+
+        <!-- Scrollable Content Body with 140px bottom padding -->
+        <div style="padding: 18px 16px 140px 16px;">
+          <div style="max-width: 580px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
+
+          <!-- State A: Form Container (Shown before success) -->
+          <div id="webCredentialsFormContainer" style="display: flex; flex-direction: column; gap: 18px;">
+            <!-- STEP 1: পুরাতন একাউন্ট যাচাই -->
+            <div style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                  <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">১. পুরাতন একাউন্ট যাচাই</h3>
+                  <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">আপনার বর্তমান সক্রিয় একাউন্টের ফোন নম্বর বা ইমেইল লিখুন</p>
+                </div>
+              </div>
+
+              <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
+
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পুরাতন ফোন নম্বর বা ইমেইল লিখুন</label>
+                <div style="position: relative;">
+                  <input type="text" id="webOldIdentifierInput" placeholder="যেমন: 017XXXXXXXX বা user@gmail.com" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                  <i class="fa-regular fa-address-card" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                </div>
+              </div>
+
+              <!-- যাচাই করুন বাটন -->
+              <button type="button" id="webVerifyOldAccountBtn" onclick="verifyWebOldAccount()" style="width: 100%; height: 44px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22); transition: all 0.2s;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>একাউন্ট যাচাই করুন</span>
+              </button>
+
+              <!-- একাউন্ট পাওয়া গেলে স্বয়ংক্রিয় নাম প্রদর্শন (ReadOnly Card) -->
+              <div id="webVerifiedUserCard" style="display: none; margin-top: 14px; background: #E8F5E9; border: 1.2px solid #81C784; border-radius: 14px; padding: 12px 14px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; background: #C8E6C9; color: #1B5E20; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                    <i class="fa-regular fa-user"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; font-weight: 600; color: #2E7D32;">যাচাইকৃত ব্যবহারকারীর নাম (অপরিবর্তনীয়)</div>
+                    <div id="webVerifiedUserNameDisplay" style="font-size: 15px; font-weight: 800; color: #1B5E20;">সম্মানিত কৃষক</div>
+                  </div>
+                </div>
+                <span style="background: #2E7D32; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-check"></i> যাচাইকৃত
+                </span>
+              </div>
+            </div>
+
+            <!-- STEP 2: নতুন লগইন তথ্য ইনপুট (Visible once verified) -->
+            <div id="webNewCredentialsContainer" style="display: none; background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                  <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">২. নতুন লগইন তথ্য নির্ধারণ</h3>
+                  <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">নতুন ফোন নম্বর বা নতুন ইমেইল লিখুন (অন্তত একটি পূরণ করুন)</p>
+                </div>
+              </div>
+
+              <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
+
+              <!-- নতুন ফোন নম্বর (ঐচ্ছিক) -->
+              <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ফোন নম্বর (ঐচ্ছিক)</label>
+                <div style="position: relative;">
+                  <input type="tel" id="webNewPhoneInput" placeholder="নতুন ১১ ডিজিটের মোবাইল নম্বর লিখুন" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                  <i class="fa-solid fa-mobile-screen-button" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                </div>
+              </div>
+
+              <!-- নতুন ইমেইল (ঐচ্ছিক) -->
+              <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ইমেইল (ঐচ্ছিক)</label>
+                <div style="position: relative;">
+                  <input type="email" id="webNewEmailInput" placeholder="নতুন @gmail.com এড্রেস লিখুন" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                  <i class="fa-regular fa-envelope" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                </div>
+              </div>
+
+              <!-- হালনাগাদ নিশ্চিত করুন বাটন -->
+              <button type="button" id="webConfirmUpdateBtn" onclick="confirmWebCredentialsUpdate()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25); transition: all 0.2s;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>হালনাগাদ নিশ্চিত করুন</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- State B: সফল হালনাগাদ ও ডিজিটাল রিসিপ্ট কার্ড (Success Receipt) -->
+          <div id="webCredentialsReceiptContainer" style="display: none; background: white; border: 1.5px solid #81C784; border-radius: 24px; padding: 24px 20px; box-shadow: 0 12px 30px rgba(0, 168, 107, 0.12); text-align: center;">
+            <div style="width: 68px; height: 68px; border-radius: 50%; background: #E8F5E9; border: 2px solid #81C784; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #2E7D32; margin: 0 auto 16px auto;">
+              <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3 style="font-size: 19px; font-weight: 800; color: #1B5E20; margin: 0 0 6px 0;">লগইন তথ্য সফলভাবে হালনাগাদ হয়েছে!</h3>
+            <p style="font-size: 12.5px; color: #556955; margin: 0 0 20px 0; line-height: 1.4;">আপনার একাউন্টের নতুন লগইন আইডি ডাটাবেজে স্থায়ীভাবে কার্যকর করা হয়েছে। পুরাতন তথ্য স্বয়ংক্রিয়ভাবে বাতিল করা হয়েছে।</p>
+
+            <!-- রিসিপ্ট বক্স -->
+            <div style="background: #F9FAF9; border: 1px solid #D8E4D8; border-radius: 16px; padding: 16px; text-align: left; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">ব্যবহারকারীর নাম:</span>
+                <span id="webReceiptUserName" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">সম্মানিত কৃষক</span>
+              </div>
+              <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">নতুন লগইন আইডি:</span>
+                <span id="webReceiptNewId" style="font-size: 13.5px; font-weight: 800; color: #00A86B;"></span>
+              </div>
+              <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">আপডেটের তারিখ ও সময়:</span>
+                <span id="webReceiptUpdateTime" style="font-size: 13px; font-weight: 600; color: #455A64;">এইমাত্র</span>
+              </div>
+            </div>
+
+            <!-- সিকিউরিটি নোট -->
+            <div style="background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 12px 14px; text-align: left; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 22px;">
+              <i class="fa-solid fa-circle-info" style="color: #E65100; font-size: 16px; margin-top: 2px;"></i>
+              <span style="font-size: 12.5px; font-weight: 600; color: #BF360C; line-height: 1.35;">পরবর্তী সময়ে অ্যাপে প্রবেশের জন্য আপনার এই নতুন তথ্য এবং পূর্বের পাসওয়ার্ড ব্যবহার করুন।</span>
+            </div>
+
+            <!-- লগইন পেজে যান বাটন -->
+            <button type="button" onclick="closeUpdateCredentialsPage(); openAuthModal('login');" style="width: 100%; height: 48px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25);">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              <span>লগইন পেজে যান</span>
+            </button>
+          </div>
+
+          <div style="height: 40px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
     <!-- DEDICATED FULL SCREEN EDIT PROFILE PAGE (EDGE-TO-EDGE, NO NAVBAR OVERLAP) -->
     <div class="full-screen-page" id="editProfilePage" style="background: #F7FAF7; z-index: 100010;">
@@ -4668,9 +5069,9 @@
           </div>
           <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
         </div>
-        <div style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">লগইন হচ্ছে....
+        <div id="loginLoadingTitle" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">লগইন হচ্ছে....
         </div>
-        <div style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
+        <div id="loginLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
       </div>
 
       <!-- STATE 2: SUCCESS -->
@@ -4804,6 +5205,59 @@
           <i class="fa-solid fa-phone"></i> ১৬১২৩ নম্বরে কল দিন
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUPPORT TICKET LOADING -->
+  <div class="modal-overlay" id="supportTicketLoadingModal"
+    style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); display: none; pointer-events: none; align-items: center; justify-content: center;">
+    <div class="bottom-sheet"
+      style="max-width: 380px; border-radius: 20px; padding: 28px 24px; background: white; text-align: center; margin: auto;">
+      <div
+        style="width: 60px; height: 60px; border-radius: 50%; background: #E8F5E9; border: 1.5px solid rgba(129,199,132,0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px auto;">
+        <div class="spinner"
+          style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: #00A86B; border-radius: 50%; animation: spin 0.8s linear infinite;">
+        </div>
+      </div>
+      <div style="font-size: 15px; font-weight: 700; color: #1B5E20; letter-spacing: 0.2px;">বার্তা পাঠানো হচ্ছে....</div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUPPORT TICKET DETAILS POPUP (ModalBottomSheet / Rounded Dialog) -->
+  <div class="modal-overlay" id="ticketDetailPopupModal"
+    style="z-index: 100030; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); display: none; pointer-events: none; align-items: center; justify-content: center; padding: 16px;">
+    <div class="bottom-sheet"
+      style="max-width: 480px; width: 100%; border-radius: 24px; padding: 22px 20px 24px 20px; background: white; text-align: left; margin: auto; box-shadow: 0 16px 40px rgba(0,0,0,0.22); max-height: 85vh; overflow-y: auto; box-sizing: border-box;">
+      <!-- Drag Handle -->
+      <div style="width: 44px; height: 4px; background: #E0E0E0; border-radius: 4px; margin: 0 auto 16px auto;"></div>
+
+      <!-- Header Row: Subject, Date, Status -->
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px;">
+        <div style="min-width: 0; flex: 1;">
+          <h3 id="ticketDetailSubject" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; word-break: break-word;"></h3>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #8D99AE;">
+            <i class="fa-regular fa-clock"></i>
+            <span id="ticketDetailTime"></span>
+          </div>
+        </div>
+        <div id="ticketDetailStatusBadge" style="flex-shrink: 0;"></div>
+      </div>
+
+      <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
+
+      <!-- User Complaint Section -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার প্রেরিত বার্তা / অভিযোগ:</div>
+        <div id="ticketDetailUserMessage" style="background: #F9FAF9; border: 1px solid #E4EDE4; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--text-primary); line-height: 1.5; white-space: pre-wrap; word-break: break-word;"></div>
+      </div>
+
+      <!-- Response / Feedback Section -->
+      <div id="ticketDetailResponseSection" style="margin-bottom: 18px;"></div>
+
+      <!-- Close Button -->
+      <button type="button" onclick="closeTicketDetailModal()" style="width: 100%; height: 44px; border-radius: 12px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22);">
+        বন্ধ করুন
+      </button>
     </div>
   </div>
 
@@ -7190,7 +7644,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openExpertHelplineModal() {
-      openModal('helplineModal');
+      openSupportContactPage();
     }
 
     // Numbers in Bangla
@@ -10312,17 +10766,27 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     // ==========================================
     // ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং ও স্টেট ট্রানজিশন কন্ট্রোলার
     // ==========================================
-    function showLoginLoadingDialog() {
+    let _loginLoadingFailsafeTimer = null;
+    function showLoginLoadingDialog(msg = 'লগইন হচ্ছে....', subMsg = 'অনুগ্রহ করে অপেক্ষা করুন') {
       const o = document.getElementById('loginLoadingOverlay');
       if (o) {
         const l = document.getElementById('loginStateLoading');
         const s = document.getElementById('loginStateSuccess');
         const f = document.getElementById('loginStateFailure');
+        const t = document.getElementById('loginLoadingTitle');
+        const st = document.getElementById('loginLoadingSubtitle');
+        if (t) t.innerText = msg || 'লগইন হচ্ছে....';
+        if (st) st.innerText = subMsg || 'অনুগ্রহ করে অপেক্ষা করুন';
         if (l) l.style.display = 'flex';
         if (s) s.style.display = 'none';
         if (f) f.style.display = 'none';
         o.style.setProperty('display', 'flex', 'important');
         o.style.setProperty('pointer-events', 'auto', 'important');
+
+        if (_loginLoadingFailsafeTimer) clearTimeout(_loginLoadingFailsafeTimer);
+        _loginLoadingFailsafeTimer = setTimeout(() => {
+          hideLoginLoadingDialog();
+        }, 12000);
       }
     }
 
@@ -10371,12 +10835,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function hideLoginLoadingDialog() {
+      if (_loginLoadingFailsafeTimer) {
+        clearTimeout(_loginLoadingFailsafeTimer);
+        _loginLoadingFailsafeTimer = null;
+      }
       const o = document.getElementById('loginLoadingOverlay');
       if (o) {
         o.style.setProperty('display', 'none', 'important');
         o.style.setProperty('pointer-events', 'none', 'important');
       }
     }
+    const closeLoginLoadingDialog = hideLoginLoadingDialog;
 
     // ==========================================
     // পাসওয়ার্ড রিসেট ক্যাটাগরিভিত্তিক স্টেপ ডায়ালগ কন্ট্রোলার
@@ -10769,58 +11238,120 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
             return;
           }
+        } else {
+          if (window.firebase && firebase.firestore) {
+            try {
+              const snap = await firebase.firestore().collection('users').where('email', '==', targetEmail).limit(1).get();
+              if (snap && !snap.empty) {
+                foundUser = snap.docs[0].data();
+                foundUser.uid = snap.docs[0].id;
+              }
+            } catch (err) {
+              console.warn('Firestore email query notice:', err);
+            }
+          }
         }
 
-        if (window.firebase && firebase.auth) {
-          try {
-            const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
-            if (cred && cred.user) {
-              const uid = cred.user.uid;
-              if (window.firebase && firebase.firestore) {
-                const uDoc = await firebase.firestore().collection('users').doc(uid).get();
-                if (uDoc && uDoc.exists) {
-                  foundUser = uDoc.data();
-                  foundUser.uid = uid;
-                }
-              }
-              if (!foundUser) {
-                foundUser = {
-                  uid: uid,
-                  name: cred.user.displayName || 'কৃষক ভাই',
-                  email: cred.user.email || targetEmail,
-                  phone: isEmail ? '' : identifier,
-                  district: '',
-                  upazila: '',
-                  village: '',
-                  occupation: 'কৃষক',
-                  preferred_crops: [],
-                  createdAt: new Date().toISOString()
-                };
-              }
-            }
-          } catch (authErr) {
-            console.warn('Firebase auth failed:', authErr);
-            const errCode = authErr.code || '';
-            let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-            if (errCode === 'auth/wrong-password' || errCode === 'auth/invalid-credential') {
-              msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!';
-            } else if (errCode === 'auth/user-not-found') {
-              msg = isEmail ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-            } else if (errCode === 'auth/invalid-email') {
-              msg = 'জিমেইল এড্রেসটি সঠিক নয়!';
-            } else if (errCode === 'auth/network-request-failed') {
-              msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-            } else if (errCode === 'auth/too-many-requests') {
-              msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
-            } else if (errCode === 'auth/user-disabled') {
-              msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
-            }
-            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', msg);
+        // ২. ভুল পাসওয়ার্ডে একাউন্ট লক আছে কিনা তা সবার আগে যাচাই
+        if (foundUser && foundUser.lockUntil) {
+          let lockDate = null;
+          if (typeof foundUser.lockUntil.toDate === 'function') {
+            lockDate = foundUser.lockUntil.toDate();
+          } else if (foundUser.lockUntil.seconds) {
+            lockDate = new Date(foundUser.lockUntil.seconds * 1000);
+          } else {
+            lockDate = new Date(foundUser.lockUntil);
+          }
+
+          if (lockDate && !isNaN(lockDate.getTime()) && lockDate > new Date()) {
+            const diffMs = lockDate.getTime() - Date.now();
+            const remMinutes = Math.max(1, Math.ceil(diffMs / (1000 * 60)));
+            showLoginFailureDialog(
+              'লগইন সাময়িক লক!',
+              `১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ${toBangla(remMinutes)} মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।`
+            );
             return;
           }
+        }
+
+        let loginSuccess = false;
+        const cleanPass = (pass || '').trim();
+        const dbPass = (foundUser && foundUser.password ? foundUser.password : '').trim();
+
+        if (dbPass) {
+          // ১. ফায়ারস্টোরে সংরক্ষিত পাসওয়ার্ডের সাথে সরাসরি হুবহু মিল যাচাই (Dynamic Database Password Validation)
+          loginSuccess = (dbPass === cleanPass);
+        } else if (window.firebase && firebase.auth) {
+          // ২. ফলব্যাক: ফায়ারস্টোরে পাসওয়ার্ড না থাকলে Firebase Auth দিয়ে যাচাই
+          try {
+            const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass);
+            if (cred && cred.user) {
+              loginSuccess = true;
+            }
+          } catch(e) {
+            loginSuccess = false;
+          }
+        }
+
+        if (loginSuccess) {
+          // সফল লগইন: failedAttempts রিসেট এবং 'password' ফিল্ড সিঙ্ক
+          if (foundUser && foundUser.uid && window.firebase && firebase.firestore) {
+            try {
+              await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                password: cleanPass,
+                failedAttempts: 0,
+                lockUntil: null,
+                tempAdminPassword: firebase.firestore.FieldValue.delete(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } catch (e) {
+              console.warn('Update user password/status sync error:', e);
+            }
+          }
+
+          if (window.firebase && firebase.auth) {
+            try {
+              if (firebase.auth().currentUser) {
+                await firebase.auth().currentUser.updatePassword(cleanPass);
+              } else {
+                await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => {});
+              }
+            } catch (e) {}
+          }
         } else {
-          if (!foundUser) {
-            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!');
+          // ভুল পাসওয়ার্ড: failedAttempts কাউন্টার আপডেট ও ১০ বার হলে ১ ঘণ্টার জন্য লক
+          if (foundUser && foundUser.uid && window.firebase && firebase.firestore) {
+            const curAttempts = ((foundUser.failedAttempts || 0) + 1);
+            if (curAttempts >= 10) {
+              const lockTime = new Date(Date.now() + 60 * 60 * 1000);
+              try {
+                await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                  failedAttempts: curAttempts,
+                  lockUntil: firebase.firestore.Timestamp.fromDate(lockTime),
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              } catch (e) {}
+              showLoginFailureDialog(
+                'লগইন সাময়িক লক!',
+                '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।'
+              );
+              return;
+            } else {
+              try {
+                await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                  failedAttempts: curAttempts,
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              } catch (e) {}
+              const rem = 10 - curAttempts;
+              showLoginFailureDialog(
+                'লগইন ব্যর্থ হয়েছে!',
+                `আপনার দেওয়া পাসওয়ার্ড সঠিক নয়! আর ${toBangla(rem)} বার ভুল দিলে একাউন্টটি ১ ঘণ্টার জন্য লক হয়ে যাবে।`
+              );
+              return;
+            }
+          } else {
+            showLoginFailureDialog('লগইন ব্যর্থ হয়েছে!', 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!');
             return;
           }
         }
@@ -11543,7 +12074,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const userDoc = await db.collection('users').doc(activeUid).get();
           if (userDoc && userDoc.exists) {
             const data = userDoc.data() || {};
-            const rawTs = data.lastProfileUpdate || data.last_profile_update;
+            const rawTs = ('lastProfileUpdate' in data) ? data.lastProfileUpdate : data.last_profile_update;
             let lastUpdateDate = null;
             if (rawTs) {
               if (rawTs.toDate) {
@@ -11922,9 +12453,960 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }, 1200);
     }
 
+    let supportTicketsUnsubscribe = null;
+    let liveSupportSettings = null;
+    let liveSupportSettingsUnsubscribe = null;
+
+    function initLiveSupportSettings() {
+      if (window.firebase && firebase.firestore) {
+        try {
+          const db = firebase.firestore();
+          if (liveSupportSettingsUnsubscribe) {
+            try { liveSupportSettingsUnsubscribe(); } catch (_) { }
+          }
+          liveSupportSettingsUnsubscribe = db.collection('app_settings').doc('support_contact').onSnapshot(doc => {
+            if (doc.exists) {
+              liveSupportSettings = doc.data() || {};
+              updateSupportUIFromSettings(liveSupportSettings);
+            }
+          }, err => console.warn('Live support settings error:', err));
+        } catch (e) {
+          console.warn('Could not listen to app_settings/support_contact:', e);
+        }
+      }
+    }
+
+    function updateSupportUIFromSettings(d) {
+      if (!d) return;
+      const hTitle = document.getElementById('webHotlineTitle');
+      const hSub = document.getElementById('webHotlineSubtitle');
+      const wTitle = document.getElementById('webWhatsappTitle');
+      const wSub = document.getElementById('webWhatsappSubtitle');
+      const eTitle = document.getElementById('webEmailTitle');
+      const eSub = document.getElementById('webEmailSubtitle');
+
+      if (hTitle && d.hotline_title) hTitle.innerText = d.hotline_title;
+      if (hSub && d.hotline_phone) hSub.innerText = d.hotline_phone;
+      if (wTitle && d.whatsapp_title) wTitle.innerText = d.whatsapp_title;
+      if (wSub && d.whatsapp_phone) wSub.innerText = d.whatsapp_phone;
+      if (eTitle && d.email_title) eTitle.innerText = d.email_title;
+      if (eSub && d.email_address) eSub.innerText = d.email_address;
+    }
+
+    function handleWebHelplineClick(type) {
+      if (type === 'hotline') {
+        const phone = liveSupportSettings?.hotline_phone || '16123';
+        if (!phone || phone.trim() === '') {
+          showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
+          return;
+        }
+        window.open('tel:' + phone.replace(/[^0-9+]/g, ''));
+      } else if (type === 'whatsapp') {
+        const phone = liveSupportSettings?.whatsapp_phone;
+        if (!phone || phone.trim() === '') {
+          showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
+          return;
+        }
+        const clean = phone.replace(/[^0-9]/g, '');
+        window.open('https://wa.me/' + clean + '?text=' + encodeURIComponent('কৃষি কথা অ্যাপ সম্পর্কিত সহায়তা ও পরামর্শ প্রয়োজন'), '_blank');
+      } else if (type === 'email') {
+        const email = liveSupportSettings?.email_address;
+        if (!email || email.trim() === '') {
+          showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
+          return;
+        }
+        window.open('mailto:' + email + '?subject=' + encodeURIComponent('কৃষি কথা অ্যাপ সহায়তা ও পরামর্শ অনুরোধ'), '_blank');
+      }
+    }
+
+    function handleSupportSubjectChange(subject) {
+      if (subject === 'লগইন তথ্য হালনাগাদ') {
+        const sel = document.getElementById('webSupportSubject');
+        if (sel) sel.value = 'একাউন্ট সমস্যা';
+        openUpdateCredentialsPage();
+        return;
+      }
+
+      const inlineSec = document.getElementById('webInlineCredentialsSection');
+      const ticketSec = document.getElementById('webStandardTicketSection');
+      const headerTitle = document.getElementById('webFormHeaderTitle');
+      const headerSub = document.getElementById('webFormHeaderSubtitle');
+      const headerIcon = document.getElementById('webFormHeaderIcon');
+
+      if (inlineSec) inlineSec.style.display = 'none';
+      if (ticketSec) ticketSec.style.display = 'block';
+      if (headerTitle) headerTitle.innerText = 'আপনার অভিযোগ ও পরামর্শ লিখে পাঠিয়ে দিন';
+      if (headerSub) headerSub.innerText = 'সমস্যা বা পরামর্শ লিখে পাঠালে সাপোর্ট টিম দ্রুত ব্যবস্থা নেবে';
+      if (headerIcon) headerIcon.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+    }
+
+    let inlineVerifiedUserDoc = null;
+
+    async function verifyInlineOldAccount() {
+      const input = (document.getElementById('webInlineOldIdentifier')?.value || '').trim();
+      if (!input) {
+        showWarningDialog('অনুগ্রহ করে আপনার পুরাতন ফোন নম্বর বা ইমেইল লিখুন।', 'তথ্য দিন');
+        return;
+      }
+
+      const btn = document.getElementById('webInlineVerifyBtn');
+      if (btn) btn.disabled = true;
+
+      showLoginLoadingDialog('তথ্য যাচাই করা হচ্ছে....');
+
+      try {
+        let matchedDoc = null;
+        if (window.firebase && firebase.firestore) {
+          const db = firebase.firestore();
+          if (input.includes('@')) {
+            const snap = await db.collection('users').where('email', '==', input.toLowerCase()).limit(1).get();
+            if (!snap.empty) matchedDoc = snap.docs[0];
+          } else {
+            const clean = input.replace(/[^0-9+]/g, '');
+            let alt = clean;
+            if (clean.startsWith('+880')) alt = clean.replace('+88', '');
+            else if (clean.startsWith('0')) alt = '+88' + clean;
+
+            let snap = await db.collection('users').where('phone', '==', clean).limit(1).get();
+            if (snap.empty && alt !== clean) {
+              snap = await db.collection('users').where('phone', '==', alt).limit(1).get();
+            }
+            if (snap.empty) {
+              snap = await db.collection('users').where('phoneNumber', '==', clean).limit(1).get();
+            }
+            if (!snap.empty) matchedDoc = snap.docs[0];
+          }
+        }
+
+        closeLoginLoadingDialog();
+
+        if (matchedDoc && matchedDoc.exists) {
+          inlineVerifiedUserDoc = matchedDoc;
+          const data = matchedDoc.data() || {};
+          const nameEl = document.getElementById('webInlineVerifiedName');
+          const idEl = document.getElementById('webInlineVerifiedCurrentId');
+          if (nameEl) nameEl.innerText = data.name || 'সম্মানিত কৃষক';
+          if (idEl) idEl.innerText = 'বর্তমান আইডি: ' + (data.phone || data.phoneNumber || data.email || '');
+
+          const pill = document.getElementById('webInlineVerifiedPill');
+          const inputs = document.getElementById('webInlineNewInputsSection');
+          if (pill) pill.style.display = 'flex';
+          if (inputs) inputs.style.display = 'block';
+
+          showSuccessDialog('একাউন্ট পাওয়া গেছে!', 'স্বাগতম, ' + (data.name || 'কৃষক ভাই') + '!');
+        } else {
+          inlineVerifiedUserDoc = null;
+          showWarningDialog('এই নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি! সঠিক তথ্য দিন।', 'একাউন্ট পাওয়া যায়নি');
+        }
+      } catch (err) {
+        closeLoginLoadingDialog();
+        console.error('Verify inline account error:', err);
+        showWarningDialog('সার্ভার অনুসন্ধান ব্যর্থ হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।', 'ত্রুটি');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function confirmInlineCredentialsUpdate() {
+      if (!inlineVerifiedUserDoc) {
+        showWarningDialog('অনুগ্রহ করে প্রথমে পুরাতন একাউন্ট যাচাই সম্পন্ন করুন।', 'যাচাই প্রয়োজন');
+        return;
+      }
+
+      const newPhone = (document.getElementById('webInlineNewPhone')?.value || '').trim();
+      const newEmail = (document.getElementById('webInlineNewEmail')?.value || '').trim();
+
+      if (!newPhone && !newEmail) {
+        showWarningDialog('অনুগ্রহ করে নতুন ফোন নম্বর অথবা নতুন ইমেইল প্রদান করুন।', 'নতুন তথ্য দিন');
+        return;
+      }
+
+      let validatedPhone = null;
+      if (newPhone) {
+        const clean = newPhone.replace(/[^0-9]/g, '');
+        if (clean.length !== 11 || !clean.startsWith('01')) {
+          showWarningDialog('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!', 'ভুল মোবাইল নম্বর');
+          return;
+        }
+        const curData = inlineVerifiedUserDoc.data() || {};
+        const oldPhone = (curData.phone || curData.phoneNumber || '').replace(/[^0-9]/g, '');
+        if (clean === oldPhone) {
+          showWarningDialog('নতুন নম্বরটি আপনার বর্তমান পুরাতন নম্বরের মতো একই হতে পারবে না! ভিন্ন নম্বর দিন।', 'একই নম্বর');
+          return;
+        }
+        validatedPhone = clean;
+      }
+
+      let validatedEmail = null;
+      if (newEmail) {
+        const clean = newEmail.toLowerCase().trim();
+        if (!clean.includes('@') || !clean.includes('.')) {
+          showWarningDialog('একটি সঠিক ইমেইল এড্রেস প্রদান করুন (যেমন: example@gmail.com)।', 'ভুল ইমেইল');
+          return;
+        }
+        const curData = inlineVerifiedUserDoc.data() || {};
+        if (clean === (curData.email || '').toLowerCase().trim()) {
+          showWarningDialog('নতুন ইমেইলটি আপনার বর্তমান পুরাতন ইমেইলের মতো একই হতে পারবে না! ভিন্ন ইমেইল দিন।', 'একই ইমেইল');
+          return;
+        }
+        validatedEmail = clean;
+      }
+
+      const confirmBtn = document.getElementById('webInlineConfirmBtn');
+      if (confirmBtn) confirmBtn.disabled = true;
+
+      showLoginLoadingDialog('তথ্য হালনাগাদ হচ্ছে....');
+
+      try {
+        const db = firebase.firestore();
+        const userId = inlineVerifiedUserDoc.id;
+
+        if (validatedPhone) {
+          const checkSnap = await db.collection('users').where('phone', '==', validatedPhone).get();
+          const existsOther = checkSnap.docs.some(d => d.id !== userId);
+          if (existsOther) {
+            closeLoginLoadingDialog();
+            showWarningDialog('প্রদত্ত নতুন ফোন নম্বরটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে!', 'তথ্য ইতোমধ্যে ব্যবহৃত');
+            if (confirmBtn) confirmBtn.disabled = false;
+            return;
+          }
+        }
+
+        if (validatedEmail) {
+          const checkSnap = await db.collection('users').where('email', '==', validatedEmail).get();
+          const existsOther = checkSnap.docs.some(d => d.id !== userId);
+          if (existsOther) {
+            closeLoginLoadingDialog();
+            showWarningDialog('প্রদত্ত নতুন ইমেইলটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে!', 'তথ্য ইতোমধ্যে ব্যবহৃত');
+            if (confirmBtn) confirmBtn.disabled = false;
+            return;
+          }
+        }
+
+        const updateData = {
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        const updatedList = [];
+        if (validatedPhone) {
+          updateData.phone = validatedPhone;
+          updateData.phoneNumber = validatedPhone;
+          updatedList.push(validatedPhone);
+        }
+        if (validatedEmail) {
+          updateData.email = validatedEmail;
+          updatedList.push(validatedEmail);
+        }
+
+        await db.collection('users').doc(userId).update(updateData);
+
+        closeLoginLoadingDialog();
+
+        const recName = document.getElementById('webInlineReceiptName');
+        const recId = document.getElementById('webInlineReceiptId');
+        const recTime = document.getElementById('webInlineReceiptTime');
+        const curData = inlineVerifiedUserDoc.data() || {};
+
+        if (recName) recName.innerText = curData.name || 'সম্মানিত কৃষক';
+        if (recId) recId.innerText = updatedList.join(' • ');
+        if (recTime) recTime.innerText = new Date().toLocaleString('bn-BD');
+
+        const vCard = document.getElementById('webInlineVerifyCard');
+        const vPill = document.getElementById('webInlineVerifiedPill');
+        const newSec = document.getElementById('webInlineNewInputsSection');
+        const recCard = document.getElementById('webInlineReceiptCard');
+
+        if (vCard) vCard.style.display = 'none';
+        if (vPill) vPill.style.display = 'none';
+        if (newSec) newSec.style.display = 'none';
+        if (recCard) recCard.style.display = 'block';
+
+      } catch (err) {
+        closeLoginLoadingDialog();
+        console.error('Update credentials error:', err);
+        showWarningDialog('হালনাগাদ ব্যর্থ হয়েছে: ' + err.message, 'ত্রুটি');
+      } finally {
+        if (confirmBtn) confirmBtn.disabled = false;
+      }
+    }
+
+    function resetInlineCredentialsForm() {
+      inlineVerifiedUserDoc = null;
+      const oldIn = document.getElementById('webInlineOldIdentifier');
+      const pIn = document.getElementById('webInlineNewPhone');
+      const eIn = document.getElementById('webInlineNewEmail');
+      if (oldIn) oldIn.value = '';
+      if (pIn) pIn.value = '';
+      if (eIn) eIn.value = '';
+
+      const vCard = document.getElementById('webInlineVerifyCard');
+      const vPill = document.getElementById('webInlineVerifiedPill');
+      const newSec = document.getElementById('webInlineNewInputsSection');
+      const recCard = document.getElementById('webInlineReceiptCard');
+
+      if (vCard) vCard.style.display = 'block';
+      if (vPill) vPill.style.display = 'none';
+      if (newSec) newSec.style.display = 'none';
+      if (recCard) recCard.style.display = 'none';
+    }
+
+    function openSupportContactPage() {
+      const page = document.getElementById('supportContactPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'none';
+        window.history.pushState({ page: 'support_contact' }, '');
+        initLiveSupportSettings();
+        initSupportTicketsLiveSync();
+        const sel = document.getElementById('webSupportSubject');
+        if (sel) sel.value = 'একাউন্ট সমস্যা';
+        handleSupportSubjectChange('একাউন্ট সমস্যা');
+      }
+    }
+
+    function closeSupportContactPage() {
+      const page = document.getElementById('supportContactPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'flex';
+      }
+    }
+
+    let verifiedWebUserDoc = null;
+
+    function openUpdateCredentialsPage() {
+      const page = document.getElementById('updateCredentialsPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'none';
+        window.history.pushState({ page: 'update_credentials' }, '');
+
+        // Reset state
+        verifiedWebUserDoc = null;
+        const oldInput = document.getElementById('webOldIdentifierInput');
+        if (oldInput) oldInput.value = '';
+        const userCard = document.getElementById('webVerifiedUserCard');
+        if (userCard) userCard.style.display = 'none';
+        const newBox = document.getElementById('webNewCredentialsContainer');
+        if (newBox) newBox.style.display = 'none';
+        const newPhoneIn = document.getElementById('webNewPhoneInput');
+        if (newPhoneIn) newPhoneIn.value = '';
+        const newEmailIn = document.getElementById('webNewEmailInput');
+        if (newEmailIn) newEmailIn.value = '';
+        const receipt = document.getElementById('webCredentialsReceiptContainer');
+        if (receipt) receipt.style.display = 'none';
+        const formBox = document.getElementById('webCredentialsFormContainer');
+        if (formBox) formBox.style.display = 'flex';
+      }
+    }
+
+    function closeUpdateCredentialsPage() {
+      const page = document.getElementById('updateCredentialsPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'flex';
+      }
+    }
+
+    async function verifyWebOldAccount() {
+      const input = (document.getElementById('webOldIdentifierInput')?.value || '').trim();
+      if (!input) {
+        showWarningDialog('অনুগ্রহ করে আপনার পুরাতন ফোন নম্বর বা ইমেইল লিখুন।', 'তথ্য দিন');
+        return;
+      }
+
+      const btn = document.getElementById('webVerifyOldAccountBtn');
+      if (btn) btn.disabled = true;
+
+      showLoginLoadingDialog('তথ্য যাচাই করা হচ্ছে....');
+
+      try {
+        let matchedDoc = null;
+
+        if (window.firebase && firebase.firestore) {
+          const db = firebase.firestore();
+          if (input.includes('@')) {
+            const emailSnap = await db.collection('users')
+              .where('email', '==', input.toLowerCase())
+              .limit(1)
+              .get();
+            if (!emailSnap.empty) {
+              matchedDoc = emailSnap.docs[0];
+            }
+          } else {
+            const cleanPhone = input.replace(/[^0-9+]/g, '');
+            let altPhone = cleanPhone;
+            if (cleanPhone.startsWith('+880')) {
+              altPhone = cleanPhone.replace('+88', '');
+            } else if (cleanPhone.startsWith('0')) {
+              altPhone = '+88' + cleanPhone;
+            }
+
+            const phoneSnap = await db.collection('users')
+              .where('phone', '==', cleanPhone)
+              .limit(1)
+              .get();
+            if (!phoneSnap.empty) {
+              matchedDoc = phoneSnap.docs[0];
+            } else if (altPhone !== cleanPhone) {
+              const altSnap = await db.collection('users')
+                .where('phone', '==', altPhone)
+                .limit(1)
+                .get();
+              if (!altSnap.empty) {
+                matchedDoc = altSnap.docs[0];
+              }
+            }
+
+            if (!matchedDoc) {
+              const pSnap2 = await db.collection('users')
+                .where('phoneNumber', '==', cleanPhone)
+                .limit(1)
+                .get();
+              if (!pSnap2.empty) {
+                matchedDoc = pSnap2.docs[0];
+              }
+            }
+          }
+        }
+
+        // Local cache fallback for simulation
+        if (!matchedDoc) {
+          const cached = localStorage.getItem('krishi_kotha_cached_user');
+          if (cached) {
+            try {
+              const u = JSON.parse(cached);
+              const cleanInput = input.replace(/[^0-9]/g, '');
+              const cleanUserPhone = (u.phone || '').replace(/[^0-9]/g, '');
+              if ((u.email && u.email.toLowerCase() === input.toLowerCase()) || (cleanInput && cleanUserPhone === cleanInput)) {
+                matchedDoc = {
+                  id: u.uid || 'cached_user_1',
+                  data: () => u
+                };
+              }
+            } catch (_) { }
+          }
+        }
+
+        hideLoginLoadingDialog();
+
+        if (matchedDoc) {
+          const data = matchedDoc.data() || {};
+          verifiedWebUserDoc = {
+            id: matchedDoc.id,
+            name: data.name || 'সম্মানিত কৃষক',
+            phone: data.phone || data.phoneNumber || '',
+            email: data.email || ''
+          };
+
+          const nameDisp = document.getElementById('webVerifiedUserNameDisplay');
+          if (nameDisp) nameDisp.innerText = verifiedWebUserDoc.name;
+
+          const userCard = document.getElementById('webVerifiedUserCard');
+          if (userCard) userCard.style.display = 'flex';
+
+          const newBox = document.getElementById('webNewCredentialsContainer');
+          if (newBox) newBox.style.display = 'block';
+
+          setTimeout(() => {
+            document.getElementById('webNewPhoneInput')?.focus();
+          }, 200);
+        } else {
+          verifiedWebUserDoc = null;
+          const userCard = document.getElementById('webVerifiedUserCard');
+          if (userCard) userCard.style.display = 'none';
+          const newBox = document.getElementById('webNewCredentialsContainer');
+          if (newBox) newBox.style.display = 'none';
+
+          showWarningDialog('এই নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!', 'একাউন্ট পাওয়া যায়নি');
+        }
+      } catch (err) {
+        console.error('Verify old account error:', err);
+        hideLoginLoadingDialog();
+        showWarningDialog('সার্ভারে সংযোগে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।', 'ত্রুটি ঘটেছে');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function confirmWebCredentialsUpdate() {
+      if (!verifiedWebUserDoc || !verifiedWebUserDoc.id) {
+        showWarningDialog('অনুগ্রহ করে প্রথমে পুরাতন একাউন্ট যাচাই সম্পন্ন করুন।', 'একাউন্ট যাচাই প্রয়োজন');
+        return;
+      }
+
+      const newPhone = (document.getElementById('webNewPhoneInput')?.value || '').trim();
+      const newEmail = (document.getElementById('webNewEmailInput')?.value || '').trim();
+
+      if (!newPhone && !newEmail) {
+        showWarningDialog('অনুগ্রহ করে নতুন ফোন নম্বর অথবা নতুন ইমেইল প্রদান করুন।', 'নতুন তথ্য দিন');
+        return;
+      }
+
+      let validatedPhone = null;
+      if (newPhone) {
+        const cleanPhone = newPhone.replace(/[^0-9]/g, '');
+        if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+          showWarningDialog('সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)!', 'ভুল মোবাইল নম্বর');
+          return;
+        }
+        const oldCleanPhone = (verifiedWebUserDoc.phone || '').replace(/[^0-9]/g, '');
+        if (cleanPhone === oldCleanPhone) {
+          showWarningDialog('নতুন নম্বরটি আপনার বর্তমান পুরাতন নম্বরের মতো একই হতে পারবে না! অনুগ্রহ করে ভিন্ন নতুন নম্বর দিন।', 'একই নম্বর');
+          return;
+        }
+        validatedPhone = cleanPhone;
+      }
+
+      let validatedEmail = null;
+      if (newEmail) {
+        const cleanEmail = newEmail.toLowerCase().trim();
+        if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+          showWarningDialog('অনুগ্রহ করে একটি সঠিক ইমেইল এড্রেস প্রদান করুন (যেমন: example@gmail.com)।', 'ভুল ইমেইল এড্রেস');
+          return;
+        }
+        if (cleanEmail === (verifiedWebUserDoc.email || '').toLowerCase().trim()) {
+          showWarningDialog('নতুন ইমেইলটি আপনার বর্তমান পুরাতন ইমেইলের মতো একই হতে পারবে না! অনুগ্রহ করে ভিন্ন নতুন ইমেইল দিন।', 'একই ইমেইল');
+          return;
+        }
+        validatedEmail = cleanEmail;
+      }
+
+      const btn = document.getElementById('webConfirmUpdateBtn');
+      if (btn) btn.disabled = true;
+
+      showLoginLoadingDialog('তথ্য হালনাগাদ হচ্ছে....');
+
+      try {
+        if (window.firebase && firebase.firestore) {
+          const db = firebase.firestore();
+
+          // Uniqueness Check for Phone
+          if (validatedPhone) {
+            const pSnap = await db.collection('users').where('phone', '==', validatedPhone).get();
+            const isDup = pSnap.docs.some(d => d.id !== verifiedWebUserDoc.id);
+            if (isDup) {
+              hideLoginLoadingDialog();
+              showWarningDialog('প্রদত্ত নতুন ফোন নম্বর/ইমেইলটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।', 'তথ্য ইতোমধ্যে ব্যবহৃত');
+              if (btn) btn.disabled = false;
+              return;
+            }
+          }
+
+          // Uniqueness Check for Email
+          if (validatedEmail) {
+            const eSnap = await db.collection('users').where('email', '==', validatedEmail).get();
+            const isDup = eSnap.docs.some(d => d.id !== verifiedWebUserDoc.id);
+            if (isDup) {
+              hideLoginLoadingDialog();
+              showWarningDialog('প্রদত্ত নতুন ফোন নম্বর/ইমেইলটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।', 'তথ্য ইতোমধ্যে ব্যবহৃত');
+              if (btn) btn.disabled = false;
+              return;
+            }
+          }
+
+          // Database Update & Invalidation of old data
+          const updateObj = {
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          if (validatedPhone) {
+            updateObj.phone = validatedPhone;
+            updateObj.phoneNumber = validatedPhone;
+          }
+          if (validatedEmail) {
+            updateObj.email = validatedEmail;
+          }
+
+          await db.collection('users').doc(verifiedWebUserDoc.id).update(updateObj);
+        }
+
+        // Update Local Session if current user
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          try {
+            const u = JSON.parse(cached);
+            if (u.uid === verifiedWebUserDoc.id) {
+              if (validatedPhone) { u.phone = validatedPhone; u.phoneNumber = validatedPhone; }
+              if (validatedEmail) { u.email = validatedEmail; }
+              localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(u));
+              applyUserToUI(u);
+            }
+          } catch (_) { }
+        }
+
+        hideLoginLoadingDialog();
+
+        // Render Digital Receipt
+        const updatedList = [];
+        if (validatedPhone) updatedList.push(validatedPhone);
+        if (validatedEmail) updatedList.push(validatedEmail);
+
+        const recName = document.getElementById('webReceiptUserName');
+        if (recName) recName.innerText = verifiedWebUserDoc.name;
+
+        const recId = document.getElementById('webReceiptNewId');
+        if (recId) recId.innerText = updatedList.join('  •  ');
+
+        const recTime = document.getElementById('webReceiptUpdateTime');
+        if (recTime) {
+          const now = new Date();
+          const day = toBangla(now.getDate());
+          const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+          const month = months[now.getMonth()];
+          const year = toBangla(now.getFullYear());
+          const time = toBangla(now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }));
+          recTime.innerText = `${day} ${month} ${year}, ${time}`;
+        }
+
+        const formBox = document.getElementById('webCredentialsFormContainer');
+        if (formBox) formBox.style.display = 'none';
+
+        const receiptBox = document.getElementById('webCredentialsReceiptContainer');
+        if (receiptBox) receiptBox.style.display = 'block';
+
+      } catch (err) {
+        console.error('Update credentials error:', err);
+        hideLoginLoadingDialog();
+        showWarningDialog('হালনাগাদ করতে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।', 'হালনাগাদ ব্যর্থ');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     function openHelplineModal() {
-      const modal = document.getElementById('helplineModal');
-      if (modal) modal.classList.add('active');
+      openSupportContactPage();
+    }
+
+    function initSupportTicketsLiveSync() {
+      let authorId = 'guest_user';
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u && u.uid) authorId = u.uid;
+        }
+      } catch (_) { }
+
+      if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        authorId = firebase.auth().currentUser.uid;
+      }
+
+      if (window.firebase && firebase.firestore) {
+        const db = firebase.firestore();
+        if (supportTicketsUnsubscribe) {
+          try { supportTicketsUnsubscribe(); } catch (_) { }
+        }
+        try {
+          supportTicketsUnsubscribe = db.collection('support_tickets').onSnapshot(snap => {
+            const list = [];
+            snap.forEach(doc => {
+              const d = doc.data() || {};
+              if (d.authorId === authorId || (!authorId && d.authorId === 'guest_user') || authorId === 'guest_user') {
+                list.push({ id: doc.id, ...d });
+              }
+            });
+            list.sort((a, b) => {
+              const timeA = (a.timestamp && a.timestamp.seconds) ? a.timestamp.seconds : (a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0);
+              const timeB = (b.timestamp && b.timestamp.seconds) ? b.timestamp.seconds : (b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0);
+              return timeB - timeA;
+            });
+            renderSupportTicketsList(list);
+          }, err => {
+            console.warn('Support tickets live stream error:', err);
+            renderFallbackTickets(authorId);
+          });
+          return;
+        } catch (e) {
+          console.warn('Could not setup support tickets listener:', e);
+        }
+      }
+      renderFallbackTickets(authorId);
+    }
+
+    function renderFallbackTickets(authorId) {
+      let localTickets = [];
+      try {
+        localTickets = JSON.parse(localStorage.getItem('krishi_kotha_local_tickets') || '[]');
+      } catch (_) { }
+      const filtered = localTickets.filter(t => t.authorId === authorId || authorId === 'guest_user');
+      renderSupportTicketsList(filtered);
+    }
+
+    function renderSupportTicketsList(tickets) {
+      window.currentLoadedSupportTickets = tickets || [];
+      const container = document.getElementById('webSupportTicketsList');
+      if (!container) return;
+
+      if (!tickets || tickets.length === 0) {
+        container.innerHTML = `
+          <div style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 22px 18px; text-align: center;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: #F1F8F1; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px auto;">
+              <i class="fa-solid fa-inbox"></i>
+            </div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">আপনার কোনো পূর্ববর্তী বার্তা নেই</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">যেকোনো সহায়তার জন্য উপরের ফর্ম থেকে নির্দ্বিধায় মেসেজ পাঠাতে পারেন।</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tickets.map((t, idx) => {
+        const isResolved = t.status === 'answered' || t.status === 'resolved';
+        const isRejected = t.status === 'rejected';
+        const timeStr = typeof formatRelativeTime === 'function' ? formatRelativeTime(t.timestamp || t.createdAt) : 'এইমাত্র';
+
+        let statusBadge = '';
+        let borderCol = '#E4EDE4';
+        let iconBg = '#F1F8F1';
+        let iconCol = '#00A86B';
+        let iconClass = 'fa-regular fa-envelope';
+
+        if (isResolved) {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #E8F5E9; color: #2E7D32;">গৃহীত</span>`;
+          borderCol = '#A5D6A7';
+          iconBg = '#E8F5E9';
+          iconCol = '#00A86B';
+          iconClass = 'fa-solid fa-envelope-open-text';
+        } else if (isRejected) {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #FFEBEE; color: #C62828;">বাতিল</span>`;
+          borderCol = '#FFCDD2';
+          iconBg = '#FFEBEE';
+          iconCol = '#D32F2F';
+          iconClass = 'fa-solid fa-ban';
+        } else {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #FFF3E0; color: #E65100;">অপেক্ষমাণ</span>`;
+          borderCol = '#FFE0B2';
+          iconBg = '#FFF3E0';
+          iconCol = '#E65100';
+          iconClass = 'fa-regular fa-clock';
+        }
+
+        return `
+          <div onclick="openTicketDetailModal(${idx})" style="background: white; border: 1.1px solid ${borderCol}; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02);" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: ${iconBg}; color: ${iconCol}; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
+                <i class="${iconClass}"></i>
+              </div>
+              <div style="min-width: 0;">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.subject || 'সাধারণ অনুসন্ধান')}</h4>
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: #8D99AE;">
+                  <i class="fa-regular fa-clock" style="font-size: 10px;"></i>
+                  <span>${timeStr}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              ${statusBadge}
+              <i class="fa-solid fa-chevron-right" style="color: #B0BEC5; font-size: 12px;"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openTicketDetailModal(index) {
+      const tickets = window.currentLoadedSupportTickets || [];
+      const t = tickets[index];
+      if (!t) return;
+
+      const modal = document.getElementById('ticketDetailPopupModal');
+      const subjEl = document.getElementById('ticketDetailSubject');
+      const timeEl = document.getElementById('ticketDetailTime');
+      const badgeEl = document.getElementById('ticketDetailStatusBadge');
+      const msgEl = document.getElementById('ticketDetailUserMessage');
+      const respEl = document.getElementById('ticketDetailResponseSection');
+
+      if (subjEl) subjEl.innerText = t.subject || 'সাধারণ অনুসন্ধান';
+
+      let dateStr = 'এইমাত্র';
+      try {
+        const rawTime = t.timestamp || t.createdAt;
+        if (rawTime) {
+          const d = rawTime.toDate ? rawTime.toDate() : new Date(rawTime);
+          dateStr = d.toLocaleString('bn-BD', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+      } catch (_) {}
+      if (timeEl) timeEl.innerText = dateStr;
+
+      const isResolved = t.status === 'answered' || t.status === 'resolved';
+      const isRejected = t.status === 'rejected';
+
+      if (badgeEl) {
+        if (isResolved) {
+          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;">গৃহীত (সমাধান)</span>';
+        } else if (isRejected) {
+          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2;">বাতিলকৃত</span>';
+        } else {
+          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2;">অপেক্ষমাণ</span>';
+        }
+      }
+
+      if (msgEl) msgEl.innerText = t.details || '';
+
+      if (respEl) {
+        if (isResolved && (t.officerReply || t.reply)) {
+          respEl.innerHTML = `
+            <div style="font-size: 13px; font-weight: 700; color: #1B5E20; margin-bottom: 6px;">
+              <i class="fa-solid fa-circle-check" style="color: #00A86B; margin-right: 4px;"></i>
+              ${escapeHtml(t.officerName ? t.officerName + ' এর সমাধান:' : 'কর্মকর্তার পদক্ষেপ ও পরামর্শ:')}
+            </div>
+            <div style="background: #F1F8F1; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #2E7D32; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">
+              ${escapeHtml(t.officerReply || t.reply)}
+            </div>
+          `;
+          respEl.style.display = 'block';
+        } else if (isRejected && (t.rejectionReason || t.reply)) {
+          respEl.innerHTML = `
+            <div style="font-size: 13px; font-weight: 700; color: #C62828; margin-bottom: 6px;">
+              <i class="fa-solid fa-circle-xmark" style="color: #D32F2F; margin-right: 4px;"></i>
+              বাতিলের কারণ / নোট:
+            </div>
+            <div style="background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #C62828; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">
+              ${escapeHtml(t.rejectionReason || t.reply)}
+            </div>
+          `;
+          respEl.style.display = 'block';
+        } else {
+          respEl.innerHTML = `
+            <div style="background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #795548; line-height: 1.4;">
+              <i class="fa-solid fa-circle-info" style="color: #F57C00; margin-right: 4px;"></i>
+              আপনার আবেদনটি পর্যালোচনার জন্য জমা রয়েছে। খুব শীঘ্রই কর্মকর্তা বা সাপোর্ট টিম এর উত্তর বা সমাধান প্রদান করবে।
+            </div>
+          `;
+          respEl.style.display = 'block';
+        }
+      }
+
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function closeTicketDetailModal() {
+      const modal = document.getElementById('ticketDetailPopupModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
+    async function submitWebSupportTicket() {
+      const detailsInput = document.getElementById('webSupportDetails');
+      const subjectInput = document.getElementById('webSupportSubject');
+      const details = (detailsInput?.value || '').trim();
+      const subject = subjectInput?.value || 'একাউন্ট সমস্যা';
+
+      if (!details) {
+        showWarningDialog('অনুগ্রহ করে আপনার সমস্যা বা পরামর্শের বিবরণ লিখুন।', 'বিবরণ লিখুন');
+        return;
+      }
+
+      const btn = document.getElementById('webSupportSubmitBtn');
+      if (btn) btn.disabled = true;
+
+      // ১. গ্লোবাল ইউনিফাইড লোডিং ডায়ালগ
+      openModal('supportTicketLoadingModal');
+
+      try {
+        let authorId = 'guest_user';
+        let authorName = 'সম্মানিত কৃষক ভাই';
+        let authorPhone = '';
+        let authorEmail = '';
+        let district = 'বগুড়া';
+        let upazila = 'শেরপুর';
+
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          try {
+            const u = JSON.parse(cached);
+            if (u.uid) authorId = u.uid;
+            if (u.name) authorName = u.name;
+            if (u.phone) authorPhone = u.phone;
+            if (u.email) authorEmail = u.email;
+            if (u.district) district = u.district;
+            if (u.upazila) upazila = u.upazila;
+          } catch (_) { }
+        }
+
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+          const fb = firebase.auth().currentUser;
+          authorId = fb.uid;
+          if (fb.displayName) authorName = fb.displayName;
+          if (fb.phoneNumber) authorPhone = fb.phoneNumber;
+          if (fb.email) authorEmail = fb.email;
+        }
+
+        const ticketId = 'ticket_' + Date.now();
+        const ticketData = {
+          ticketId: ticketId,
+          authorId: authorId,
+          authorName: authorName,
+          authorPhone: authorPhone,
+          authorEmail: authorEmail,
+          district: district,
+          upazila: upazila,
+          subject: subject,
+          details: details,
+          status: 'pending',
+          createdAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+          timestamp: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+        };
+
+        if (window.firebase && firebase.firestore) {
+          const db = firebase.firestore();
+          await db.collection('support_tickets').doc(ticketId).set(ticketData);
+        }
+
+        // Local fallback list
+        let localTickets = [];
+        try {
+          localTickets = JSON.parse(localStorage.getItem('krishi_kotha_local_tickets') || '[]');
+        } catch (_) { }
+        localTickets.unshift({
+          ...ticketData,
+          timestamp: { seconds: Math.floor(Date.now() / 1000) }
+        });
+        localStorage.setItem('krishi_kotha_local_tickets', JSON.stringify(localTickets));
+
+        // লোডিং ডায়ালগ ক্লোজ
+        closeModal('supportTicketLoadingModal');
+
+        // ২. মসৃণ ট্রানজিশনে অ্যানিমেটেড সবুজ 'টিক' (✓) চিহ্নযুক্ত ইউনিফাইড পপ-আপ
+        showSuccessDialog(
+          'বার্তা সফলভাবে গৃহীত হয়েছে!',
+          'আপনার বার্তা সফলভাবে গৃহীত হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
+          function() {
+            if (detailsInput) detailsInput.value = '';
+            if (subjectInput) subjectInput.selectedIndex = 0;
+            initSupportTicketsLiveSync();
+          }
+        );
+      } catch (err) {
+        console.error('Error submitting support ticket:', err);
+        closeModal('supportTicketLoadingModal');
+        // ৩. লাল 'ক্রস' (✗) পপ-আপ ডায়ালগ
+        showWarningDialog('বার্তা পাঠানো সম্ভব হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।', 'ব্যর্থ হয়েছে');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     function confirmWebLogout() {
@@ -11935,6 +13417,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       closeModal('webLogoutModal');
       closeSettingsPage();
       closeEditProfilePage();
+      closeSupportContactPage();
+      closeUpdateCredentialsPage();
 
       if (userDocUnsubscribe) {
         try { userDocUnsubscribe(); } catch (_) { }
@@ -13481,6 +14965,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }, err => console.warn('Privacy policy sync note:', err));
       } catch (ppErr) {
         console.warn('Privacy policy listener init note:', ppErr);
+      }
+
+      // 7. Live Support Tickets Realtime Sync
+      try {
+        initSupportTicketsLiveSync();
+      } catch (stErr) {
+        console.warn('Support tickets listener init note:', stErr);
       }
     }
 

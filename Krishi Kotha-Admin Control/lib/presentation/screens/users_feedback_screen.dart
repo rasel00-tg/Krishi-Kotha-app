@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
@@ -14,15 +15,31 @@ class UsersFeedbackScreen extends StatefulWidget {
 class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  // Controllers for Contact Settings
+  final TextEditingController _hotlineTitleCtrl = TextEditingController();
+  final TextEditingController _hotlinePhoneCtrl = TextEditingController();
+  final TextEditingController _whatsappTitleCtrl = TextEditingController();
+  final TextEditingController _whatsappPhoneCtrl = TextEditingController();
+  final TextEditingController _emailTitleCtrl = TextEditingController();
+  final TextEditingController _emailAddressCtrl = TextEditingController();
+  bool _isSavingSettings = false;
+  bool _isSettingsLoaded = false;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _hotlineTitleCtrl.dispose();
+    _hotlinePhoneCtrl.dispose();
+    _whatsappTitleCtrl.dispose();
+    _whatsappPhoneCtrl.dispose();
+    _emailTitleCtrl.dispose();
+    _emailAddressCtrl.dispose();
     super.dispose();
   }
 
@@ -31,6 +48,40 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
       context: context,
       builder: (context) => _TicketReplyDialog(ticket: ticket),
     );
+  }
+
+  Future<void> _saveContactSettings() async {
+    setState(() => _isSavingSettings = true);
+    try {
+      await AdminFirestoreService.instance.saveSupportContactSettings(
+        hotlineTitle: _hotlineTitleCtrl.text.trim(),
+        hotlinePhone: _hotlinePhoneCtrl.text.trim(),
+        whatsappTitle: _whatsappTitleCtrl.text.trim(),
+        whatsappPhone: _whatsappPhoneCtrl.text.trim(),
+        emailTitle: _emailTitleCtrl.text.trim(),
+        emailAddress: _emailAddressCtrl.text.trim(),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('সাপোর্ট ও যোগাযোগ চ্যানেল সফলভাবে সংরক্ষণ হয়েছে!'),
+            backgroundColor: AdminColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AdminErrorHandler.getFriendlyErrorMessage(e)),
+            backgroundColor: AdminColors.alertCritical,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingSettings = false);
+    }
   }
 
   @override
@@ -45,10 +96,11 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
             unselectedLabelColor: AdminColors.textMuted,
             indicatorColor: AdminColors.primary,
             indicatorWeight: 3,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
             tabs: const [
-              Tab(icon: Icon(Icons.people_alt_rounded), text: 'নিবন্ধিত কৃষক ও ব্যবহারকারী (Users)'),
+              Tab(icon: Icon(Icons.contact_phone_rounded), text: 'লাইভ সাপোর্ট চ্যানেল (Contact Channels)'),
               Tab(icon: Icon(Icons.support_agent_rounded), text: 'সহায়তা টিকিট ও মতামত (Support Tickets)'),
+              Tab(icon: Icon(Icons.people_alt_rounded), text: 'নিবন্ধিত কৃষক তালিকা (Users)'),
             ],
           ),
         ),
@@ -56,12 +108,218 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
           child: TabBarView(
             controller: _tabController,
             children: [
-              _buildUsersTab(),
+              _buildContactChannelsTab(),
               _buildSupportTicketsTab(),
+              _buildUsersTab(),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  // ==================== TAB 1: LIVE CONTACT CHANNELS ====================
+  Widget _buildContactChannelsTab() {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('app_settings').doc('support_contact').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data?.data() != null && !_isSettingsLoaded) {
+          final d = snapshot.data!.data()!;
+          _hotlineTitleCtrl.text = d['hotline_title']?.toString() ?? 'কৃষি কল সেন্টার (১৬১২৩)';
+          _hotlinePhoneCtrl.text = d['hotline_phone']?.toString() ?? '16123';
+          _whatsappTitleCtrl.text = d['whatsapp_title']?.toString() ?? 'হোয়াটসঅ্যাপ সাপোর্ট';
+          _whatsappPhoneCtrl.text = d['whatsapp_phone']?.toString() ?? '+8801700000000';
+          _emailTitleCtrl.text = d['email_title']?.toString() ?? 'ইমেইল সহায়তা';
+          _emailAddressCtrl.text = d['email_address']?.toString() ?? 'support@krishikotha.gov.bd';
+          _isSettingsLoaded = true;
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AdminColors.border),
+                  boxShadow: const [
+                    BoxShadow(color: AdminColors.cardShadow, blurRadius: 10, offset: Offset(0, 4)),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'অ্যাপের লাইভ সাপোর্ট চ্যানেল কনফিগারেশন',
+                      style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'ইউজার অ্যাপের সাপোর্ট পেজে প্রদর্শিত হটলাইন, হোয়াটসঅ্যাপ এবং ইমেইল তথ্য রিয়েল-টাইমে আপডেট করুন।',
+                      style: TextStyle(fontSize: 13, color: AdminColors.textMuted),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Grid of 3 Channels
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth > 800;
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            // Hotline
+                            SizedBox(
+                              width: isWide ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              child: _buildChannelCard(
+                                title: 'হটলাইন / কল সেন্টার',
+                                icon: Icons.phone_in_talk_rounded,
+                                iconColor: const Color(0xFF00A86B),
+                                iconBg: const Color(0xFFE8F5E9),
+                                titleController: _hotlineTitleCtrl,
+                                valueController: _hotlinePhoneCtrl,
+                                valueLabel: 'হটলাইন ফোন নম্বর',
+                                valueHint: 'যেমন: 16123 বা 017XXXXXXXX',
+                              ),
+                            ),
+                            // WhatsApp
+                            SizedBox(
+                              width: isWide ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              child: _buildChannelCard(
+                                title: 'হোয়াটসঅ্যাপ সাপোর্ট',
+                                icon: Icons.chat_bubble_rounded,
+                                iconColor: const Color(0xFF25D366),
+                                iconBg: const Color(0xFFE8F8F0),
+                                titleController: _whatsappTitleCtrl,
+                                valueController: _whatsappPhoneCtrl,
+                                valueLabel: 'হোয়াটসঅ্যাপ নম্বর (আন্তর্জাতিক ফরম্যাট)',
+                                valueHint: 'যেমন: +88017XXXXXXXX',
+                              ),
+                            ),
+                            // Email
+                            SizedBox(
+                              width: isWide ? (constraints.maxWidth - 32) / 3 : constraints.maxWidth,
+                              child: _buildChannelCard(
+                                title: 'ইমেইল ডেস্ক',
+                                icon: Icons.email_rounded,
+                                iconColor: const Color(0xFF00897B),
+                                iconBg: const Color(0xFFE0F2F1),
+                                titleController: _emailTitleCtrl,
+                                valueController: _emailAddressCtrl,
+                                valueLabel: 'ইমেইল অ্যাড্রেস',
+                                valueHint: 'যেমন: support@krishikotha.gov.bd',
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF8E1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFE082)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, color: Color(0xFFFFA000), size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'সতর্কতা: কোনো যোগাযোগ চ্যানেল বা নম্বর ফাঁকা রাখা হলে ইউজার অ্যাপে সেই অপশনে ট্যাপ করলে প্রদর্শিত হবে: "এই ফিচারটি এখনো চালু হয়নি"।',
+                              style: TextStyle(fontSize: 12.5, color: Color(0xFF795548), height: 1.35),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AdminColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: _isSavingSettings ? null : _saveContactSettings,
+                        icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 18),
+                        label: Text(
+                          _isSavingSettings ? 'সংরক্ষণ হচ্ছে...' : 'কন্টাক্ট সেটিংস সংরক্ষণ করুন',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChannelCard({
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required TextEditingController titleController,
+    required TextEditingController valueController,
+    required String valueLabel,
+    required String valueHint,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FBF9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AdminColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: titleController,
+            decoration: const InputDecoration(
+              labelText: 'শিরোনাম / হেডলাইন',
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextFormField(
+            controller: valueController,
+            decoration: InputDecoration(
+              labelText: valueLabel,
+              hintText: valueHint,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -344,21 +602,25 @@ class _TicketReplyDialogState extends State<_TicketReplyDialog> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _handleDecision(String decision) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
     try {
-      await AdminFirestoreService.instance.replyToTicket(
+      await AdminFirestoreService.instance.updateTicketDecision(
         ticketId: widget.ticket.ticketId,
-        reply: _replyCtrl.text.trim(),
+        status: decision,
+        reasonOrReply: _replyCtrl.text.trim(),
         officerName: _officerNameCtrl.text.trim(),
       );
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('পরামর্শ উত্তর সফলভাবে প্রদান করা হয়েছে! কৃষকের অ্যাপে আপডেট হয়েছে।'), backgroundColor: AdminColors.primary),
+          SnackBar(
+            content: Text(decision == 'resolved' ? 'টিকিট সফলভাবে গ্রহণ ও সমাধান সম্পন্ন হয়েছে!' : 'টিকিটটি বাতিল করা হয়েছে।'),
+            backgroundColor: decision == 'resolved' ? AdminColors.primary : AdminColors.alertCritical,
+          ),
         );
       }
     } catch (e) {
@@ -379,14 +641,32 @@ class _TicketReplyDialogState extends State<_TicketReplyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('টিকিটের উত্তর দিন: ${widget.ticket.subject}'),
+      title: Text('টিকিট সিদ্ধান্ত ও উত্তর: ${widget.ticket.subject}'),
       content: SizedBox(
         width: 500,
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FBF9),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AdminColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('কৃষক: ${widget.ticket.farmerName} (${widget.ticket.farmerPhone})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    const SizedBox(height: 4),
+                    Text('বার্তা: ${widget.ticket.details}', style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
               TextFormField(
                 controller: _officerNameCtrl,
                 decoration: const InputDecoration(
@@ -400,21 +680,28 @@ class _TicketReplyDialogState extends State<_TicketReplyDialog> {
                 controller: _replyCtrl,
                 maxLines: 4,
                 decoration: const InputDecoration(
-                  labelText: 'পরামর্শ ও সমাধান',
-                  hintText: 'পরামর্শ ও সমাধান লিখুন',
+                  labelText: 'পরামর্শ, সমাধান বা বাতিলের কারণ',
+                  hintText: 'কৃষকের জন্য পরামর্শ লিখুন বা বাতিলের সুনির্দিষ্ট কারণ উল্লেখ করুন',
                 ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'পরামর্শ আবশ্যক' : null,
+                validator: (v) => v == null || v.trim().isEmpty ? 'মন্তব্য/পরামর্শ আবশ্যক' : null,
               ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল')),
-        ElevatedButton(
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('বন্ধ করুন')),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
+          onPressed: _saving ? null : () => _handleDecision('rejected'),
+          icon: const Icon(Icons.cancel_rounded, size: 16, color: Colors.white),
+          label: const Text('বাতিল করুন', style: TextStyle(color: Colors.white)),
+        ),
+        ElevatedButton.icon(
           style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
-          onPressed: _saving ? null : _submit,
-          child: Text(_saving ? 'পাঠানো হচ্ছে...' : 'উত্তর পাঠান', style: const TextStyle(color: Colors.white)),
+          onPressed: _saving ? null : () => _handleDecision('resolved'),
+          icon: const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
+          label: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'গ্রহণ করুন', style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

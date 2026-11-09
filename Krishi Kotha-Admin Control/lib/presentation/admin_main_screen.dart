@@ -30,7 +30,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     'বাজার দর ইনপুট ও আপডেট',
     'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
     'রোগবালাই ও দমন গাইড (Pests & Diseases)',
-    'কৃষক ও সহায়তা টিকিট মনিটরিং',
+    'সাপোর্ট ও যোগাযোগ ব্যবস্থাপনা (Support & Contact)',
     'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
     'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)',
   ];

@@ -458,6 +458,37 @@ class AdminFirestoreService {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
   }
 
+  /// ইউজার সরাসরি পাসওয়ার্ড পরিবর্তন (Direct Password Set - Unified 'password' field)
+  Future<void> setUserPasswordDirect(String uid, String newPassword) async {
+    final db = _db;
+    if (db != null) {
+      await db.collection('users').doc(uid).update({
+        'password': newPassword.trim(),
+        'failedAttempts': 0,
+        'lockUntil': null,
+        'passwordUpdatedAt': FieldValue.serverTimestamp(),
+        'tempAdminPassword': FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// ইউজার লগইন লক রিসেট (Reset Login Lock - Clears failedAttempts & lockUntil)
+  Future<void> resetLoginLock(String uid) async {
+    final db = _db;
+    if (db != null) {
+      await db.collection('users').doc(uid).update({
+        'failedAttempts': 0,
+        'lockUntil': null,
+        'status': 'active',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// ইউজার একাউন্ট আনলক (Manual Unlock Account - Resets failedAttempts & lockUntil)
+  Future<void> unlockUserAccount(String uid) => resetLoginLock(uid);
+
   /// ইউজার প্রোফাইল আপডেট লিমিট রিসেট (Reset 30-Day Edit Limit)
   Future<void> resetProfileUpdateLimit(String uid) async {
     final db = _db;
@@ -556,6 +587,63 @@ class AdminFirestoreService {
         'status': 'answered',
         'repliedAt': FieldValue.serverTimestamp(),
       });
+    } catch (e) {
+      throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
+    }
+  }
+
+  Future<void> updateTicketDecision({
+    required String ticketId,
+    required String status,
+    required String officerName,
+    required String reasonOrReply,
+  }) async {
+    final db = _db;
+    if (db == null) throw Exception('ফায়ারবেস ডেটাবেজ সংযুক্ত নেই।');
+
+    try {
+      final updateData = <String, dynamic>{
+        'status': status,
+        'officerName': officerName,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      if (status == 'resolved' || status == 'answered') {
+        updateData['officerReply'] = reasonOrReply;
+        updateData['rejectionReason'] = null;
+        updateData['resolvedAt'] = FieldValue.serverTimestamp();
+      } else {
+        updateData['rejectionReason'] = reasonOrReply;
+        updateData['rejectedAt'] = FieldValue.serverTimestamp();
+      }
+      await db.collection('support_tickets').doc(ticketId).update(updateData);
+    } catch (e) {
+      throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
+    }
+  }
+
+  Future<void> saveSupportContactSettings({
+    required String hotlineTitle,
+    required String hotlinePhone,
+    required String whatsappTitle,
+    required String whatsappPhone,
+    required String emailTitle,
+    required String emailAddress,
+  }) async {
+    final db = _db;
+    if (db == null) throw Exception('ফায়ারবেস ডেটাবেজ সংযুক্ত নেই।');
+
+    try {
+      final data = {
+        'hotline_title': hotlineTitle,
+        'hotline_phone': hotlinePhone,
+        'whatsapp_title': whatsappTitle,
+        'whatsapp_phone': whatsappPhone,
+        'email_title': emailTitle,
+        'email_address': emailAddress,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      await db.collection('app_settings').doc('support_contact').set(data, SetOptions(merge: true));
+      await db.collection('settings').doc('support_contact').set(data, SetOptions(merge: true));
     } catch (e) {
       throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
     }

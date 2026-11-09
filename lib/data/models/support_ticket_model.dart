@@ -5,6 +5,7 @@ class SupportTicketModel {
   final String authorId;
   final String authorName;
   final String authorPhone;
+  final String? authorEmail;
   final String district;
   final String upazila;
   final String subject;
@@ -20,6 +21,7 @@ class SupportTicketModel {
     required this.authorId,
     required this.authorName,
     required this.authorPhone,
+    this.authorEmail,
     required this.district,
     required this.upazila,
     required this.subject,
@@ -38,6 +40,7 @@ class SupportTicketModel {
       authorId: data['authorId'] as String? ?? '',
       authorName: data['authorName'] as String? ?? 'কৃষক ভাই',
       authorPhone: data['authorPhone'] as String? ?? '',
+      authorEmail: data['authorEmail'] as String?,
       district: data['district'] as String? ?? '',
       upazila: data['upazila'] as String? ?? '',
       subject: data['subject'] as String? ?? '',
@@ -57,6 +60,7 @@ class SupportTicketModel {
       'authorId': authorId,
       'authorName': authorName,
       'authorPhone': authorPhone,
+      if (authorEmail != null) 'authorEmail': authorEmail,
       'district': district,
       'upazila': upazila,
       'subject': subject,

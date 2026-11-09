@@ -109,6 +109,138 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
+  // ================= 1.2 DIRECT PASSWORD SET =================
+  Future<void> _handleDirectPasswordSet(AdminUserModel user, {BuildContext? dialogCtx}) async {
+    final passController = TextEditingController();
+    bool obscure = true;
+
+    final newPassword = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.password_rounded, color: Color(0xFF1565C0), size: 22),
+              SizedBox(width: 8),
+              Text('সরাসরি নতুন পাসওয়ার্ড নির্ধারণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ইউজার "${user.name}"-এর জন্য নতুন পাসওয়ার্ড লিখুন:',
+                style: const TextStyle(fontSize: 13.5, height: 1.4),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passController,
+                obscureText: obscure,
+                decoration: InputDecoration(
+                  labelText: 'নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  suffixIcon: IconButton(
+                    icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setDlgState(() => obscure = !obscure),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1565C0),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                final p = passController.text.trim();
+                if (p.length < 6) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।')),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx, p);
+              },
+              child: const Text('পাসওয়ার্ড সেট করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (newPassword != null && newPassword.isNotEmpty) {
+      setState(() => _isLoading = true);
+      try {
+        await AdminFirestoreService.instance.setUserPasswordDirect(user.id, newPassword);
+        _showSnackBar('${user.name} এর জন্য নতুন পাসওয়ার্ড সফলভাবে নির্ধারণ করা হয়েছে।');
+      } catch (e) {
+        _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // ================= 1.3 LOGIN LOCK RESET =================
+  Future<void> _handleResetLoginLock(AdminUserModel user, {BuildContext? dialogCtx}) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_open_rounded, color: Color(0xFFE65100), size: 22),
+            SizedBox(width: 8),
+            Text('লগইন লক রিসেট', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'আপনি কি "${user.name}"-এর ভুল পাসওয়ার্ডের কারণে সৃষ্ট লগইন লক রিসেট করতে চান? রিসেট করলে তিনি ১ ঘণ্টা অপেক্ষা না করে তৎক্ষণাৎ পুনরায় লগইন করতে পারবেন।',
+          style: const TextStyle(fontSize: 13.5, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE65100),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('লক রিসেট করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        await AdminFirestoreService.instance.resetLoginLock(user.uid);
+        _showSnackBar('লগইন লক সফলভাবে রিসেট করা হয়েছে!');
+        if (dialogCtx != null && dialogCtx.mounted) {
+          Navigator.pop(dialogCtx);
+        }
+      } catch (e) {
+        _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   // ================= 2. PROFILE EDIT LIMIT RESET =================
   Future<void> _handleProfileLimitReset(AdminUserModel user, {BuildContext? dialogCtx}) async {
     final confirmed = await showDialog<bool>(
@@ -253,7 +385,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           days: selectedDays,
           reason: reasonController.text.trim(),
         );
-        _showSnackBar('ইউজারকে ${_toBn(selectedDays.toString())} দিনের জন্য সাময়িক ব্লক করা হয়েছে।');
+        _showSnackBar('ইউজারকে ${_toBn(selectedDays.toString())} দিনের জন্য অস্থায়ী ব্লক করা হয়েছে।');
         if (dialogCtx != null && dialogCtx.mounted) {
           Navigator.pop(dialogCtx);
         }
@@ -277,7 +409,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 22),
             SizedBox(width: 8),
-            Text('স্থায়ী সাসপেন্ড সতর্কতা', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AdminColors.alertCritical)),
+            Text('স্থায়ী সাসপেন্ড সতর্কতা', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AdminColors.alertCritical)),
           ],
         ),
         content: Column(
@@ -294,7 +426,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 border: Border.all(color: const Color(0xFFFFCDD2)),
               ),
               child: const Text(
-                'সতর্কবার্তা: স্থায়ী সাসপেন্ড কার্যকর হলে ইউজার কখনোই আর অ্যাপে লগইন করতে পারবেন না।',
+                'সতর্কবার্তা: স্থায়ী সাসপেন্ড কার্যকর হলে ইউজার কখনোই আর অ্যাপে লগইন করতে পারবেন না।',
                 style: TextStyle(color: AdminColors.alertCritical, fontSize: 11.5, height: 1.3),
               ),
             ),
@@ -334,7 +466,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               }
               Navigator.pop(ctx, true);
             },
-            child: const Text('স্থায়ী সাসপেন্ড করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            child: const Text('স্থায়ী সাসপেন্ড করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -347,7 +479,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           uid: user.uid,
           reason: reasonController.text.trim(),
         );
-        _showSnackBar('ইউজারকে স্থায়ীভাবে সাসপেন্ড করা হয়েছে।', isError: true);
+        _showSnackBar('ইউজারকে স্থায়ীভাবে সাসপেন্ড করা হয়েছে।', isError: true);
         if (dialogCtx != null && dialogCtx.mounted) {
           Navigator.pop(dialogCtx);
         }
@@ -369,11 +501,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             Icon(Icons.check_circle_rounded, color: AdminColors.primary, size: 22),
             SizedBox(width: 8),
-            Text('একাউন্ট সক্রিয় করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('একাউন্ট একটিভ করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Text(
-          'আপনি কি "${user.name}"-এর একাউন্টের সমস্ত বিধিনিষেধ প্রত্যাহার করে পুনরায় "সক্রিয় (Active)" করতে চান?',
+          'আপনি কি "${user.name}"-এর একাউন্টের সমস্ত বিধিনিষেধ প্রত্যাহার করে পুনরায় "একটিভ (Active)" করতে চান?',
           style: const TextStyle(fontSize: 13.5, height: 1.4),
         ),
         actions: [
@@ -388,7 +520,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('সক্রিয় করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            child: const Text('একটিভ করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -398,7 +530,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       setState(() => _isLoading = true);
       try {
         await AdminFirestoreService.instance.activateUser(user.uid);
-        _showSnackBar('ইউজার একাউন্ট সফলভাবে সক্রিয় করা হয়েছে।');
+        _showSnackBar('ইউজার একাউন্ট সফলভাবে একটিভ করা হয়েছে।');
         if (dialogCtx != null && dialogCtx.mounted) {
           Navigator.pop(dialogCtx);
         }
@@ -489,12 +621,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   _buildDetailRow(Icons.calendar_today_outlined, 'যোগদানের তারিখ', _formatDateBn(user.createdAt)),
                   const SizedBox(height: 8),
 
+                  // Last Profile Update Date
+                  _buildDetailRow(
+                    Icons.update_rounded,
+                    'শেষ প্রোফাইল আপডেট',
+                    user.lastProfileUpdate != null
+                        ? _formatDateBn(user.lastProfileUpdate)
+                        : 'এখনো আপডেট করা হয়নি',
+                  ),
+                  const SizedBox(height: 8),
+
                   // Profile Edit Rate-Limit Status
                   _buildDetailRow(
                     Icons.history_rounded,
                     'প্রোফাইল লিমিট',
                     isRateLimited
-                        ? 'লকড (${_toBn(remainingDays.toString())} দিন বাকি) • শেষ আপডেট: ${_formatDateBn(user.lastProfileUpdate)}'
+                        ? 'লকড (${_toBn(remainingDays.toString())} দিন বাকি)'
                         : 'লিমিট নেই (এডিট সচল)',
                     highlightColor: isRateLimited ? AdminColors.alertWarning : AdminColors.primary,
                   ),
@@ -516,7 +658,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             children: [
                               Icon(Icons.warning_amber_rounded, color: AdminColors.alertWarning, size: 18),
                               SizedBox(width: 6),
-                              Text('সাময়িক স্থগিতের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
+                              Text('অস্থায়ী ব্লকের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -544,11 +686,54 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             children: [
                               Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 18),
                               SizedBox(width: 6),
-                              Text('স্থায়ী সাসপেন্ডের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.alertCritical)),
+                              Text('স্থায়ী সাসপেন্ডের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.alertCritical)),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text('কারণ: ${user.suspendReason.ifEmpty("নীতিমালা লঙ্ঘনের কারণে")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFFB71C1C))),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // Password Lock Security Alert (if locked due to failed attempts)
+                  if (user.isPasswordLocked) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFB74D)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_clock_rounded, color: Color(0xFFE65100), size: 24),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('১০ বার ভুল পাসওয়ার্ডে একাউন্ট সাময়িক লক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'ব্যর্থ চেষ্টা: ${_toBn(user.failedAttempts.toString())} বার • স্বয়ংক্রিয় আনলক হতে বাকি: ${_toBn(user.lockUntil != null ? (user.lockUntil!.difference(DateTime.now()).inMinutes + 1).toString() : '১')} মিনিট',
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFF5D4037)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE65100),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            icon: const Icon(Icons.lock_open_rounded, size: 16),
+                            label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            onPressed: () => _handleResetLoginLock(user, dialogCtx: ctx),
+                          ),
                         ],
                       ),
                     ),
@@ -566,7 +751,33 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      // 1. Password Reset Button
+                      // Login Lock Reset Button
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          backgroundColor: const Color(0xFFE65100),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.lock_open_rounded, size: 16),
+                        label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                        onPressed: () => _handleResetLoginLock(user, dialogCtx: ctx),
+                      ),
+
+                      // 1.1 Direct Password Set Button
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          foregroundColor: const Color(0xFF1565C0),
+                          side: const BorderSide(color: Color(0xFF90CAF9)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.password_rounded, size: 16),
+                        label: const Text('সরাসরি পাসওয়ার্ড সেট', style: TextStyle(fontSize: 12.5)),
+                        onPressed: () => _handleDirectPasswordSet(user, dialogCtx: ctx),
+                      ),
+
+                      // 1.2 Password Reset Link Button
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -575,7 +786,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                         icon: const Icon(Icons.lock_reset_rounded, size: 16),
-                        label: const Text('পাসওয়ার্ড রিসেট', style: TextStyle(fontSize: 12.5)),
+                        label: const Text('পাসওয়ার্ড রিসেট লিংক', style: TextStyle(fontSize: 12.5)),
                         onPressed: () => _handlePasswordReset(user, dialogCtx: ctx),
                       ),
 
@@ -602,7 +813,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                          label: const Text('একাউন্ট সক্রিয় করুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                          label: const Text('একাউন্ট একটিভ করুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
                           onPressed: () => _handleActivateUser(user, dialogCtx: ctx),
                         ),
 
@@ -615,7 +826,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           icon: const Icon(Icons.timer_outlined, size: 16),
-                          label: const Text('সাময়িক ব্লক', style: TextStyle(fontSize: 12.5)),
+                          label: const Text('অস্থায়ী ব্লক', style: TextStyle(fontSize: 12.5)),
                           onPressed: () => _handleTemporaryBlock(user, dialogCtx: ctx),
                         ),
 
@@ -628,7 +839,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           icon: const Icon(Icons.block_rounded, size: 16),
-                          label: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 12.5)),
+                          label: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 12.5)),
                           onPressed: () => _handlePermanentSuspend(user, dialogCtx: ctx),
                         ),
                     ],
@@ -791,9 +1002,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         runSpacing: 6,
                         children: [
                           _buildFilterPill('all', 'সকল (${_toBn(totalCount.toString())})'),
-                          _buildFilterPill('active', 'সক্রিয় (${_toBn(activeCount.toString())})'),
-                          _buildFilterPill('temporary_blocked', 'সাময়িক স্থগিত (${_toBn(blockedCount.toString())})'),
-                          _buildFilterPill('permanently_suspended', 'স্থায়ী সাসপেন্ড (${_toBn(suspendedCount.toString())})'),
+                          _buildFilterPill('active', 'একটিভ (${_toBn(activeCount.toString())})'),
+                          _buildFilterPill('temporary_blocked', 'অস্থায়ী ব্লক (${_toBn(blockedCount.toString())})'),
+                          _buildFilterPill('permanently_suspended', 'স্থায়ী সাসপেন্ড (${_toBn(suspendedCount.toString())})'),
                         ],
                       ),
 
@@ -829,7 +1040,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             children: [
                               Icon(Icons.person_search_rounded, size: 36, color: AdminColors.textMuted),
                               SizedBox(height: 8),
-                              Text('কোনো ব্যবহারকারী পাওয়া যায়নি', style: TextStyle(fontSize: 13, color: AdminColors.textMuted)),
+                              Text('কোনো ইউজার পাওয়া যায়নি', style: TextStyle(fontSize: 13, color: AdminColors.textMuted)),
                             ],
                           ),
                         )
@@ -889,9 +1100,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         runSpacing: 10,
         children: [
           _buildCompactStatCard('মোট ইউজার', _toBn(total.toString()), Icons.people_alt_rounded, AdminColors.primary, AdminColors.primaryContainer, cardWidth),
-          _buildCompactStatCard('সক্রিয়', _toBn(active.toString()), Icons.check_circle_rounded, const Color(0xFF2E7D32), const Color(0xFFE8F5E9), cardWidth),
-          _buildCompactStatCard('সাময়িক স্থগিত', _toBn(blocked.toString()), Icons.timer_outlined, const Color(0xFFE65100), const Color(0xFFFFF3E0), cardWidth),
-          _buildCompactStatCard('স্থায়ী সাসপেন্ড', _toBn(suspended.toString()), Icons.block_rounded, AdminColors.alertCritical, AdminColors.alertCriticalBg, cardWidth),
+          _buildCompactStatCard('একটিভ একাউন্ট', _toBn(active.toString()), Icons.check_circle_rounded, const Color(0xFF2E7D32), const Color(0xFFE8F5E9), cardWidth),
+          _buildCompactStatCard('অস্থায়ী ব্লক', _toBn(blocked.toString()), Icons.timer_outlined, const Color(0xFFE65100), const Color(0xFFFFF3E0), cardWidth),
+          _buildCompactStatCard('স্থায়ী সাসপেন্ড', _toBn(suspended.toString()), Icons.block_rounded, AdminColors.alertCritical, AdminColors.alertCriticalBg, cardWidth),
         ],
       );
     });
@@ -1032,19 +1243,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       case 'temporary_blocked':
         bg = const Color(0xFFFFF3E0);
         fg = const Color(0xFFE65100);
-        text = 'সাময়িক স্থগিত';
+        text = 'অস্থায়ী ব্লক';
         icon = Icons.timer_outlined;
         break;
       case 'permanently_suspended':
         bg = const Color(0xFFFFEBEE);
         fg = const Color(0xFFC62828);
-        text = 'স্থায়ী সাসপেন্ড';
+        text = 'স্থায়ী সাসপেন্ড';
         icon = Icons.block_rounded;
         break;
       default:
         bg = const Color(0xFFE8F5E9);
         fg = const Color(0xFF2E7D32);
-        text = 'সক্রিয়';
+        text = 'একটিভ';
         icon = Icons.check_circle_rounded;
     }
 

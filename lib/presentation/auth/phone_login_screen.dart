@@ -268,8 +268,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
     try {
       String targetEmail = identifier.trim().toLowerCase();
+      DocumentSnapshot<Map<String, dynamic>>? matchedUserDoc;
 
-      // যদি মোবাইল নম্বর দিয়ে লগইন করার চেষ্টা হয়, তবে ফায়ারস্টোর থেকে ইমেইল অনুসন্ধান
+      // ১. ইউজার ডকুমেন্ট অনুসন্ধান (মোবাইল বা ইমেইল দিয়ে)
       if (!identifier.contains('@')) {
         final cleanPhone = identifier.replaceAll(RegExp(r'[^0-9+]'), '');
         String altPhone = cleanPhone;
@@ -299,77 +300,157 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         if (finalQuery.docs.isEmpty) {
           explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
         } else {
-          final foundEmail = (finalQuery.docs.first.data()['email'] as String?)?.trim();
+          matchedUserDoc = finalQuery.docs.first;
+          final foundEmail = (matchedUserDoc.data()?['email'] as String?)?.trim();
           if (foundEmail == null || foundEmail.isEmpty) {
             explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
           } else {
             targetEmail = foundEmail.toLowerCase();
           }
         }
+      } else {
+        final emailQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: targetEmail)
+            .limit(1)
+            .get()
+            .timeout(const Duration(seconds: 8));
+        if (emailQuery.docs.isNotEmpty) {
+          matchedUserDoc = emailQuery.docs.first;
+        }
       }
 
-      if (explicitErrorMessage == null) {
-        // ফায়ারবেজ অথেনটিকেশন সাইন-ইন
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: targetEmail,
-          password: password,
-        ).timeout(const Duration(seconds: 12));
+      // ২. ভুল পাসওয়ার্ডে একাউন্ট লক আছে কিনা তা সবার আগে যাচাই
+      if (explicitErrorMessage == null && matchedUserDoc != null && matchedUserDoc.exists) {
+        final uData = matchedUserDoc.data() ?? {};
+        final dynamic rawLockUntil = uData['lockUntil'];
+        DateTime? lockDate;
+        if (rawLockUntil is Timestamp) {
+          lockDate = rawLockUntil.toDate();
+        } else if (rawLockUntil is String) {
+          lockDate = DateTime.tryParse(rawLockUntil);
+        }
 
-        if (credential.user != null) {
-          // ফায়ারস্টোর থেকে প্রোফাইল ডাটা লোড ও প্রোভাইডারে সিঙ্ক
-          final userDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(credential.user!.uid)
-              .get();
+        if (lockDate != null && DateTime.now().isBefore(lockDate)) {
+          final diff = lockDate.difference(DateTime.now());
+          final remainingMinutes = diff.inMinutes + (diff.inSeconds % 60 > 0 ? 1 : 0);
+          final remBn = _toBn(remainingMinutes > 0 ? remainingMinutes.toString() : '১');
+          explicitErrorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর $remBn মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
+        }
+      }
 
-          UserModel loggedUser;
-          if (userDoc.exists && userDoc.data() != null) {
-            loggedUser = UserModel.fromFirestore(userDoc);
-          } else {
-            loggedUser = UserModel(
-              uid: credential.user!.uid,
-              name: credential.user!.displayName ?? 'কৃষক ভাই',
-              email: credential.user!.email ?? targetEmail,
-              phone: identifier.contains('@') ? '' : identifier,
-              district: '',
-              upazila: '',
-              village: '',
-              occupation: 'কৃষক',
-              preferredCrops: [],
-              createdAt: DateTime.now(),
-            );
+      // ৩. ডাটাবেজ পাসওয়ার্ড ভিত্তিক ডাইনামিক ভ্যালিডেশন (Dynamic Database Password Validation)
+      if (explicitErrorMessage == null && matchedUserDoc != null && matchedUserDoc.exists) {
+        final uData = matchedUserDoc.data() ?? {};
+        final dbPassword = (uData['password'] as String?)?.trim();
+        final cleanPass = password.trim();
+
+        bool isPasswordMatched = false;
+
+        if (dbPassword != null && dbPassword.isNotEmpty) {
+          // ১. ফায়ারস্টোরে সংরক্ষিত পাসওয়ার্ডের সাথে সরাসরি হুবহু মিল যাচাই
+          isPasswordMatched = (dbPassword == cleanPass);
+        } else {
+          // ২. ফলব্যাক: ফায়ারস্টোরে পাসওয়ার্ড না থাকলে Firebase Auth দিয়ে যাচাই
+          try {
+            final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: targetEmail,
+              password: cleanPass,
+            ).timeout(const Duration(seconds: 10));
+            if (credential.user != null) {
+              isPasswordMatched = true;
+            }
+          } catch (_) {
+            isPasswordMatched = false;
           }
+        }
+
+        if (isPasswordMatched) {
+          // পাসওয়ার্ড মিলেছে -> লগইন সফল!
+          final UserModel loggedUser = UserModel.fromFirestore(matchedUserDoc);
+
+          // ফায়ারস্টোরে failedAttempts ও lockUntil রিসেট এবং 'password' ফিল্ড সিঙ্ক নিশ্চিত করা
+          try {
+            await FirebaseFirestore.instance.collection('users').doc(matchedUserDoc.id).update({
+              'password': cleanPass,
+              'failedAttempts': 0,
+              'lockUntil': null,
+              'tempAdminPassword': FieldValue.delete(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          } catch (_) {}
+
+          // ব্যাকগ্রাউন্ডে Firebase Auth সেশন ও পাসওয়ার্ড সিঙ্ক (যাতে ফায়ারবেজ সেশন সচল থাকে)
+          try {
+            if (FirebaseAuth.instance.currentUser == null) {
+              try {
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  email: targetEmail,
+                  password: cleanPass,
+                ).timeout(const Duration(seconds: 5));
+              } catch (_) {}
+            } else {
+              try {
+                await FirebaseAuth.instance.currentUser!.updatePassword(cleanPass);
+              } catch (_) {}
+            }
+          } catch (_) {}
 
           await authProvider.setUser(loggedUser);
           success = true;
+        } else {
+          // পাসওয়ার্ড ভুল: failedAttempts বৃদ্ধি ও ১০ বার হলে ১ ঘণ্টার জন্য লক
+          final currentAttempts = ((uData['failedAttempts'] as num?)?.toInt() ?? 0) + 1;
+
+          if (currentAttempts >= 10) {
+            final lockTime = DateTime.now().add(const Duration(hours: 1));
+            await FirebaseFirestore.instance.collection('users').doc(matchedUserDoc.id).update({
+              'failedAttempts': currentAttempts,
+              'lockUntil': Timestamp.fromDate(lockTime),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+            explicitErrorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
+          } else {
+            await FirebaseFirestore.instance.collection('users').doc(matchedUserDoc.id).update({
+              'failedAttempts': currentAttempts,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+            final remaining = 10 - currentAttempts;
+            final remBn = _toBn(remaining.toString());
+            explicitErrorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয়! আর $remBn বার ভুল দিলে একাউন্টটি ১ ঘণ্টার জন্য লক হয়ে যাবে।';
+          }
         }
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
-      } else if (e.code == 'user-not-found') {
-        explicitErrorMessage = _loginTabIndex == 0
-            ? 'এই ইমেইলে কোনো একাউন্ট নেই!'
-            : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-      } else if (e.code == 'invalid-email') {
-        explicitErrorMessage = 'ইমেইল ফরম্যাট সঠিক নয়!';
-      } else if (e.code == 'network-request-failed') {
-        explicitErrorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-      } else if (e.code == 'too-many-requests') {
-        explicitErrorMessage = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
-      } else if (e.code == 'user-disabled') {
-        explicitErrorMessage = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
-      } else {
-        explicitErrorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
+      if (explicitErrorMessage == null) {
+        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
+        } else if (e.code == 'user-not-found') {
+          explicitErrorMessage = _loginTabIndex == 0
+              ? 'এই ইমেইলে কোনো একাউন্ট নেই!'
+              : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+        } else if (e.code == 'invalid-email') {
+          explicitErrorMessage = 'ইমেইল ফরম্যাট সঠিক নয়!';
+        } else if (e.code == 'network-request-failed') {
+          explicitErrorMessage = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
+        } else if (e.code == 'too-many-requests') {
+          explicitErrorMessage = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+        } else if (e.code == 'user-disabled') {
+          explicitErrorMessage = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
+        } else {
+          explicitErrorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
+        }
       }
     } catch (e) {
-      final str = e.toString().replaceFirst('Exception: ', '');
-      if (str.contains('wrong-password') || str.contains('invalid-credential')) {
-        explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
-      } else if (str.contains('user-not-found')) {
-        explicitErrorMessage = _loginTabIndex == 0 ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-      } else {
-        explicitErrorMessage = str;
+      if (explicitErrorMessage == null) {
+        final str = e.toString().replaceFirst('Exception: ', '');
+        if (str.contains('wrong-password') || str.contains('invalid-credential')) {
+          explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
+        } else if (str.contains('user-not-found')) {
+          explicitErrorMessage = _loginTabIndex == 0 ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+        } else {
+          explicitErrorMessage = str;
+        }
       }
     } finally {
       // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা

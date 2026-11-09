@@ -281,8 +281,16 @@ class AdminUserModel {
   final DateTime? unblockAt;
   final String? suspendReason;
   final DateTime? lastProfileUpdate;
+  final String? password;
+  final int failedAttempts;
+  final DateTime? lockUntil;
   final DateTime? updatedAt;
   final DateTime createdAt;
+
+  bool get isPasswordLocked {
+    if (lockUntil == null) return false;
+    return DateTime.now().isBefore(lockUntil!);
+  }
 
   const AdminUserModel({
     required this.uid,
@@ -300,6 +308,9 @@ class AdminUserModel {
     this.unblockAt,
     this.suspendReason,
     this.lastProfileUpdate,
+    this.password,
+    this.failedAttempts = 0,
+    this.lockUntil,
     this.updatedAt,
     required this.createdAt,
   });
@@ -328,7 +339,10 @@ class AdminUserModel {
       blockReason: data['blockReason'] as String?,
       unblockAt: parseDate(data['unblockAt']),
       suspendReason: data['suspendReason'] as String?,
-      lastProfileUpdate: parseDate(data['lastProfileUpdate'] ?? data['last_profile_update']),
+      lastProfileUpdate: parseDate(data.containsKey('lastProfileUpdate') ? data['lastProfileUpdate'] : data['last_profile_update']),
+      password: data['password'] as String?,
+      failedAttempts: (data['failedAttempts'] as num?)?.toInt() ?? 0,
+      lockUntil: parseDate(data['lockUntil']),
       updatedAt: parseDate(data['updatedAt'] ?? data['updated_at']),
       createdAt: parseDate(data['createdAt']) ?? DateTime.now(),
     );

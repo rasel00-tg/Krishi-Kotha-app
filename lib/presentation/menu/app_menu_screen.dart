@@ -14,6 +14,7 @@ import '../navigation/main_navigation_screen.dart';
 import '../profile/user_profile_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../support/expert_helpline_screen.dart';
+import '../support/support_contact_screen.dart';
 import 'settings_screen.dart';
 import 'privacy_policy_screen.dart';
 
@@ -51,18 +52,19 @@ class AppMenuScreen extends StatelessWidget {
           backgroundColor: const Color(0xFFF7FAF7),
           // No topbar in Menu screen as requested
           appBar: null,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ================= 1. MODERN CURVED PROFILE HEADER =================
-              _buildCurvedProfileHeader(context, user, activeUid),
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            // Generous bottom padding to ensure smooth scroll above fixed bottom navbar
+            padding: const EdgeInsets.only(bottom: kBottomNavigationBarHeight + 64.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ================= 1. MODERN CURVED PROFILE HEADER =================
+                _buildCurvedProfileHeader(context, user, activeUid),
 
-              // ================= 2. SCROLLABLE MENU LIST =================
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  // Generous bottom padding to ensure smooth scroll above fixed bottom navbar
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, kBottomNavigationBarHeight + 52.0),
+                // ================= 2. SCROLLABLE MENU LIST =================
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -117,14 +119,13 @@ class AppMenuScreen extends StatelessWidget {
                           _buildMenuItem(
                             context: context,
                             icon: Icons.headset_mic_outlined,
-                            iconColor: const Color(0xFF7B1FA2),
-                            iconBgColor: const Color(0xFFF3E5F5),
+                            iconColor: const Color(0xFF00A86B),
+                            iconBgColor: const Color(0xFFE8F5E9),
                             title: 'সাপোর্ট ও যোগাযোগ (Support & Contact)',
                             subtitle: 'কৃষি হেল্পলাইন ও সহায়তা',
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute(builder: (_) => const SupportContactScreen()),
                               );
                             },
                           ),
@@ -217,8 +218,8 @@ class AppMenuScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

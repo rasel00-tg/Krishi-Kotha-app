@@ -288,7 +288,11 @@ class AuthService {
       );
 
       // ৩. ফায়ারস্টোরের আসল users কালেকশনে সংরক্ষিত করা
-      await _firestore!.collection('users').doc(firebaseUser.uid).set(user.toMap());
+      final userMap = user.toMap();
+      userMap['password'] = password;
+      userMap['failedAttempts'] = 0;
+      userMap['lockUntil'] = null;
+      await _firestore!.collection('users').doc(firebaseUser.uid).set(userMap);
       await _cacheUser(user);
       _currentUser = user;
       return user;
@@ -321,13 +325,11 @@ class AuthService {
     }
 
     try {
-      String targetEmail;
+      String targetEmail = cleanId.toLowerCase();
+      DocumentSnapshot<Map<String, dynamic>>? matchedUserDoc;
 
-      if (cleanId.contains('@')) {
-        // Direct Email Login
-        targetEmail = cleanId.toLowerCase();
-      } else {
-        // Mobile Number lookup in Firestore users collection
+      // ১. মোবাইল নম্বর বা ইমেইল দিয়ে ফায়ারস্টোর থেকে অ্যাকাউন্ট অনুসন্ধান
+      if (!cleanId.contains('@')) {
         final cleanPhone = cleanId.replaceAll(RegExp(r'[^0-9+]'), '');
         String altPhone = cleanPhone;
         if (cleanPhone.startsWith('+880')) {
@@ -361,48 +363,151 @@ class AuthService {
           throw Exception('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
         }
 
-        final docData = query.docs.first.data();
-        final foundEmail = (docData['email'] as String?)?.trim();
+        matchedUserDoc = query.docs.first;
+        final docData = matchedUserDoc.data();
+        final foundEmail = (docData?['email'] as String?)?.trim();
         if (foundEmail == null || foundEmail.isEmpty) {
           throw Exception('এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
         }
         targetEmail = foundEmail.toLowerCase();
-      }
-
-      // Live Firebase Authentication
-      final credential = await _auth!.signInWithEmailAndPassword(
-        email: targetEmail,
-        password: password,
-      ).timeout(const Duration(seconds: 12));
-      final firebaseUser = credential.user!;
-
-      // Retrieve full user profile from Firestore users collection
-      final userDoc = await _firestore!.collection('users').doc(firebaseUser.uid).get();
-      UserModel user;
-      if (userDoc.exists && userDoc.data() != null) {
-        user = UserModel.fromFirestore(userDoc);
       } else {
-        user = UserModel(
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName ?? 'কৃষক ভাই',
-          email: firebaseUser.email ?? targetEmail,
-          phone: cleanId.contains('@') ? '' : cleanId,
-          district: '',
-          upazila: '',
-          village: '',
-          occupation: 'কৃষক',
-          preferredCrops: [],
-          createdAt: DateTime.now(),
-        );
-        await _firestore!.collection('users').doc(firebaseUser.uid).set(user.toMap());
+        if (_firestore != null) {
+          try {
+            final emailQuery = await _firestore!
+                .collection('users')
+                .where('email', isEqualTo: targetEmail)
+                .limit(1)
+                .get()
+                .timeout(const Duration(seconds: 8));
+            if (emailQuery.docs.isNotEmpty) {
+              matchedUserDoc = emailQuery.docs.first;
+            }
+          } catch (_) {}
+        }
       }
 
-      await _cacheUser(user);
-      _currentUser = user;
-      return user;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+      // ২. ভুল পাসওয়ার্ডে একাউন্ট লক আছে কিনা তা সবার আগে যাচাই
+      if (matchedUserDoc != null && matchedUserDoc.exists) {
+        final uData = matchedUserDoc.data() ?? {};
+        final dynamic rawLockUntil = uData['lockUntil'];
+        DateTime? lockDate;
+        if (rawLockUntil is Timestamp) {
+          lockDate = rawLockUntil.toDate();
+        } else if (rawLockUntil is String) {
+          lockDate = DateTime.tryParse(rawLockUntil);
+        }
+
+        if (lockDate != null && DateTime.now().isBefore(lockDate)) {
+          final diff = lockDate.difference(DateTime.now());
+          final remainingMinutes = diff.inMinutes + (diff.inSeconds % 60 > 0 ? 1 : 0);
+          final remBn = _toBn(remainingMinutes > 0 ? remainingMinutes.toString() : '১');
+          throw Exception('১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর $remBn মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।');
+        }
+      }
+
+      // ৩. ডাটাবেজ পাসওয়ার্ড ভিত্তিক ডাইনামিক ভ্যালিডেশন
+      final uData = matchedUserDoc?.data() ?? {};
+      final dbPassword = (uData['password'] as String?)?.trim();
+      final cleanPass = password.trim();
+
+      bool authSuccess = false;
+      if (dbPassword != null && dbPassword.isNotEmpty) {
+        authSuccess = (dbPassword == cleanPass);
+      } else {
+        try {
+          final credential = await _auth!.signInWithEmailAndPassword(
+            email: targetEmail,
+            password: cleanPass,
+          ).timeout(const Duration(seconds: 10));
+          if (credential.user != null) {
+            authSuccess = true;
+          }
+        } catch (_) {
+          authSuccess = false;
+        }
+      }
+
+      if (authSuccess) {
+        // সফল লগইন: প্রোফাইল লোড ও failedAttempts রিসেট
+        final userDoc = matchedUserDoc ?? await _firestore!.collection('users').doc(_auth!.currentUser?.uid).get();
+        UserModel user;
+        if (userDoc.exists && userDoc.data() != null) {
+          user = UserModel.fromFirestore(userDoc);
+        } else {
+          user = UserModel(
+            uid: userDoc.id,
+            name: _auth!.currentUser?.displayName ?? 'কৃষক ভাই',
+            email: _auth!.currentUser?.email ?? targetEmail,
+            phone: cleanId.contains('@') ? '' : cleanId,
+            district: '',
+            upazila: '',
+            village: '',
+            occupation: 'কৃষক',
+            preferredCrops: [],
+            createdAt: DateTime.now(),
+          );
+        }
+
+        // ফায়ারস্টোরে 'password' সিঙ্ক ও সিকিউরিটি কাউন্টার রিসেট
+        try {
+          await _firestore!.collection('users').doc(userDoc.id).update({
+            'password': cleanPass,
+            'failedAttempts': 0,
+            'lockUntil': null,
+            'tempAdminPassword': FieldValue.delete(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } catch (_) {}
+
+        // Firebase Auth ব্যাকগ্রাউন্ড সিঙ্ক
+        try {
+          if (_auth!.currentUser == null) {
+            try {
+              await _auth!.signInWithEmailAndPassword(
+                email: targetEmail,
+                password: cleanPass,
+              ).timeout(const Duration(seconds: 5));
+            } catch (_) {}
+          } else {
+            try {
+              await _auth!.currentUser!.updatePassword(cleanPass);
+            } catch (_) {}
+          }
+        } catch (_) {}
+
+        await _cacheUser(user);
+        _currentUser = user;
+        return user;
+      } else {
+        // পাসওয়ার্ড ভুল: failedAttempts কাউন্টার আপডেট
+        if (matchedUserDoc != null && matchedUserDoc.exists) {
+          final uData = matchedUserDoc.data() ?? {};
+          final currentAttempts = ((uData['failedAttempts'] as num?)?.toInt() ?? 0) + 1;
+
+          if (currentAttempts >= 10) {
+            final lockTime = DateTime.now().add(const Duration(hours: 1));
+            try {
+              await _firestore!.collection('users').doc(matchedUserDoc.id).update({
+                'failedAttempts': currentAttempts,
+                'lockUntil': Timestamp.fromDate(lockTime),
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
+            } catch (_) {}
+            throw Exception('১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।');
+          } else {
+            try {
+              await _firestore!.collection('users').doc(matchedUserDoc.id).update({
+                'failedAttempts': currentAttempts,
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
+            } catch (_) {}
+            final remaining = 10 - currentAttempts;
+            final remBn = _toBn(remaining.toString());
+            throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়! আর $remBn বার ভুল দিলে একাউন্টটি ১ ঘণ্টার জন্য লক হয়ে যাবে।');
+          }
+        }
         throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!');
+      }
       } else if (e.code == 'user-not-found') {
         throw Exception(cleanId.contains('@')
             ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!'
@@ -446,6 +551,15 @@ class AuthService {
     } catch (e) {
       throw Exception('ত্রুটি: $e');
     }
+  }
+
+  String _toBn(String s) {
+    const eng = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bng = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    for (int i = 0; i < eng.length; i++) {
+      s = s.replaceAll(eng[i], bng[i]);
+    }
+    return s;
   }
 
   Future<void> signOut() async {

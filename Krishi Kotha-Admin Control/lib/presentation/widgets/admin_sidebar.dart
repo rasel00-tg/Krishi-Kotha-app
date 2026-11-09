@@ -144,9 +144,9 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 ),
                 _buildMenuItem(
                   index: 6,
-                  icon: Icons.people_alt_rounded,
-                  label: 'কৃষক ও সহায়তা',
-                  subtitle: 'ব্যবহারকারী ও ফিডব্যাক',
+                  icon: Icons.headset_mic_rounded,
+                  label: 'সাপোর্ট ও যোগাযোগ',
+                  subtitle: 'কন্টাক্ট সেটিংস ও টিকিট',
                 ),
                 _buildMenuItem(
                   index: 7,

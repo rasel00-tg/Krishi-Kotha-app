@@ -216,7 +216,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(activeUid).get();
         if (userDoc.exists && userDoc.data() != null) {
           final data = userDoc.data()!;
-          final dynamic rawTimestamp = data['lastProfileUpdate'] ?? data['last_profile_update'];
+          dynamic rawTimestamp;
+          if (data.containsKey('lastProfileUpdate')) {
+            rawTimestamp = data['lastProfileUpdate'];
+          } else {
+            rawTimestamp = data['last_profile_update'];
+          }
           DateTime? lastUpdateDate;
           if (rawTimestamp is Timestamp) {
             lastUpdateDate = rawTimestamp.toDate();

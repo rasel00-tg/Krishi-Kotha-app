@@ -31,6 +31,51 @@ class SupportProvider extends ChangeNotifier {
     return false;
   }
 
+  /// Opens Official WhatsApp Support
+  Future<bool> openWhatsAppSupport({
+    String phone = '8801700000000',
+    String message = 'কৃষি কথা অ্যাপ সম্পর্কিত সহায়তা ও পরামর্শ প্রয়োজন',
+  }) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final encodedMsg = Uri.encodeComponent(message);
+    final whatsappAppUri = Uri.parse('whatsapp://send?phone=$cleanPhone&text=$encodedMsg');
+    final whatsappWebUri = Uri.parse('https://wa.me/$cleanPhone?text=$encodedMsg');
+
+    try {
+      if (await canLaunchUrl(whatsappAppUri)) {
+        await launchUrl(whatsappAppUri);
+        return true;
+      } else if (await canLaunchUrl(whatsappWebUri)) {
+        await launchUrl(whatsappWebUri, mode: LaunchMode.externalApplication);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Error launching WhatsApp: $e');
+    }
+    return false;
+  }
+
+  /// Opens default Email client for official support
+  Future<bool> openEmailSupport({
+    String email = 'support@krishikotha.gov.bd',
+    String subject = 'কৃষি কথা অ্যাপ সহায়তা ও পরামর্শ অনুরোধ',
+  }) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {'subject': subject},
+    );
+    try {
+      if (await canLaunchUrl(emailUri)) {
+        await launchUrl(emailUri);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Error launching email: $e');
+    }
+    return false;
+  }
+
   Stream<List<SupportTicketModel>> getUserTicketsStream(String userId) {
     return _firestoreService.getSupportTicketsStream(userId);
   }
@@ -39,6 +84,7 @@ class SupportProvider extends ChangeNotifier {
     required String authorId,
     required String authorName,
     required String authorPhone,
+    String? authorEmail,
     required String district,
     required String upazila,
     required String subject,
@@ -62,6 +108,7 @@ class SupportProvider extends ChangeNotifier {
         authorId: authorId,
         authorName: authorName,
         authorPhone: authorPhone,
+        authorEmail: authorEmail,
         district: district,
         upazila: upazila,
         subject: subject,
