@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
@@ -56,6 +58,21 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     return '$d $m $y, $hr:$min $ampm';
   }
 
+  String _formatPasswordResetDateBn(DateTime? dt) {
+    if (dt == null) return 'এখনো পরিবর্তন করা হয়নি';
+    final months = [
+      'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+      'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+    ];
+    final d = _toBn(dt.day.toString().padLeft(2, '0'));
+    final m = months[dt.month - 1];
+    final y = _toBn(dt.year.toString());
+    final hr = _toBn((dt.hour % 12 == 0 ? 12 : dt.hour % 12).toString().padLeft(2, '0'));
+    final min = _toBn(dt.minute.toString().padLeft(2, '0'));
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$d $m, $y - $hr:$min $ampm';
+  }
+
   // ================= 1. PASSWORD RESET =================
   Future<void> _handlePasswordReset(AdminUserModel user, {BuildContext? dialogCtx}) async {
     if (user.email.isEmpty) {
@@ -99,7 +116,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     if (confirmed == true) {
       setState(() => _isLoading = true);
       try {
-        await AdminFirestoreService.instance.sendPasswordReset(user.email);
+        await AdminFirestoreService.instance.sendPasswordReset(user.email, uid: user.uid);
         _showSnackBar('পাসওয়ার্ড রিসেট লিংক সফলভাবে ${user.email} এ পাঠানো হয়েছে।');
       } catch (e) {
         _showSnackBar(AdminErrorHandler.getFriendlyErrorMessage(e), isError: true);
@@ -543,312 +560,610 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   // ================= 6. USER DETAILS DIALOG (বিস্তারিত মডাল) =================
-  void _showUserDetailsDialog(AdminUserModel user) {
-    bool isRateLimited = false;
-    int remainingDays = 0;
-    if (user.lastProfileUpdate != null) {
-      final daysSinceUpdate = DateTime.now().difference(user.lastProfileUpdate!).inDays;
-      if (daysSinceUpdate < 30) {
-        isRateLimited = true;
-        remainingDays = 30 - daysSinceUpdate;
-      }
-    }
-
+  void _showUserDetailsDialog(AdminUserModel initialUser) {
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 580),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Dialog Header with Avatar & Status
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: AdminColors.primaryContainer,
-                        backgroundImage: user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
-                        child: user.photoUrl.isEmpty
-                            ? Text(
-                                user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AdminColors.primaryDark),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(user.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AdminColors.textPrimary)),
-                            const SizedBox(height: 3),
-                            Text(user.phone.isNotEmpty ? user.phone : 'ফোন নেই', style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
-                          ],
-                        ),
-                      ),
-                      _buildStatusBadge(user.status),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 20, color: AdminColors.textMuted),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
+      builder: (ctx) => StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance.collection('users').doc(initialUser.uid).snapshots(),
+        builder: (ctx, userSnapshot) {
+          final liveUser = (userSnapshot.hasData && userSnapshot.data != null && userSnapshot.data!.exists)
+              ? AdminUserModel.fromFirestore(userSnapshot.data!)
+              : initialUser;
 
-                  const SizedBox(height: 18),
-                  const Divider(color: AdminColors.divider),
-                  const SizedBox(height: 14),
+          bool isRateLimited = false;
+          int remainingDays = 0;
+          if (liveUser.lastProfileUpdate != null) {
+            final daysSinceUpdate = DateTime.now().difference(liveUser.lastProfileUpdate!).inDays;
+            if (daysSinceUpdate < 30) {
+              isRateLimited = true;
+              remainingDays = 30 - daysSinceUpdate;
+            }
+          }
 
-                  // Information Grid (Compact)
-                  _buildDetailRow(Icons.email_outlined, 'ইমেইল এড্রেস', user.email.isNotEmpty ? user.email : 'নিবন্ধিত ইমেইল নেই'),
-                  const SizedBox(height: 8),
-                  _buildDetailRow(Icons.location_on_outlined, 'ঠিকানা / এলাকা', [
-                    if (user.village.isNotEmpty) 'গ্রাম: ${user.village}',
-                    if (user.upazila.isNotEmpty) 'উপজেলা: ${user.upazila}',
-                    if (user.district.isNotEmpty) 'জেলা: ${user.district}',
-                  ].join(', ').ifEmpty('ঠিকানা অনুল্লিখিত')),
-                  const SizedBox(height: 8),
-                  _buildDetailRow(Icons.work_outline_rounded, 'পেশা', user.occupation.isNotEmpty ? user.occupation : 'কৃষক'),
-                  const SizedBox(height: 8),
-                  _buildDetailRow(Icons.calendar_today_outlined, 'যোগদানের তারিখ', _formatDateBn(user.createdAt)),
-                  const SizedBox(height: 8),
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance.collection('support_tickets').snapshots(),
+            builder: (ctx, ticketSnapshot) {
+              int totalTickets = 0;
+              if (ticketSnapshot.hasData && ticketSnapshot.data != null) {
+                totalTickets = ticketSnapshot.data!.docs.where((doc) {
+                  final data = doc.data();
+                  final uid = data['userId']?.toString() ?? data['authorId']?.toString() ?? '';
+                  return uid == liveUser.uid;
+                }).length;
+              }
 
-                  // Last Profile Update Date
-                  _buildDetailRow(
-                    Icons.update_rounded,
-                    'শেষ প্রোফাইল আপডেট',
-                    user.lastProfileUpdate != null
-                        ? _formatDateBn(user.lastProfileUpdate)
-                        : 'এখনো আপডেট করা হয়নি',
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Profile Edit Rate-Limit Status
-                  _buildDetailRow(
-                    Icons.history_rounded,
-                    'প্রোফাইল লিমিট',
-                    isRateLimited
-                        ? 'লকড (${_toBn(remainingDays.toString())} দিন বাকি)'
-                        : 'লিমিট নেই (এডিট সচল)',
-                    highlightColor: isRateLimited ? AdminColors.alertWarning : AdminColors.primary,
-                  ),
-
-                  // Block / Suspend Details Notice (if any)
-                  if (user.status == 'temporary_blocked') ...[
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AdminColors.alertWarningBg,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFFE0B2)),
-                      ),
+              return Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: SingleChildScrollView(
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          // Dialog Header with Avatar & Status
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(Icons.warning_amber_rounded, color: AdminColors.alertWarning, size: 18),
-                              SizedBox(width: 6),
-                              Text('অস্থায়ী ব্লকের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text('কারণ: ${user.blockReason.ifEmpty("অনির্দিষ্ট")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFF5D4037))),
-                          if (user.unblockAt != null) ...[
-                            const SizedBox(height: 2),
-                            Text('আনলক হওয়ার সময়: ${_formatDateBn(user.unblockAt)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFE65100))),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ] else if (user.status == 'permanently_suspended') ...[
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AdminColors.alertCriticalBg,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFFCDD2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 18),
-                              SizedBox(width: 6),
-                              Text('স্থায়ী সাসপেন্ডের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.alertCritical)),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text('কারণ: ${user.suspendReason.ifEmpty("নীতিমালা লঙ্ঘনের কারণে")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFFB71C1C))),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  // Password Lock Security Alert (if locked due to failed attempts)
-                  if (user.isPasswordLocked) ...[
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3E0),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFFB74D)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.lock_clock_rounded, color: Color(0xFFE65100), size: 24),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('১০ বার ভুল পাসওয়ার্ডে একাউন্ট সাময়িক লক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
-                                const SizedBox(height: 3),
-                                Text(
-                                  'ব্যর্থ চেষ্টা: ${_toBn(user.failedAttempts.toString())} বার • স্বয়ংক্রিয় আনলক হতে বাকি: ${_toBn(user.lockUntil != null ? (user.lockUntil!.difference(DateTime.now()).inMinutes + 1).toString() : '১')} মিনিট',
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFF5D4037)),
+                              CircleAvatar(
+                                radius: 26,
+                                backgroundColor: AdminColors.primaryContainer,
+                                backgroundImage: (liveUser.photoUrl != null && liveUser.photoUrl!.isNotEmpty)
+                                    ? NetworkImage(liveUser.photoUrl!)
+                                    : null,
+                                child: (liveUser.photoUrl == null || liveUser.photoUrl!.isEmpty)
+                                    ? Text(
+                                        liveUser.name.isNotEmpty ? liveUser.name[0].toUpperCase() : 'U',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AdminColors.primaryDark),
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(liveUser.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AdminColors.textPrimary)),
+                                    const SizedBox(height: 3),
+                                    Text(liveUser.phone.isNotEmpty ? liveUser.phone : 'ফোন নেই', style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              _buildStatusBadge(liveUser.status),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 20, color: AdminColors.textMuted),
+                                onPressed: () => Navigator.pop(ctx),
+                              ),
+                            ],
                           ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE65100),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+                          const SizedBox(height: 18),
+                          const Divider(color: AdminColors.divider),
+                          const SizedBox(height: 14),
+
+                          // 5 Info Cards Grid
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final cardWidth = (constraints.maxWidth - 12) / 2 > 160
+                                  ? (constraints.maxWidth - 12) / 2
+                                  : constraints.maxWidth;
+                              return Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  // 1. Mobile Number
+                                  _buildUserMetricInfoCard(
+                                    title: 'মোবাইল নম্বর',
+                                    value: liveUser.phone.isNotEmpty ? liveUser.phone : 'ফোন নেই',
+                                    icon: Icons.phone_outlined,
+                                    iconColor: const Color(0xFF2E7D32),
+                                    iconBg: const Color(0xFFE8F5E9),
+                                    subtext: 'নিবন্ধিত প্রাইমারি নম্বর',
+                                    width: cardWidth,
+                                  ),
+
+                                  // 2. Email Address
+                                  _buildUserMetricInfoCard(
+                                    title: 'ইমেইল অ্যাড্রেস',
+                                    value: liveUser.email.isNotEmpty ? liveUser.email : 'নিবন্ধিত ইমেইল নেই',
+                                    icon: Icons.email_outlined,
+                                    iconColor: const Color(0xFF1565C0),
+                                    iconBg: const Color(0xFFE3F2FD),
+                                    subtext: 'অফিশিয়াল যোগাযোগ',
+                                    width: cardWidth,
+                                  ),
+
+                                  // 3. Current Password
+                                  _buildUserPasswordInfoCard(
+                                    password: liveUser.password,
+                                    width: cardWidth,
+                                  ),
+
+                                  // 4. Last Password Update Date
+                                  _buildUserMetricInfoCard(
+                                    title: 'পাসওয়ার্ড আপডেট তারিখ',
+                                    value: _formatPasswordResetDateBn(liveUser.lastPasswordReset),
+                                    icon: Icons.history_toggle_off_rounded,
+                                    iconColor: const Color(0xFFE65100),
+                                    iconBg: const Color(0xFFFFF3E0),
+                                    subtext: liveUser.lastPasswordReset != null ? 'সর্বশেষ রিসেটের রেকর্ড' : 'ডিফল্ট পাসওয়ার্ড বহাল',
+                                    width: cardWidth,
+                                  ),
+
+                                  // 5. Total Support Contact Tickets Count Badge Card
+                                  _buildUserSupportTicketsCard(
+                                    count: totalTickets,
+                                    width: constraints.maxWidth,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 18),
+                          const Divider(color: AdminColors.divider),
+                          const SizedBox(height: 14),
+
+                          // Personal & Geographic Details
+                          _buildDetailRow(Icons.location_on_outlined, 'ঠিকানা / এলাকা', [
+                            if (liveUser.village.isNotEmpty) 'গ্রাম: ${liveUser.village}',
+                            if (liveUser.upazila.isNotEmpty) 'উপজেলা: ${liveUser.upazila}',
+                            if (liveUser.district.isNotEmpty) 'জেলা: ${liveUser.district}',
+                          ].join(', ').ifEmpty('ঠিকানা অনুল্লিখিত')),
+                          const SizedBox(height: 8),
+                          _buildDetailRow(Icons.work_outline_rounded, 'পেশা', liveUser.occupation.isNotEmpty ? liveUser.occupation : 'কৃষক'),
+                          const SizedBox(height: 8),
+                          _buildDetailRow(Icons.calendar_today_outlined, 'যোগদানের তারিখ', _formatDateBn(liveUser.createdAt)),
+                          const SizedBox(height: 8),
+
+                          // Last Profile Update Date
+                          _buildDetailRow(
+                            Icons.update_rounded,
+                            'শেষ প্রোফাইল আপডেট',
+                            liveUser.lastProfileUpdate != null
+                                ? _formatDateBn(liveUser.lastProfileUpdate)
+                                : 'এখনো আপডেট করা হয়নি',
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Profile Edit Rate-Limit Status
+                          _buildDetailRow(
+                            Icons.history_rounded,
+                            'প্রোফাইল লিমিট',
+                            isRateLimited
+                                ? 'লকড (${_toBn(remainingDays.toString())} দিন বাকি)'
+                                : 'লিমিট নেই (এডিট সচল)',
+                            highlightColor: isRateLimited ? AdminColors.alertWarning : AdminColors.primary,
+                          ),
+
+                          // Block / Suspend Details Notice (if any)
+                          if (liveUser.status == 'temporary_blocked') ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AdminColors.alertWarningBg,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFFE0B2)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.warning_amber_rounded, color: AdminColors.alertWarning, size: 18),
+                                      SizedBox(width: 6),
+                                      Text('অস্থায়ী ব্লকের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('কারণ: ${liveUser.blockReason.ifEmpty("অনির্দিষ্ট")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFF5D4037))),
+                                  if (liveUser.unblockAt != null) ...[
+                                    const SizedBox(height: 2),
+                                    Text('আনলক হওয়ার সময়: ${_formatDateBn(liveUser.unblockAt)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFE65100))),
+                                  ],
+                                ],
+                              ),
                             ),
-                            icon: const Icon(Icons.lock_open_rounded, size: 16),
-                            label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            onPressed: () => _handleResetLoginLock(user, dialogCtx: ctx),
+                          ] else if (liveUser.status == 'permanently_suspended') ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AdminColors.alertCriticalBg,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFFCDD2)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.block_rounded, color: AdminColors.alertCritical, size: 18),
+                                      SizedBox(width: 6),
+                                      Text('স্থায়ী সাসপেন্ডের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.alertCritical)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('কারণ: ${liveUser.suspendReason.ifEmpty("নীতিমালা লঙ্ঘনের কারণে")}', style: const TextStyle(fontSize: 12.5, color: Color(0xFFB71C1C))),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          // Password Lock Security Alert (if locked due to failed attempts)
+                          if (liveUser.isPasswordLocked) ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF3E0),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFFB74D)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.lock_clock_rounded, color: Color(0xFFE65100), size: 24),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('১০ বার ভুল পাসওয়ার্ডে একাউন্ট সাময়িক লক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFE65100))),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          'ব্যর্থ চেষ্টা: ${_toBn(liveUser.failedAttempts.toString())} বার • স্বয়ংক্রিয় আনলক হতে বাকি: ${_toBn(liveUser.lockUntil != null ? (liveUser.lockUntil!.difference(DateTime.now()).inMinutes + 1).toString() : '১')} মিনিট',
+                                          style: const TextStyle(fontSize: 12, color: Color(0xFF5D4037)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE65100),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    icon: const Icon(Icons.lock_open_rounded, size: 16),
+                                    label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    onPressed: () => _handleResetLoginLock(liveUser, dialogCtx: ctx),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 20),
+                          const Divider(color: AdminColors.divider),
+                          const SizedBox(height: 14),
+
+                          // Admin Action Buttons inside Details Dialog
+                          const Text('প্রশাসনিক অ্যাকশন কন্ট্রোলস:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.textPrimary)),
+                          const SizedBox(height: 10),
+
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              // Login Lock Reset Button
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  backgroundColor: const Color(0xFFE65100),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                icon: const Icon(Icons.lock_open_rounded, size: 16),
+                                label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                                onPressed: () => _handleResetLoginLock(liveUser, dialogCtx: ctx),
+                              ),
+
+                              // 1.1 Direct Password Set Button
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  foregroundColor: const Color(0xFF1565C0),
+                                  side: const BorderSide(color: Color(0xFF90CAF9)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                icon: const Icon(Icons.password_rounded, size: 16),
+                                label: const Text('সরাসরি পাসওয়ার্ড সেট', style: TextStyle(fontSize: 12.5)),
+                                onPressed: () => _handleDirectPasswordSet(liveUser, dialogCtx: ctx),
+                              ),
+
+                              // 1.2 Password Reset Link Button
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  foregroundColor: const Color(0xFF1976D2),
+                                  side: const BorderSide(color: Color(0xFF90CAF9)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                icon: const Icon(Icons.lock_reset_rounded, size: 16),
+                                label: const Text('পাসওয়ার্ড রিসেট লিংক', style: TextStyle(fontSize: 12.5)),
+                                onPressed: () => _handlePasswordReset(liveUser, dialogCtx: ctx),
+                              ),
+
+                              // 2. Profile Limit Reset Button
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  foregroundColor: const Color(0xFF5E35B1),
+                                  side: const BorderSide(color: Color(0xFFD1C4E9)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                                label: const Text('এডিট লিমিট রিসেট', style: TextStyle(fontSize: 12.5)),
+                                onPressed: () => _handleProfileLimitReset(liveUser, dialogCtx: ctx),
+                              ),
+
+                              // 3. Status Change Buttons
+                              if (liveUser.status != 'active')
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    backgroundColor: AdminColors.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                                  label: const Text('একাউন্ট একটিভ করুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                                  onPressed: () => _handleActivateUser(liveUser, dialogCtx: ctx),
+                                ),
+
+                              if (liveUser.status != 'temporary_blocked')
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    foregroundColor: const Color(0xFFE65100),
+                                    side: const BorderSide(color: Color(0xFFFFCC80)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  icon: const Icon(Icons.timer_outlined, size: 16),
+                                  label: const Text('অস্থায়ী ব্লক', style: TextStyle(fontSize: 12.5)),
+                                  onPressed: () => _handleTemporaryBlock(liveUser, dialogCtx: ctx),
+                                ),
+
+                              if (liveUser.status != 'permanently_suspended')
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    foregroundColor: AdminColors.alertCritical,
+                                    side: const BorderSide(color: Color(0xFFFFCDD2)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  icon: const Icon(Icons.block_rounded, size: 16),
+                                  label: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 12.5)),
+                                  onPressed: () => _handlePermanentSuspend(liveUser, dialogCtx: ctx),
+                                ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ],
-
-                  const SizedBox(height: 20),
-                  const Divider(color: AdminColors.divider),
-                  const SizedBox(height: 14),
-
-                  // Admin Action Buttons inside Details Dialog
-                  const Text('প্রশাসনিক অ্যাকশন কন্ট্রোলস:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AdminColors.textPrimary)),
-                  const SizedBox(height: 10),
-
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      // Login Lock Reset Button
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          backgroundColor: const Color(0xFFE65100),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.lock_open_rounded, size: 16),
-                        label: const Text('লগইন লক রিসেট', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                        onPressed: () => _handleResetLoginLock(user, dialogCtx: ctx),
-                      ),
-
-                      // 1.1 Direct Password Set Button
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          foregroundColor: const Color(0xFF1565C0),
-                          side: const BorderSide(color: Color(0xFF90CAF9)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.password_rounded, size: 16),
-                        label: const Text('সরাসরি পাসওয়ার্ড সেট', style: TextStyle(fontSize: 12.5)),
-                        onPressed: () => _handleDirectPasswordSet(user, dialogCtx: ctx),
-                      ),
-
-                      // 1.2 Password Reset Link Button
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          foregroundColor: const Color(0xFF1976D2),
-                          side: const BorderSide(color: Color(0xFF90CAF9)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.lock_reset_rounded, size: 16),
-                        label: const Text('পাসওয়ার্ড রিসেট লিংক', style: TextStyle(fontSize: 12.5)),
-                        onPressed: () => _handlePasswordReset(user, dialogCtx: ctx),
-                      ),
-
-                      // 2. Profile Limit Reset Button
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          foregroundColor: const Color(0xFF5E35B1),
-                          side: const BorderSide(color: Color(0xFFD1C4E9)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                        label: const Text('এডিট লিমিট রিসেট', style: TextStyle(fontSize: 12.5)),
-                        onPressed: () => _handleProfileLimitReset(user, dialogCtx: ctx),
-                      ),
-
-                      // 3. Status Change Buttons
-                      if (user.status != 'active')
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            backgroundColor: AdminColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                          label: const Text('একাউন্ট একটিভ করুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                          onPressed: () => _handleActivateUser(user, dialogCtx: ctx),
-                        ),
-
-                      if (user.status != 'temporary_blocked')
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            foregroundColor: const Color(0xFFE65100),
-                            side: const BorderSide(color: Color(0xFFFFCC80)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          icon: const Icon(Icons.timer_outlined, size: 16),
-                          label: const Text('অস্থায়ী ব্লক', style: TextStyle(fontSize: 12.5)),
-                          onPressed: () => _handleTemporaryBlock(user, dialogCtx: ctx),
-                        ),
-
-                      if (user.status != 'permanently_suspended')
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            foregroundColor: AdminColors.alertCritical,
-                            side: const BorderSide(color: Color(0xFFFFCDD2)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          icon: const Icon(Icons.block_rounded, size: 16),
-                          label: const Text('স্থায়ী সাসপেন্ড', style: TextStyle(fontSize: 12.5)),
-                          onPressed: () => _handlePermanentSuspend(user, dialogCtx: ctx),
-                        ),
-                    ],
                   ),
-                ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  // ================= 6.1 HELPER METRIC CARDS FOR USER DETAILS =================
+  Widget _buildUserMetricInfoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String subtext,
+    required double width,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E5E0)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x04000000), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AdminColors.textMuted),
               ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(7)),
+                child: Icon(icon, size: 15, color: iconColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AdminColors.textPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtext,
+            style: TextStyle(fontSize: 11, color: iconColor, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserPasswordInfoCard({
+    required String? password,
+    required double width,
+  }) {
+    final hasPass = password != null && password.isNotEmpty;
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDFBFE),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE1BEE7)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x046A1B9A), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'বর্তমান পাসওয়ার্ড',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A)),
+              ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: const Color(0xFFF3E5F5), borderRadius: BorderRadius.circular(7)),
+                child: const Icon(Icons.key_rounded, size: 15, color: Color(0xFF7B1FA2)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFCE93D8)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    hasPass ? password : 'সংরক্ষিত নেই',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: hasPass ? 'monospace' : null,
+                      color: hasPass ? const Color(0xFF4A148C) : Colors.grey,
+                    ),
+                  ),
+                ),
+                if (hasPass)
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: password));
+                      _showSnackBar('পাসওয়ার্ড ক্লিপবোর্ডে কপি করা হয়েছে!');
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEDE7F6),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFD1C4E9)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.copy_rounded, size: 12, color: Color(0xFF4A148C)),
+                          SizedBox(width: 3),
+                          Text('কপি', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF4A148C))),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-        ),
+          const SizedBox(height: 4),
+          const Text(
+            'ফায়ারস্টোর ডাটাবেজ পাসওয়ার্ড',
+            style: TextStyle(fontSize: 11, color: Color(0xFF7B1FA2), fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserSupportTicketsCard({
+    required int count,
+    required double width,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x04059669), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(color: const Color(0xFFD1FAE5), borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.headset_mic_rounded, size: 18, color: Color(0xFF059669)),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('টোটাল সাপোর্ট যোগাযোগ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                  const SizedBox(height: 2),
+                  const Text('ইউজারের লাইভ সাপোর্ট হিস্ট্রি কাউন্ট', style: TextStyle(fontSize: 11, color: Color(0xFF059669))),
+                ],
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD1FAE5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF6EE7B7)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.mark_chat_read_rounded, size: 14, color: Color(0xFF059669)),
+                const SizedBox(width: 6),
+                Text(
+                  'টোটাল যোগাযোগ: ${_toBn(count.toString())} টি',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF065F46)),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

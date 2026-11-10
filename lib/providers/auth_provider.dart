@@ -38,9 +38,14 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _initUser() async {
     _isLoading = true;
     notifyListeners();
-    _user = await _authService.loadCachedUser();
-    _isLoading = false;
-    notifyListeners();
+    try {
+      _user = await _authService.loadCachedUser();
+    } catch (e) {
+      debugPrint('Auth init cached user load error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> sendOtp(String phoneNumber, VoidCallback onSuccess) async {

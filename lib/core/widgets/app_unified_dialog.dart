@@ -6,11 +6,13 @@ class AppLoadingDialogController {
   final BuildContext _parentContext;
   BuildContext? _dialogContext;
   bool _isDismissed = false;
+  bool _isAttached = false;
 
   AppLoadingDialogController(this._parentContext);
 
   void attachDialogContext(BuildContext ctx) {
     _dialogContext = ctx;
+    _isAttached = true;
     if (_isDismissed) {
       _safelyPop();
     }
@@ -19,7 +21,15 @@ class AppLoadingDialogController {
   void dismiss() {
     if (_isDismissed) return;
     _isDismissed = true;
-    _safelyPop();
+    if (_isAttached) {
+      _safelyPop();
+    } else {
+      // If dismiss() was called before the dialog builder rendered,
+      // safely pop on the next postFrameCallback as soon as it mounts.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _safelyPop();
+      });
+    }
   }
 
   void _safelyPop() {
@@ -29,12 +39,6 @@ class AppLoadingDialogController {
         if (nav.canPop()) {
           nav.pop();
           return;
-        }
-      }
-      if (_parentContext.mounted) {
-        final nav = Navigator.of(_parentContext, rootNavigator: true);
-        if (nav.canPop()) {
-          nav.pop();
         }
       }
     } catch (e) {
@@ -47,6 +51,49 @@ class AppLoadingDialogController {
 /// পুরো অ্যাপ্লিকেশনের সব ডায়ালগ ও পপ-আপের জন্য একক আর্কিটেকচার
 class AppUnifiedDialog {
   AppUnifiedDialog._();
+
+  /// রুট নেভিগেটরে কোনো ডায়ালগ বা পপ-আপ ওপেন থাকলে নিরাপদে ডিসমিস করা (Safe Dialog Dismissal)
+  /// ভুল করে মূল পেজ যাতে পপ না হয়ে যায়, তার জন্য canPop নিশ্চিত করে কেবল ডায়ালগই বন্ধ হবে
+  static void safeDismiss(BuildContext context) {
+    try {
+      if (context.mounted) {
+        final nav = Navigator.of(context, rootNavigator: true);
+        if (nav.canPop()) {
+          nav.pop();
+        }
+      }
+    } catch (e) {
+      debugPrint('AppUnifiedDialog safeDismiss notice: $e');
+    }
+  }
+
+  /// গ্যারান্টিড লোডার ও মোডাল ব্যারিয়ার ডিসমিসাল (Guaranteed ModalBarrier Safe Dismissal)
+  static void safeDismissLoading(BuildContext context) {
+    try {
+      if (context.mounted) {
+        final nav = Navigator.of(context, rootNavigator: true);
+        if (nav.canPop()) {
+          nav.pop();
+        }
+      }
+    } catch (e) {
+      debugPrint('AppUnifiedDialog safeDismissLoading notice: $e');
+    }
+  }
+
+  /// রুট লেভেলে আটকে থাকা যেকোনো অপ্রত্যাশিত বা অনাথ ModalBarrier/Dialog ফ্লাশ করা
+  static void flushRootDialogs(BuildContext context) {
+    try {
+      if (context.mounted) {
+        final nav = Navigator.of(context, rootNavigator: true);
+        while (nav.canPop()) {
+          nav.pop();
+        }
+      }
+    } catch (e) {
+      debugPrint('AppUnifiedDialog flushRootDialogs notice: $e');
+    }
+  }
 
   // ================= 1. LOADING STATE =================
   static AppLoadingDialogController showLoading(
@@ -63,6 +110,12 @@ class AppUnifiedDialog {
       builder: (dCtx) {
         controller.attachDialogContext(dCtx);
         return PopScope(
+          canPop: true,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) {
+              controller.dismiss();
+            }
+          },
           canPop: true,
           child: Dialog(
             backgroundColor: Colors.white,

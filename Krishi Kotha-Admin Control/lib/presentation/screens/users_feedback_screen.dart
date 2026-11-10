@@ -28,7 +28,7 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -99,6 +99,7 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
             labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
             tabs: const [
               Tab(icon: Icon(Icons.contact_phone_rounded), text: 'লাইভ সাপোর্ট চ্যানেল (Contact Channels)'),
+              Tab(icon: Icon(Icons.quiz_rounded), text: 'FAQs সেটিংস (FAQ Management)'),
               Tab(icon: Icon(Icons.support_agent_rounded), text: 'সহায়তা টিকিট ও মতামত (Support Tickets)'),
               Tab(icon: Icon(Icons.people_alt_rounded), text: 'নিবন্ধিত কৃষক তালিকা (Users)'),
             ],
@@ -109,6 +110,7 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
             controller: _tabController,
             children: [
               _buildContactChannelsTab(),
+              _buildFaqsSettingsTab(),
               _buildSupportTicketsTab(),
               _buildUsersTab(),
             ],
@@ -125,12 +127,12 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data?.data() != null && !_isSettingsLoaded) {
           final d = snapshot.data!.data()!;
-          _hotlineTitleCtrl.text = d['hotline_title']?.toString() ?? 'কৃষি কল সেন্টার (১৬১২৩)';
-          _hotlinePhoneCtrl.text = d['hotline_phone']?.toString() ?? '16123';
-          _whatsappTitleCtrl.text = d['whatsapp_title']?.toString() ?? 'হোয়াটসঅ্যাপ সাপোর্ট';
-          _whatsappPhoneCtrl.text = d['whatsapp_phone']?.toString() ?? '+8801700000000';
-          _emailTitleCtrl.text = d['email_title']?.toString() ?? 'ইমেইল সহায়তা';
-          _emailAddressCtrl.text = d['email_address']?.toString() ?? 'support@krishikotha.gov.bd';
+          _hotlineTitleCtrl.text = d['hotline_title']?.toString() ?? '';
+          _hotlinePhoneCtrl.text = d['hotline_phone']?.toString() ?? '';
+          _whatsappTitleCtrl.text = d['whatsapp_title']?.toString() ?? '';
+          _whatsappPhoneCtrl.text = d['whatsapp_phone']?.toString() ?? '';
+          _emailTitleCtrl.text = d['email_title']?.toString() ?? '';
+          _emailAddressCtrl.text = d['email_address']?.toString() ?? '';
           _isSettingsLoaded = true;
         }
 
@@ -313,10 +315,462 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
             controller: valueController,
             decoration: InputDecoration(
               labelText: valueLabel,
-              hintText: valueHint,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== TAB: FAQS SETTINGS ====================
+  Widget _buildFaqsSettingsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header Card with Action Button
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AdminColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AdminColors.primary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.quiz_rounded, color: AdminColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'সাধারণ জিজ্ঞাসা (FAQs) ব্যবস্থাপনা',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: AdminColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'ইউজার অ্যাপের সাধারণ জিজ্ঞাসা পেজে প্রদর্শিত প্রশ্নোত্তর যোগ, পরিবর্তন বা মুছে ফেলুন।',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AdminColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _openFaqDialog(),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('নতুন FAQ যোগ করুন'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AdminColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Real-time FAQs List via StreamBuilder
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance.collection('faqs').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: CircularProgressIndicator(color: AdminColors.primary),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AdminColors.alertCritical),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'FAQs লোড করতে ত্রুটি: ${snapshot.error}',
+                      style: const TextStyle(color: AdminColors.alertCritical),
+                    ),
+                  ),
+                );
+              }
+
+              final docs = snapshot.data?.docs ?? [];
+
+              if (docs.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(36),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AdminColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AdminColors.primary.withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.help_outline_rounded, color: AdminColors.primary, size: 36),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'কোনো FAQ যুক্ত নেই',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AdminColors.textPrimary),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'উপরের "নতুন FAQ যোগ করুন" বাটনে ক্লিক করে প্রথম সাধারণ জিজ্ঞাসা যুক্ত করুন।',
+                        style: TextStyle(fontSize: 13, color: AdminColors.textMuted),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Sort in memory by order or createdAt
+              final sortedDocs = List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(docs);
+              sortedDocs.sort((a, b) {
+                final dataA = a.data();
+                final dataB = b.data();
+                final orderA = (dataA['order'] is num) ? (dataA['order'] as num) : 99999;
+                final orderB = (dataB['order'] is num) ? (dataB['order'] as num) : 99999;
+                if (orderA != orderB) return orderA.compareTo(orderB);
+                final timeA = dataA['createdAt'];
+                final timeB = dataB['createdAt'];
+                if (timeA is Timestamp && timeB is Timestamp) {
+                  return timeB.compareTo(timeA);
+                }
+                return 0;
+              });
+
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: sortedDocs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final doc = sortedDocs[index];
+                  final data = doc.data();
+                  final docId = doc.id;
+                  final question = (data['question'] ?? '').toString();
+                  final answer = (data['answer'] ?? '').toString();
+
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AdminColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: AdminColors.primary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                color: AdminColors.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                question,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AdminColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                answer,
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  color: AdminColors.textMuted,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, color: AdminColors.primary, size: 20),
+                              tooltip: 'এডিট করুন',
+                              onPressed: () => _openFaqDialog(
+                                docId: docId,
+                                currentQuestion: question,
+                                currentAnswer: answer,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded, color: AdminColors.alertCritical, size: 20),
+                              tooltip: 'মুছে ফেলুন',
+                              onPressed: () => _confirmDeleteFaq(docId, question),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openFaqDialog({
+    String? docId,
+    String? currentQuestion,
+    String? currentAnswer,
+  }) {
+    final questionCtrl = TextEditingController(text: currentQuestion ?? '');
+    final answerCtrl = TextEditingController(text: currentAnswer ?? '');
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(
+                    docId == null ? Icons.add_circle_outline_rounded : Icons.edit_note_rounded,
+                    color: AdminColors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    docId == null ? 'নতুন FAQ যোগ করুন' : 'FAQ এডিট ও আপডেট',
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 520,
+                child: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: questionCtrl,
+                          maxLines: 2,
+                          validator: (v) => (v == null || v.trim().isEmpty) ? 'প্রশ্ন বা শিরোনাম লিখুন' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'প্রশ্ন / হেডলাইন *',
+                            hintText: 'যেমন: কৃষি কথা অ্যাপে কীভাবে একাউন্ট খুলবো?',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: answerCtrl,
+                          maxLines: 5,
+                          validator: (v) => (v == null || v.trim().isEmpty) ? 'উত্তর বা সমাধান লিখুন' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'বিস্তারিত উত্তর *',
+                            hintText: 'প্রশ্নের বিস্তারিত উত্তর বা সমাধানের ধাপসমূহ লিখুন...',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSaving ? null : () => Navigator.of(ctx).pop(),
+                  child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AdminColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => isSaving = true);
+                          try {
+                            final q = questionCtrl.text.trim();
+                            final a = answerCtrl.text.trim();
+                            if (docId == null) {
+                              await FirebaseFirestore.instance.collection('faqs').add({
+                                'question': q,
+                                'answer': a,
+                                'createdAt': FieldValue.serverTimestamp(),
+                                'updatedAt': FieldValue.serverTimestamp(),
+                              });
+                            } else {
+                              await FirebaseFirestore.instance.collection('faqs').doc(docId).update({
+                                'question': q,
+                                'answer': a,
+                                'updatedAt': FieldValue.serverTimestamp(),
+                              });
+                            }
+                            if (ctx.mounted) Navigator.of(ctx).pop();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('FAQ সফলভাবে সংরক্ষণ করা হয়েছে!'),
+                                  backgroundColor: AdminColors.primary,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSaving = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('সংরক্ষণে ত্রুটি: $e'),
+                                  backgroundColor: AdminColors.alertCritical,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : Text(docId == null ? 'সংরক্ষণ করুন' : 'আপডেট করুন'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteFaq(String docId, String question) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AdminColors.alertCritical),
+            SizedBox(width: 8),
+            Text('FAQ মুছে ফেলতে চান?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'আপনি কি নিশ্চিত যে এই প্রশ্নটি স্থায়ীভাবে মুছে ফেলতে চান?\n\n"$question"',
+          style: const TextStyle(fontSize: 13.5, color: AdminColors.textPrimary, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('বাতিল', style: TextStyle(color: AdminColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AdminColors.alertCritical,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              try {
+                await FirebaseFirestore.instance.collection('faqs').doc(docId).delete();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('FAQ সফলভাবে মুছে ফেলা হয়েছে!'),
+                      backgroundColor: AdminColors.alertCritical,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('মুছে ফেলতে ত্রুটি: $e'),
+                      backgroundColor: AdminColors.alertCritical,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('হ্যাঁ, মুছুন'),
           ),
         ],
       ),

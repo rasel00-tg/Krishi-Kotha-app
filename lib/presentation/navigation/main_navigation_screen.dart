@@ -26,6 +26,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+
+    // রুট লেভেল সেফটি গার্ডিয়ান: অ্যাপ ওপেন বা রুট ভিউ লোড হওয়ার সময় আটকে থাকা
+    // কোনো অনাথ (orphaned) ModalBarrier বা লোডিং ডায়ালগ অবিলম্বে ফ্লাশ করা
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final nav = Navigator.of(context, rootNavigator: true);
+        while (nav.canPop()) {
+          nav.pop();
+        }
+      } catch (_) {}
+    });
   }
 
   @override
@@ -35,6 +47,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _onTabSelected(int index) {
+    // ট্যাব সুইচের সময় কোনো ঝুলন্ত মোডাল বা ডায়ালগ থাকলে তা নিরাপদভাবে ডিসমিস করা
+    try {
+      final nav = Navigator.of(context, rootNavigator: true);
+      while (nav.canPop()) {
+        nav.pop();
+      }
+    } catch (_) {}
+
     setState(() {
       _currentIndex = index;
     });

@@ -290,9 +290,11 @@ class AuthService {
       // ৩. ফায়ারস্টোরের আসল users কালেকশনে সংরক্ষিত করা
       final userMap = user.toMap();
       userMap['password'] = password;
+      userMap['status'] = 'active';
       userMap['failedAttempts'] = 0;
       userMap['lockUntil'] = null;
-      await _firestore!.collection('users').doc(firebaseUser.uid).set(userMap);
+      userMap['lastPasswordReset'] = FieldValue.serverTimestamp();
+      await _firestore!.collection('users').doc(firebaseUser.uid).set(userMap, SetOptions(merge: true));
       await _cacheUser(user);
       _currentUser = user;
       return user;

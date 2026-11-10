@@ -81,21 +81,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     FocusScope.of(context).unfocus();
 
-    // ৪. ক্যাটাগরিভিত্তিক স্টেপ লোডিং ইন্ডিকেটর ডায়ালগ (Category-based Step Loading Dialog)
+    // ৪. ক্যাটাগরিভিত্তিক স্টেপ লোডিং ইন্ডিকেটর ডায়ালগ (Category-based Step Loading Dialog with Safe Dismissal)
     final ValueNotifier<String> stepTitleNotifier = ValueNotifier<String>('তথ্য যাচাই করা হচ্ছে.....');
     bool isLoaderShowing = true;
+    BuildContext? loaderDialogContext;
+
     showDialog(
       context: context,
       barrierDismissible: true, // সেফটি: কোনো অবস্থাতেই যেন স্ক্রিন আনরেসপনসিভ হয়ে আটকে না থাকে
-      builder: (dialogCtx) => PopScope(
-        canPop: false,
-        child: MediaQuery.withNoTextScaling(
-          child: Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            elevation: 12,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: ConstrainedBox(
+      useRootNavigator: true,
+      builder: (dialogCtx) {
+        loaderDialogContext = dialogCtx;
+        return PopScope(
+          canPop: true,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) isLoaderShowing = false;
+          },
+          child: MediaQuery.withNoTextScaling(
+            child: Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              elevation: 12,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 320),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -244,12 +252,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       explicitErrorTitle = 'ত্রুটি';
       explicitErrorMessage = 'ত্রুটি ঘটেছে: $e';
     } finally {
-      // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা
-      if (isLoaderShowing && mounted) {
-        if (Navigator.of(context, rootNavigator: true).canPop()) {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
+      // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ নিরাপদে বন্ধ করা
+      if (isLoaderShowing) {
         isLoaderShowing = false;
+        try {
+          if (loaderDialogContext != null && loaderDialogContext!.mounted) {
+            final nav = Navigator.of(loaderDialogContext!, rootNavigator: true);
+            if (nav.canPop()) {
+              nav.pop();
+            }
+          } else if (mounted) {
+            final nav = Navigator.of(context, rootNavigator: true);
+            if (nav.canPop()) {
+              nav.pop();
+            }
+          }
+        } catch (_) {}
       }
     }
 

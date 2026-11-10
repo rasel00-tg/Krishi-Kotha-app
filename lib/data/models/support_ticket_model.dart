@@ -16,6 +16,15 @@ class SupportTicketModel {
   final String? officerName;
   final DateTime timestamp;
 
+  // Standard schema getters for forward & backward compatibility
+  String get userId => authorId;
+  String get userName => authorName;
+  String get userPhone => authorPhone;
+  String? get userEmail => authorEmail;
+  String get category => subject;
+  String get message => details;
+  String? get adminReply => officerReply;
+
   const SupportTicketModel({
     required this.ticketId,
     required this.authorId,
@@ -35,40 +44,55 @@ class SupportTicketModel {
 
   factory SupportTicketModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    DateTime parsedTime = DateTime.now();
+    final ts = data['createdAt'] ?? data['timestamp'];
+    if (ts is Timestamp) {
+      parsedTime = ts.toDate();
+    } else if (ts is String) {
+      parsedTime = DateTime.tryParse(ts) ?? DateTime.now();
+    }
+
     return SupportTicketModel(
-      ticketId: doc.id,
-      authorId: data['authorId'] as String? ?? '',
-      authorName: data['authorName'] as String? ?? 'কৃষক ভাই',
-      authorPhone: data['authorPhone'] as String? ?? '',
-      authorEmail: data['authorEmail'] as String?,
-      district: data['district'] as String? ?? '',
-      upazila: data['upazila'] as String? ?? '',
-      subject: data['subject'] as String? ?? '',
-      details: data['details'] as String? ?? '',
+      ticketId: (data['ticketId'] ?? doc.id).toString(),
+      authorId: (data['userId'] ?? data['authorId'] ?? '').toString(),
+      authorName: (data['userName'] ?? data['authorName'] ?? 'কৃষক ভাই').toString(),
+      authorPhone: (data['userPhone'] ?? data['authorPhone'] ?? '').toString(),
+      authorEmail: data['userEmail'] as String? ?? data['authorEmail'] as String?,
+      district: (data['district'] ?? '').toString(),
+      upazila: (data['upazila'] ?? '').toString(),
+      subject: (data['category'] ?? data['subject'] ?? 'সহায়তা অনুসন্ধান').toString(),
+      details: (data['message'] ?? data['details'] ?? '').toString(),
       imageUrl: data['imageUrl'] as String?,
-      status: data['status'] as String? ?? 'pending',
-      officerReply: data['officerReply'] as String?,
-      officerName: data['officerName'] as String?,
-      timestamp: (data['timestamp'] is Timestamp)
-          ? (data['timestamp'] as Timestamp).toDate()
-          : DateTime.now(),
+      status: (data['status'] ?? 'pending').toString(),
+      officerReply: (data['adminReply'] ?? data['officerReply'] ?? data['reply']) as String?,
+      officerName: (data['officerName'] ?? '').toString(),
+      timestamp: parsedTime,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'ticketId': ticketId,
+      'userId': authorId,
       'authorId': authorId,
+      'userName': authorName,
       'authorName': authorName,
+      'userPhone': authorPhone,
       'authorPhone': authorPhone,
-      if (authorEmail != null) 'authorEmail': authorEmail,
+      if (authorEmail != null && authorEmail!.isNotEmpty) 'userEmail': authorEmail,
+      if (authorEmail != null && authorEmail!.isNotEmpty) 'authorEmail': authorEmail,
       'district': district,
       'upazila': upazila,
+      'category': subject,
       'subject': subject,
+      'message': details,
       'details': details,
       'imageUrl': imageUrl,
       'status': status,
+      'adminReply': officerReply ?? '',
       'officerReply': officerReply,
       'officerName': officerName,
+      'createdAt': Timestamp.fromDate(timestamp),
       'timestamp': Timestamp.fromDate(timestamp),
     };
   }

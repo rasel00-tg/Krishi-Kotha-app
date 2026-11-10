@@ -185,83 +185,108 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       }
     } catch (_) {}
 
-    // ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং পপ-আপ
+    // ১. প্রিমিয়াম ব্র্যান্ডেড লগইন লোডিং পপ-আপ (Safe Dismissal with RootNavigator)
     bool isLoaderShowing = true;
+    BuildContext? loaderDialogContext;
+
     showDialog(
       context: context,
       barrierDismissible: true, // সেফটি: স্ক্রিন কখনোই যেন পার্মানেন্টলি লক না হয়
-      builder: (dialogCtx) => PopScope(
-        canPop: false,
-        child: MediaQuery.withNoTextScaling(
-          child: Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            elevation: 12,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 320),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 96,
-                      height: 96,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          const SizedBox(
-                            width: 96,
-                            height: 96,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                              backgroundColor: Color(0xFFE8F5E9),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: Image.asset(
-                              'assets/icons/pnglogo.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                Icons.eco_rounded,
-                                color: AppColors.primary,
-                                size: 48,
+      useRootNavigator: true,
+      builder: (dialogCtx) {
+        loaderDialogContext = dialogCtx;
+        return PopScope(
+          canPop: true,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) isLoaderShowing = false;
+          },
+          child: MediaQuery.withNoTextScaling(
+            child: Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              elevation: 12,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 96,
+                        height: 96,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 96,
+                              height: 96,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                backgroundColor: Color(0xFFE8F5E9),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: Image.asset(
+                                'assets/icons/pnglogo.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.eco_rounded,
+                                  color: AppColors.primary,
+                                  size: 48,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'লগইন হচ্ছে....',
-                      style: TextStyle(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        letterSpacing: 0.3,
+                      const SizedBox(height: 20),
+                      const Text(
+                        'লগইন হচ্ছে....',
+                        style: TextStyle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'অনুগ্রহ করে অপেক্ষা করুন',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                      const SizedBox(height: 4),
+                      const Text(
+                        'অনুগ্রহ করে অপেক্ষা করুন',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+
+    // 12-second fail-safe timer ensuring screen is never locked even in deadlocked network calls
+    Future.delayed(const Duration(seconds: 12), () {
+      if (isLoaderShowing) {
+        isLoaderShowing = false;
+        try {
+          if (loaderDialogContext != null && loaderDialogContext!.mounted) {
+            final nav = Navigator.of(loaderDialogContext!, rootNavigator: true);
+            if (nav.canPop()) nav.pop();
+          } else if (mounted) {
+            final nav = Navigator.of(context, rootNavigator: true);
+            if (nav.canPop()) nav.pop();
+          }
+        } catch (_) {}
+      }
+    });
 
     bool success = false;
     String? explicitErrorMessage;
@@ -270,26 +295,32 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       String targetEmail = identifier.trim().toLowerCase();
       DocumentSnapshot<Map<String, dynamic>>? matchedUserDoc;
 
-      // ১. ইউজার ডকুমেন্ট অনুসন্ধান (মোবাইল বা ইমেইল দিয়ে)
-      if (!identifier.contains('@')) {
-        final cleanPhone = identifier.replaceAll(RegExp(r'[^0-9+]'), '');
-        String altPhone = cleanPhone;
-        if (cleanPhone.startsWith('+880')) {
-          altPhone = cleanPhone.replaceFirst('+88', '');
-        } else if (cleanPhone.startsWith('0')) {
-          altPhone = '+88$cleanPhone';
-        }
+      // ১. ইউজার ডকুমেন্ট অনুসন্ধান (ইনপুট ডিটেকশন লজিক: @ থাকলে ইমেইল দিয়ে, না থাকলে মোবাইল নম্বর দিয়ে)
+      if (identifier.contains('@')) {
+        final emailQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: targetEmail)
+            .limit(1)
+            .get()
+            .timeout(const Duration(seconds: 8));
 
-        final query = await FirebaseFirestore.instance
+        if (emailQuery.docs.isNotEmpty) {
+          matchedUserDoc = emailQuery.docs.first;
+        } else {
+          explicitErrorMessage = 'এই মোবাইল নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
+        }
+      } else {
+        final cleanPhone = identifier.replaceAll(RegExp(r'[^0-9]'), '');
+        var phoneQuery = await FirebaseFirestore.instance
             .collection('users')
             .where('phone', isEqualTo: cleanPhone)
             .limit(1)
             .get()
             .timeout(const Duration(seconds: 8));
 
-        QuerySnapshot<Map<String, dynamic>> finalQuery = query;
-        if (query.docs.isEmpty && altPhone != cleanPhone) {
-          finalQuery = await FirebaseFirestore.instance
+        if (phoneQuery.docs.isEmpty && cleanPhone.startsWith('0')) {
+          final altPhone = '+88$cleanPhone';
+          phoneQuery = await FirebaseFirestore.instance
               .collection('users')
               .where('phone', isEqualTo: altPhone)
               .limit(1)
@@ -297,45 +328,43 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               .timeout(const Duration(seconds: 8));
         }
 
-        if (finalQuery.docs.isEmpty) {
-          explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-        } else {
-          matchedUserDoc = finalQuery.docs.first;
+        if (phoneQuery.docs.isNotEmpty) {
+          matchedUserDoc = phoneQuery.docs.first;
           final foundEmail = (matchedUserDoc.data()?['email'] as String?)?.trim();
-          if (foundEmail == null || foundEmail.isEmpty) {
-            explicitErrorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-          } else {
+          if (foundEmail != null && foundEmail.isNotEmpty) {
             targetEmail = foundEmail.toLowerCase();
           }
-        }
-      } else {
-        final emailQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .where('email', isEqualTo: targetEmail)
-            .limit(1)
-            .get()
-            .timeout(const Duration(seconds: 8));
-        if (emailQuery.docs.isNotEmpty) {
-          matchedUserDoc = emailQuery.docs.first;
+        } else {
+          explicitErrorMessage = 'এই মোবাইল নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
         }
       }
 
-      // ২. ভুল পাসওয়ার্ডে একাউন্ট লক আছে কিনা তা সবার আগে যাচাই
+      // ২. একাউন্টে সাসপেনশন বা ভুল পাসওয়ার্ডে লক আছে কিনা তা যাচাই
       if (explicitErrorMessage == null && matchedUserDoc != null && matchedUserDoc.exists) {
         final uData = matchedUserDoc.data() ?? {};
-        final dynamic rawLockUntil = uData['lockUntil'];
-        DateTime? lockDate;
-        if (rawLockUntil is Timestamp) {
-          lockDate = rawLockUntil.toDate();
-        } else if (rawLockUntil is String) {
-          lockDate = DateTime.tryParse(rawLockUntil);
+
+        // স্ট্যাটাস ও সাসপেনশন যাচাই
+        final status = (uData['status'] as String?)?.toLowerCase();
+        if (status == 'suspended' || status == 'inactive' || status == 'blocked' || status == 'permanently_suspended') {
+          explicitErrorMessage = 'এই একাউন্টটি সাময়িকভাবে স্থগিত বা নিষ্ক্রিয় রয়েছে! অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।';
         }
 
-        if (lockDate != null && DateTime.now().isBefore(lockDate)) {
-          final diff = lockDate.difference(DateTime.now());
-          final remainingMinutes = diff.inMinutes + (diff.inSeconds % 60 > 0 ? 1 : 0);
-          final remBn = _toBn(remainingMinutes > 0 ? remainingMinutes.toString() : '১');
-          explicitErrorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর $remBn মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
+        // ভুল পাসওয়ার্ডে সাময়িক লক যাচাই
+        if (explicitErrorMessage == null) {
+          final dynamic rawLockUntil = uData['lockUntil'];
+          DateTime? lockDate;
+          if (rawLockUntil is Timestamp) {
+            lockDate = rawLockUntil.toDate();
+          } else if (rawLockUntil is String) {
+            lockDate = DateTime.tryParse(rawLockUntil);
+          }
+
+          if (lockDate != null && DateTime.now().isBefore(lockDate)) {
+            final diff = lockDate.difference(DateTime.now());
+            final remainingMinutes = diff.inMinutes + (diff.inSeconds % 60 > 0 ? 1 : 0);
+            final remBn = _toBn(remainingMinutes > 0 ? remainingMinutes.toString() : '১');
+            explicitErrorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর $remBn মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
+          }
         }
       }
 
@@ -375,7 +404,6 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               'password': cleanPass,
               'failedAttempts': 0,
               'lockUntil': null,
-              'tempAdminPassword': FieldValue.delete(),
               'updatedAt': FieldValue.serverTimestamp(),
             });
           } catch (_) {}
@@ -426,9 +454,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
           explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
         } else if (e.code == 'user-not-found') {
-          explicitErrorMessage = _loginTabIndex == 0
-              ? 'এই ইমেইলে কোনো একাউন্ট নেই!'
-              : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+          explicitErrorMessage = 'এই মোবাইল নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
         } else if (e.code == 'invalid-email') {
           explicitErrorMessage = 'ইমেইল ফরম্যাট সঠিক নয়!';
         } else if (e.code == 'network-request-failed') {
@@ -447,18 +473,31 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         if (str.contains('wrong-password') || str.contains('invalid-credential')) {
           explicitErrorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
         } else if (str.contains('user-not-found')) {
-          explicitErrorMessage = _loginTabIndex == 0 ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
+          explicitErrorMessage = 'এই মোবাইল নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
         } else {
           explicitErrorMessage = str;
         }
       }
     } finally {
-      // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ বন্ধ করা
-      if (isLoaderShowing && mounted) {
-        if (Navigator.of(context, rootNavigator: true).canPop()) {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
+      // অপারেশন সফল হোক বা ব্যর্থ, বাধ্যতামূলকভাবে finally ব্লকের ভেতর ডায়ালগ সম্পূর্ণ নিরাপদে বন্ধ করা
+      if (isLoaderShowing) {
         isLoaderShowing = false;
+        try {
+          if (loaderDialogContext != null && loaderDialogContext!.mounted) {
+            final nav = Navigator.of(loaderDialogContext!, rootNavigator: true);
+            if (nav.canPop()) {
+              nav.pop();
+            }
+          } else if (mounted) {
+            final nav = Navigator.of(context, rootNavigator: true);
+            if (nav.canPop()) {
+              nav.pop();
+            }
+          }
+        } catch (_) {}
+      }
+      if (mounted) {
+        AppUnifiedDialog.safeDismissLoading(context);
       }
     }
 

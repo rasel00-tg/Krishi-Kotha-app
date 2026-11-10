@@ -282,6 +282,7 @@ class AdminUserModel {
   final String? suspendReason;
   final DateTime? lastProfileUpdate;
   final String? password;
+  final DateTime? lastPasswordReset;
   final int failedAttempts;
   final DateTime? lockUntil;
   final DateTime? updatedAt;
@@ -309,6 +310,7 @@ class AdminUserModel {
     this.suspendReason,
     this.lastProfileUpdate,
     this.password,
+    this.lastPasswordReset,
     this.failedAttempts = 0,
     this.lockUntil,
     this.updatedAt,
@@ -341,6 +343,7 @@ class AdminUserModel {
       suspendReason: data['suspendReason'] as String?,
       lastProfileUpdate: parseDate(data.containsKey('lastProfileUpdate') ? data['lastProfileUpdate'] : data['last_profile_update']),
       password: data['password'] as String?,
+      lastPasswordReset: parseDate(data['lastPasswordReset'] ?? data['last_password_reset'] ?? data['lastPasswordUpdate'] ?? data['passwordUpdatedAt']),
       failedAttempts: (data['failedAttempts'] as num?)?.toInt() ?? 0,
       lockUntil: parseDate(data['lockUntil']),
       updatedAt: parseDate(data['updatedAt'] ?? data['updated_at']),
@@ -383,22 +386,28 @@ class AdminSupportTicketModel {
 
   factory AdminSupportTicketModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    DateTime parsedTime = DateTime.now();
+    final ts = data['createdAt'] ?? data['timestamp'];
+    if (ts is Timestamp) {
+      parsedTime = ts.toDate();
+    } else if (ts is String) {
+      parsedTime = DateTime.tryParse(ts) ?? DateTime.now();
+    }
+
     return AdminSupportTicketModel(
-      ticketId: doc.id,
-      authorId: data['authorId'] as String? ?? '',
-      authorName: data['authorName'] as String? ?? 'কৃষক ভাই',
-      authorPhone: data['authorPhone'] as String? ?? '',
-      district: data['district'] as String? ?? '',
-      upazila: data['upazila'] as String? ?? '',
-      subject: data['subject'] as String? ?? '',
-      details: data['details'] as String? ?? '',
+      ticketId: (data['ticketId'] ?? doc.id).toString(),
+      authorId: (data['userId'] ?? data['authorId'] ?? '').toString(),
+      authorName: (data['userName'] ?? data['authorName'] ?? 'কৃষক ভাই').toString(),
+      authorPhone: (data['userPhone'] ?? data['authorPhone'] ?? '').toString(),
+      district: (data['district'] ?? '').toString(),
+      upazila: (data['upazila'] ?? '').toString(),
+      subject: (data['category'] ?? data['subject'] ?? '').toString(),
+      details: (data['message'] ?? data['details'] ?? '').toString(),
       imageUrl: data['imageUrl'] as String?,
-      status: data['status'] as String? ?? 'pending',
-      officerReply: data['officerReply'] as String?,
-      officerName: data['officerName'] as String?,
-      timestamp: (data['timestamp'] is Timestamp)
-          ? (data['timestamp'] as Timestamp).toDate()
-          : DateTime.now(),
+      status: (data['status'] ?? 'pending').toString(),
+      officerReply: (data['adminReply'] ?? data['officerReply'] ?? data['reply']) as String?,
+      officerName: (data['officerName'] ?? '').toString(),
+      timestamp: parsedTime,
     );
   }
 }

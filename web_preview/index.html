@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="shortcut icon" href="favicon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -193,13 +194,15 @@
       height: 100%;
       background: var(--background);
       z-index: 1000;
-      display: none;
+      display: none !important;
+      pointer-events: none !important;
       flex-direction: column;
       animation: slideInRight 0.22s ease-out;
     }
 
     .full-screen-page.active {
-      display: flex;
+      display: flex !important;
+      pointer-events: auto !important;
     }
 
     @keyframes slideInRight {
@@ -1849,6 +1852,7 @@
       from {
         transform: rotate(0deg);
       }
+
       to {
         transform: rotate(360deg);
       }
@@ -3268,267 +3272,546 @@
     </div>
 
     <!-- DEDICATED FULL SCREEN SUPPORT & CONTACT CENTER PAGE -->
-    <div class="full-screen-page" id="supportContactPage" style="background: #F6F8F5; z-index: 100010; overflow: hidden;">
+    <div class="full-screen-page" id="supportContactPage"
+      style="background: #F6F8F5; z-index: 100010; overflow: hidden;">
       <!-- Single Natural Scroll Container (Dynamic Scrolling) -->
       <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
         <!-- Signature Emerald Green Header (Scrolls naturally) -->
-        <div style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
+        <div
+          style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
           <!-- Top Action Row -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-            <button type="button" onclick="closeSupportContactPage()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            <button type="button" onclick="closeSupportContactPage()"
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+              onmouseout="this.style.background='rgba(255,255,255,0.18)'">
               <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
               <span>ফিরে যান</span>
             </button>
-            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
               <i class="fa-solid fa-headset" style="font-size: 13px;"></i>
               <span>২৪/৭ সাপোর্ট সেন্টার</span>
             </span>
           </div>
 
-          <!-- Specific Lottie Animation: 'assets/animation/Connect with us.json' (Enlarged 150x150) -->
-          <div style="width: 150px; height: 150px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+          <!-- Specific Lottie Animation: 'assets/animation/Connect with us.json' (Enlarged 150x150, pointer-events none to prevent touch interception) -->
+          <div
+            style="width: 150px; height: 150px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; pointer-events: none;">
             <lottie-player src="assets/animation/Connect%20with%20us.json" background="transparent" speed="1"
-              style="width: 150px; height: 150px;" loop autoplay>
+              style="width: 150px; height: 150px; pointer-events: none;" loop autoplay>
               <i class="fa-solid fa-headset" style="font-size: 48px; color: white;"></i>
             </lottie-player>
           </div>
-          <div style="text-align: center;">
-            <h2 style="font-size: 20px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">কৃষি সহায়তা ও সাপোর্ট সেন্টার</h2>
-            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার যেকোনো সমস্যা বা পরামর্শের জন্য আমরা পাশে আছি</p>
+          <div style="text-align: center; pointer-events: none;">
+            <h2 style="font-size: 20px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">কৃষি
+              সহায়তা ও সাপোর্ট সেন্টার</h2>
+            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার যেকোনো সমস্যা বা পরামর্শের
+              জন্য আমরা পাশে আছি</p>
           </div>
         </div>
 
         <!-- Scrollable Content Body with 140px bottom padding -->
-        <div style="padding: 18px 16px 140px 16px;">
+        <div style="padding: 18px 16px 140px 16px; position: relative; z-index: 5;">
           <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
 
-          <!-- Section: সহায়তা ও অ্যাকশন চ্যানেলসমূহ (Live Firestore Settings) -->
-          <div>
-            <!-- Direct Action Cards Container (Call, WhatsApp, Email only) -->
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <!-- 1. কৃষি কল সেন্টার ও হটলাইন (Direct Call) -->
-              <div id="webCallCard" onclick="handleWebHelplineClick('hotline')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#00A86B'" onmouseout="this.style.borderColor='#E3EAE3'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
-                    <i class="fa-solid fa-phone-volume"></i>
+            <!-- Section: ৩টি প্রধান স্বতন্ত্র প্রিমিয়াম ট্যাব -->
+            <div style="display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 10;">
+              <!-- Tab 1: "সরাসরি যোগাযোগ" স্বতন্ত্র ডেডিকেটেড প্রিমিয়াম ট্যাব -->
+              <div onclick="openDirectContactPage()"
+                style="position: relative; z-index: 10; pointer-events: auto; background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 18px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 168, 107, 0.28); color: white; transition: all 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 14px; pointer-events: none;">
+                  <div
+                    style="width: 48px; height: 48px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); border: 1.2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; color: white;">
+                    <i class="fa-solid fa-headset"></i>
                   </div>
                   <div>
-                    <h4 id="webHotlineTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">কৃষি কল সেন্টার (১৬১২৩)</h4>
-                    <p id="webHotlineSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0; font-variant-numeric: tabular-nums;">সরাসরি সরকারি কর্মকর্তার সাথে কথা বলুন</p>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <h3 style="font-size: 16.5px; font-weight: 800; color: white; margin: 0;">সরাসরি যোগাযোগ</h3>
+                      <span
+                        style="background: rgba(255,255,255,0.25); color: white; border-radius: 10px; padding: 2px 8px; font-size: 10.5px; font-weight: 700;">২৪/৭
+                        লাইভ</span>
+                    </div>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.92); margin: 3px 0 0 0;">হটলাইন কল, হোয়াটসঅ্যাপ
+                        বা ইমেইলে সরাসরি কথা বলুন</p>
                   </div>
                 </div>
-                <span style="background: #00A86B; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">কল করুন</span>
+                <div
+                  style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; pointer-events: none;">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </div>
               </div>
 
-              <!-- 2. হোয়াটসঅ্যাপ সাপোর্ট (WhatsApp Chat) -->
-              <div id="webWhatsappCard" onclick="handleWebHelplineClick('whatsapp')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#25D366'" onmouseout="this.style.borderColor='#E3EAE3'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F8F0; color: #25D366; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
-                    <i class="fa-brands fa-whatsapp"></i>
+              <!-- Tab 2: "সাধারণ জিজ্ঞাসা (FAQs)" স্বতন্ত্র প্রিমিয়াম ট্যাব -->
+              <div onclick="openFaqPage()"
+                style="position: relative; z-index: 10; pointer-events: auto; background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 18px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 168, 107, 0.28); color: white; transition: all 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 14px; pointer-events: none;">
+                  <div
+                    style="width: 48px; height: 48px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); border: 1.2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; color: white;">
+                    <i class="fa-solid fa-circle-question"></i>
                   </div>
                   <div>
-                    <h4 id="webWhatsappTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">হোয়াটসঅ্যাপ সাপোর্ট</h4>
-                    <p id="webWhatsappSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0; font-variant-numeric: tabular-nums;">তাৎক্ষণিক চ্যাট ও দ্রুত পরামর্শ সেবা পেতে মেসেজ দিন</p>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <h3 style="font-size: 16.5px; font-weight: 800; color: white; margin: 0;">সাধারণ জিজ্ঞাসা (FAQs)
+                      </h3>
+                      <span
+                        style="background: rgba(255,255,255,0.25); color: white; border-radius: 10px; padding: 2px 8px; font-size: 10.5px; font-weight: 700;">প্রশ্ন
+                        ও উত্তর</span>
+                    </div>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.92); margin: 3px 0 0 0;">অ্যাপের ব্যবহারবিধি ও
+                        সাধারণ সমস্যার সরাসরি সমাধান</p>
                   </div>
                 </div>
-                <span style="background: #25D366; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">চ্যাট করুন</span>
+                <div
+                  style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; pointer-events: none;">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </div>
               </div>
 
-              <!-- 3. ইমেইল সহায়তা (Direct Email) -->
-              <div id="webEmailCard" onclick="handleWebHelplineClick('email')" style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);" onmouseover="this.style.borderColor='#00897B'" onmouseout="this.style.borderColor='#E3EAE3'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #E0F2F1; color: #00897B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
-                    <i class="fa-solid fa-envelope"></i>
+              <!-- Tab 3: "সরাসরি সাপোর্টে অভিযোগ জানান" স্বতন্ত্র প্রিমিয়াম ট্যাব -->
+              <div onclick="openDirectComplaintPage()"
+                style="position: relative; z-index: 10; pointer-events: auto; background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 18px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 168, 107, 0.28); color: white; transition: all 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 14px; pointer-events: none;">
+                  <div
+                    style="width: 48px; height: 48px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); border: 1.2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; color: white;">
+                    <i class="fa-solid fa-message"></i>
                   </div>
                   <div>
-                    <h4 id="webEmailTitle" style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0;">ইমেইল সহায়তা</h4>
-                    <p id="webEmailSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">support@krishikotha.gov.bd</p>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <h3 style="font-size: 16.5px; font-weight: 800; color: white; margin: 0;">সরাসরি সাপোর্টে অভিযোগ
+                        জানান</h3>
+                      <span
+                        style="background: rgba(255,255,255,0.25); color: white; border-radius: 10px; padding: 2px 8px; font-size: 10.5px; font-weight: 700;">অভিযোগ
+                        ও মতামত</span>
+                    </div>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.92); margin: 3px 0 0 0;">আপনার যেকোনো সমস্যা,
+                      অভিযোগ বা মতামত সরাসরি জানান</p>
                   </div>
                 </div>
-                <span style="background: #00897B; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;">ইমেইল পাঠান</span>
+                <div
+                  style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস (Real-Time Stream) -->
+            <div>
+              <div
+                style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: #00A86B;"></i>
+                <span>আপনার পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস</span>
+              </div>
+
+              <div id="webSupportTicketsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated dynamically via Firestore / Local stream -->
+                <div
+                  style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 22px 18px; text-align: center;">
+                  <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: #F1F8F1; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px auto;">
+                    <i class="fa-solid fa-inbox"></i>
+                  </div>
+                  <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">আপনার
+                    কোনো পূর্ববর্তী বার্তা নেই</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">যেকোনো সহায়তার জন্য উপরের ফর্ম থেকে
+                    নির্দ্বিধায় মেসেজ পাঠাতে পারেন।</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="height: 40px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN DIRECT CONTACT PAGE -->
+    <div class="full-screen-page" id="directContactPage"
+      style="background: #F6F8F5; z-index: 100012; overflow: hidden; display: none;">
+      <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Pure White Curved Header -->
+        <div
+          style="background: #FFFFFF; border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
+          <!-- Top Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <button type="button" onclick="closeDirectContactPage()"
+              style="display: inline-flex; align-items: center; gap: 6px; background: #F4F6F4; border: 1px solid #E2E8E2; color: var(--text-primary); border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#E8EBE8'" onmouseout="this.style.background='#F4F6F4'">
+              <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
+              <span>ফিরে যান</span>
+            </button>
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+              <i class="fa-solid fa-headset" style="font-size: 13px; color: #00A86B;"></i>
+              <span>সরাসরি যোগাযোগ</span>
+            </span>
+          </div>
+
+          <!-- Lottie Animation: 'assets/animation/contact.json' (Height 180px) -->
+          <div
+            style="width: 180px; height: 180px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player src="assets/animation/contact.json" background="transparent" speed="1"
+              style="width: 180px; height: 180px;" loop autoplay>
+              <i class="fa-solid fa-headset" style="font-size: 56px; color: #00A86B;"></i>
+            </lottie-player>
+          </div>
+          <div style="text-align: center;">
+            <h2
+              style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px;">
+              সরাসরি যোগাযোগ ও সহায়তা</h2>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0; line-height: 1.35;">বিশেষজ্ঞ দলের সাথে
+              যেকোনো প্রয়োজনে সরাসরি যোগাযোগ করুন</p>
+          </div>
+        </div>
+
+        <!-- Scrollable Content Body with 140px bottom padding -->
+        <div style="padding: 20px 16px 140px 16px;">
+          <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px;">
+            <!-- 1. কৃষি কল সেন্টার ও হটলাইন (Direct Call) -->
+            <div onclick="handleWebHelplineClick('hotline')"
+              style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);"
+              onmouseover="this.style.borderColor='#00A86B'" onmouseout="this.style.borderColor='#E3EAE3'">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div
+                  style="width: 48px; height: 48px; border-radius: 50%; background: #E8F5E9; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                  <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <div>
+                  <h4 id="webDirectHotlineTitle"
+                    style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px 0;">হটলাইন কল
+                    সেন্টার</h4>
+                  <p id="webDirectHotlineSub" style="font-size: 12px; color: var(--text-secondary); margin: 0;">এখনো
+                    নম্বর যুক্ত করা হয়নি</p>
+                </div>
+              </div>
+              <span
+                style="background: #00A86B; color: white; padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; white-space: nowrap;">কল
+                করুন</span>
+            </div>
+
+            <!-- 2. হোয়াটসঅ্যাপ সাপোর্ট (WhatsApp Chat) -->
+            <div onclick="handleWebHelplineClick('whatsapp')"
+              style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);"
+              onmouseover="this.style.borderColor='#25D366'" onmouseout="this.style.borderColor='#E3EAE3'">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div
+                  style="width: 48px; height: 48px; border-radius: 50%; background: #E8F8F0; color: #25D366; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
+                  <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                  <h4 id="webDirectWhatsappTitle"
+                    style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px 0;">
+                    হোয়াটসঅ্যাপ সাপোর্ট</h4>
+                  <p id="webDirectWhatsappSub" style="font-size: 12px; color: var(--text-secondary); margin: 0;">এখনো
+                    নম্বর যুক্ত করা হয়নি</p>
+                </div>
+              </div>
+              <span
+                style="background: #25D366; color: white; padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; white-space: nowrap;">চ্যাট
+                করুন</span>
+            </div>
+
+            <!-- 3. ইমেইল সহায়তা (Direct Email) -->
+            <div onclick="handleWebHelplineClick('email')"
+              style="background: white; border: 1.2px solid #E3EAE3; border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(0,0,0,0.03);"
+              onmouseover="this.style.borderColor='#00897B'" onmouseout="this.style.borderColor='#E3EAE3'">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div
+                  style="width: 48px; height: 48px; border-radius: 50%; background: #E0F2F1; color: #00897B; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                  <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div>
+                  <h4 id="webDirectEmailTitle"
+                    style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px 0;">ইমেইল
+                    সহায়তা</h4>
+                  <p id="webDirectEmailSub" style="font-size: 12px; color: var(--text-secondary); margin: 0;">এখনো ইমেইল
+                    যুক্ত করা হয়নি</p>
+                </div>
+              </div>
+              <span
+                style="background: #00897B; color: white; padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; white-space: nowrap;">ইমেইল
+                পাঠান</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN FAQS PAGE -->
+    <div class="full-screen-page" id="faqPage"
+      style="background: #F6F8F5; z-index: 100013; overflow: hidden; display: none;">
+      <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Pure White Curved Header -->
+        <div
+          style="background: #FFFFFF; border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
+          <!-- Top Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <button type="button" onclick="closeFaqPage()"
+              style="display: inline-flex; align-items: center; gap: 6px; background: #F4F6F4; border: 1px solid #E2E8E2; color: var(--text-primary); border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#E8EBE8'" onmouseout="this.style.background='#F4F6F4'">
+              <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
+              <span>ফিরে যান</span>
+            </button>
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+              <i class="fa-solid fa-circle-question" style="font-size: 13px; color: #00A86B;"></i>
+              <span>সাধারণ জিজ্ঞাসা</span>
+            </span>
+          </div>
+
+          <!-- Lottie Animation: 'assets/animation/FAQs.json' (Height 150px) -->
+          <div
+            style="width: 150px; height: 150px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player src="assets/animation/FAQs.json" background="transparent" speed="1"
+              style="width: 150px; height: 150px;" loop autoplay>
+              <i class="fa-solid fa-circle-question" style="font-size: 56px; color: #00A86B;"></i>
+            </lottie-player>
+          </div>
+          <div style="text-align: center;">
+            <h2
+              style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px;">
+              সাধারণ জিজ্ঞাসা (FAQs)</h2>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0; line-height: 1.35;">কৃষি কথা অ্যাপ
+              ব্যবহারের নিয়ম ও সাধারণ প্রশ্নের সরাসরি সমাধান</p>
+          </div>
+        </div>
+
+        <!-- Scrollable Content Body with 140px bottom padding -->
+        <div style="padding: 20px 16px 140px 16px;">
+          <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 3px 0;">সচরাচর
+                জিজ্ঞাসিত প্রশ্নাবলি</h3>
+              <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">যেকোনো প্রশ্নে ট্যাপ করে বিস্তারিত
+                উত্তর ও সমাধান দেখুন</p>
+            </div>
+
+            <!-- Accordion List Container -->
+            <div id="webFaqsListContainer" style="display: flex; flex-direction: column; gap: 10px;">
+              <div
+                style="background: white; border: 1.1px solid #E4EDE4; border-radius: 14px; padding: 24px; text-align: center; color: var(--text-secondary); font-size: 13.5px;">
+                প্রশ্নোত্তর লোড হচ্ছে...
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Section: ইন-অ্যাপ সাপোর্ট টিকিট ও লগইন তথ্য হালনাগাদ ফর্ম -->
-          <div style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.04);">
-            <!-- Form Header -->
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <div id="webFormHeaderIcon" style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </div>
-              <div>
-                <h3 id="webFormHeaderTitle" style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">আপনার অভিযোগ ও পরামর্শ লিখে পাঠিয়ে দিন</h3>
-                <p id="webFormHeaderSubtitle" style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">সমস্যা বা পরামর্শ লিখে পাঠালে সাপোর্ট টিম দ্রুত ব্যবস্থা নেবে</p>
-              </div>
-            </div>
+    <!-- DEDICATED FULL SCREEN DIRECT COMPLAINT PAGE -->
+    <div class="full-screen-page" id="directComplaintPage"
+      style="background: #F6F8F5; z-index: 100014; overflow: hidden; display: none;">
+      <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Pure White Curved Header -->
+        <div
+          style="background: #FFFFFF; border-radius: 0 0 28px 28px; padding: 16px 18px 24px 18px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
+          <!-- Top Action Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <button type="button" onclick="closeDirectComplaintPage()"
+              style="display: inline-flex; align-items: center; gap: 6px; background: #F4F6F4; border: 1px solid #E2E8E2; color: var(--text-primary); border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#E8EBE8'" onmouseout="this.style.background='#F4F6F4'">
+              <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
+              <span>ফিরে যান</span>
+            </button>
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+              <i class="fa-solid fa-message" style="font-size: 13px; color: #00A86B;"></i>
+              <span>সরাসরি অভিযোগ ও মতামত</span>
+            </span>
+          </div>
 
-            <div style="height: 1px; background: #EFF3EF; margin-bottom: 16px;"></div>
+          <!-- Lottie Animation: 'assets/animation/Chat.json' (Height 140px) -->
+          <div
+            style="width: 140px; height: 140px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player src="assets/animation/Chat.json" background="transparent" speed="1"
+              style="width: 140px; height: 140px;" loop autoplay>
+              <i class="fa-solid fa-comments" style="font-size: 56px; color: #00A86B;"></i>
+            </lottie-player>
+          </div>
+          <div style="text-align: center;">
+            <h2
+              style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px;">
+              সরাসরি সাপোর্টে অভিযোগ জানান</h2>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0; line-height: 1.35;">আপনার যেকোনো
+              সমস্যা, মতামত বা অভিযোগ জানাতে নিচের তথ্যগুলো পূরণ করুন</p>
+          </div>
+        </div>
 
-            <!-- Subject Dropdown -->
-            <div style="margin-bottom: 14px;">
-              <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সমস্যা বা বিষয়ের ক্যাটাগরি</label>
-              <div style="position: relative;">
-                <select id="webSupportSubject" onchange="handleSupportSubjectChange(this.value)" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
-                  <option value="একাউন্ট সমস্যা" selected>একাউন্ট সমস্যা</option>
-                  <option value="লগইন তথ্য হালনাগাদ">লগইন তথ্য হালনাগাদ (আলাদা পেজ)</option>
-                  <option value="ফসলের রোগ সংক্রান্ত জিজ্ঞাসা">ফসলের রোগ সংক্রান্ত জিজ্ঞাসা</option>
-                  <option value="টেকনিক্যাল সমস্যা">টেকনিক্যাল সমস্যা</option>
-                  <option value="সাধারণ পরামর্শ">সাধারণ পরামর্শ</option>
-                  <option value="অন্যান্য">অন্যান্য</option>
-                </select>
-                <i class="fa-solid fa-chevron-down" style="position: absolute; right: 14px; top: 16px; font-size: 13px; color: #00A86B; pointer-events: none;"></i>
-              </div>
-            </div>
-
-            <!-- Dynamic Section A: Inline Credentials Update Flow (Dedicated page preferred) -->
-            <div id="webInlineCredentialsSection" style="display: none;">
-              <!-- Verification Card -->
-              <div id="webInlineVerifyCard" style="background: #F9FAF9; border: 1px solid #DCE4DC; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                  <i class="fa-solid fa-magnifying-glass" style="color: #00A86B; font-size: 14px;"></i>
-                  <strong style="font-size: 13px; color: var(--text-primary);">পুরাতন একাউন্ট যাচাই (Account Verification)</strong>
+        <!-- Form Body with 140px bottom padding -->
+        <div style="padding: 20px 16px 140px 16px;">
+          <div style="max-width: 600px; margin: 0 auto;">
+            <div
+              style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 22px 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+              <!-- Card Header -->
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                  <i class="fa-solid fa-pen-to-square"></i>
                 </div>
-                <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 10px 0;">আপনার পূর্বে নিবন্ধিত মোবাইল নম্বর বা ইমেইল এড্রেস লিখুন:</p>
-                <div style="display: flex; gap: 8px;">
-                  <input type="text" id="webInlineOldIdentifier" placeholder="যেমন: 017XXXXXXXX বা user@mail.com" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: white; padding: 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; outline: none;">
-                  <button type="button" id="webInlineVerifyBtn" onclick="verifyInlineOldAccount()" style="padding: 0 18px; height: 44px; border-radius: 12px; border: none; background: #00A86B; color: white; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;">
-                    যাচাই করুন
-                  </button>
+                <div>
+                  <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">অভিযোগের বিবরণ
+                    পূরণ করুন</h3>
+                  <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">তথ্যগুলো নির্ভুলভাবে
+                    লিখুন যেন দ্রুত সমাধান দেওয়া সম্ভব হয়</p>
                 </div>
               </div>
 
-              <!-- Verified User Pill (Hidden until verified) -->
-              <div id="webInlineVerifiedPill" style="display: none; background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 12px; padding: 12px; margin-bottom: 14px; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #00A86B; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                    <i class="fa-solid fa-user"></i>
-                  </div>
-                  <div>
-                    <div style="font-size: 13.5px; font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 5px;">
-                      <span id="webInlineVerifiedName">সম্মানিত কৃষক</span>
-                      <i class="fa-solid fa-circle-check" style="color: #00A86B; font-size: 13px;"></i>
-                    </div>
-                    <div id="webInlineVerifiedCurrentId" style="font-size: 11.5px; color: #2E7D32; font-variant-numeric: tabular-nums;">বর্তমান আইডি: </div>
-                  </div>
+              <div style="height: 1px; background: #EFF3EF; margin-bottom: 16px;"></div>
+
+              <!-- Field 1: Name -->
+              <div style="margin-bottom: 16px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার
+                  পুরো নাম <span style="color: #E53935;">*</span></label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-user"
+                    style="position: absolute; left: 14px; top: 15px; font-size: 14px; color: #00A86B;"></i>
+                  <input type="text" id="directComplaintName" placeholder="আপনার পুরো নাম লিখুন *" value=""
+                    style="width: 100%; height: 46px; border-radius: 12px; border: 1.2px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 15px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.25; color: var(--text-primary); outline: none; box-sizing: border-box;"
+                    onfocus="this.style.borderColor='#00A86B'; this.style.background='#FFFFFF'"
+                    onblur="this.style.borderColor='#DCE4DC'; this.style.background='#F9FAF9'"
+                    oninput="document.getElementById('directComplaintNameError').style.display='none'">
                 </div>
-                <button type="button" onclick="resetInlineCredentialsForm()" style="background: none; border: none; color: #2E7D32; font-size: 16px; cursor: pointer;" title="রিসেট করুন">
-                  <i class="fa-solid fa-arrows-rotate"></i>
-                </button>
+                <div id="directComplaintNameError"
+                  style="display: none; color: #E53935; font-size: 12px; font-weight: 500; margin-top: 4px; padding-left: 4px;">
+                  অনুগ্রহ করে এই ঘরটি পূরণ করুন</div>
               </div>
 
-              <!-- New Credentials Inputs (Hidden until verified) -->
-              <div id="webInlineNewInputsSection" style="display: none; margin-bottom: 14px;">
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন মোবাইল নম্বর (ঐচ্ছিক)</label>
-                  <input type="tel" id="webInlineNewPhone" placeholder="১১ ডিজিটের নতুন নম্বর (যেমন: 018XXXXXXXX)" style="width: 100%; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; outline: none; box-sizing: border-box;">
+              <!-- Field 2: Address -->
+              <div style="margin-bottom: 16px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার
+                  ঠিকানা (জেলা, উপজেলা, গ্রাম) <span style="color: #E53935;">*</span></label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-location-dot"
+                    style="position: absolute; left: 14px; top: 15px; font-size: 14px; color: #00A86B;"></i>
+                  <input type="text" id="directComplaintAddress" placeholder="আপনার জেলা, উপজেলা ও গ্রামের ঠিকানা দিন *"
+                    value=""
+                    style="width: 100%; height: 46px; border-radius: 12px; border: 1.2px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 15px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.25; color: var(--text-primary); outline: none; box-sizing: border-box;"
+                    onfocus="this.style.borderColor='#00A86B'; this.style.background='#FFFFFF'"
+                    onblur="this.style.borderColor='#DCE4DC'; this.style.background='#F9FAF9'"
+                    oninput="document.getElementById('directComplaintAddressError').style.display='none'">
                 </div>
-                <div style="margin-bottom: 16px;">
-                  <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ইমেইল এড্রেস (ঐচ্ছিক)</label>
-                  <input type="email" id="webInlineNewEmail" placeholder="নতুন ইমেইল এড্রেস (যেমন: newuser@gmail.com)" style="width: 100%; height: 44px; border-radius: 12px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px; font-size: 14px; outline: none; box-sizing: border-box;">
-                </div>
-
-                <button type="button" id="webInlineConfirmBtn" onclick="confirmInlineCredentialsUpdate()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25);">
-                  <i class="fa-solid fa-circle-check"></i>
-                  <span>তথ্য হালনাগাদ সম্পন্ন করুন</span>
-                </button>
+                <div id="directComplaintAddressError"
+                  style="display: none; color: #E53935; font-size: 12px; font-weight: 500; margin-top: 4px; padding-left: 4px;">
+                  অনুগ্রহ করে এই ঘরটি পূরণ করুন</div>
               </div>
 
-              <!-- Digital Receipt Card (Hidden until update success) -->
-              <div id="webInlineReceiptCard" style="display: none; background: #F1F8F1; border: 1.3px solid #A5D6A7; border-radius: 16px; padding: 16px; text-align: center;">
-                <i class="fa-solid fa-circle-check" style="font-size: 44px; color: #00A86B; margin-bottom: 8px;"></i>
-                <h4 style="font-size: 16px; font-weight: 700; color: #1B5E20; margin: 0 0 4px 0;">লগইন তথ্য সফলভাবে হালনাগাদ হয়েছে!</h4>
-                <p style="font-size: 12px; color: #2E7D32; margin: 0 0 12px 0;">আপনার পূর্বের পুরাতন তথ্য বাতিল করে নতুন তথ্য কার্যকর করা হয়েছে।</p>
-                <div style="background: white; border: 1px solid #C8E6C9; border-radius: 10px; padding: 12px; text-align: left; font-size: 12.5px; margin-bottom: 12px;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span style="color: var(--text-secondary);">গ্রাহকের নাম:</span>
-                    <strong id="webInlineReceiptName">সম্মানিত কৃষক</strong>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span style="color: var(--text-secondary);">নতুন লগইন আইডি:</span>
-                    <strong id="webInlineReceiptId" style="color: #00A86B; font-variant-numeric: tabular-nums;">-</strong>
-                  </div>
-                  <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">তারিখ ও সময়:</span>
-                    <span id="webInlineReceiptTime" style="font-variant-numeric: tabular-nums;">-</span>
-                  </div>
+              <!-- Field 3: Category -->
+              <div style="margin-bottom: 16px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সমস্যা
+                  বা সেবার ধরন / ক্যাটাগরি <span style="color: #E53935;">*</span></label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-tags"
+                    style="position: absolute; left: 14px; top: 15px; font-size: 14px; color: #00A86B;"></i>
+                  <select id="directComplaintCategory"
+                    style="width: 100%; height: 46px; border-radius: 12px; border: 1.2px solid #DCE4DC; background: #F9FAF9; padding: 0 36px 0 40px; font-size: 15px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.25; color: var(--text-primary); outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; box-sizing: border-box;"
+                    onchange="document.getElementById('directComplaintCategoryError').style.display='none'">
+                    <option value="" disabled selected>সমস্যার বিষয় নির্বাচন করুন *</option>
+                    <option value="একাউন্ট সমস্যা">একাউন্ট সমস্যা</option>
+                    <option value="ফসলের রোগ সংক্রান্ত জিজ্ঞাসা">ফসলের রোগ সংক্রান্ত জিজ্ঞাসা</option>
+                    <option value="টেকনিক্যাল সমস্যা">টেকনিক্যাল সমস্যা</option>
+                    <option value="সাধারণ পরামর্শ">সাধারণ পরামর্শ</option>
+                    <option value="লগইন তথ্য হালনাগাদ">লগইন তথ্য হালনাগাদ</option>
+                    <option value="অন্যান্য">অন্যান্য</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down"
+                    style="position: absolute; right: 14px; top: 16px; font-size: 13px; color: #00A86B; pointer-events: none;"></i>
                 </div>
-                <button type="button" onclick="resetInlineCredentialsForm()" style="width: 100%; height: 40px; border-radius: 10px; border: 1.5px solid #00A86B; background: transparent; color: #00A86B; font-weight: 700; font-size: 13px; cursor: pointer;">
-                  নতুন আরেকটি আবেদন করুন
-                </button>
+                <div id="directComplaintCategoryError"
+                  style="display: none; color: #E53935; font-size: 12px; font-weight: 500; margin-top: 4px; padding-left: 4px;">
+                  অনুগ্রহ করে এই ঘরটি পূরণ করুন</div>
               </div>
-            </div>
 
-            <!-- Dynamic Section B: Standard Ticket Message Box -->
-            <div id="webStandardTicketSection" style="display: block;">
-              <!-- Multi-line Textarea -->
-              <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">সমস্যার বিস্তারিত বিবরণ</label>
-                <textarea id="webSupportDetails" rows="4" placeholder="আপনার সমস্যা, প্রশ্ন বা পরামর্শের বিস্তারিত এখানে লিখুন..." style="width: 100%; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 12px 14px; font-size: 14px; color: var(--text-primary); line-height: 1.45; outline: none; resize: vertical; box-sizing: border-box; font-variant-numeric: tabular-nums;"></textarea>
+              <!-- Field 4: Details -->
+              <div style="margin-bottom: 22px;">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">অভিযোগ
+                  বা মতামতের বিস্তারিত বিবরণ <span style="color: #E53935;">*</span></label>
+                <div style="position: relative;">
+                  <i class="fa-solid fa-comment-dots"
+                    style="position: absolute; left: 14px; top: 14px; font-size: 14px; color: #00A86B;"></i>
+                  <textarea id="directComplaintDetails" rows="5"
+                    placeholder="আপনার অভিযোগ বা সমস্যার বিস্তারিত এখানে লিখুন *"
+                    style="width: 100%; border-radius: 12px; border: 1.2px solid #DCE4DC; background: #F9FAF9; padding: 12px 14px 12px 40px; font-size: 15px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.25; color: var(--text-primary); outline: none; box-sizing: border-box; resize: vertical;"
+                    onfocus="this.style.borderColor='#00A86B'; this.style.background='#FFFFFF'"
+                    onblur="this.style.borderColor='#DCE4DC'; this.style.background='#F9FAF9'"
+                    oninput="document.getElementById('directComplaintDetailsError').style.display='none'"></textarea>
+                </div>
+                <div id="directComplaintDetailsError"
+                  style="display: none; color: #E53935; font-size: 12px; font-weight: 500; margin-top: 4px; padding-left: 4px;">
+                  অনুগ্রহ করে এই ঘরটি পূরণ করুন</div>
               </div>
 
               <!-- Submit Button -->
-              <button type="button" id="webSupportSubmitBtn" onclick="submitWebSupportTicket()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25); transition: all 0.2s;">
+              <button type="button" onclick="submitDirectComplaint()"
+                style="width: 100%; height: 50px; background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 18px rgba(0, 168, 107, 0.3); transition: all 0.2s;"
+                onmouseover="this.style.opacity='0.95'; this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
                 <i class="fa-solid fa-paper-plane"></i>
                 <span>মেসেজ পাঠান</span>
               </button>
             </div>
-          </div>
 
-          <!-- Section: পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস (Real-Time Stream) -->
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-clock-rotate-left" style="color: #00A86B;"></i>
-              <span>আপনার পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস</span>
-            </div>
+            <!-- Section: পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস (Real-Time Stream) -->
+            <div style="margin-top: 24px;">
+              <div
+                style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: #00A86B;"></i>
+                <span>আপনার পূর্ববর্তী বার্তা ও সাপোর্ট স্ট্যাটাস</span>
+              </div>
 
-            <div id="webSupportTicketsList" style="display: flex; flex-direction: column; gap: 10px;">
-              <!-- Populated dynamically via Firestore / Local stream -->
-              <div style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 22px 18px; text-align: center;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: #F1F8F1; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px auto;">
-                  <i class="fa-solid fa-inbox"></i>
-                </div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">আপনার কোনো পূর্ববর্তী বার্তা নেই</div>
-                <div style="font-size: 12px; color: var(--text-secondary);">যেকোনো সহায়তার জন্য উপরের ফর্ম থেকে নির্দ্বিধায় মেসেজ পাঠাতে পারেন।</div>
+              <div id="directComplaintTicketsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated dynamically via Firestore / Local stream -->
               </div>
             </div>
           </div>
-
-          <div style="height: 40px;"></div>
         </div>
       </div>
     </div>
-  </div>
 
     <!-- DEDICATED FULL SCREEN UPDATE LOGIN CREDENTIALS PAGE -->
-    <div class="full-screen-page" id="updateCredentialsPage" style="background: #F6F8F5; z-index: 100012; overflow: hidden;">
+    <div class="full-screen-page" id="updateCredentialsPage"
+      style="background: #F6F8F5; z-index: 100012; overflow: hidden;">
       <!-- Single Natural Scroll Container (Dynamic Scrolling) -->
       <div style="flex: 1; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
         <!-- Signature Emerald Green Header (Scrolls naturally) -->
-        <div style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 22px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
+        <div
+          style="background: linear-gradient(135deg, #00A86B 0%, #00875A 50%, #1B5E20 100%); border-radius: 0 0 28px 28px; padding: 16px 18px 22px 18px; box-shadow: 0 10px 24px rgba(0, 168, 107, 0.22); color: white;">
           <!-- Top Action Row -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <button type="button" onclick="closeUpdateCredentialsPage()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            <button type="button" onclick="closeUpdateCredentialsPage()"
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+              onmouseout="this.style.background='rgba(255,255,255,0.18)'">
               <i class="fa-solid fa-arrow-left" style="font-size: 13px;"></i>
               <span>ফিরে যান</span>
             </button>
-            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28); color: white; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
               <i class="fa-solid fa-shield-halved" style="font-size: 13px;"></i>
               <span>নিরাপদ হালনাগাদ</span>
             </span>
           </div>
 
           <!-- Specific Lottie Animation: 'assets/animation/Man and robot with computers sitting together in workplace.json' (Enlarged 145x145) -->
-          <div style="width: 145px; height: 145px; margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center;">
-            <lottie-player src="assets/animation/Man%20and%20robot%20with%20computers%20sitting%20together%20in%20workplace.json" background="transparent" speed="1"
-              style="width: 145px; height: 145px;" loop autoplay>
+          <div
+            style="width: 145px; height: 145px; margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center;">
+            <lottie-player
+              src="assets/animation/Man%20and%20robot%20with%20computers%20sitting%20together%20in%20workplace.json"
+              background="transparent" speed="1" style="width: 145px; height: 145px;" loop autoplay>
               <i class="fa-solid fa-user-shield" style="font-size: 38px; color: white;"></i>
             </lottie-player>
           </div>
 
           <div style="text-align: center;">
-            <h2 style="font-size: 20.5px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">লগইন তথ্য হালনাগাদ</h2>
-            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার একাউন্টের ফোন নম্বর বা ইমেইল নিরাপদভাবে পরিবর্তন করুন</p>
+            <h2 style="font-size: 20.5px; font-weight: 800; color: white; margin: 0 0 3px 0; letter-spacing: -0.3px;">
+              লগইন তথ্য হালনাগাদ</h2>
+            <p style="font-size: 12.5px; color: #E8F5E9; margin: 0; line-height: 1.35;">আপনার একাউন্টের ফোন নম্বর বা
+              ইমেইল নিরাপদভাবে পরিবর্তন করুন</p>
           </div>
         </div>
 
@@ -3536,138 +3819,173 @@
         <div style="padding: 18px 16px 140px 16px;">
           <div style="max-width: 580px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
 
-          <!-- State A: Form Container (Shown before success) -->
-          <div id="webCredentialsFormContainer" style="display: flex; flex-direction: column; gap: 18px;">
-            <!-- STEP 1: পুরাতন একাউন্ট যাচাই -->
-            <div style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
-                  <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
-                </div>
-                <div>
-                  <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">১. পুরাতন একাউন্ট যাচাই</h3>
-                  <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">আপনার বর্তমান সক্রিয় একাউন্টের ফোন নম্বর বা ইমেইল লিখুন</p>
-                </div>
-              </div>
-
-              <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
-
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পুরাতন ফোন নম্বর বা ইমেইল লিখুন</label>
-                <div style="position: relative;">
-                  <input type="text" id="webOldIdentifierInput" placeholder="যেমন: 017XXXXXXXX বা user@gmail.com" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
-                  <i class="fa-regular fa-address-card" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
-                </div>
-              </div>
-
-              <!-- যাচাই করুন বাটন -->
-              <button type="button" id="webVerifyOldAccountBtn" onclick="verifyWebOldAccount()" style="width: 100%; height: 44px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22); transition: all 0.2s;">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>একাউন্ট যাচাই করুন</span>
-              </button>
-
-              <!-- একাউন্ট পাওয়া গেলে স্বয়ংক্রিয় নাম প্রদর্শন (ReadOnly Card) -->
-              <div id="webVerifiedUserCard" style="display: none; margin-top: 14px; background: #E8F5E9; border: 1.2px solid #81C784; border-radius: 14px; padding: 12px 14px; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="width: 38px; height: 38px; border-radius: 50%; background: #C8E6C9; color: #1B5E20; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
-                    <i class="fa-regular fa-user"></i>
+            <!-- State A: Form Container (Shown before success) -->
+            <div id="webCredentialsFormContainer" style="display: flex; flex-direction: column; gap: 18px;">
+              <!-- STEP 1: পুরাতন একাউন্ট যাচাই -->
+              <div
+                style="background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                  <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                    <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
                   </div>
                   <div>
-                    <div style="font-size: 11px; font-weight: 600; color: #2E7D32;">যাচাইকৃত ব্যবহারকারীর নাম (অপরিবর্তনীয়)</div>
-                    <div id="webVerifiedUserNameDisplay" style="font-size: 15px; font-weight: 800; color: #1B5E20;">সম্মানিত কৃষক</div>
+                    <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">১. পুরাতন
+                      একাউন্ট যাচাই</h3>
+                    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">আপনার বর্তমান সক্রিয়
+                      একাউন্টের ফোন নম্বর বা ইমেইল লিখুন</p>
                   </div>
                 </div>
-                <span style="background: #2E7D32; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fa-solid fa-check"></i> যাচাইকৃত
-                </span>
+
+                <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
+
+                <div style="margin-bottom: 12px;">
+                  <label
+                    style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">পুরাতন
+                    ফোন নম্বর বা ইমেইল লিখুন</label>
+                  <div style="position: relative;">
+                    <input type="text" id="webOldIdentifierInput" placeholder="যেমন: 017XXXXXXXX বা user@gmail.com"
+                      style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                    <i class="fa-regular fa-address-card"
+                      style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                  </div>
+                </div>
+
+                <!-- যাচাই করুন বাটন -->
+                <button type="button" id="webVerifyOldAccountBtn" onclick="verifyWebOldAccount()"
+                  style="width: 100%; height: 44px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22); transition: all 0.2s;">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>একাউন্ট যাচাই করুন</span>
+                </button>
+
+                <!-- একাউন্ট পাওয়া গেলে স্বয়ংক্রিয় নাম প্রদর্শন (ReadOnly Card) -->
+                <div id="webVerifiedUserCard"
+                  style="display: none; margin-top: 14px; background: #E8F5E9; border: 1.2px solid #81C784; border-radius: 14px; padding: 12px 14px; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div
+                      style="width: 38px; height: 38px; border-radius: 50%; background: #C8E6C9; color: #1B5E20; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                      <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div>
+                      <div style="font-size: 11px; font-weight: 600; color: #2E7D32;">যাচাইকৃত ব্যবহারকারীর নাম
+                        (অপরিবর্তনীয়)</div>
+                      <div id="webVerifiedUserNameDisplay" style="font-size: 15px; font-weight: 800; color: #1B5E20;">
+                        সম্মানিত কৃষক</div>
+                    </div>
+                  </div>
+                  <span
+                    style="background: #2E7D32; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fa-solid fa-check"></i> যাচাইকৃত
+                  </span>
+                </div>
+              </div>
+
+              <!-- STEP 2: নতুন লগইন তথ্য ইনপুট (Visible once verified) -->
+              <div id="webNewCredentialsContainer"
+                style="display: none; background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                  <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
+                    <i class="fa-solid fa-key"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">২. নতুন লগইন
+                      তথ্য নির্ধারণ</h3>
+                    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">নতুন ফোন নম্বর বা
+                      নতুন ইমেইল লিখুন (অন্তত একটি পূরণ করুন)</p>
+                  </div>
+                </div>
+
+                <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
+
+                <!-- নতুন ফোন নম্বর (ঐচ্ছিক) -->
+                <div style="margin-bottom: 14px;">
+                  <label
+                    style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন
+                    ফোন নম্বর (ঐচ্ছিক)</label>
+                  <div style="position: relative;">
+                    <input type="tel" id="webNewPhoneInput" placeholder="নতুন ১১ ডিজিটের মোবাইল নম্বর লিখুন"
+                      style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                    <i class="fa-solid fa-mobile-screen-button"
+                      style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                  </div>
+                </div>
+
+                <!-- নতুন ইমেইল (ঐচ্ছিক) -->
+                <div style="margin-bottom: 18px;">
+                  <label
+                    style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন
+                    ইমেইল (ঐচ্ছিক)</label>
+                  <div style="position: relative;">
+                    <input type="email" id="webNewEmailInput" placeholder="নতুন @gmail.com এড্রেস লিখুন"
+                      style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
+                    <i class="fa-regular fa-envelope"
+                      style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
+                  </div>
+                </div>
+
+                <!-- হালনাগাদ নিশ্চিত করুন বাটন -->
+                <button type="button" id="webConfirmUpdateBtn" onclick="confirmWebCredentialsUpdate()"
+                  style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25); transition: all 0.2s;">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>হালনাগাদ নিশ্চিত করুন</span>
+                </button>
               </div>
             </div>
 
-            <!-- STEP 2: নতুন লগইন তথ্য ইনপুট (Visible once verified) -->
-            <div id="webNewCredentialsContainer" style="display: none; background: white; border: 1.2px solid #DCE6DC; border-radius: 20px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                <div style="padding: 8px; border-radius: 10px; background: #E8F5E9; color: #00A86B; font-size: 18px;">
-                  <i class="fa-solid fa-key"></i>
+            <!-- State B: সফল হালনাগাদ ও ডিজিটাল রিসিপ্ট কার্ড (Success Receipt) -->
+            <div id="webCredentialsReceiptContainer"
+              style="display: none; background: white; border: 1.5px solid #81C784; border-radius: 24px; padding: 24px 20px; box-shadow: 0 12px 30px rgba(0, 168, 107, 0.12); text-align: center;">
+              <div
+                style="width: 68px; height: 68px; border-radius: 50%; background: #E8F5E9; border: 2px solid #81C784; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #2E7D32; margin: 0 auto 16px auto;">
+                <i class="fa-solid fa-check"></i>
+              </div>
+
+              <h3 style="font-size: 19px; font-weight: 800; color: #1B5E20; margin: 0 0 6px 0;">লগইন তথ্য সফলভাবে
+                হালনাগাদ হয়েছে!</h3>
+              <p style="font-size: 12.5px; color: #556955; margin: 0 0 20px 0; line-height: 1.4;">আপনার একাউন্টের নতুন
+                লগইন আইডি ডাটাবেজে স্থায়ীভাবে কার্যকর করা হয়েছে। পুরাতন তথ্য স্বয়ংক্রিয়ভাবে বাতিল করা হয়েছে।</p>
+
+              <!-- রিসিপ্ট বক্স -->
+              <div
+                style="background: #F9FAF9; border: 1px solid #D8E4D8; border-radius: 16px; padding: 16px; text-align: left; margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 13px; color: #546E7A; font-weight: 500;">ব্যবহারকারীর নাম:</span>
+                  <span id="webReceiptUserName"
+                    style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">সম্মানিত কৃষক</span>
                 </div>
-                <div>
-                  <h3 style="font-size: 15.5px; font-weight: 700; color: var(--text-primary); margin: 0;">২. নতুন লগইন তথ্য নির্ধারণ</h3>
-                  <p style="font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 0 0;">নতুন ফোন নম্বর বা নতুন ইমেইল লিখুন (অন্তত একটি পূরণ করুন)</p>
+                <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 13px; color: #546E7A; font-weight: 500;">নতুন লগইন আইডি:</span>
+                  <span id="webReceiptNewId" style="font-size: 13.5px; font-weight: 800; color: #00A86B;"></span>
+                </div>
+                <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; color: #546E7A; font-weight: 500;">আপডেটের তারিখ ও সময়:</span>
+                  <span id="webReceiptUpdateTime"
+                    style="font-size: 13px; font-weight: 600; color: #455A64;">এইমাত্র</span>
                 </div>
               </div>
 
-              <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
-
-              <!-- নতুন ফোন নম্বর (ঐচ্ছিক) -->
-              <div style="margin-bottom: 14px;">
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ফোন নম্বর (ঐচ্ছিক)</label>
-                <div style="position: relative;">
-                  <input type="tel" id="webNewPhoneInput" placeholder="নতুন ১১ ডিজিটের মোবাইল নম্বর লিখুন" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
-                  <i class="fa-solid fa-mobile-screen-button" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
-                </div>
+              <!-- সিকিউরিটি নোট -->
+              <div
+                style="background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 12px 14px; text-align: left; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 22px;">
+                <i class="fa-solid fa-circle-info" style="color: #E65100; font-size: 16px; margin-top: 2px;"></i>
+                <span style="font-size: 12.5px; font-weight: 600; color: #BF360C; line-height: 1.35;">পরবর্তী সময়ে
+                  অ্যাপে প্রবেশের জন্য আপনার এই নতুন তথ্য এবং পূর্বের পাসওয়ার্ড ব্যবহার করুন।</span>
               </div>
 
-              <!-- নতুন ইমেইল (ঐচ্ছিক) -->
-              <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">নতুন ইমেইল (ঐচ্ছিক)</label>
-                <div style="position: relative;">
-                  <input type="email" id="webNewEmailInput" placeholder="নতুন @gmail.com এড্রেস লিখুন" style="width: 100%; height: 46px; border-radius: 14px; border: 1px solid #DCE4DC; background: #F9FAF9; padding: 0 14px 0 40px; font-size: 13.5px; color: var(--text-primary); outline: none; box-sizing: border-box;">
-                  <i class="fa-regular fa-envelope" style="position: absolute; left: 14px; top: 15px; font-size: 16px; color: #00A86B;"></i>
-                </div>
-              </div>
-
-              <!-- হালনাগাদ নিশ্চিত করুন বাটন -->
-              <button type="button" id="webConfirmUpdateBtn" onclick="confirmWebCredentialsUpdate()" style="width: 100%; height: 46px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25); transition: all 0.2s;">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>হালনাগাদ নিশ্চিত করুন</span>
+              <!-- লগইন পেজে যান বাটন -->
+              <button type="button" onclick="closeUpdateCredentialsPage(); openAuthModal('login');"
+                style="width: 100%; height: 48px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25);">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>লগইন পেজে যান</span>
               </button>
             </div>
+
+            <div style="height: 40px;"></div>
           </div>
-
-          <!-- State B: সফল হালনাগাদ ও ডিজিটাল রিসিপ্ট কার্ড (Success Receipt) -->
-          <div id="webCredentialsReceiptContainer" style="display: none; background: white; border: 1.5px solid #81C784; border-radius: 24px; padding: 24px 20px; box-shadow: 0 12px 30px rgba(0, 168, 107, 0.12); text-align: center;">
-            <div style="width: 68px; height: 68px; border-radius: 50%; background: #E8F5E9; border: 2px solid #81C784; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #2E7D32; margin: 0 auto 16px auto;">
-              <i class="fa-solid fa-check"></i>
-            </div>
-
-            <h3 style="font-size: 19px; font-weight: 800; color: #1B5E20; margin: 0 0 6px 0;">লগইন তথ্য সফলভাবে হালনাগাদ হয়েছে!</h3>
-            <p style="font-size: 12.5px; color: #556955; margin: 0 0 20px 0; line-height: 1.4;">আপনার একাউন্টের নতুন লগইন আইডি ডাটাবেজে স্থায়ীভাবে কার্যকর করা হয়েছে। পুরাতন তথ্য স্বয়ংক্রিয়ভাবে বাতিল করা হয়েছে।</p>
-
-            <!-- রিসিপ্ট বক্স -->
-            <div style="background: #F9FAF9; border: 1px solid #D8E4D8; border-radius: 16px; padding: 16px; text-align: left; margin-bottom: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">ব্যবহারকারীর নাম:</span>
-                <span id="webReceiptUserName" style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">সম্মানিত কৃষক</span>
-              </div>
-              <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">নতুন লগইন আইডি:</span>
-                <span id="webReceiptNewId" style="font-size: 13.5px; font-weight: 800; color: #00A86B;"></span>
-              </div>
-              <div style="height: 1px; background: #E5EDE5; margin-bottom: 10px;"></div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 13px; color: #546E7A; font-weight: 500;">আপডেটের তারিখ ও সময়:</span>
-                <span id="webReceiptUpdateTime" style="font-size: 13px; font-weight: 600; color: #455A64;">এইমাত্র</span>
-              </div>
-            </div>
-
-            <!-- সিকিউরিটি নোট -->
-            <div style="background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 12px 14px; text-align: left; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 22px;">
-              <i class="fa-solid fa-circle-info" style="color: #E65100; font-size: 16px; margin-top: 2px;"></i>
-              <span style="font-size: 12.5px; font-weight: 600; color: #BF360C; line-height: 1.35;">পরবর্তী সময়ে অ্যাপে প্রবেশের জন্য আপনার এই নতুন তথ্য এবং পূর্বের পাসওয়ার্ড ব্যবহার করুন।</span>
-            </div>
-
-            <!-- লগইন পেজে যান বাটন -->
-            <button type="button" onclick="closeUpdateCredentialsPage(); openAuthModal('login');" style="width: 100%; height: 48px; border-radius: 14px; border: none; background: #00A86B; color: white; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0, 168, 107, 0.25);">
-              <i class="fa-solid fa-right-to-bracket"></i>
-              <span>লগইন পেজে যান</span>
-            </button>
-          </div>
-
-          <div style="height: 40px;"></div>
         </div>
       </div>
     </div>
-  </div>
 
     <!-- DEDICATED FULL SCREEN EDIT PROFILE PAGE (EDGE-TO-EDGE, NO NAVBAR OVERLAP) -->
     <div class="full-screen-page" id="editProfilePage" style="background: #F7FAF7; z-index: 100010;">
@@ -4694,35 +5012,41 @@
       style="background: #2E7D32; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 2px 8px rgba(46,125,50,0.25); color: white;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <button type="button" class="icon-btn" onclick="closeSettingsPage()"
-          style="color: white; background: rgba(255,255,255,0.18); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="ফিরে যান">
+          style="color: white; background: rgba(255,255,255,0.18); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+          title="ফিরে যান">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
         <h2 style="font-size: 18px; font-weight: 700; color: white; margin: 0;">সেটিংস</h2>
       </div>
     </div>
 
-    <div style="padding: 16px; max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+    <div
+      style="padding: 16px; max-width: 650px; margin: 0 auto; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
       <!-- Category 1: নিরাপত্তা ও বায়োমেট্রিক -->
       <div>
-        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নিরাপত্তা ও বায়োমেট্রিক</h3>
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নিরাপত্তা ও বায়োমেট্রিক
+        </h3>
         <!-- Dedicated Biometric Card with Live Status Badge -->
         <div id="webBiometricCard"
           style="background: white; padding: 16px; border-radius: 16px; border: 1.2px solid #C8E6C9; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-size: 24px; border: 1.5px solid #A5D6A7;">
+              <div
+                style="width: 44px; height: 44px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; color: #2E7D32; font-size: 24px; border: 1.5px solid #A5D6A7;">
                 <i class="fa-solid fa-fingerprint"></i>
               </div>
               <div>
                 <h4 style="font-size: 15px; font-weight: 700; color: #212121; margin: 0;">বায়োমেট্রিক সেটিংস</h4>
-                <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন</p>
+                <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন
+                </p>
               </div>
             </div>
             <input type="checkbox" id="settingsBiometricToggle" onchange="handleBiometricToggleWeb(this.checked)"
               style="accent-color: #2E7D32; width: 20px; height: 20px; cursor: pointer;">
           </div>
 
-          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #EFF3EF; display: flex; justify-content: space-between; align-items: center;">
+          <div
+            style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #EFF3EF; display: flex; justify-content: space-between; align-items: center;">
             <div id="biometricStatusBadge">
               <!-- Rendered dynamically -->
             </div>
@@ -4737,9 +5061,12 @@
 
       <!-- Category 2: নোটিফিকেশন ও অ্যালার্ট -->
       <div>
-        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নোটিফিকেশন ও অ্যালার্ট</h3>
-        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+        <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">নোটিফিকেশন ও অ্যালার্ট
+        </h3>
+        <div
+          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div
+            style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
             <div>
               <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">জরুরি আবহাওয়া সতর্কতা</h4>
               <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">ঝড়-বৃষ্টি ও দুর্যোগের জরুরি নোটিফিকেশন</p>
@@ -4759,13 +5086,16 @@
       <!-- Category 3: ভাষা ও ফন্ট -->
       <div>
         <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">ভাষা ও ফন্ট</h3>
-        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
+        <div
+          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div
+            style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F1;">
             <div>
               <h4 style="font-size: 14px; font-weight: 700; color: #212121; margin: 0;">অ্যাপের ভাষা</h4>
               <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">বাংলা (বাংলাদেশ)</p>
             </div>
-            <span style="background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
+            <span
+              style="background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">বাংলা</span>
           </div>
           <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -4780,7 +5110,8 @@
       <!-- Category 4: অ্যাপ তথ্য -->
       <div>
         <h3 style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 4px;">অ্যাপ তথ্য</h3>
-        <div style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div
+          style="background: white; border-radius: 16px; border: 1px solid #E2E8E2; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
           <div style="display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-circle-info" style="color: #2E7D32; font-size: 20px;"></i>
             <div>
@@ -4797,12 +5128,14 @@
         <button type="button" onclick="confirmWebLogout()"
           style="width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #FFCDD2; background: #FFF5F5; color: #D32F2F; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(211,47,47,0.08);">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 38px; height: 38px; border-radius: 50%; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #D32F2F; font-size: 18px;">
+            <div
+              style="width: 38px; height: 38px; border-radius: 50%; background: #FFEBEE; display: flex; align-items: center; justify-content: center; color: #D32F2F; font-size: 18px;">
               <i class="fa-solid fa-arrow-right-from-bracket"></i>
             </div>
             <div style="text-align: left;">
               <div style="font-size: 14.5px; font-weight: 700;">লগআউট (Logout)</div>
-              <div style="font-size: 11.5px; color: #E57373; font-weight: normal;">একাউন্ট থেকে নিরাপদে বের হয়ে যান</div>
+              <div style="font-size: 11.5px; color: #E57373; font-weight: normal;">একাউন্ট থেকে নিরাপদে বের হয়ে যান
+              </div>
             </div>
           </div>
           <i class="fa-solid fa-chevron-right" style="color: #EF9A9A; font-size: 14px;"></i>
@@ -4867,10 +5200,13 @@
     style="display: none; align-items: center; justify-content: center; z-index: 10000002; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
     <div class="modal-box" onclick="event.stopPropagation()"
       style="max-width: 340px; width: 86%; border-radius: 24px; padding: 26px 20px 22px 20px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;">
-      <h3 id="biometricScanTitle" style="color: #2E7D32; font-size: 18.5px; font-weight: 800; margin: 0 0 6px 0;">ফিঙ্গারপ্রিন্ট ভেরিফিকেশন</h3>
-      <p id="biometricScanSubtitle" style="font-size: 13px; color: #555; margin: 0 0 16px 0;">অনুগ্রহ করে সেন্সরে আঙুল স্পর্শ করুন</p>
-      
-      <div style="width: 100px; height: 100px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; background: #F1F8E9; border-radius: 50%; border: 2px dashed #81C784;">
+      <h3 id="biometricScanTitle" style="color: #2E7D32; font-size: 18.5px; font-weight: 800; margin: 0 0 6px 0;">
+        ফিঙ্গারপ্রিন্ট ভেরিফিকেশন</h3>
+      <p id="biometricScanSubtitle" style="font-size: 13px; color: #555; margin: 0 0 16px 0;">অনুগ্রহ করে সেন্সরে আঙুল
+        স্পর্শ করুন</p>
+
+      <div
+        style="width: 100px; height: 100px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; background: #F1F8E9; border-radius: 50%; border: 2px dashed #81C784;">
         <lottie-player src="assets/animation/Fingerprint.json" background="transparent" speed="1"
           style="width: 80px; height: 80px;" loop autoplay>
           <i class="fa-solid fa-fingerprint" style="font-size: 44px; color: #2E7D32;"></i>
@@ -5069,9 +5405,11 @@
           </div>
           <img src="pnglogo.png" style="width: 60px; height: 60px; object-fit: contain;" alt="কৃষি কথা">
         </div>
-        <div id="loginLoadingTitle" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">লগইন হচ্ছে....
+        <div id="loginLoadingTitle"
+          style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">লগইন হচ্ছে....
         </div>
-        <div id="loginLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন</div>
+        <div id="loginLoadingSubtitle" style="font-size: 12.5px; color: var(--text-secondary);">অনুগ্রহ করে অপেক্ষা করুন
+        </div>
       </div>
 
       <!-- STATE 2: SUCCESS -->
@@ -5219,7 +5557,8 @@
           style="width: 30px; height: 30px; border: 3px solid #E8F5E9; border-top-color: #00A86B; border-radius: 50%; animation: spin 0.8s linear infinite;">
         </div>
       </div>
-      <div style="font-size: 15px; font-weight: 700; color: #1B5E20; letter-spacing: 0.2px;">বার্তা পাঠানো হচ্ছে....</div>
+      <div style="font-size: 15px; font-weight: 700; color: #1B5E20; letter-spacing: 0.2px;">বার্তা পাঠানো হচ্ছে....
+      </div>
     </div>
   </div>
 
@@ -5232,9 +5571,12 @@
       <div style="width: 44px; height: 4px; background: #E0E0E0; border-radius: 4px; margin: 0 auto 16px auto;"></div>
 
       <!-- Header Row: Subject, Date, Status -->
-      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px;">
+      <div
+        style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px;">
         <div style="min-width: 0; flex: 1;">
-          <h3 id="ticketDetailSubject" style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; word-break: break-word;"></h3>
+          <h3 id="ticketDetailSubject"
+            style="font-size: 16.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px 0; word-break: break-word;">
+          </h3>
           <div style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #8D99AE;">
             <i class="fa-regular fa-clock"></i>
             <span id="ticketDetailTime"></span>
@@ -5245,17 +5587,31 @@
 
       <div style="height: 1px; background: #EFF3EF; margin-bottom: 14px;"></div>
 
+      <!-- Sender Info Badge -->
+      <div id="ticketDetailSenderInfo"
+        style="margin-bottom: 12px; background: #F1F8F1; border: 1px solid #E4EDE4; border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);">
+        <i class="fa-regular fa-user" style="color: #00A86B;"></i>
+        <span id="ticketDetailSenderName" style="font-weight: 600; color: var(--text-primary);"></span>
+        <span id="ticketDetailSenderDot" style="color: #ccc;">•</span>
+        <i class="fa-solid fa-phone" style="color: #00A86B; font-size: 11px;"></i>
+        <span id="ticketDetailSenderPhone"></span>
+      </div>
+
       <!-- User Complaint Section -->
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার প্রেরিত বার্তা / অভিযোগ:</div>
-        <div id="ticketDetailUserMessage" style="background: #F9FAF9; border: 1px solid #E4EDE4; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--text-primary); line-height: 1.5; white-space: pre-wrap; word-break: break-word;"></div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">আপনার প্রেরিত
+          বার্তা / অভিযোগ:</div>
+        <div id="ticketDetailUserMessage"
+          style="background: #F9FAF9; border: 1px solid #E4EDE4; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--text-primary); line-height: 1.5; white-space: pre-wrap; word-break: break-word;">
+        </div>
       </div>
 
       <!-- Response / Feedback Section -->
       <div id="ticketDetailResponseSection" style="margin-bottom: 18px;"></div>
 
       <!-- Close Button -->
-      <button type="button" onclick="closeTicketDetailModal()" style="width: 100%; height: 44px; border-radius: 12px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22);">
+      <button type="button" onclick="closeTicketDetailModal()"
+        style="width: 100%; height: 44px; border-radius: 12px; border: none; background: #00A86B; color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.22);">
         বন্ধ করুন
       </button>
     </div>
@@ -5785,7 +6141,249 @@
 
   </div>
 
+  <!-- ================= USER APP SYSTEM CONTROL ROOT DIALOG (Non-Dismissible Center Card) ================= -->
+  <div id="userSystemControlOverlay" style="display: none; pointer-events: none; position: fixed; inset: 0; z-index: 9999999; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
+    <div id="userSysCtrlCard" style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 24px 50px rgba(0,0,0,0.35); max-width: 330px; width: 100%; padding: 24px 22px; text-align: center; border: 1.5px solid rgba(255,255,255,0.9); animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      
+      <!-- Glowing Badge Icon -->
+      <div id="userSysCtrlBadgeWrap" style="width: 62px; height: 62px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 26px; box-shadow: 0 8px 20px rgba(217,119,6,0.22); border: 3px solid #FFFBEB;">
+        <i id="userSysCtrlBadgeIcon" class="fa-solid fa-screwdriver-wrench"></i>
+      </div>
+
+      <!-- Headline -->
+      <h3 id="userSysCtrlHeadline" style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0 0 10px 0; line-height: 1.35;">
+        অ্যাপ মেইন্টেনেন্স চলছে
+      </h3>
+
+      <!-- Message -->
+      <p id="userSysCtrlMessage" style="font-size: 13px; color: #475569; line-height: 1.55; margin: 0 0 14px 0;">
+        সম্মানিত কৃষক ভাই, অ্যাপের কারিগরি উন্নয়ন কাজ চলছে। সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত। কিছুক্ষণ পর আবার চেষ্টা করুন।
+      </p>
+
+      <!-- Target Version Tag (Update mode only) -->
+      <div id="userSysCtrlVersionWrap" style="display: none; margin-bottom: 14px;">
+        <span style="font-size: 11.5px; font-weight: 700; color: #1D4ED8; background: #EFF6FF; padding: 4px 10px; border-radius: 12px; border: 1px solid #BFDBFE; display: inline-flex; align-items: center; gap: 5px;">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>নতুন সংস্করণ: <span id="userSysCtrlVersionText">1.0.5</span></span>
+        </span>
+      </div>
+
+      <!-- Full-Width Action Button -->
+      <button id="userSysCtrlActionBtn" type="button" onclick="handleUserSysCtrlAction()" style="width: 100%; border: none; background: #D97706; color: #fff; font-size: 13.5px; font-weight: 700; padding: 13px 16px; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(217,119,6,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+        <i id="userSysCtrlActionIcon" class="fa-solid fa-power-off"></i>
+        <span id="userSysCtrlActionText">অ্যাপ বন্ধ করুন</span>
+      </button>
+
+      <!-- Security / System Notice -->
+      <div style="font-size: 10px; color: #94A3B8; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+        <i class="fa-solid fa-lock" style="font-size: 9px;"></i>
+        <span>বাধ্যতামূলক সিস্টেম ডায়ালগ • কৃষি কথা</span>
+      </div>
+
+    </div>
+  </div>
   <script>
+    // Firebase initialization for Web Preview
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE3NMLtENJ6abrQauQQrJ-BorS-K8-LHQ",
+      authDomain: "krishikotha-app.firebaseapp.com",
+      projectId: "krishikotha-app",
+      storageBucket: "krishikotha-app.firebasestorage.app",
+      messagingSenderId: "161614701103",
+      appId: "1:161614701103:web:12c184d7d5b13580791cda",
+      measurementId: "G-6BB8ZFHR9M"
+    };
+
+    let db = null;
+    try {
+      if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.firestore();
+      }
+    } catch (e) {
+      console.warn("User app Firebase init note:", e);
+    }
+
+    // ==================== REAL-TIME SYSTEM CONTROL LISTENER ====================
+    const CURRENT_APP_VERSION = '1.0.0';
+    let currentUserSysCtrlData = null;
+
+    function isUpdateRequired(currentVer, targetVer) {
+      try {
+        const curClean = (currentVer || '').replace(/[^0-9.]/g, '').trim();
+        const targetClean = (targetVer || '').replace(/[^0-9.]/g, '').trim();
+        if (!curClean || !targetClean) return false;
+
+        const curParts = curClean.split('.').map(x => parseInt(x, 10) || 0);
+        const targetParts = targetClean.split('.').map(x => parseInt(x, 10) || 0);
+        const maxLen = Math.max(curParts.length, targetParts.length);
+        for (let i = 0; i < maxLen; i++) {
+          const curVal = curParts[i] || 0;
+          const targetVal = targetParts[i] || 0;
+          if (curVal < targetVal) return true;
+          if (curVal > targetVal) return false;
+        }
+        return false;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function evaluateSysCtrlSchedule(data) {
+      if (!data.is_active) return false;
+      if (!data.schedule_enabled) return true;
+
+      const now = new Date();
+      if (data.start_time) {
+        const st = data.start_time.toDate ? data.start_time.toDate() : new Date(data.start_time);
+        if (now < st) return false;
+      }
+      if (data.end_time) {
+        const et = data.end_time.toDate ? data.end_time.toDate() : new Date(data.end_time);
+        if (now > et) return false;
+      }
+      return true;
+    }
+
+    function handleSystemControlUpdate(data) {
+      currentUserSysCtrlData = data;
+      const isActive = evaluateSysCtrlSchedule(data);
+      if (!isActive) {
+        hideSystemControlDialog();
+        return;
+      }
+
+      const type = (data.type || 'maintenance').toLowerCase();
+      const targetVer = (data.target_version || '1.0.5').trim();
+
+      if (type === 'update') {
+        const needsUpdate = isUpdateRequired(CURRENT_APP_VERSION, targetVer);
+        if (!needsUpdate) {
+          hideSystemControlDialog();
+          return;
+        }
+      }
+
+      showSystemControlDialog(data, type);
+    }
+
+    function showSystemControlDialog(data, type) {
+      const overlay = document.getElementById('userSystemControlOverlay');
+      if (!overlay) return;
+
+      const headline = data.headline || (type === 'maintenance' ? 'অ্যাপ মেইন্টেনেন্স চলছে' : 'নতুন আপডেট এসেছে!');
+      const message = data.message || (type === 'maintenance'
+        ? 'সম্মানিত কৃষক ভাই, অ্যাপের কারিগরি উন্নয়ন কাজ চলছে। সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত। কিছুক্ষণ পর আবার চেষ্টা করুন।'
+        : 'কৃষি কথা অ্যাপের নতুন সংস্করণ প্রকাশিত হয়েছে। নিরবচ্ছিন্ন সেবা ও নতুন ফিচার উপভোগ করতে এখনই আপডেট করুন।');
+      const btnText = data.button_text || (type === 'maintenance' ? 'অ্যাপ বন্ধ করুন' : 'প্লে স্টোরে যান');
+      const targetVer = data.target_version || '1.0.5';
+
+      const hlEl = document.getElementById('userSysCtrlHeadline');
+      const msgEl = document.getElementById('userSysCtrlMessage');
+      const btnTextEl = document.getElementById('userSysCtrlActionText');
+      const iconEl = document.getElementById('userSysCtrlBadgeIcon');
+      const wrapEl = document.getElementById('userSysCtrlBadgeWrap');
+      const actionBtn = document.getElementById('userSysCtrlActionBtn');
+      const actionIcon = document.getElementById('userSysCtrlActionIcon');
+      const verWrap = document.getElementById('userSysCtrlVersionWrap');
+      const verText = document.getElementById('userSysCtrlVersionText');
+
+      if (hlEl) hlEl.innerText = headline;
+      if (msgEl) msgEl.innerText = message;
+      if (btnTextEl) btnTextEl.innerText = btnText;
+
+      if (type === 'maintenance') {
+        if (iconEl) iconEl.className = 'fa-solid fa-screwdriver-wrench';
+        if (wrapEl) {
+          wrapEl.style.background = '#FEF3C7';
+          wrapEl.style.color = '#D97706';
+          wrapEl.style.borderColor = '#FFFBEB';
+        }
+        if (actionBtn) {
+          actionBtn.style.background = '#D97706';
+          actionBtn.style.boxShadow = '0 4px 14px rgba(217,119,6,0.3)';
+        }
+        if (actionIcon) actionIcon.className = 'fa-solid fa-power-off';
+        if (verWrap) verWrap.style.display = 'none';
+      } else {
+        if (iconEl) iconEl.className = 'fa-solid fa-cloud-arrow-down';
+        if (wrapEl) {
+          wrapEl.style.background = '#DBEAFE';
+          wrapEl.style.color = '#1D4ED8';
+          wrapEl.style.borderColor = '#EFF6FF';
+        }
+        if (actionBtn) {
+          actionBtn.style.background = '#1D4ED8';
+          actionBtn.style.boxShadow = '0 4px 14px rgba(29,78,216,0.3)';
+        }
+        if (actionIcon) actionIcon.className = 'fa-solid fa-arrow-up-right-from-square';
+        if (verWrap) verWrap.style.display = 'inline-block';
+        if (verText) verText.innerText = targetVer;
+      }
+
+      overlay.style.display = 'flex';
+      overlay.style.pointerEvents = 'auto';
+    }
+
+    function hideSystemControlDialog() {
+      const overlay = document.getElementById('userSystemControlOverlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+        overlay.style.pointerEvents = 'none';
+      }
+    }
+
+    function handleUserSysCtrlAction() {
+      if (!currentUserSysCtrlData) return;
+      const type = (currentUserSysCtrlData.type || 'maintenance').toLowerCase();
+
+      if (type === 'maintenance') {
+        document.body.innerHTML = `
+          <div style="display:flex;height:100vh;width:100vw;align-items:center;justify-content:center;background:#0F172A;color:#fff;font-family:'Hind Siliguri',sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
+            <div style="max-width:360px;background:#1E293B;padding:32px 24px;border-radius:24px;box-shadow:0 20px 40px rgba(0,0,0,0.4);border:1px solid #334155;">
+              <div style="width:68px;height:68px;border-radius:50%;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px auto;">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </div>
+              <h3 style="font-size:19px;font-weight:800;margin:0 0 10px 0;color:#F8FAFC;">অ্যাপ্লিকেশন সাময়িক বন্ধ রয়েছে</h3>
+              <p style="font-size:13.5px;color:#94A3B8;line-height:1.6;margin:0 0 20px 0;">সম্মানিত কৃষক ভাই, সার্ভার রক্ষণাবেক্ষণ কাজ চলমান থাকায় অ্যাপ সেবা সাময়িক স্থগিত রাখা হয়েছে। অনুগ্রহ করে পরবর্তীতে আবার চেষ্টা করুন।</p>
+              <button onclick="location.reload()" style="background:#334155;color:#E2E8F0;border:none;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;">
+                <i class="fa-solid fa-rotate-right"></i> পুনরায় চেষ্টা করুন
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        const url = currentUserSysCtrlData.play_store_url || 'https://play.google.com/store/apps/details?id=com.krishikotha.app';
+        window.open(url, '_blank');
+      }
+    }
+
+    function initUserAppSystemControlListener() {
+      if (!db) return;
+      try {
+        db.collection('app_settings').doc('system_control').onSnapshot(doc => {
+          if (doc.exists) {
+            handleSystemControlUpdate(doc.data() || {});
+          } else {
+            hideSystemControlDialog();
+          }
+        }, err => {
+          console.warn("System control snapshot listener note:", err);
+        });
+      } catch (err) {
+        console.warn("initUserAppSystemControlListener error:", err);
+      }
+    }
+
+    // Auto-initialize system control listener
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initUserAppSystemControlListener);
+    } else {
+      setTimeout(initUserAppSystemControlListener, 200);
+    }
+
     // 12 Services Data for Web Preview
     const servicesDetailData = {
       irrigation: {
@@ -10720,6 +11318,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           name: name,
           email: email,
           phone: cleanPhone,
+          password: pass,
+          status: 'active',
+          failedAttempts: 0,
+          lockUntil: null,
+          lastPasswordReset: (window.firebase && firebase.firestore && firebase.firestore.FieldValue)
+            ? firebase.firestore.FieldValue.serverTimestamp()
+            : new Date().toISOString(),
           district: district,
           upazila: upazila,
           village: '',
@@ -10733,7 +11338,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         try {
           if (window.firebase && firebase.firestore) {
-            await firebase.firestore().collection('users').doc(uid).set(user);
+            await firebase.firestore().collection('users').doc(uid).set(user, { merge: true });
           }
         } catch (err) {
           console.warn('Firestore register notice:', err);
@@ -11580,7 +12185,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         localStorage.removeItem('krishi_kotha_remembered_mode');
       }
 
-      showLoginLoadingDialog();
+      showLoginLoadingDialog('লগইন হচ্ছে....', 'অনুগ্রহ করে অপেক্ষা করুন');
 
       const isEmail = identifier.includes('@');
       let targetEmail = identifier.toLowerCase();
@@ -11589,6 +12194,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       let errorMessage = null;
 
       try {
+        // ১. মোবাইল নম্বর বা ইমেইল দিয়ে ফায়ারস্টোর থেকে অ্যাকাউন্ট অনুসন্ধান
         if (!isEmail) {
           const cleanPhone = identifier.replace(/[^0-9]/g, '');
           const altPhone = '+88' + cleanPhone;
@@ -11611,24 +12217,59 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (!foundUser || !targetEmail) {
             errorMessage = 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
           }
+        } else {
+          if (window.firebase && firebase.firestore) {
+            try {
+              const snap = await firebase.firestore().collection('users').where('email', '==', targetEmail).limit(1).get();
+              if (snap && !snap.empty) {
+                foundUser = snap.docs[0].data();
+                foundUser.uid = snap.docs[0].id;
+              }
+            } catch (err) {
+              console.warn('Firestore email query notice:', err);
+            }
+          }
+          if (!foundUser && window.firebase && !firebase.auth) {
+            errorMessage = 'এই ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
+          }
         }
 
+        // ২. ভুল পাসওয়ার্ডে একাউন্ট লক আছে কিনা তা সবার আগে যাচাই
+        if (!errorMessage && foundUser && foundUser.lockUntil) {
+          let lockDate = null;
+          if (typeof foundUser.lockUntil.toDate === 'function') {
+            lockDate = foundUser.lockUntil.toDate();
+          } else if (foundUser.lockUntil.seconds) {
+            lockDate = new Date(foundUser.lockUntil.seconds * 1000);
+          } else {
+            lockDate = new Date(foundUser.lockUntil);
+          }
+
+          if (lockDate && !isNaN(lockDate.getTime()) && lockDate > new Date()) {
+            const diffMs = lockDate.getTime() - Date.now();
+            const remMinutes = Math.max(1, Math.ceil(diffMs / (1000 * 60)));
+            errorMessage = `১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ${toBangla(remMinutes)} মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।`;
+          }
+        }
+
+        // ৩. ডাটাবেজ পাসওয়ার্ড ভিত্তিক ডাইনামিক ভ্যালিডেশন (Dynamic Database Password Validation)
         if (!errorMessage) {
-          if (window.firebase && firebase.auth) {
+          let loginSuccess = false;
+          const cleanPass = (pass || '').trim();
+          const dbPass = (foundUser && foundUser.password ? foundUser.password : '').trim();
+
+          if (dbPass) {
+            // ১. ফায়ারস্টোরে সংরক্ষিত পাসওয়ার্ডের সাথে সরাসরি হুবহু মিল যাচাই
+            loginSuccess = (dbPass === cleanPass);
+          } else if (window.firebase && firebase.auth) {
+            // ২. ফলব্যাক: ফায়ারস্টোরে পাসওয়ার্ড না থাকলে Firebase Auth দিয়ে যাচাই
             try {
-              const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, pass);
+              const cred = await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass);
               if (cred && cred.user) {
-                const uid = cred.user.uid;
-                if (window.firebase && firebase.firestore) {
-                  const uDoc = await firebase.firestore().collection('users').doc(uid).get();
-                  if (uDoc && uDoc.exists) {
-                    foundUser = uDoc.data();
-                    foundUser.uid = uid;
-                  }
-                }
+                loginSuccess = true;
                 if (!foundUser) {
                   foundUser = {
-                    uid: uid,
+                    uid: cred.user.uid,
                     name: cred.user.displayName || 'কৃষক ভাই',
                     email: cred.user.email || targetEmail,
                     phone: isEmail ? '' : identifier,
@@ -11642,43 +12283,77 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 }
               }
             } catch (authErr) {
-              console.warn('Firebase auth failed:', authErr);
-              const errCode = (authErr.code || '').toLowerCase();
-              let msg = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা একাউন্টটি পাওয়া যায়নি!';
-              if (errCode.includes('wrong-password') || errCode.includes('invalid-credential')) {
-                msg = 'পাসওয়ার্ড ভুল হয়েছে!';
-              } else if (errCode.includes('user-not-found')) {
-                msg = isEmail ? 'এই ইমেইলে কোনো একাউন্ট নেই!' : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!';
-              } else if (errCode.includes('invalid-email')) {
-                msg = 'ইমেইল ফরম্যাট সঠিক নয়!';
-              } else if (errCode.includes('network-request-failed')) {
-                msg = 'ইন্টারনেট সংযোগ চেক করুন এবং পুনরায় চেষ্টা করুন।';
-              } else if (errCode.includes('too-many-requests')) {
-                msg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
-              } else if (errCode.includes('user-disabled')) {
-                msg = 'এই একাউন্টটি সাময়িকভাবে নিষ্ক্রিয় রয়েছে।';
-              }
-              errorMessage = msg;
-            }
-          } else {
-            if (!foundUser) {
-              errorMessage = 'পাসওয়ার্ড ভুল হয়েছে!';
+              loginSuccess = false;
             }
           }
-        }
 
-        if (!errorMessage && foundUser) {
-          const isValid = await validateUserAccountStatusWeb(foundUser);
-          if (!isValid) {
-            return;
+          if (loginSuccess) {
+            // সফল লগইন: failedAttempts রিসেট এবং 'password' ফিল্ড সিঙ্ক
+            if (foundUser && foundUser.uid && window.firebase && firebase.firestore) {
+              try {
+                await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                  password: cleanPass,
+                  failedAttempts: 0,
+                  lockUntil: null,
+                  tempAdminPassword: firebase.firestore.FieldValue.delete(),
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              } catch (e) {
+                console.warn('Update user password/status sync error:', e);
+              }
+            }
+
+            if (window.firebase && firebase.auth) {
+              try {
+                if (firebase.auth().currentUser) {
+                  await firebase.auth().currentUser.updatePassword(cleanPass);
+                } else {
+                  await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => {});
+                }
+              } catch (e) {}
+            }
+
+            const isValid = await validateUserAccountStatusWeb(foundUser);
+            if (!isValid) {
+              return;
+            }
+            localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
+            localStorage.setItem('krishi_web_logged_in', 'true');
+            updateWebProfileHeader();
+            isSuccess = true;
+          } else {
+            // ভুল পাসওয়ার্ড: failedAttempts কাউন্টার আপডেট ও ১০ বার হলে ১ ঘণ্টার জন্য লক
+            if (foundUser && foundUser.uid && window.firebase && firebase.firestore) {
+              const curAttempts = ((foundUser.failedAttempts || 0) + 1);
+              if (curAttempts >= 10) {
+                const lockTime = new Date(Date.now() + 60 * 60 * 1000);
+                try {
+                  await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                    failedAttempts: curAttempts,
+                    lockUntil: firebase.firestore.Timestamp.fromDate(lockTime),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                } catch (e) {}
+                errorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
+              } else {
+                try {
+                  await firebase.firestore().collection('users').doc(foundUser.uid).update({
+                    failedAttempts: curAttempts,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                } catch (e) {}
+                const rem = 10 - curAttempts;
+                errorMessage = `আপনার দেওয়া পাসওয়ার্ড সঠিক নয়! আর ${toBangla(rem)} বার ভুল দিলে একাউন্টটি ১ ঘণ্টার জন্য লক হয়ে যাবে।`;
+              }
+            } else {
+              errorMessage = 'আপনার দেওয়া পাসওয়ার্ড সঠিক নয় অথবা এই মোবাইল নম্বর/ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
+            }
           }
-          localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(foundUser));
-          localStorage.setItem('krishi_web_logged_in', 'true');
-          updateWebProfileHeader();
-          isSuccess = true;
         }
       } catch (err) {
         errorMessage = err.message || 'অপ্রত্যাশিত ত্রুটি ঘটেছে!';
+      } finally {
+        hideLoginLoadingDialog();
       }
 
       if (isSuccess) {
@@ -12478,6 +13153,25 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function updateSupportUIFromSettings(d) {
       if (!d) return;
+
+      // 1. Direct Contact Page elements
+      const dhTitle = document.getElementById('webDirectHotlineTitle');
+      const dhSub = document.getElementById('webDirectHotlineSub');
+      const dwTitle = document.getElementById('webDirectWhatsappTitle');
+      const dwSub = document.getElementById('webDirectWhatsappSub');
+      const deTitle = document.getElementById('webDirectEmailTitle');
+      const deSub = document.getElementById('webDirectEmailSub');
+
+      if (dhTitle) dhTitle.innerText = (d.hotline_title && d.hotline_title.trim()) ? d.hotline_title.trim() : 'হটলাইন কল সেন্টার';
+      if (dhSub) dhSub.innerText = (d.hotline_phone && d.hotline_phone.trim()) ? d.hotline_phone.trim() : 'এখনো নম্বর যুক্ত করা হয়নি';
+
+      if (dwTitle) dwTitle.innerText = (d.whatsapp_title && d.whatsapp_title.trim()) ? d.whatsapp_title.trim() : 'হোয়াটসঅ্যাপ সাপোর্ট';
+      if (dwSub) dwSub.innerText = (d.whatsapp_phone && d.whatsapp_phone.trim()) ? d.whatsapp_phone.trim() : 'এখনো নম্বর যুক্ত করা হয়নি';
+
+      if (deTitle) deTitle.innerText = (d.email_title && d.email_title.trim()) ? d.email_title.trim() : 'ইমেইল সহায়তা';
+      if (deSub) deSub.innerText = (d.email_address && d.email_address.trim()) ? d.email_address.trim() : 'এখনো ইমেইল যুক্ত করা হয়নি';
+
+      // 2. Legacy / Support Screen elements
       const hTitle = document.getElementById('webHotlineTitle');
       const hSub = document.getElementById('webHotlineSubtitle');
       const wTitle = document.getElementById('webWhatsappTitle');
@@ -12495,23 +13189,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function handleWebHelplineClick(type) {
       if (type === 'hotline') {
-        const phone = liveSupportSettings?.hotline_phone || '16123';
-        if (!phone || phone.trim() === '') {
+        const phone = liveSupportSettings?.hotline_phone ? liveSupportSettings.hotline_phone.trim() : '';
+        if (!phone) {
           showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
           return;
         }
         window.open('tel:' + phone.replace(/[^0-9+]/g, ''));
       } else if (type === 'whatsapp') {
-        const phone = liveSupportSettings?.whatsapp_phone;
-        if (!phone || phone.trim() === '') {
+        const phone = liveSupportSettings?.whatsapp_phone ? liveSupportSettings.whatsapp_phone.trim() : '';
+        if (!phone) {
           showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
           return;
         }
-        const clean = phone.replace(/[^0-9]/g, '');
+        let clean = phone.replace(/[^0-9]/g, '');
+        if (clean.startsWith('01')) clean = '88' + clean;
         window.open('https://wa.me/' + clean + '?text=' + encodeURIComponent('কৃষি কথা অ্যাপ সম্পর্কিত সহায়তা ও পরামর্শ প্রয়োজন'), '_blank');
       } else if (type === 'email') {
-        const email = liveSupportSettings?.email_address;
-        if (!email || email.trim() === '') {
+        const email = liveSupportSettings?.email_address ? liveSupportSettings.email_address.trim() : '';
+        if (!email || !email.includes('@')) {
           showWarningDialog('এই ফিচারটি এখনো চালু হয়নি। সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই এই যোগাযোগ চ্যানেলটি চালু করবে।', 'এই ফিচারটি এখনো চালু হয়নি');
           return;
         }
@@ -12774,6 +13469,380 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.style.pointerEvents = 'none';
         const bNav = document.querySelector('.bottom-nav');
         if (bNav) bNav.style.display = 'flex';
+      }
+      closeDirectContactPage();
+      closeFaqPage();
+      closeDirectComplaintPage();
+    }
+
+    // ================= DEDICATED FULL SCREEN SUPPORT PAGES =================
+    function openDirectContactPage() {
+      const page = document.getElementById('directContactPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'none';
+        window.history.pushState({ page: 'direct_contact' }, '');
+      }
+    }
+
+    function closeDirectContactPage() {
+      const page = document.getElementById('directContactPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    let liveFaqsUnsubscribe = null;
+    function initLiveFaqsListener() {
+      if (window.firebase && firebase.firestore) {
+        try {
+          const db = firebase.firestore();
+          if (liveFaqsUnsubscribe) {
+            try { liveFaqsUnsubscribe(); } catch (_) { }
+          }
+          liveFaqsUnsubscribe = db.collection('faqs').onSnapshot(snap => {
+            const list = [];
+            snap.forEach(doc => {
+              const d = doc.data() || {};
+              list.push({ id: doc.id, ...d });
+            });
+            list.sort((a, b) => {
+              const orderA = (typeof a.order === 'number') ? a.order : 99999;
+              const orderB = (typeof b.order === 'number') ? b.order : 99999;
+              if (orderA !== orderB) return orderA - orderB;
+              const tA = (a.createdAt && a.createdAt.seconds) ? a.createdAt.seconds : 0;
+              const tB = (b.createdAt && b.createdAt.seconds) ? b.createdAt.seconds : 0;
+              return tB - tA;
+            });
+            window.liveFaqsList = list;
+            renderWebFaqs();
+          }, err => {
+            console.warn('Live FAQs listener error:', err);
+            if (!window.liveFaqsList) window.liveFaqsList = [];
+            renderWebFaqs();
+          });
+          return;
+        } catch (e) {
+          console.warn('Could not setup FAQs listener:', e);
+        }
+      }
+      if (!window.liveFaqsList) window.liveFaqsList = [];
+      renderWebFaqs();
+    }
+
+    function openFaqPage() {
+      const page = document.getElementById('faqPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'none';
+        window.history.pushState({ page: 'faq_page' }, '');
+        initLiveFaqsListener();
+        renderWebFaqs();
+      }
+    }
+
+    function closeFaqPage() {
+      const page = document.getElementById('faqPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function renderWebFaqs() {
+      const container = document.getElementById('webFaqsListContainer');
+      if (!container) return;
+
+      if (window.liveFaqsList === undefined) {
+        container.innerHTML = `
+          <div style="padding: 40px; text-align: center; color: #00A86B;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 28px;"></i>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">প্রশ্নোত্তর লোড হচ্ছে...</div>
+          </div>`;
+        return;
+      }
+
+      const faqs = window.liveFaqsList || [];
+      if (faqs.length === 0) {
+        container.innerHTML = `
+          <div style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 36px 20px; text-align: center;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #E8F5E9; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 12px auto;">
+              <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">বর্তমানে কোনো প্রশ্নোত্তর যুক্ত নেই</div>
+            <div style="font-size: 12.5px; color: var(--text-secondary);">সংশ্লিষ্ট কর্তৃপক্ষ শীঘ্রই সাধারণ জিজ্ঞাসাসমূহ এখানে যুক্ত করবেন।</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = faqs.map((f, i) => {
+        const question = escapeHtml(f.question || f.q || 'প্রশ্ন');
+        const answer = escapeHtml(f.answer || f.a || 'উত্তর প্রদান করা হয়নি');
+        return `
+          <div style="background: white; border: 1.1px solid #E4EDE4; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 10px;">
+            <div onclick="toggleFaq(${i})" style="padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #FAFCFA;">
+              <span style="font-size: 14.5px; font-weight: 700; color: var(--text-primary);">${question}</span>
+              <i id="faq-icon-${i}" class="fa-solid fa-chevron-down" style="font-size: 12px; color: #00A86B; transition: transform 0.2s;"></i>
+            </div>
+            <div id="faq-ans-${i}" style="display: none; padding: 0 18px 16px 18px; font-size: 13px; color: #4B5563; line-height: 1.5; border-top: 1px solid #F0F4F0; white-space: pre-wrap;">
+              ${answer}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleFaq(index) {
+      const ans = document.getElementById('faq-ans-' + index);
+      const icon = document.getElementById('faq-icon-' + index);
+      if (ans && icon) {
+        const isHidden = ans.style.display === 'none';
+        ans.style.display = isHidden ? 'block' : 'none';
+        icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    }
+
+    let directTicketsUnsubscribe = null;
+    function initDirectComplaintTicketsLiveSync() {
+      let authorId = 'guest_user';
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u && (u.uid || u.id)) authorId = u.uid || u.id;
+        }
+      } catch (_) { }
+
+      if (window.currentUser && window.currentUser.uid) {
+        authorId = window.currentUser.uid;
+      } else if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        authorId = firebase.auth().currentUser.uid;
+      }
+
+      if (window.firebase && firebase.firestore) {
+        try {
+          const db = firebase.firestore();
+          if (directTicketsUnsubscribe) {
+            try { directTicketsUnsubscribe(); } catch (_) { }
+          }
+          directTicketsUnsubscribe = db.collection('support_tickets').onSnapshot(snap => {
+            const list = [];
+            snap.forEach(doc => {
+              const d = doc.data() || {};
+              if (d.userId === authorId || d.authorId === authorId || (!authorId && (d.userId === 'guest_user' || d.authorId === 'guest_user')) || authorId === 'guest_user') {
+                list.push({ id: doc.id, ...d });
+              }
+            });
+            list.sort((a, b) => {
+              const tA = (a.createdAt && a.createdAt.seconds) ? a.createdAt.seconds : (a.timestamp && a.timestamp.seconds ? a.timestamp.seconds : 0);
+              const tB = (b.createdAt && b.createdAt.seconds) ? b.createdAt.seconds : (b.timestamp && b.timestamp.seconds ? b.timestamp.seconds : 0);
+              return tB - tA;
+            });
+            window.currentUserTickets = list;
+            window.currentLoadedSupportTickets = list;
+            renderDirectComplaintTickets();
+          }, err => {
+            console.warn('Direct complaint tickets live sync error:', err);
+            renderDirectComplaintTickets();
+          });
+          return;
+        } catch (e) {
+          console.warn('Could not setup direct complaint tickets listener:', e);
+        }
+      }
+      renderDirectComplaintTickets();
+    }
+
+    function openDirectComplaintPage() {
+      const page = document.getElementById('directComplaintPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        const bNav = document.querySelector('.bottom-nav');
+        if (bNav) bNav.style.display = 'none';
+        window.history.pushState({ page: 'direct_complaint' }, '');
+        initDirectComplaintTicketsLiveSync();
+        renderDirectComplaintTickets();
+      }
+    }
+
+    function closeDirectComplaintPage() {
+      const page = document.getElementById('directComplaintPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function renderDirectComplaintTickets() {
+      const container = document.getElementById('directComplaintTicketsList');
+      if (!container) return;
+      const historyList = (window.currentUserTickets && window.currentUserTickets.length) ? window.currentUserTickets : [];
+      if (!historyList.length) {
+        container.innerHTML = `
+          <div style="background: white; border: 1.2px solid #E4EDE4; border-radius: 16px; padding: 22px 18px; text-align: center;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: #F1F8F1; color: #00A86B; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px auto;">
+              <i class="fa-solid fa-inbox"></i>
+            </div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">আপনার কোনো পূর্ববর্তী সাপোর্ট হিস্ট্রি নেই</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">যেকোনো সহায়তার জন্য উপরের ফর্ম থেকে নির্দ্বিধায় মেসেজ পাঠাতে পারেন।</div>
+          </div>`;
+        return;
+      }
+      container.innerHTML = historyList.map((t, idx) => {
+        const isResolved = t.status === 'answered' || t.status === 'resolved' || t.status === 'accepted';
+        const isRejected = t.status === 'rejected' || t.status === 'closed';
+        const timeStr = typeof formatRelativeTime === 'function' ? formatRelativeTime(t.createdAt || t.timestamp) : 'এইমাত্র';
+
+        let statusBadge = '';
+        let borderCol = '#E4EDE4';
+        let iconBg = '#F1F8F1';
+        let iconCol = '#00A86B';
+        let iconClass = 'fa-regular fa-envelope';
+
+        if (isResolved) {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #E8F5E9; color: #2E7D32;">গৃহীত</span>`;
+          borderCol = '#A5D6A7';
+          iconBg = '#E8F5E9';
+          iconCol = '#00A86B';
+          iconClass = 'fa-solid fa-envelope-open-text';
+        } else if (isRejected) {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #FFEBEE; color: #C62828;">বাতিল</span>`;
+          borderCol = '#FFCDD2';
+          iconBg = '#FFEBEE';
+          iconCol = '#D32F2F';
+          iconClass = 'fa-solid fa-ban';
+        } else {
+          statusBadge = `<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #FFF3E0; color: #E65100;">অপেক্ষমাণ</span>`;
+          borderCol = '#FFE0B2';
+          iconBg = '#FFF3E0';
+          iconCol = '#E65100';
+          iconClass = 'fa-regular fa-clock';
+        }
+
+        return `
+          <div onclick="openTicketDetailModal(${idx})" style="background: white; border: 1.1px solid ${borderCol}; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02);" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: ${iconBg}; color: ${iconCol}; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;">
+                <i class="${iconClass}"></i>
+              </div>
+              <div style="min-width: 0;">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.category || t.subject || 'সাধারণ অনুসন্ধান')}</h4>
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: #8D99AE;">
+                  <i class="fa-regular fa-clock" style="font-size: 10px;"></i>
+                  <span>${timeStr}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              ${statusBadge}
+              <i class="fa-solid fa-chevron-right" style="color: #B0BEC5; font-size: 12px;"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function submitDirectComplaint() {
+      const nameInput = document.getElementById('directComplaintName');
+      const addrInput = document.getElementById('directComplaintAddress');
+      const catInput = document.getElementById('directComplaintCategory');
+      const detailsInput = document.getElementById('directComplaintDetails');
+
+      const nameErr = document.getElementById('directComplaintNameError');
+      const addrErr = document.getElementById('directComplaintAddressError');
+      const catErr = document.getElementById('directComplaintCategoryError');
+      const detailsErr = document.getElementById('directComplaintDetailsError');
+
+      let hasError = false;
+      if (!nameInput || !nameInput.value.trim()) { if (nameErr) nameErr.style.display = 'block'; hasError = true; }
+      if (!addrInput || !addrInput.value.trim()) { if (addrErr) addrErr.style.display = 'block'; hasError = true; }
+      if (!catInput || !catInput.value.trim()) { if (catErr) catErr.style.display = 'block'; hasError = true; }
+      if (!detailsInput || !detailsInput.value.trim()) { if (detailsErr) detailsErr.style.display = 'block'; hasError = true; }
+
+      if (hasError) return;
+
+      let authorId = 'guest_user';
+      let authorPhone = '';
+      let authorEmail = '';
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u) {
+            if (u.uid || u.id) authorId = u.uid || u.id;
+            authorPhone = u.phone || u.phoneNumber || '';
+            authorEmail = u.email || '';
+          }
+        }
+      } catch (_) { }
+
+      if (window.currentUser) {
+        if (window.currentUser.uid) authorId = window.currentUser.uid;
+        if (!authorPhone) authorPhone = window.currentUser.phoneNumber || window.currentUser.phone || '';
+        if (!authorEmail) authorEmail = window.currentUser.email || '';
+      } else if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        const fbUser = firebase.auth().currentUser;
+        authorId = fbUser.uid;
+        if (!authorPhone) authorPhone = fbUser.phoneNumber || '';
+        if (!authorEmail) authorEmail = fbUser.email || '';
+      }
+
+      const ticketId = 'TKT_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      const ticketData = {
+        ticketId: ticketId,
+        id: ticketId,
+        userId: authorId,
+        authorId: authorId,
+        userName: nameInput.value.trim(),
+        authorName: nameInput.value.trim(),
+        userPhone: authorPhone,
+        authorPhone: authorPhone,
+        userEmail: authorEmail,
+        authorEmail: authorEmail,
+        address: addrInput.value.trim(),
+        category: catInput.value.trim(),
+        subject: catInput.value.trim(),
+        message: detailsInput.value.trim(),
+        details: detailsInput.value.trim(),
+        status: 'pending',
+        priority: 'medium',
+        adminReply: '',
+        officerReply: '',
+        reply: '',
+        rejectionReason: '',
+        createdAt: new Date().toISOString()
+      };
+
+      showLoginLoadingDialog('অভিযোগ পাঠানো হচ্ছে...');
+      try {
+        if (typeof db !== 'undefined' && db) {
+          await db.collection('support_tickets').doc(ticketId).set({
+            ...ticketData,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+        detailsInput.value = '';
+        hideLoginLoadingDialog();
+        showToast('আপনার অভিযোগটি সফলভাবে পাঠানো হয়েছে!');
+      } catch (err) {
+        console.warn('Submit direct complaint note:', err);
+        hideLoginLoadingDialog();
+        showToast('আপনার অভিযোগটি গ্রহণ করা হয়েছে!');
+      } finally {
+        hideLoginLoadingDialog();
       }
     }
 
@@ -13112,7 +14181,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             const list = [];
             snap.forEach(doc => {
               const d = doc.data() || {};
-              if (d.authorId === authorId || (!authorId && d.authorId === 'guest_user') || authorId === 'guest_user') {
+              if (d.authorId === authorId || d.userId === authorId || (!authorId && (d.authorId === 'guest_user' || d.userId === 'guest_user')) || authorId === 'guest_user') {
                 list.push({ id: doc.id, ...d });
               }
             });
@@ -13121,7 +14190,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               const timeB = (b.timestamp && b.timestamp.seconds) ? b.timestamp.seconds : (b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0);
               return timeB - timeA;
             });
+            window.currentUserTickets = list;
+            window.currentLoadedSupportTickets = list;
             renderSupportTicketsList(list);
+            renderDirectComplaintTickets();
           }, err => {
             console.warn('Support tickets live stream error:', err);
             renderFallbackTickets(authorId);
@@ -13216,7 +14288,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openTicketDetailModal(index) {
-      const tickets = window.currentLoadedSupportTickets || [];
+      const tickets = (window.currentUserTickets && window.currentUserTickets.length) ? window.currentUserTickets : (window.currentLoadedSupportTickets || []);
       const t = tickets[index];
       if (!t) return;
 
@@ -13227,11 +14299,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const msgEl = document.getElementById('ticketDetailUserMessage');
       const respEl = document.getElementById('ticketDetailResponseSection');
 
-      if (subjEl) subjEl.innerText = t.subject || 'সাধারণ অনুসন্ধান';
+      if (subjEl) subjEl.innerText = t.category || t.subject || 'সাধারণ অনুসন্ধান';
 
       let dateStr = 'এইমাত্র';
       try {
-        const rawTime = t.timestamp || t.createdAt;
+        const rawTime = t.createdAt || t.timestamp;
         if (rawTime) {
           const d = rawTime.toDate ? rawTime.toDate() : new Date(rawTime);
           dateStr = d.toLocaleString('bn-BD', {
@@ -13245,41 +14317,53 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       } catch (_) {}
       if (timeEl) timeEl.innerText = dateStr;
 
-      const isResolved = t.status === 'answered' || t.status === 'resolved';
-      const isRejected = t.status === 'rejected';
+      const isResolved = t.status === 'answered' || t.status === 'resolved' || t.status === 'accepted';
+      const isRejected = t.status === 'rejected' || t.status === 'closed';
 
       if (badgeEl) {
         if (isResolved) {
-          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;">গৃহীত (সমাধান)</span>';
+          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7;">গৃহীত</span>';
         } else if (isRejected) {
-          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2;">বাতিলকৃত</span>';
+          badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2;">বাতিল</span>';
         } else {
           badgeEl.innerHTML = '<span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2;">অপেক্ষমাণ</span>';
         }
       }
 
-      if (msgEl) msgEl.innerText = t.details || '';
+      const sName = t.userName || t.authorName || '';
+      const sPhone = t.userPhone || t.authorPhone || '';
+      const senderNameEl = document.getElementById('ticketDetailSenderName');
+      const senderPhoneEl = document.getElementById('ticketDetailSenderPhone');
+      const senderInfoEl = document.getElementById('ticketDetailSenderInfo');
+      if (senderNameEl) senderNameEl.innerText = sName || 'কৃষক ভাই';
+      if (senderPhoneEl) senderPhoneEl.innerText = sPhone;
+      if (senderInfoEl) senderInfoEl.style.display = (sName || sPhone) ? 'flex' : 'none';
+
+      if (msgEl) msgEl.innerText = t.message || t.details || '';
+
+      const replyText = (t.adminReply || t.officerReply || t.reply || '').toString().trim();
+      const rejReason = (t.rejectionReason || '').toString().trim();
 
       if (respEl) {
-        if (isResolved && (t.officerReply || t.reply)) {
+        if (isResolved && replyText) {
           respEl.innerHTML = `
             <div style="font-size: 13px; font-weight: 700; color: #1B5E20; margin-bottom: 6px;">
               <i class="fa-solid fa-circle-check" style="color: #00A86B; margin-right: 4px;"></i>
-              ${escapeHtml(t.officerName ? t.officerName + ' এর সমাধান:' : 'কর্মকর্তার পদক্ষেপ ও পরামর্শ:')}
+              ${escapeHtml(t.officerName ? t.officerName + ' এর সমাধান:' : 'কর্তৃপক্ষের পদক্ষেপ ও পরামর্শ:')}
             </div>
             <div style="background: #F1F8F1; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #2E7D32; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">
-              ${escapeHtml(t.officerReply || t.reply)}
+              ${escapeHtml(replyText)}
             </div>
           `;
           respEl.style.display = 'block';
-        } else if (isRejected && (t.rejectionReason || t.reply)) {
+        } else if (isRejected && (rejReason || replyText)) {
           respEl.innerHTML = `
             <div style="font-size: 13px; font-weight: 700; color: #C62828; margin-bottom: 6px;">
               <i class="fa-solid fa-circle-xmark" style="color: #D32F2F; margin-right: 4px;"></i>
               বাতিলের কারণ / নোট:
             </div>
             <div style="background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #C62828; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">
-              ${escapeHtml(t.rejectionReason || t.reply)}
+              ${escapeHtml(rejReason || replyText)}
             </div>
           `;
           respEl.style.display = 'block';
@@ -14359,22 +15443,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
-    // Initialize Real Firebase Connection & Live Sync
-    const firebaseConfig = {
-      apiKey: "AIzaSyAE3NMLtENJ6abrQauQQrJ-BorS-K8-LHQ",
-      authDomain: "krishikotha-app.firebaseapp.com",
-      projectId: "krishikotha-app",
-      storageBucket: "krishikotha-app.firebasestorage.app",
-      messagingSenderId: "161614701103",
-      appId: "1:161614701103:web:12c184d7d5b13580791cda",
-      measurementId: "G-6BB8ZFHR9M"
-    };
-
-    let db = null;
+    // Ensure Firebase Connection & Live Sync
     try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      console.log("Firebase Firestore live sync active in User App Web Preview");
+      if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        if (!db) {
+          db = firebase.firestore();
+        }
+        console.log("Firebase Firestore live sync active in User App Web Preview");
+      }
     } catch (err) {
       console.warn("Firebase initialization notice:", err);
     }
@@ -14967,11 +16046,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         console.warn('Privacy policy listener init note:', ppErr);
       }
 
-      // 7. Live Support Tickets Realtime Sync
+      // 7. Live Support & Contact Realtime Sync
       try {
         initSupportTicketsLiveSync();
+        initLiveSupportSettings();
+        initLiveFaqsListener();
+        initDirectComplaintTicketsLiveSync();
       } catch (stErr) {
-        console.warn('Support tickets listener init note:', stErr);
+        console.warn('Support sync listeners init note:', stErr);
       }
     }
 

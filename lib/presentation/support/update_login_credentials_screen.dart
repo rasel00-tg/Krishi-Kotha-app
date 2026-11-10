@@ -66,6 +66,9 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
       message: 'তথ্য যাচাই করা হচ্ছে....',
     );
 
+    String? errorTitle;
+    String? errorMessage;
+
     try {
       DocumentSnapshot<Map<String, dynamic>>? matchedDoc;
 
@@ -127,8 +130,6 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
         }
       }
 
-      loadingCtrl.dismiss();
-
       if (matchedDoc != null && matchedDoc.exists) {
         final data = matchedDoc.data() ?? {};
         setState(() {
@@ -157,29 +158,34 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
           _verifiedCurrentEmail = null;
         });
 
-        if (mounted) {
-          await AppUnifiedDialog.showError(
-            context,
-            title: 'একাউন্ট পাওয়া যায়নি',
-            message: 'এই নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!',
-          );
-        }
+        errorTitle = 'একাউন্ট পাওয়া যায়নি';
+        errorMessage = 'এই নম্বর বা ইমেইলে কোনো একাউন্ট পাওয়া যায়নি!';
       }
     } catch (e) {
       debugPrint('Account verification error: $e');
-      loadingCtrl.dismiss();
-      if (mounted) {
-        await AppUnifiedDialog.showError(
-          context,
-          title: 'ত্রুটি ঘটেছে',
-          message: 'সার্ভারে সংযোগে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।',
-        );
-      }
+      errorTitle = 'ত্রুটি ঘটেছে';
+      errorMessage = 'সার্ভারে সংযোগে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।';
     } finally {
+      // ১. গ্যারান্টিড মোডাল ব্যারিয়ার ও লোডার ডিসমিসাল
       loadingCtrl.dismiss();
+      if (context.mounted && Navigator.of(context, rootNavigator: true).canPop()) {
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+      }
+      // ২. পয়েন্টার ও সার্চিং স্টেট সাথে সাথে আনলক
       if (mounted) {
         setState(() => _isSearching = false);
       }
+    }
+
+    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর ক্লিকেবল ডায়ালগ প্রদর্শন
+    if (errorTitle != null && errorMessage != null && mounted) {
+      await AppUnifiedDialog.showError(
+        context,
+        title: errorTitle,
+        message: errorMessage,
+      );
     }
   }
 
@@ -264,6 +270,9 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
       message: 'তথ্য হালনাগাদ হচ্ছে....',
     );
 
+    String? errorTitle;
+    String? errorMessage;
+
     try {
       // ৩. ইউনিকনেস সিকিউরিটি চেক: ফায়ারস্টোরে অন্য কোনো একাউন্টে এই ফোন বা ইমেইল আগে থেকেই আছে কিনা
       if (validatedPhone != null) {
@@ -274,14 +283,8 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
 
         final existsOther = phoneQuery.docs.any((d) => d.id != _verifiedUserId);
         if (existsOther) {
-          loadingCtrl.dismiss();
-          if (mounted) {
-            await AppUnifiedDialog.showError(
-              context,
-              title: 'তথ্য ইতোমধ্যে ব্যবহৃত',
-              message: 'প্রদত্ত নতুন ফোন নম্বরটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।',
-            );
-          }
+          errorTitle = 'তথ্য ইতোমধ্যে ব্যবহৃত';
+          errorMessage = 'প্রদত্ত নতুন ফোন নম্বরটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।';
           return;
         }
       }
@@ -294,14 +297,8 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
 
         final existsOther = emailQuery.docs.any((d) => d.id != _verifiedUserId);
         if (existsOther) {
-          loadingCtrl.dismiss();
-          if (mounted) {
-            await AppUnifiedDialog.showError(
-              context,
-              title: 'তথ্য ইতোমধ্যে ব্যবহৃত',
-              message: 'প্রদত্ত নতুন ইমেইলটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।',
-            );
-          }
+          errorTitle = 'তথ্য ইতোমধ্যে ব্যবহৃত';
+          errorMessage = 'প্রদত্ত নতুন ইমেইলটি ইতোমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে! অনুগ্রহ করে ভিন্ন তথ্য দিন।';
           return;
         }
       }
@@ -341,8 +338,6 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
         }
       } catch (_) {}
 
-      loadingCtrl.dismiss();
-
       // ৬. সফল হালনাগাদ ও ডিজিটাল রিসিপ্ট স্টেট
       if (mounted) {
         setState(() {
@@ -353,19 +348,29 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
       }
     } catch (e) {
       debugPrint('Credentials update error: $e');
-      loadingCtrl.dismiss();
-      if (mounted) {
-        await AppUnifiedDialog.showError(
-          context,
-          title: 'হালনাগাদ ব্যর্থ হয়েছে',
-          message: 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।',
-        );
-      }
+      errorTitle = 'হালনাগাদ ব্যর্থ হয়েছে';
+      errorMessage = 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।';
     } finally {
+      // ১. গ্যারান্টিড মোডাল ব্যারিয়ার ও লোডার ডিসমিসাল
       loadingCtrl.dismiss();
+      if (context.mounted && Navigator.of(context, rootNavigator: true).canPop()) {
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+      }
+      // ২. পয়েন্টার ও আপডেট স্টেট সাথে সাথে আনলক
       if (mounted) {
         setState(() => _isUpdating = false);
       }
+    }
+
+    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর ক্লিকেবল ডায়ালগ প্রদর্শন
+    if (errorTitle != null && errorMessage != null && mounted) {
+      await AppUnifiedDialog.showError(
+        context,
+        title: errorTitle,
+        message: errorMessage,
+      );
     }
   }
 

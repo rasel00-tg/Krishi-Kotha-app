@@ -415,7 +415,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
     });
 
     try {
-      // Step 1: Duplicate check in Cloud Firestore users collection
+      // Step 1: Duplicate / Uniqueness check in Cloud Firestore users collection
       if (FirebaseService.isFirebaseInitialized) {
         try {
           final phoneQuery = await FirebaseFirestore.instance
@@ -428,7 +428,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
           if (phoneQuery.docs.isNotEmpty) {
             if (!context.mounted) return;
             if (mounted) setState(() => _isLoading = false);
-            showErrorPopup(context, "এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!");
+            showErrorPopup(context, "এই মোবাইল নম্বর বা ইমেইল দিয়ে ইতোমধ্যে একটি একাউন্ট রয়েছে!");
             return;
           }
 
@@ -443,7 +443,21 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
           if (altPhoneQuery.docs.isNotEmpty) {
             if (!context.mounted) return;
             if (mounted) setState(() => _isLoading = false);
-            showErrorPopup(context, "এই মোবাইল নম্বর দিয়ে ইতোমধ্যে একাউন্ট খোলা রয়েছে!");
+            showErrorPopup(context, "এই মোবাইল নম্বর বা ইমেইল দিয়ে ইতোমধ্যে একটি একাউন্ট রয়েছে!");
+            return;
+          }
+
+          final emailQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .limit(1)
+              .get()
+              .timeout(const Duration(seconds: 8));
+
+          if (emailQuery.docs.isNotEmpty) {
+            if (!context.mounted) return;
+            if (mounted) setState(() => _isLoading = false);
+            showErrorPopup(context, "এই মোবাইল নম্বর বা ইমেইল দিয়ে ইতোমধ্যে একটি একাউন্ট রয়েছে!");
             return;
           }
         } catch (fsErr) {
@@ -471,7 +485,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         await firebaseUser.updateDisplayName(name);
       } catch (_) {}
 
-      // Step 3: Save profile in users/{uid} via .set()
+      // Step 3: Save profile in users/{uid} via .set() with standardized schema
       final userModel = UserModel(
         uid: firebaseUser.uid,
         name: name,
@@ -491,6 +505,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         'email': email,
         'phone': cleanPhone,
         'password': password,
+        'status': 'active',
         'failedAttempts': 0,
         'lockUntil': null,
         'district': district,
@@ -498,9 +513,10 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
         'village': '',
         'occupation': _selectedOccupation,
         'preferredCrops': <String>[],
+        'lastPasswordReset': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'isDeletedByUser': false,
-      }).timeout(const Duration(seconds: 10));
+      }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
 
       // Update AuthProvider and local storage cache
       try {
@@ -537,7 +553,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
       if (!context.mounted) return;
       String message = "একাউন্ট তৈরিতে ব্যর্থ হয়েছে!";
       if (e.code == 'email-already-in-use') {
-        message = "এই জিমেইল এড্রেস দিয়ে ইতোমধ্যে একটি একাউন্ট খোলা রয়েছে!";
+        message = "এই মোবাইল নম্বর বা ইমেইল দিয়ে ইতোমধ্যে একটি একাউন্ট রয়েছে!";
       } else if (e.code == 'weak-password') {
         message = "পাসওয়ার্ডটি অত্যন্ত দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন!";
       } else if (e.code == 'invalid-email') {
@@ -567,6 +583,7 @@ class _RegistrationMultiStepScreenState extends State<RegistrationMultiStepScree
             : "একাউন্ট তৈরিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
       );
     } finally {
+      AppUnifiedDialog.safeDismissLoading(context);
       if (mounted && _isLoading) {
         setState(() {
           _isLoading = false;

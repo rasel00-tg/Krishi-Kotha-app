@@ -379,20 +379,27 @@ class FirestoreService {
 
   // ==================== SUPPORT TICKETS ====================
   Stream<List<SupportTicketModel>> getSupportTicketsStream(String userId) {
+    if (!FirebaseService.isFirebaseInitialized || _db == null) {
+      return _supportController.stream.map((tickets) =>
+          tickets.where((t) => t.authorId == userId || t.userId == userId).toList());
+    }
     return FirebaseFirestore.instance
         .collection('support_tickets')
-        .where('authorId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
       final List<SupportTicketModel> list = [];
       for (final doc in snapshot.docs) {
         try {
-          list.add(SupportTicketModel.fromFirestore(doc));
+          final data = doc.data();
+          final docUid = data['userId']?.toString() ?? data['authorId']?.toString() ?? '';
+          if (docUid == userId) {
+            list.add(SupportTicketModel.fromFirestore(doc));
+          }
         } catch (e) {
           debugPrint('SupportTicketModel parse error: $e');
         }
       }
+      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
     });
   }

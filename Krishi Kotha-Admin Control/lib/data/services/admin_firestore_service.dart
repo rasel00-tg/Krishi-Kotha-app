@@ -451,11 +451,24 @@ class AdminFirestoreService {
   }
 
   /// ইউজার পাসওয়ার্ড রিসেট ইমেইল প্রেরণ (Send Official Password Reset Email)
-  Future<void> sendPasswordReset(String email) async {
+  Future<void> sendPasswordReset(String email, {String? uid}) async {
     if (email.trim().isEmpty) {
       throw Exception('ইউজারের কোনো নিবন্ধিত ইমেইল পাওয়া যায়নি।');
     }
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+    if (uid != null && uid.isNotEmpty) {
+      final db = _db;
+      if (db != null) {
+        try {
+          await db.collection('users').doc(uid).update({
+            'lastPasswordReset': FieldValue.serverTimestamp(),
+            'last_password_reset': FieldValue.serverTimestamp(),
+            'passwordUpdatedAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } catch (_) {}
+      }
+    }
   }
 
   /// ইউজার সরাসরি পাসওয়ার্ড পরিবর্তন (Direct Password Set - Unified 'password' field)
@@ -466,8 +479,9 @@ class AdminFirestoreService {
         'password': newPassword.trim(),
         'failedAttempts': 0,
         'lockUntil': null,
+        'lastPasswordReset': FieldValue.serverTimestamp(),
+        'last_password_reset': FieldValue.serverTimestamp(),
         'passwordUpdatedAt': FieldValue.serverTimestamp(),
-        'tempAdminPassword': FieldValue.delete(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     }
@@ -582,7 +596,9 @@ class AdminFirestoreService {
 
     try {
       await db.collection('support_tickets').doc(ticketId).update({
+        'adminReply': reply,
         'officerReply': reply,
+        'reply': reply,
         'officerName': officerName,
         'status': 'answered',
         'repliedAt': FieldValue.serverTimestamp(),
@@ -608,10 +624,15 @@ class AdminFirestoreService {
         'updatedAt': FieldValue.serverTimestamp(),
       };
       if (status == 'resolved' || status == 'answered') {
+        updateData['adminReply'] = reasonOrReply;
         updateData['officerReply'] = reasonOrReply;
+        updateData['reply'] = reasonOrReply;
         updateData['rejectionReason'] = null;
         updateData['resolvedAt'] = FieldValue.serverTimestamp();
       } else {
+        updateData['adminReply'] = reasonOrReply;
+        updateData['officerReply'] = reasonOrReply;
+        updateData['reply'] = reasonOrReply;
         updateData['rejectionReason'] = reasonOrReply;
         updateData['rejectedAt'] = FieldValue.serverTimestamp();
       }

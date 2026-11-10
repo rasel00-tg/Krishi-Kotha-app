@@ -12,6 +12,9 @@ import '../../data/models/support_ticket_model.dart';
 import '../../data/services/firebase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/support_provider.dart';
+import 'direct_contact_screen.dart';
+import 'direct_complaint_screen.dart';
+import 'faq_screen.dart';
 import 'update_login_credentials_screen.dart';
 
 class SupportContactScreen extends StatefulWidget {
@@ -82,6 +85,9 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
       message: 'বার্তা পাঠানো হচ্ছে....',
     );
 
+    bool isSuccess = false;
+    String? errorMessage;
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final fbUser = FirebaseAuth.instance.currentUser;
@@ -98,15 +104,24 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
 
       final ticketData = {
         'ticketId': ticketId,
+        'userId': authorId,
         'authorId': authorId,
+        'userName': authorName,
         'authorName': authorName,
+        'userPhone': authorPhone,
         'authorPhone': authorPhone,
+        if (authorEmail.isNotEmpty) 'userEmail': authorEmail,
         if (authorEmail.isNotEmpty) 'authorEmail': authorEmail,
         'district': district,
         'upazila': upazila,
+        'address': '$district, $upazila',
+        'category': _selectedSubject,
         'subject': _selectedSubject,
+        'message': message,
         'details': message,
         'status': 'pending',
+        'adminReply': '',
+        'officerReply': '',
         'createdAt': FieldValue.serverTimestamp(),
         'timestamp': FieldValue.serverTimestamp(),
       };
@@ -127,37 +142,44 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
         );
       }
 
-      loadingCtrl.dismiss();
-
-      if (mounted) {
-        await AppUnifiedDialog.showSuccess(
-          context,
-          title: 'বার্তা সফলভাবে গৃহীত হয়েছে!',
-          message: 'আপনার বার্তা সফলভাবে গৃহীত হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
-          buttonText: 'ঠিক আছে',
-        );
-
-        _detailsController.clear();
-        setState(() {
-          _selectedSubject = 'একাউন্ট সমস্যা';
-        });
-      }
+      isSuccess = true;
     } catch (e) {
       debugPrint('Error submitting support ticket: $e');
-      loadingCtrl.dismiss();
-
-      if (mounted) {
-        await AppUnifiedDialog.showError(
-          context,
-          title: 'বার্তা পাঠানো সম্ভব হয়নি',
-          message: 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।',
-          buttonText: 'আবার চেষ্টা করুন',
-        );
-      }
+      errorMessage = 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।';
     } finally {
+      // ১. গ্যারান্টিড মোডাল ব্যারিয়ার ও লোডার ডিসমিসাল
+      loadingCtrl.dismiss();
+      if (context.mounted && Navigator.of(context, rootNavigator: true).canPop()) {
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+      }
+      // ২. পয়েন্টার ও সাবমিট স্টেট সাথে সাথে আনলক
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
+    }
+
+    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর ক্লিকেবল ডায়ালগ প্রদর্শন
+    if (isSuccess && mounted) {
+      _detailsController.clear();
+      setState(() {
+        _selectedSubject = 'একাউন্ট সমস্যা';
+      });
+
+      await AppUnifiedDialog.showSuccess(
+        context,
+        title: 'বার্তা সফলভাবে গৃহীত হয়েছে!',
+        message: 'আপনার বার্তা সফলভাবে গৃহীত হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
+        buttonText: 'ঠিক আছে',
+      );
+    } else if (errorMessage != null && mounted) {
+      await AppUnifiedDialog.showError(
+        context,
+        title: 'বার্তা পাঠানো সম্ভব হয়নি',
+        message: errorMessage,
+        buttonText: 'আবার চেষ্টা করুন',
+      );
     }
   }
 
@@ -236,31 +258,20 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ================= 2. LIVE ACTION CARDS (Call, WhatsApp, Email) =================
-                  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance.collection('app_settings').doc('support_contact').snapshots(),
-                    builder: (context, snapshot) {
-                      final settings = snapshot.data?.data();
-                      return Column(
-                        children: [
-                          _buildCallCenterCard(settings),
-                          const SizedBox(height: 10),
-                          _buildWhatsAppCard(settings),
-                          const SizedBox(height: 10),
-                          _buildEmailCard(settings),
-                        ],
-                      );
-                    },
-                  ),
+                  // ================= 2. "সরাসরি যোগাযোগ", "সাধারণ জিজ্ঞাসা (FAQs)" ও "সরাসরি সাপোর্টে অভিযোগ জানান" স্বতন্ত্র ট্যাব =================
+                  _buildDirectContactTab(context),
+
+                  const SizedBox(height: 12),
+
+                  _buildFaqTab(context),
+
+                  const SizedBox(height: 12),
+
+                  _buildDirectComplaintTab(context),
 
                   const SizedBox(height: 24),
 
-                  // ================= 3. IN-APP SUPPORT FORM =================
-                  _buildInAppTicketForm(),
-
-                  const SizedBox(height: 24),
-
-                  // ================= 4. REAL-TIME USER TICKETS SHORTCUT STREAM =================
+                  // ================= 3. REAL-TIME USER TICKETS SHORTCUT STREAM =================
                   _buildTicketsHistorySection(supportProvider, currentUserId),
 
                   const SizedBox(height: 20),
@@ -364,15 +375,18 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
 
               const SizedBox(height: 12),
 
-              // Prominent Lottie Animation (150x150)
+              // Prominent Lottie Animation (150x150) - IgnorePointer to avoid any touch event trapping
               Center(
-                child: SizedBox(
-                  width: 150,
-                  height: 150,
-                  child: Lottie.asset(
-                    'assets/animation/Connect with us.json',
-                    fit: BoxFit.contain,
-                    repeat: true,
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Lottie.asset(
+                      'assets/animation/Connect with us.json',
+                      fit: BoxFit.contain,
+                      repeat: true,
+                    ),
                   ),
                 ),
               ),
@@ -410,139 +424,340 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
     );
   }
 
-  /// ক) কৃষি কল সেন্টার ও হটলাইন (Direct Call from Live Settings)
-  Widget _buildCallCenterCard(Map<String, dynamic>? settings) {
-    final title = settings?['hotline_title']?.toString().trim();
-    final phone = settings?['hotline_phone']?.toString().trim();
-    final displayTitle = (title != null && title.isNotEmpty) ? title : 'কৃষি কল সেন্টার (১৬১২৩)';
-    final displaySubtitle = (phone != null && phone.isNotEmpty) ? phone : 'সরাসরি সরকারি কর্মকর্তাদের সাথে কথা বলুন';
-
-    return _buildActionCard(
-      icon: Icons.phone_in_talk_rounded,
-      iconBg: const Color(0xFFE8F5E9),
-      iconColor: const Color(0xFF00A86B),
-      title: displayTitle,
-      subtitle: displaySubtitle,
-      badgeText: 'কল করুন',
-      badgeBg: const Color(0xFF00A86B),
-      onTap: () => _launchCall(phone ?? '16123'),
-    );
-  }
-
-  /// খ) হোয়াটসঅ্যাপ সাপোর্ট (WhatsApp Chat from Live Settings)
-  Widget _buildWhatsAppCard(Map<String, dynamic>? settings) {
-    final title = settings?['whatsapp_title']?.toString().trim();
-    final phone = settings?['whatsapp_phone']?.toString().trim();
-    final displayTitle = (title != null && title.isNotEmpty) ? title : 'হোয়াটসঅ্যাপ সাপোর্ট';
-    final displaySubtitle = (phone != null && phone.isNotEmpty) ? phone : 'তাৎক্ষণিক চ্যাট ও দ্রুত পরামর্শ সেবা পেতে মেসেজ দিন';
-
-    return _buildActionCard(
-      icon: Icons.chat_bubble_outline_rounded,
-      iconBg: const Color(0xFFE8F8F0),
-      iconColor: const Color(0xFF25D366),
-      title: displayTitle,
-      subtitle: displaySubtitle,
-      badgeText: 'চ্যাট করুন',
-      badgeBg: const Color(0xFF25D366),
-      onTap: () => _launchWhatsApp(phone),
-    );
-  }
-
-  /// গ) ইমেইল সহায়তা (Direct Email from Live Settings)
-  Widget _buildEmailCard(Map<String, dynamic>? settings) {
-    final title = settings?['email_title']?.toString().trim();
-    final email = settings?['email_address']?.toString().trim();
-    final displayTitle = (title != null && title.isNotEmpty) ? title : 'ইমেইল সহায়তা';
-    final displaySubtitle = (email != null && email.isNotEmpty) ? email : 'support@krishikotha.gov.bd';
-
-    return _buildActionCard(
-      icon: Icons.email_outlined,
-      iconBg: const Color(0xFFE0F2F1),
-      iconColor: const Color(0xFF00897B),
-      title: displayTitle,
-      subtitle: displaySubtitle,
-      badgeText: 'ইমেইল পাঠান',
-      badgeBg: const Color(0xFF00897B),
-      onTap: () => _launchEmail(email),
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required String badgeText,
-    required Color badgeBg,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+  /// ১. "সরাসরি যোগাযোগ" স্বতন্ত্র প্রিমিয়াম ট্যাব (Full Screen Navigation)
+  Widget _buildDirectContactTab(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const DirectContactScreen()),
+        );
+      },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE3EAE3), width: 1.2),
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF00A86B), // Vivid Emerald Green
+              Color(0xFF008955),
+              Color(0xFF1B5E20), // Deep Forest Green
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: const Color(0xFF00A86B).withOpacity(0.28),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
+            // আইকন ব্যাজ
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: iconBg,
-                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.2),
               ),
-              child: Icon(icon, color: iconColor, size: 22),
+              child: const Icon(
+                Icons.support_agent_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
+
+            // টেক্সট কনটেন্ট
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        'সরাসরি যোগাযোগ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          '২৪/৭ লাইভ',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.textSecondary,
+                    'হটলাইন কল, হোয়াটসঅ্যাপ বা ইমেইলে সরাসরি কথা বলুন',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.9),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+
+            // অ্যারো ইন্ডিকেটর
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
               ),
-              child: Text(
-                badgeText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ২. "সাধারণ জিজ্ঞাসা (FAQs)" স্বতন্ত্র প্রিমিয়াম ট্যাব (Full Screen Navigation)
+  Widget _buildFaqTab(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const FaqScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF00A86B), // Vivid Emerald Green
+              Color(0xFF008955),
+              Color(0xFF1B5E20), // Deep Forest Green
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00A86B).withOpacity(0.28),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // আইকন ব্যাজ
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.2),
+              ),
+              child: const Icon(
+                Icons.quiz_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // টেক্সট কনটেন্ট
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'সাধারণ জিজ্ঞাসা (FAQs)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'প্রশ্ন ও উত্তর',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'অ্যাপের ব্যবহারবিধি ও সাধারণ সমস্যার সরাসরি সমাধান',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // অ্যারো ইন্ডিকেটর
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ৩. "সরাসরি সাপোর্টে অভিযোগ জানান" স্বতন্ত্র প্রিমিয়াম ট্যাব (Full Screen Navigation)
+  Widget _buildDirectComplaintTab(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const DirectComplaintScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF00A86B), // Vivid Emerald Green
+              Color(0xFF008955),
+              Color(0xFF1B5E20), // Deep Forest Green
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00A86B).withOpacity(0.28),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // আইকন ব্যাজ
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.2),
+              ),
+              child: const Icon(
+                Icons.rate_review_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // টেক্সট কনটেন্ট
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'সরাসরি সাপোর্টে অভিযোগ জানান',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'অভিযোগ ও মতামত',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'আপনার যেকোনো সমস্যা, অভিযোগ বা মতামত সরাসরি জানান',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // অ্যারো ইন্ডিকেটর
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 14,
               ),
             ),
           ],
@@ -659,18 +874,6 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                               ),
                             ),
                           ),
-                          if (isUpdate)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'আলাদা পেজ',
-                                style: TextStyle(fontSize: 10, color: Color(0xFF00A86B), fontWeight: FontWeight.bold),
-                              ),
-                            ),
                         ],
                       ),
                     );
@@ -833,7 +1036,7 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'আপনার কোনো পূর্ববর্তী বার্তা নেই',
+                      'আপনার কোনো পূর্ববর্তী সাপোর্ট হিস্ট্রি নেই',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 4),
@@ -1073,6 +1276,46 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                 const Divider(height: 1, color: Color(0xFFEFF3EF)),
                 const SizedBox(height: 14),
 
+                // Sender Info Badge
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F8F1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE4EDE4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF00A86B)),
+                      const SizedBox(width: 6),
+                      Text(
+                        ticket.authorName.isNotEmpty ? ticket.authorName : 'সম্মানিত কৃষক',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      if (ticket.authorPhone.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text('•', style: TextStyle(color: Colors.grey.shade400)),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF00A86B)),
+                        const SizedBox(width: 4),
+                        Text(
+                          ticket.authorPhone,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
                 // User's Original Message
                 const Text(
                   'আপনার প্রেরিত বার্তা / অভিযোগ:',
@@ -1102,7 +1345,7 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                 ),
 
                 // Admin / Officer Reply or Action
-                if (isAnswered && ticket.officerReply != null && ticket.officerReply!.isNotEmpty) ...[
+                if (isAnswered && ((ticket.officerReply != null && ticket.officerReply!.isNotEmpty) || (ticket.adminReply != null && ticket.adminReply!.isNotEmpty))) ...[
                   const SizedBox(height: 14),
                   const Text(
                     'কর্মকর্তার পদক্ষেপ ও পরামর্শ:',
@@ -1142,7 +1385,9 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          ticket.officerReply!,
+                          (ticket.officerReply != null && ticket.officerReply!.isNotEmpty)
+                              ? ticket.officerReply!
+                              : (ticket.adminReply ?? ''),
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF2E7D32),
@@ -1172,7 +1417,11 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
                       border: Border.all(color: const Color(0xFFFFCDD2)),
                     ),
                     child: Text(
-                      ticket.officerReply ?? 'তথ্য অসম্পূর্ণ বা অনুপযুক্ত হওয়ায় টিকিটটি বাতিল করা হয়েছে।',
+                      (ticket.officerReply != null && ticket.officerReply!.isNotEmpty)
+                          ? ticket.officerReply!
+                          : ((ticket.adminReply != null && ticket.adminReply!.isNotEmpty)
+                              ? ticket.adminReply!
+                              : 'তথ্য অসম্পূর্ণ বা অনুপযুক্ত হওয়ায় টিকিটটি বাতিল করা হয়েছে।'),
                       style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFFC62828),
