@@ -38,8 +38,8 @@ class AppLoadingDialogController {
         final nav = Navigator.of(_dialogContext!, rootNavigator: true);
         if (nav.canPop()) {
           nav.pop();
-          return;
         }
+        _dialogContext = null;
       }
     } catch (e) {
       debugPrint('Error dismissing loading dialog: $e');
@@ -99,24 +99,24 @@ class AppUnifiedDialog {
   static AppLoadingDialogController showLoading(
     BuildContext context, {
     required String message,
+    bool barrierDismissible = false,
     Duration timeout = const Duration(seconds: 12),
   }) {
     final controller = AppLoadingDialogController(context);
 
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: barrierDismissible,
       useRootNavigator: true,
       builder: (dCtx) {
         controller.attachDialogContext(dCtx);
         return PopScope(
-          canPop: true,
+          canPop: barrierDismissible,
           onPopInvokedWithResult: (didPop, _) {
             if (didPop) {
               controller.dismiss();
             }
           },
-          canPop: true,
           child: Dialog(
             backgroundColor: Colors.white,
             elevation: 10,

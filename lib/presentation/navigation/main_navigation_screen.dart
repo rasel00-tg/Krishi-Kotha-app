@@ -1,7 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../data/services/firestore_service.dart';
+import '../../providers/auth_provider.dart';
+import '../auth/phone_login_screen.dart';
 import '../home/home_screen.dart';
 import '../crops/crop_list_screen.dart';
 import '../market/market_price_screen.dart';
@@ -21,6 +27,8 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late int _currentIndex;
   final FirestoreService _firestoreService = FirestoreService();
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userBlockStatusSubscription;
+  bool _isAutoLoggingOut = false;
 
   @override
   void initState() {
@@ -37,11 +45,86 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           nav.pop();
         }
       } catch (_) {}
+
+      // গ্লোবাল রিয়েল-টাইম ব্লক লিসেনার আরম্ভ
+      _initRealtimeBlockListener();
+    });
+  }
+
+  /// গ্লোবাল রিয়েল-টাইম ব্লক ও সাসপেনশন লিসেনার (Real-time Instant Logout Listener)
+  void _initRealtimeBlockListener() {
+    final fbUser = FirebaseAuth.instance.currentUser;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final uid = fbUser?.uid ?? authProvider.user?.uid;
+
+    if (uid == null || uid.isEmpty || uid.startsWith('guest_')) return;
+
+    _userBlockStatusSubscription?.cancel();
+    _userBlockStatusSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .listen((snapshot) async {
+      if (!mounted || _isAutoLoggingOut) return;
+      if (!snapshot.exists || snapshot.data() == null) return;
+
+      final data = snapshot.data()!;
+      final status = (data['status'] as String?)?.toLowerCase();
+
+      bool isBlocked = false;
+      if (status == 'permanently_suspended' ||
+          status == 'suspended' ||
+          status == 'blocked' ||
+          status == 'inactive') {
+        isBlocked = true;
+      } else if (status == 'temporary_blocked') {
+        final dynamic unblockAt = data['unblockAt'];
+        DateTime? unblockDate;
+        if (unblockAt is Timestamp) {
+          unblockDate = unblockAt.toDate();
+        } else if (unblockAt is String) {
+          unblockDate = DateTime.tryParse(unblockAt);
+        }
+        if (unblockDate != null && DateTime.now().isBefore(unblockDate)) {
+          isBlocked = true;
+        }
+      }
+
+      if (isBlocked && mounted && !_isAutoLoggingOut) {
+        _isAutoLoggingOut = true;
+
+        // ১. রিয়েল-টাইম লিসেনার অবিলম্বে ও নিরাপদভাবে বাতিল করা
+        await _userBlockStatusSubscription?.cancel();
+        _userBlockStatusSubscription = null;
+
+        // ২. ফায়ারবেস অথেন্টিকেশন ও লোকাল সেশন থেকে সম্পূর্ণ সাইনআউট
+        try {
+          await FirebaseAuth.instance.signOut();
+        } catch (_) {}
+
+        if (mounted) {
+          try {
+            await Provider.of<AuthProvider>(context, listen: false).signOut();
+          } catch (_) {}
+        }
+
+        // ৩. সমস্ত নেভিগেশন স্ট্যাক অবিলম্বে ক্লিয়ার করে সরাসরি লগইন পেজে রিডাইরেক্ট
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
+            (route) => false,
+          );
+        }
+      }
+    }, onError: (error) {
+      debugPrint('Real-time block listener note: $error');
     });
   }
 
   @override
   void dispose() {
+    _userBlockStatusSubscription?.cancel();
+    _userBlockStatusSubscription = null;
     _firestoreService.dispose();
     super.dispose();
   }

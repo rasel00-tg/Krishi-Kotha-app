@@ -75,6 +75,7 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
     final loadingCtrl = AppUnifiedDialog.showLoading(
       context,
       message: 'অভিযোগ পাঠানো হচ্ছে....',
+      barrierDismissible: false,
     );
 
     bool isSuccess = false;
@@ -137,8 +138,8 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
       } else {
         final supportProvider = Provider.of<SupportProvider>(context, listen: false);
         await supportProvider.submitTicket(
-          authorId: authorId,
-          authorName: _nameController.text.trim(),
+          authorId: currentUserId,
+          authorName: senderName,
           authorPhone: authorPhone,
           authorEmail: authorEmail,
           district: district,
@@ -148,6 +149,14 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
         );
       }
 
+      // ২. ফায়ারস্টোরে সফলভাবে সেভ হওয়ার পর টেক্সট ফিল্ডগুলো রিসেট
+      _nameController.clear();
+      _addressController.clear();
+      _detailsController.clear();
+      setState(() {
+        _selectedCategory = null;
+      });
+
       isSuccess = true;
     } catch (e) {
       debugPrint('Error submitting support complaint: $e');
@@ -156,33 +165,25 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
       // ১. গ্যারান্টিড মোডাল ব্যারিয়ার ও লোডার ডিসমিসাল
       loadingCtrl.dismiss();
       AppUnifiedDialog.safeDismissLoading(context);
-      if (context.mounted && Navigator.of(context, rootNavigator: true).canPop()) {
-        try {
-          Navigator.of(context, rootNavigator: true).pop();
-        } catch (_) {}
-      }
       // ২. পয়েন্টার ও সাবমিট স্টেট সাথে সাথে আনলক
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
     }
 
-    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর ক্লিকেবল ডায়ালগ প্রদর্শন
+    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর সাকসেস পপআপ প্রদর্শন
     if (isSuccess && mounted) {
-      _nameController.clear();
-      _addressController.clear();
-      _detailsController.clear();
-      setState(() {
-        _selectedCategory = null;
-      });
-
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
       await AppUnifiedDialog.showSuccess(
         context,
         title: 'অভিযোগ সফলভাবে গৃহীত হয়েছে!',
-        message: 'আপনার অভিযোগ বা মতামত সফলভাবে গৃহীত হয়েছে। আমাদের সাপোর্ট টিম দ্রুত এটি পর্যালোচনা করে প্রয়োজনীয় ব্যবস্থা গ্রহণ করবে।',
+        message: 'আপনার মেসেজটি সফলভাবে পাঠানো হয়েছে! আমাদের সাপোর্ট টিম দ্রুত এটি পর্যালোচনা করে প্রয়োজনীয় ব্যবস্থা গ্রহণ করবে।',
         buttonText: 'ঠিক আছে',
       );
     } else if (errorMessage != null && mounted) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
       await AppUnifiedDialog.showError(
         context,
         title: 'অভিযোগ পাঠানো সম্ভব হয়নি',

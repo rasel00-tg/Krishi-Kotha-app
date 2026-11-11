@@ -1959,20 +1959,27 @@
     }
 
     .edit-profile-input {
-      font-size: 15px !important;
-      line-height: 1.3 !important;
+      font-size: 14.5px !important;
+      line-height: 1.35 !important;
       font-weight: 500 !important;
-      letter-spacing: 0.5px !important;
-      padding: 14px 14px !important;
+      letter-spacing: 0.3px !important;
+      padding: 14px 16px !important;
       font-variant-numeric: tabular-nums !important;
       font-family: inherit !important;
       box-sizing: border-box !important;
       width: 100% !important;
       border-radius: 12px !important;
-      border: 1px solid var(--border) !important;
+      border: 1.2px solid #DCE7DC !important;
       outline: none !important;
-      background: #FAFCFA !important;
+      background: #F8FAF8 !important;
       color: var(--text-primary) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .edit-profile-input:focus {
+      border-color: var(--primary) !important;
+      background: #FFFFFF !important;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12) !important;
     }
 
     /* Policy Document Page Styles (Compact, Modern, Premium 12-14px radius) */
@@ -3334,7 +3341,7 @@
                         লাইভ</span>
                     </div>
                     <p style="font-size: 12px; color: rgba(255,255,255,0.92); margin: 3px 0 0 0;">হটলাইন কল, হোয়াটসঅ্যাপ
-                        বা ইমেইলে সরাসরি কথা বলুন</p>
+                      বা ইমেইলে সরাসরি কথা বলুন</p>
                   </div>
                 </div>
                 <div
@@ -3361,7 +3368,7 @@
                         ও উত্তর</span>
                     </div>
                     <p style="font-size: 12px; color: rgba(255,255,255,0.92); margin: 3px 0 0 0;">অ্যাপের ব্যবহারবিধি ও
-                        সাধারণ সমস্যার সরাসরি সমাধান</p>
+                      সাধারণ সমস্যার সরাসরি সমাধান</p>
                   </div>
                 </div>
                 <div
@@ -4030,6 +4037,21 @@
             </div>
           </div>
 
+          <!-- Top Section Row: Title & Login ID Update Button -->
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+            <div
+              style="display: flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 700; color: var(--text-primary);">
+              <i class="fa-regular fa-id-badge" style="color: var(--primary); font-size: 17px;"></i>
+              <span>ব্যক্তিগত তথ্য</span>
+            </div>
+            <button type="button" onclick="openUpdateLoginIdPage()"
+              style="background: #E8F5E9; color: #1B5E20; border: 1.2px solid #A5D6A7; padding: 7px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(46,125,50,0.12); transition: all 0.2s ease;">
+              <i class="fa-solid fa-shield-halved" style="font-size: 12.5px; color: #1B5E20;"></i>
+              <span>লগইন আইডি আপডেট</span>
+            </button>
+          </div>
+
           <!-- Form Fields Container -->
           <form id="editProfileForm" onsubmit="event.preventDefault(); submitProfileUpdate();"
             style="background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 20px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px;">
@@ -4044,22 +4066,51 @@
                 placeholder="আপনার নাম লিখুন" />
             </div>
 
-            <!-- Phone Number -->
+            <!-- Phone Number (LOCKED / READ-ONLY) -->
             <div>
               <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> ফোন নম্বর *
+                style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                <span><i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> ফোন নম্বর
+                  (লগইন আইডি)</span>
+                <span
+                  style="font-size: 11px; font-weight: 600; color: #E65100; background: #FFF3E0; padding: 2px 7px; border-radius: 6px;"><i
+                    class="fa-solid fa-lock" style="font-size: 10px;"></i> লকড</span>
               </label>
-              <input type="tel" id="editProfilePhone" class="edit-profile-input" required placeholder="০১XXXXXXXXX" />
+              <div style="position: relative;">
+                <input type="tel" id="editProfilePhone" class="edit-profile-input" readonly
+                  style="background: #F1F5F1; color: #555; cursor: not-allowed; padding-right: 36px;" />
+                <i class="fa-solid fa-lock"
+                  style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #9E9E9E; font-size: 13px;"></i>
+              </div>
+              <div id="phoneStatusLabel"
+                style="font-size: 12px; color: #78909C; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-circle-info" style="font-size: 11px;"></i>
+                <span id="phoneStatusText">প্রাথমিক</span>
+              </div>
             </div>
 
-            <!-- Email (Optional) -->
+            <!-- Email (Optional, LOCKED / READ-ONLY) -->
             <div>
               <label
-                style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> ইমেইল (ঐচ্ছিক)
+                style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                <span><i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> ইমেইল
+                  (লগইন আইডি)</span>
+                <span
+                  style="font-size: 11px; font-weight: 600; color: #E65100; background: #FFF3E0; padding: 2px 7px; border-radius: 6px;"><i
+                    class="fa-solid fa-lock" style="font-size: 10px;"></i> লকড</span>
               </label>
-              <input type="email" id="editProfileEmail" class="edit-profile-input" placeholder="example@email.com" />
+              <div style="position: relative;">
+                <input type="email" id="editProfileEmail" class="edit-profile-input" readonly
+                  placeholder="ইমেইল যুক্ত নেই"
+                  style="background: #F1F5F1; color: #555; cursor: not-allowed; padding-right: 36px;" />
+                <i class="fa-solid fa-lock"
+                  style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #9E9E9E; font-size: 13px;"></i>
+              </div>
+              <div id="emailStatusLabel"
+                style="font-size: 12px; color: #78909C; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-circle-info" style="font-size: 11px;"></i>
+                <span id="emailStatusText">প্রাথমিক</span>
+              </div>
             </div>
 
             <!-- District & Upazila -->
@@ -4118,6 +4169,91 @@
             </button>
           </form>
         </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN LOGIN ID UPDATE PAGE (EDGE-TO-EDGE, LOTTIE PENDING ANIMATION) -->
+    <div class="full-screen-page" id="updateLoginIdPage"
+      style="background: #F7FAF7; z-index: 100015; display: none; flex-direction: column;">
+      <!-- Top Bar with Back Button & Title -->
+      <div
+        style="background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" class="icon-btn" onclick="closeUpdateLoginIdPage()"
+            style="color: var(--text-primary); background: #F1F3F4;" title="ফিরে যান">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h2 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0;">লগইন আইডি আপডেট</h2>
+        </div>
+      </div>
+
+      <!-- Scrollable Container -->
+      <div style="flex: 1; overflow-y: auto; padding: 20px 18px 100px 18px; -webkit-overflow-scrolling: touch;">
+        <div style="max-width: 520px; margin: 0 auto;" id="updateLoginIdContainer">
+          <!-- Dynamically populated via renderUpdateLoginIdView() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: LOGIN ID UPDATE LOADING -->
+    <div class="modal-overlay" id="loginIdUpdateLoadingModal"
+      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
+      <div class="bottom-sheet"
+        style="max-width: 360px; border-radius: 20px; padding: 26px 22px; background: white; text-align: center; margin: auto;">
+        <div
+          style="width: 56px; height: 56px; border-radius: 50%; background: #E8F5E9; border: 1.5px solid rgba(129,199,132,0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+          <div class="spinner"
+            style="width: 28px; height: 28px; border: 3px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; animation: spin 0.8s linear infinite;">
+          </div>
+        </div>
+        <div style="font-size: 14.5px; font-weight: 700; color: #1B5E20;">তথ্য যাচাই করা হচ্ছে....</div>
+      </div>
+    </div>
+
+    <!-- MODAL: LOGIN ID UPDATE CONFLICT ERROR -->
+    <div class="modal-overlay" id="loginIdConflictModal"
+      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
+      <div class="bottom-sheet"
+        style="max-width: 390px; border-radius: 20px; padding: 24px 20px; background: white; text-align: center; margin: auto;">
+        <div
+          style="width: 60px; height: 60px; border-radius: 50%; background: #FFEBEE; border: 2px solid #EF9A9A; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 14px auto;">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div style="font-size: 17px; font-weight: 800; color: #D32F2F; margin-bottom: 8px;">তথ্য ইতিমধ্যেই বিদ্যমান!
+        </div>
+        <div id="loginIdConflictMsg" style="font-size: 13px; color: #455A64; line-height: 1.5; margin-bottom: 20px;">
+          এই নাম্বার বা ইমেইল দিয়ে ইতিমধ্যে একটি একাউন্ট রয়েছে।
+        </div>
+        <button type="button" onclick="closeModal('loginIdConflictModal')"
+          style="width: 100%; background: #D32F2F; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 10px rgba(211,47,47,0.25);">
+          ঠিক আছে
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL: LOGIN ID UPDATE SUCCESS (Theme-Matched Native App Dialog) -->
+    <div class="modal-overlay" id="loginIdSuccessModal"
+      style="z-index: 100025; backdrop-filter: blur(4px); background: rgba(0,0,0,0.45); display: none; pointer-events: none; align-items: center; justify-content: center;">
+      <div class="bottom-sheet"
+        style="max-width: 380px; border-radius: 22px; padding: 26px 22px; background: white; text-align: center; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.18);">
+        <div
+          style="width: 120px; height: 120px; border-radius: 50%; background: #F1F8F1; border: 2px solid #C8E6C9; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; position: relative;">
+          <div
+            style="position: absolute; width: 70px; height: 70px; border-radius: 50%; background: #FFF3E0; display: flex; align-items: center; justify-content: center; z-index: 0;">
+            <i class="fa-solid fa-hourglass-half" style="font-size: 32px; color: #E65100;"></i>
+          </div>
+          <lottie-player src="assets/animation/pending.json" background="transparent" speed="1"
+            style="width: 110px; height: 110px; position: relative; z-index: 1;" loop autoplay></lottie-player>
+        </div>
+        <div style="font-size: 18.5px; font-weight: 800; color: #1B5E20; margin-bottom: 8px;">আবেদন সফল হয়েছে!</div>
+        <div style="font-size: 13.5px; color: #455A64; line-height: 1.5; margin-bottom: 22px;">
+          আপনার আবেদনটি সফলভাবে জমা হয়েছে এবং অনুমোদনের জন্য অপেক্ষমাণ আছে।
+        </div>
+        <button type="button" onclick="closeModal('loginIdSuccessModal')"
+          style="width: 100%; height: 48px; background: #00A86B; color: white; border: none; border-radius: 12px; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 3px 10px rgba(0,168,107,0.25);">
+          <i class="fa-solid fa-check"></i>
+          <span>ঠিক আছে</span>
+        </button>
       </div>
     </div>
 
@@ -6142,40 +6278,48 @@
   </div>
 
   <!-- ================= USER APP SYSTEM CONTROL ROOT DIALOG (Non-Dismissible Center Card) ================= -->
-  <div id="userSystemControlOverlay" style="display: none; pointer-events: none; position: fixed; inset: 0; z-index: 9999999; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
-    <div id="userSysCtrlCard" style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 24px 50px rgba(0,0,0,0.35); max-width: 330px; width: 100%; padding: 24px 22px; text-align: center; border: 1.5px solid rgba(255,255,255,0.9); animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-      
+  <div id="userSystemControlOverlay"
+    style="display: none; pointer-events: none; position: fixed; inset: 0; z-index: 9999999; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
+    <div id="userSysCtrlCard"
+      style="background: #FFFFFF; border-radius: 20px; box-shadow: 0 24px 50px rgba(0,0,0,0.35); max-width: 330px; width: 100%; padding: 24px 22px; text-align: center; border: 1.5px solid rgba(255,255,255,0.9); animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+
       <!-- Glowing Badge Icon -->
-      <div id="userSysCtrlBadgeWrap" style="width: 62px; height: 62px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 26px; box-shadow: 0 8px 20px rgba(217,119,6,0.22); border: 3px solid #FFFBEB;">
+      <div id="userSysCtrlBadgeWrap"
+        style="width: 62px; height: 62px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 26px; box-shadow: 0 8px 20px rgba(217,119,6,0.22); border: 3px solid #FFFBEB;">
         <i id="userSysCtrlBadgeIcon" class="fa-solid fa-screwdriver-wrench"></i>
       </div>
 
       <!-- Headline -->
-      <h3 id="userSysCtrlHeadline" style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0 0 10px 0; line-height: 1.35;">
+      <h3 id="userSysCtrlHeadline"
+        style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0 0 10px 0; line-height: 1.35;">
         অ্যাপ মেইন্টেনেন্স চলছে
       </h3>
 
       <!-- Message -->
       <p id="userSysCtrlMessage" style="font-size: 13px; color: #475569; line-height: 1.55; margin: 0 0 14px 0;">
-        সম্মানিত কৃষক ভাই, অ্যাপের কারিগরি উন্নয়ন কাজ চলছে। সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত। কিছুক্ষণ পর আবার চেষ্টা করুন।
+        সম্মানিত কৃষক ভাই, অ্যাপের কারিগরি উন্নয়ন কাজ চলছে। সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত। কিছুক্ষণ পর
+        আবার চেষ্টা করুন।
       </p>
 
       <!-- Target Version Tag (Update mode only) -->
       <div id="userSysCtrlVersionWrap" style="display: none; margin-bottom: 14px;">
-        <span style="font-size: 11.5px; font-weight: 700; color: #1D4ED8; background: #EFF6FF; padding: 4px 10px; border-radius: 12px; border: 1px solid #BFDBFE; display: inline-flex; align-items: center; gap: 5px;">
+        <span
+          style="font-size: 11.5px; font-weight: 700; color: #1D4ED8; background: #EFF6FF; padding: 4px 10px; border-radius: 12px; border: 1px solid #BFDBFE; display: inline-flex; align-items: center; gap: 5px;">
           <i class="fa-solid fa-circle-check"></i>
           <span>নতুন সংস্করণ: <span id="userSysCtrlVersionText">1.0.5</span></span>
         </span>
       </div>
 
       <!-- Full-Width Action Button -->
-      <button id="userSysCtrlActionBtn" type="button" onclick="handleUserSysCtrlAction()" style="width: 100%; border: none; background: #D97706; color: #fff; font-size: 13.5px; font-weight: 700; padding: 13px 16px; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(217,119,6,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+      <button id="userSysCtrlActionBtn" type="button" onclick="handleUserSysCtrlAction()"
+        style="width: 100%; border: none; background: #D97706; color: #fff; font-size: 13.5px; font-weight: 700; padding: 13px 16px; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(217,119,6,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
         <i id="userSysCtrlActionIcon" class="fa-solid fa-power-off"></i>
         <span id="userSysCtrlActionText">অ্যাপ বন্ধ করুন</span>
       </button>
 
       <!-- Security / System Notice -->
-      <div style="font-size: 10px; color: #94A3B8; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+      <div
+        style="font-size: 10px; color: #94A3B8; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 4px;">
         <i class="fa-solid fa-lock" style="font-size: 9px;"></i>
         <span>বাধ্যতামূলক সিস্টেম ডায়ালগ • কৃষি কথা</span>
       </div>
@@ -11893,7 +12037,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             if (cred && cred.user) {
               loginSuccess = true;
             }
-          } catch(e) {
+          } catch (e) {
             loginSuccess = false;
           }
         }
@@ -11919,9 +12063,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               if (firebase.auth().currentUser) {
                 await firebase.auth().currentUser.updatePassword(cleanPass);
               } else {
-                await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => {});
+                await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => { });
               }
-            } catch (e) {}
+            } catch (e) { }
           }
         } else {
           // ভুল পাসওয়ার্ড: failedAttempts কাউন্টার আপডেট ও ১০ বার হলে ১ ঘণ্টার জন্য লক
@@ -11935,7 +12079,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                   lockUntil: firebase.firestore.Timestamp.fromDate(lockTime),
                   updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-              } catch (e) {}
+              } catch (e) { }
               showLoginFailureDialog(
                 'লগইন সাময়িক লক!',
                 '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।'
@@ -11947,7 +12091,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                   failedAttempts: curAttempts,
                   updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-              } catch (e) {}
+              } catch (e) { }
               const rem = 10 - curAttempts;
               showLoginFailureDialog(
                 'লগইন ব্যর্থ হয়েছে!',
@@ -12075,7 +12219,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       // 1. Permanent Suspend Check
       if (status === 'permanently_suspended') {
         if (window.firebase && firebase.auth) {
-          try { await firebase.auth().signOut(); } catch (_) {}
+          try { await firebase.auth().signOut(); } catch (_) { }
         }
         localStorage.removeItem('krishi_kotha_cached_user');
         currentUser = null;
@@ -12106,7 +12250,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (unblockDate && unblockDate > now) {
           // Block is still in effect
           if (window.firebase && firebase.auth) {
-            try { await firebase.auth().signOut(); } catch (_) {}
+            try { await firebase.auth().signOut(); } catch (_) { }
           }
           localStorage.removeItem('krishi_kotha_cached_user');
           currentUser = null;
@@ -12308,9 +12452,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 if (firebase.auth().currentUser) {
                   await firebase.auth().currentUser.updatePassword(cleanPass);
                 } else {
-                  await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => {});
+                  await firebase.auth().signInWithEmailAndPassword(targetEmail, cleanPass).catch(() => { });
                 }
-              } catch (e) {}
+              } catch (e) { }
             }
 
             const isValid = await validateUserAccountStatusWeb(foundUser);
@@ -12333,7 +12477,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                     lockUntil: firebase.firestore.Timestamp.fromDate(lockTime),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                   });
-                } catch (e) {}
+                } catch (e) { }
                 errorMessage = '১০ বার ভুল তথ্য দেওয়ায় আপনার একাউন্ট ১ ঘণ্টার জন্য সাময়িক লক করা হয়েছে। আনলক হতে আর ৬০ মিনিট বাকি আছে অথবা এডমিনের সাথে যোগাযোগ করুন।';
               } else {
                 try {
@@ -12341,7 +12485,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                     failedAttempts: curAttempts,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                   });
-                } catch (e) {}
+                } catch (e) { }
                 const rem = 10 - curAttempts;
                 errorMessage = `আপনার দেওয়া পাসওয়ার্ড সঠিক নয়! আর ${toBangla(rem)} বার ভুল দিলে একাউন্টটি ১ ঘণ্টার জন্য লক হয়ে যাবে।`;
               }
@@ -12520,6 +12664,31 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         avatarChar.innerText = name.charAt(0) || 'ক';
       }
 
+      // Populate credential status labels ("প্রাথমিক" বা "আপডেট - দিন/মাস/সাল")
+      const lastLoginUpdate = u.last_login_id_update || u.lastLoginIdUpdate;
+      const lastPhoneUpdate = u.last_phone_update || u.lastPhoneUpdate || lastLoginUpdate;
+      const lastEmailUpdate = u.last_email_update || u.lastEmailUpdate || lastLoginUpdate;
+
+      const pStatusEl = document.getElementById('phoneStatusText');
+      const eStatusEl = document.getElementById('emailStatusText');
+      if (pStatusEl) pStatusEl.innerText = getLoginCredentialStatus(lastPhoneUpdate);
+      if (eStatusEl) eStatusEl.innerText = getLoginCredentialStatus(lastEmailUpdate);
+
+      // Real-time listener for user doc in Firestore to ensure dynamic status update
+      const activeUid = getActiveWebUserId();
+      if (activeUid && typeof db !== 'undefined' && db) {
+        db.collection('users').doc(activeUid).onSnapshot(doc => {
+          if (doc.exists) {
+            const d = doc.data();
+            const liveLastUpdate = d.last_login_id_update || d.lastLoginIdUpdate;
+            const livePUpdate = d.last_phone_update || d.lastPhoneUpdate || liveLastUpdate;
+            const liveEUpdate = d.last_email_update || d.lastEmailUpdate || liveLastUpdate;
+            if (pStatusEl) pStatusEl.innerText = getLoginCredentialStatus(livePUpdate);
+            if (eStatusEl) eStatusEl.innerText = getLoginCredentialStatus(liveEUpdate);
+          }
+        }, err => console.warn('User status stream notice:', err));
+      }
+
       const page = document.getElementById('editProfilePage');
       if (page) {
         page.classList.add('active');
@@ -12538,6 +12707,401 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       pendingProfileImageBlob = null;
       pendingProfileImageDataUrl = null;
+    }
+
+    function getActiveWebUserId() {
+      if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) {
+        return firebase.auth().currentUser.uid;
+      }
+      const loggedUserStr = localStorage.getItem('krishi_kotha_cached_user');
+      if (loggedUserStr) {
+        try {
+          const u = JSON.parse(loggedUserStr);
+          if (u && (u.uid || u.id)) return (u.uid || u.id);
+        } catch (_) { }
+      }
+      return 'user_demo_active';
+    }
+
+    function getLoginCredentialStatus(updateTs) {
+      if (!updateTs) return 'প্রাথমিক';
+      let dt = null;
+      if (updateTs.toDate) {
+        dt = updateTs.toDate();
+      } else if (updateTs instanceof Date) {
+        dt = updateTs;
+      } else if (typeof updateTs === 'string') {
+        dt = new Date(updateTs);
+      }
+      if (!dt || isNaN(dt.getTime())) return 'প্রাথমিক';
+      const day = String(dt.getDate()).padStart(2, '0');
+      const month = String(dt.getMonth() + 1).padStart(2, '0');
+      const year = dt.getFullYear();
+      let hours = dt.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const strHours = String(hours).padStart(2, '0');
+      const minutes = String(dt.getMinutes()).padStart(2, '0');
+      const enFormatted = `${day}/${month}/${year}, ${strHours}:${minutes} ${ampm}`;
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      const bnFormatted = enFormatted.replace(/[0-9]/g, d => bnDigits[d]);
+      return `আপডেট - ${bnFormatted}`;
+    }
+
+    let loginUpdateRequestsUnsub = null;
+    let currentActivePendingRequest = null;
+
+    function openUpdateLoginIdPage() {
+      if (!isWebUserLoggedIn()) {
+        openAuthModal('login');
+        return;
+      }
+
+      const page = document.getElementById('updateLoginIdPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        window.history.pushState({ page: 'update-login-id' }, '');
+      }
+
+      // 1. Instant Pending Block & Prevent Flickering:
+      // ফায়ারস্টোর থেকে চেক হওয়ার পূর্ব মুহূর্ত পর্যন্ত সেন্ট্রালাইজড লোডার দেখাবে, কোনোভাবেই ইনপুট ফর্ম ফ্লিকার করবে না
+      const container = document.getElementById('updateLoginIdContainer');
+      if (container) {
+        if (currentActivePendingRequest) {
+          renderUpdateLoginIdView(currentActivePendingRequest);
+        } else {
+          container.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 70px 20px; min-height: 380px;">
+              <div class="spinner-border text-success" role="status" style="width: 42px; height: 42px; color: #2E7D32 !important; border-width: 3.5px;"></div>
+              <p style="margin-top: 16px; font-size: 14px; color: #555; font-weight: 600;">তথ্য যাচাই করা হচ্ছে...</p>
+            </div>
+          `;
+        }
+      }
+
+      // 2. Start Real-time Firestore Listener on login_update_requests
+      listenUserLoginUpdateRequests();
+    }
+
+    function closeUpdateLoginIdPage() {
+      const page = document.getElementById('updateLoginIdPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      if (loginUpdateRequestsUnsub) {
+        loginUpdateRequestsUnsub();
+        loginUpdateRequestsUnsub = null;
+      }
+      currentActivePendingRequest = null;
+    }
+
+    function listenUserLoginUpdateRequests() {
+      const container = document.getElementById('updateLoginIdContainer');
+      if (!container) return;
+
+      const activeUid = getActiveWebUserId();
+      if (!activeUid || typeof db === 'undefined' || !db) {
+        renderUpdateLoginIdView(null);
+        return;
+      }
+
+      // Cleanup previous listener
+      if (loginUpdateRequestsUnsub) {
+        loginUpdateRequestsUnsub();
+        loginUpdateRequestsUnsub = null;
+      }
+
+      loginUpdateRequestsUnsub = db.collection('login_update_requests')
+        .where('userId', '==', activeUid)
+        .onSnapshot(snapshot => {
+          let pendingReq = null;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.status === 'pending') {
+              pendingReq = { id: doc.id, ...data };
+            }
+          });
+          currentActivePendingRequest = pendingReq;
+          renderUpdateLoginIdView(pendingReq);
+        }, err => {
+          console.error("Login update requests listener error:", err);
+          renderUpdateLoginIdView(null);
+        });
+    }
+
+    function renderUpdateLoginIdView(pendingReq) {
+      const container = document.getElementById('updateLoginIdContainer');
+      if (!container) return;
+
+      let u = {};
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (cached) {
+        try { u = JSON.parse(cached); } catch (_) { }
+      }
+      const currentPhone = (u.phone || '').trim();
+      const currentEmail = (u.email || '').trim();
+
+      if (pendingReq) {
+        // 1. PENDING REQUEST STATE (with Lottie assets/animation/pending.json)
+        container.innerHTML = `
+          <div style="background: white; border-radius: 20px; border: 1px solid var(--border); padding: 28px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="position: relative; width: 170px; height: 170px; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;">
+              <div style="position: absolute; width: 100px; height: 100px; border-radius: 50%; background: #FFF3E0; display: flex; align-items: center; justify-content: center; z-index: 0;">
+                <i class="fa-solid fa-hourglass-half" style="font-size: 42px; color: #E65100;"></i>
+              </div>
+              <lottie-player src="assets/animation/pending.json" background="transparent" speed="1" style="width: 170px; height: 170px; position: relative; z-index: 1;" loop autoplay></lottie-player>
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: #FFF3E0; color: #E65100; border: 1.5px solid #FFCC80; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+              <i class="fa-solid fa-clock-rotate-left"></i> পেন্ডিং রিকোয়েস্ট
+            </div>
+            <h3 style="font-size: 19px; font-weight: 800; color: #1B5E20; margin: 0 0 8px 0; letter-spacing: -0.2px;">
+              আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে
+            </h3>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 22px 0;">
+              আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।
+            </p>
+
+            <!-- Request Comparison Details Box -->
+            <div style="background: #F9FAF9; border-radius: 14px; border: 1.5px solid #E2E8F0; padding: 16px; text-align: left; margin-bottom: 20px;">
+              <div style="font-size: 12.5px; font-weight: 700; color: #166534; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-circle-info"></i> আবেদনের বিস্তারিত তথ্য:
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12.5px;">
+                <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #EDF2F7;">
+                  <div style="color: var(--text-muted); font-size: 11px; margin-bottom: 2px;">বর্তমান ফোন</div>
+                  <div style="font-weight: 600; color: var(--text-primary); font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;">${pendingReq.currentPhone || 'অনুপলব্ধ'}</div>
+                </div>
+                <div style="background: #F0FDF4; padding: 10px; border-radius: 8px; border: 1px solid #BBF7D0;">
+                  <div style="color: #15803D; font-size: 11px; font-weight: 700; margin-bottom: 2px;">নতুন আবেদনকৃত ফোন</div>
+                  <div style="font-weight: 700; color: #166534; font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;">${pendingReq.newPhone || 'অপরিবর্তিত'}</div>
+                </div>
+                <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #EDF2F7;">
+                  <div style="color: var(--text-muted); font-size: 11px; margin-bottom: 2px;">বর্তমান ইমেইল</div>
+                  <div style="font-weight: 600; color: var(--text-primary); word-break: break-all;">${pendingReq.currentEmail || 'অনুপলব্ধ'}</div>
+                </div>
+                <div style="background: #F0FDF4; padding: 10px; border-radius: 8px; border: 1px solid #BBF7D0;">
+                  <div style="color: #15803D; font-size: 11px; font-weight: 700; margin-bottom: 2px;">নতুন আবেদনকৃত ইমেইল</div>
+                  <div style="font-weight: 700; color: #166534; word-break: break-all;">${pendingReq.newEmail || 'অপরিবর্তিত'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #166534; background: #DCFCE7; padding: 10px 14px; border-radius: 10px; font-weight: 600;">
+              <i class="fa-solid fa-shield-halved"></i>
+              আপনার পাসওয়ার্ড অপরিবর্তিত থাকবে
+            </div>
+          </div>
+        `;
+      } else {
+        // 2. REQUEST SUBMISSION FORM
+        container.innerHTML = `
+          <div style="background: white; border-radius: 20px; border: 1px solid var(--border); padding: 22px 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">লগইন তথ্য পরিবর্তনের আবেদন</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">নিরাপত্তার স্বার্থে পরিবর্তনের পর এডমিন অনুমোদন প্রয়োজন হবে</p>
+              </div>
+            </div>
+
+            <!-- Current Credentials Box -->
+            <div style="background: #F8FAF8; border-radius: 12px; border: 1px solid #E2E8F0; padding: 12px 14px; margin-bottom: 18px;">
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">বর্তমান লগইন তথ্য:</div>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12.5px;">
+                <div><i class="fa-solid fa-phone" style="color: var(--primary); width: 18px;"></i> <strong>মোবাইল নম্বর:</strong> <span style="font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;">${currentPhone || 'নেই'}</span></div>
+                <div><i class="fa-regular fa-envelope" style="color: var(--primary); width: 18px;"></i> <strong>ইমেইল:</strong> <span style="font-family: 'Roboto', Arial, sans-serif;">${currentEmail || 'নেই'}</span></div>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form id="updateLoginIdForm" onsubmit="event.preventDefault(); submitLoginIdUpdateRequest();" style="display: flex; flex-direction: column; gap: 16px;">
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                  <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> নতুন মোবাইল নম্বর
+                </label>
+                <input type="tel" id="newReqPhone" class="edit-profile-input" placeholder="01XXXXXXXXX (পরিবর্তন না চাইলে খালি রাখুন)" style="font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;" />
+              </div>
+
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                  <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> নতুন ইমেইল এড্রেস
+                </label>
+                <input type="email" id="newReqEmail" class="edit-profile-input" placeholder="example@email.com (পরিবর্তন না চাইলে খালি রাখুন)" style="font-family: 'Roboto', Arial, sans-serif;" />
+              </div>
+
+              <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #1E40AF; line-height: 1.4;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
+                আবেদনটি সাবমিট হলে রিয়েল-টাইমে ডাটাবেজে ইউনিকনেস চেক করা হবে। ইতিমধ্যে অন্য কারো একাউন্টে বিদ্যমান নম্বর বা ইমেইল গ্রহণ করা হবে না।
+              </div>
+
+              <button type="submit" id="btnSubmitLoginIdUpdate"
+                style="margin-top: 6px; width: 100%; height: 48px; border: none; border-radius: 13px; background: linear-gradient(135deg, #1B5E20, #2E7D32); color: white; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(46,125,50,0.30);">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>আবেদন সাবমিট করুন</span>
+              </button>
+            </form>
+          </div>
+        `;
+      }
+    }
+
+    function normalizeBdPhone(phone) {
+      if (!phone) return '';
+      let digits = String(phone).replace(/[^0-9]/g, '');
+      if (digits.startsWith('880')) {
+        digits = digits.substring(2);
+      } else if (digits.startsWith('88') && digits.length > 11) {
+        digits = digits.substring(2);
+      }
+      return digits;
+    }
+
+    function isSameBdPhone(p1, p2) {
+      const n1 = normalizeBdPhone(p1);
+      const n2 = normalizeBdPhone(p2);
+      if (!n1 || !n2) return false;
+      return n1 === n2;
+    }
+
+    async function submitLoginIdUpdateRequest() {
+      const activeUid = getActiveWebUserId();
+      if (!activeUid) {
+        openAuthModal('login');
+        return;
+      }
+
+      let u = {};
+      const cached = localStorage.getItem('krishi_kotha_cached_user');
+      if (cached) {
+        try { u = JSON.parse(cached); } catch (_) { }
+      }
+      const currentPhone = (u.phone || '').trim();
+      const currentEmail = (u.email || '').trim();
+      const userName = (u.name || '').trim() || 'ইউজার';
+
+      const phoneEl = document.getElementById('newReqPhone');
+      const emailEl = document.getElementById('newReqEmail');
+      const newPhone = phoneEl ? phoneEl.value.trim() : '';
+      const newEmail = emailEl ? emailEl.value.trim().toLowerCase() : '';
+
+      const cleanCurrentPhone = (currentPhone || '').trim();
+      const cleanCurrentEmail = (currentEmail || '').trim().toLowerCase();
+
+      // প্রথম ধাপ - কড়া লোকাল ভ্যালিডেশন (Must Change Both Data):
+      // ১. মোবাইল নম্বর চেক: বর্তমান নম্বর দিলে সাথে সাথে ব্লক
+      if (cleanCurrentPhone && (isSameBdPhone(newPhone, cleanCurrentPhone) || newPhone === cleanCurrentPhone)) {
+        showToast('আপনি আপনার বর্তমান মোবাইল নম্বরটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি নম্বর দিন।');
+        return;
+      }
+
+      // ২. ইমেইল চেক: বর্তমান ইমেইল দিলে সাথে সাথে ব্লক
+      if (cleanCurrentEmail && newEmail === cleanCurrentEmail) {
+        showToast('আপনি আপনার বর্তমান ইমেইলটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি ইমেইল দিন।');
+        return;
+      }
+
+      if (newPhone && !/^01[3-9]\d{8}$/.test(newPhone)) {
+        showToast('অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশি মোবাইল নম্বর লিখুন (যেমন: 017xxxxxxxx)');
+        return;
+      }
+
+      if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        showToast('অনুগ্রহ করে সঠিক ফরম্যাটের ইমেইল এড্রেস লিখুন।');
+        return;
+      }
+
+      // Show Loading Modal
+      openModal('loginIdUpdateLoadingModal');
+
+      try {
+        if (!window.firebase || !firebase.firestore || typeof db === 'undefined' || !db) {
+          throw new Error('ফায়ারস্টোর ডেটাবেজ সংযুক্ত নেই।');
+        }
+
+        // 0. Pre-check: Check if active user already has a pending request
+        const snapPending = await db.collection('login_update_requests')
+          .where('userId', '==', activeUid)
+          .where('status', '==', 'pending')
+          .limit(1)
+          .get();
+        if (!snapPending.empty) {
+          closeModal('loginIdUpdateLoadingModal');
+          showToast('আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।');
+          return;
+        }
+
+        // দ্বিতীয় ধাপ - ফায়ারবেস ডুয়াল ইউনিক চেকিং (Global DB Check):
+        // Phone Query:
+        let isPhoneTaken = false;
+        const variants = [newPhone];
+        if (newPhone.startsWith('01')) {
+          variants.push('+88' + newPhone);
+          variants.push('88' + newPhone);
+        }
+
+        for (const variant of variants) {
+          const snapPhone = await db.collection('users').where('phone', '==', variant).limit(1).get();
+          if (!snapPhone.empty) {
+            isPhoneTaken = true;
+            break;
+          }
+          const snapPhone2 = await db.collection('users').where('phoneNumber', '==', variant).limit(1).get();
+          if (!snapPhone2.empty) {
+            isPhoneTaken = true;
+            break;
+          }
+        }
+
+        if (isPhoneTaken) {
+          closeModal('loginIdUpdateLoadingModal');
+          showToast('এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।');
+          const conflictEl = document.getElementById('loginIdConflictMsg');
+          if (conflictEl) conflictEl.innerText = 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।';
+          openModal('loginIdConflictModal');
+          return;
+        }
+
+        // Email Query:
+        const snapEmail = await db.collection('users').where('email', '==', newEmail).limit(1).get();
+        if (!snapEmail.empty) {
+          closeModal('loginIdUpdateLoadingModal');
+          showToast('এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।');
+          const conflictEl = document.getElementById('loginIdConflictMsg');
+          if (conflictEl) conflictEl.innerText = 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।';
+          openModal('loginIdConflictModal');
+          return;
+        }
+
+        // স্টেপ ৪: "AND" লজিকের চূড়ান্ত প্রয়োগ - সমস্ত ভ্যালিডেশন সফল হলে তবেই ফায়ারস্টোরে সেভ
+        await db.collection('login_update_requests').add({
+          userId: activeUid,
+          userName: userName,
+          currentPhone: currentPhone,
+          currentEmail: currentEmail,
+          newPhone: newPhone,
+          newEmail: newEmail,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Safe dismissal & show success modal
+        closeModal('loginIdUpdateLoadingModal');
+        openModal('loginIdSuccessModal');
+
+      } catch (err) {
+        console.error('Login ID update request error:', err);
+        showToast('আবেদন জমা দিতে সমস্যা হয়েছে: ' + (err.message || 'অনুগ্রহ করে পুনরায় চেষ্টা করুন।'));
+      } finally {
+        closeModal('loginIdUpdateLoadingModal');
+      }
     }
 
     const profileSquareCropperState = {
@@ -12956,7 +13520,52 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         try {
           userDocUnsubscribe = db.collection('users').doc(uid).onSnapshot(doc => {
             if (doc && doc.exists) {
-              const u = doc.data();
+              const u = doc.data() || {};
+              const st = (u.status || '').toLowerCase();
+
+              // রিয়েল-টাইম ব্লক ও সাসপেনশন চেক
+              let isBlocked = false;
+              if (st === 'permanently_suspended' || st === 'suspended' || st === 'blocked' || st === 'inactive') {
+                isBlocked = true;
+              } else if (st === 'temporary_blocked') {
+                let unblockDate = null;
+                const unblockAt = u.unblockAt;
+                if (unblockAt) {
+                  if (typeof unblockAt.toDate === 'function') unblockDate = unblockAt.toDate();
+                  else if (unblockAt.seconds) unblockDate = new Date(unblockAt.seconds * 1000);
+                  else unblockDate = new Date(unblockAt);
+                }
+                if (unblockDate && unblockDate > new Date()) {
+                  isBlocked = true;
+                }
+              }
+
+              if (isBlocked) {
+                // ১. লিসেনার অবিলম্বে বাতিল
+                if (userDocUnsubscribe) {
+                  try { userDocUnsubscribe(); } catch (_) {}
+                  userDocUnsubscribe = null;
+                }
+                // ২. ফায়ারবেস অথ ও সেশন ক্লিয়ার
+                if (window.firebase && firebase.auth) {
+                  firebase.auth().signOut().catch(function () {});
+                }
+                try { localStorage.removeItem('krishi_kotha_cached_user'); } catch (_) {}
+                currentUser = null;
+                updateWebProfileHeader();
+
+                // ৩. অতিরিক্ত ডায়ালগ ছাড়া পেজ/মোডাল ক্লিয়ার করে সরাসরি লগইন পেজে রিডাইরেক্ট
+                try {
+                  closeSettingsPage();
+                  closeEditProfilePage();
+                  closeSupportContactPage();
+                  closeUpdateCredentialsPage();
+                  document.querySelectorAll('.modal-overlay.active, .modal.active').forEach(m => m.classList.remove('active'));
+                } catch (_) {}
+                openAuthModal('login');
+                return;
+              }
+
               localStorage.setItem('krishi_kotha_cached_user', JSON.stringify({
                 ...u,
                 uid: doc.id
@@ -13122,7 +13731,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           applyUserToUI(u);
           checkAuthState();
           showSuccessDialog('লগইন সফল হয়েছে!', 'স্বাগতম, ' + (u.name || 'সম্মানিত কৃষক ভাই') + '!');
-        } catch(e) {
+        } catch (e) {
           showWarningDialog('ফিঙ্গারপ্রিন্ট দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।', 'ভেরিফিকেশন ব্যর্থ');
         }
       }, 1200);
@@ -14131,7 +14740,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (recTime) {
           const now = new Date();
           const day = toBangla(now.getDate());
-          const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+          const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
           const month = months[now.getMonth()];
           const year = toBangla(now.getFullYear());
           const time = toBangla(now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }));
@@ -14314,7 +14923,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             minute: '2-digit'
           });
         }
-      } catch (_) {}
+      } catch (_) { }
       if (timeEl) timeEl.innerText = dateStr;
 
       const isResolved = t.status === 'answered' || t.status === 'resolved' || t.status === 'accepted';
@@ -14477,7 +15086,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         showSuccessDialog(
           'বার্তা সফলভাবে গৃহীত হয়েছে!',
           'আপনার বার্তা সফলভাবে গৃহীত হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
-          function() {
+          function () {
             if (detailsInput) detailsInput.value = '';
             if (subjectInput) subjectInput.selectedIndex = 0;
             initSupportTicketsLiveSync();
@@ -14510,7 +15119,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       // Non-blocking background signOut
       if (window.firebase && firebase.auth) {
-        firebase.auth().signOut().catch(function(e) { console.warn('Non-blocking signOut error:', e); });
+        firebase.auth().signOut().catch(function (e) { console.warn('Non-blocking signOut error:', e); });
       }
 
       try {
@@ -14523,7 +15132,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       showSuccessDialog(
         'সফলভাবে লগআউট হয়েছে!',
         'আপনার একাউন্ট থেকে নিরাপদে লগআউট সম্পন্ন হয়েছে।',
-        function() {
+        function () {
           openAuthModal('login');
         }
       );

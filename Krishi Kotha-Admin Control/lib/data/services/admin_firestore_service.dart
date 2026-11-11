@@ -727,4 +727,218 @@ class AdminFirestoreService {
       throw Exception(AdminErrorHandler.getFriendlyErrorMessage(e));
     }
   }
+
+  // ==================== 8. LOGIN ID UPDATE REQUESTS ====================
+  Stream<List<Map<String, dynamic>>> getLoginUpdateRequestsStream() {
+    final db = _db;
+    if (db != null) {
+      return db
+          .collection('login_update_requests')
+          .snapshots()
+          .handleError((e) {
+            debugPrint('Login update requests stream error: $e');
+          })
+          .map((snapshot) {
+            final list = snapshot.docs.map((doc) {
+              final d = Map<String, dynamic>.from(doc.data());
+              d['id'] = doc.id;
+              return d;
+            }).toList();
+            // In-memory sort by createdAt descending
+            list.sort((a, b) {
+              final tA = a['createdAt'];
+              final tB = b['createdAt'];
+              final secA = (tA is Timestamp) ? tA.seconds : 0;
+              final secB = (tB is Timestamp) ? tB.seconds : 0;
+              return secB.compareTo(secA);
+            });
+            return list;
+          });
+    }
+    return Stream.value(const []);
+  }
+
+  /// নতুন নম্বর বা ইমেইল ইতিমধ্যে অন্য কোনো ইউজার ব্যবহার করছে কি না যাচাই (Strict Hard Unique Check)
+  Future<Map<String, dynamic>> checkLoginCredentialsAvailability({
+    required String userId,
+    required String newPhone,
+    required String newEmail,
+  }) async {
+    final db = _db;
+    if (db == null) return {'isPhoneTaken': false, 'isEmailTaken': false};
+
+    bool isPhoneTaken = false;
+    bool isEmailTaken = false;
+    String phoneTakenBy = '';
+    String emailTakenBy = '';
+
+    final cleanPhone = newPhone.trim();
+    if (cleanPhone.isNotEmpty) {
+      final snap = await db.collection('users').where('phone', isEqualTo: cleanPhone).limit(5).get();
+      for (final doc in snap.docs) {
+        if (doc.id != userId) {
+          isPhoneTaken = true;
+          phoneTakenBy = doc.data()['name'] ?? 'অন্য ইউজার';
+          break;
+        }
+      }
+
+      if (!isPhoneTaken) {
+        final snap2 = await db.collection('users').where('phoneNumber', isEqualTo: cleanPhone).limit(5).get();
+        for (final doc in snap2.docs) {
+          if (doc.id != userId) {
+            isPhoneTaken = true;
+            phoneTakenBy = doc.data()['name'] ?? 'অন্য ইউজার';
+            break;
+          }
+        }
+      }
+
+      if (!isPhoneTaken && cleanPhone.startsWith('01')) {
+        final bdPhone = '+88$cleanPhone';
+        final snap3 = await db.collection('users').where('phone', isEqualTo: bdPhone).limit(5).get();
+        for (final doc in snap3.docs) {
+          if (doc.id != userId) {
+            isPhoneTaken = true;
+            phoneTakenBy = doc.data()['name'] ?? 'অন্য ইউজার';
+            break;
+          }
+        }
+        if (!isPhoneTaken) {
+          final snap4 = await db.collection('users').where('phoneNumber', isEqualTo: bdPhone).limit(5).get();
+          for (final doc in snap4.docs) {
+            if (doc.id != userId) {
+              isPhoneTaken = true;
+              phoneTakenBy = doc.data()['name'] ?? 'অন্য ইউজার';
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    final cleanEmail = newEmail.trim().toLowerCase();
+    if (cleanEmail.isNotEmpty) {
+      final snap = await db.collection('users').where('email', isEqualTo: cleanEmail).limit(5).get();
+      for (final doc in snap.docs) {
+        if (doc.id != userId) {
+          isEmailTaken = true;
+          emailTakenBy = doc.data()['name'] ?? 'অন্য ইউজার';
+          break;
+        }
+      }
+    }
+
+    return {
+      'isPhoneTaken': isPhoneTaken,
+      'isEmailTaken': isEmailTaken,
+      'phoneTakenBy': phoneTakenBy,
+      'emailTakenBy': emailTakenBy,
+    };
+  }
+
+  /// এডমিন কর্তৃক রিকোয়েস্ট গ্রহণ (Accept Request with Strict Backend Uniqueness Validation)
+  Future<void> acceptLoginUpdateRequest({
+    required String requestId,
+    required String userId,
+    required String newPhone,
+    required String newEmail,
+  }) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    // কঠোর ভ্যালিডেশন: এপ্রুভ করার পূর্বে নিশ্চিত করা যে ফোন বা ইমেইল অন্য কারও সাথে কনফ্লিক্ট করছে না
+    final check = await checkLoginCredentialsAvailability(
+      userId: userId,
+      newPhone: newPhone,
+      newEmail: newEmail,
+    );
+    if (check['isPhoneTaken'] == true) {
+      throw Exception('এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।');
+    }
+    if (check['isEmailTaken'] == true) {
+      throw Exception('এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।');
+    }
+
+    // ১. মূল ডেটাবেজ ডকুমেন্টে (users কালেকশনে) ফোন ও ইমেইল আপডেট
+    final userUpdates = <String, dynamic>{
+      'updated_at': FieldValue.serverTimestamp(),
+      'last_login_id_update': FieldValue.serverTimestamp(),
+    };
+    if (newPhone.isNotEmpty) {
+      userUpdates['phone'] = newPhone.trim();
+      userUpdates['last_phone_update'] = FieldValue.serverTimestamp();
+    }
+    if (newEmail.isNotEmpty) {
+      userUpdates['email'] = newEmail.trim().toLowerCase();
+      userUpdates['last_email_update'] = FieldValue.serverTimestamp();
+    }
+
+    await db.collection('users').doc(userId).update(userUpdates);
+
+    // ২. রিকোয়েস্ট স্ট্যাটাস 'accepted' করা এবং লক করা
+    await db.collection('login_update_requests').doc(requestId).update({
+      'status': 'accepted',
+      'acceptedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'acceptedBy': 'Admin',
+    });
+  }
+
+  /// এডমিন কর্তৃক সরাসরি ইউজারের ফোন ও ইমেইল আপডেট (Direct Admin Update with Hard Uniqueness Check)
+  Future<void> updateDirectUserLoginCredentials({
+    required String userId,
+    required String newPhone,
+    required String newEmail,
+  }) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    // কঠোর ভ্যালিডেশন: সরাসরি আপডেট করার পূর্বে ইউনিকনেস যাচাই
+    final check = await checkLoginCredentialsAvailability(
+      userId: userId,
+      newPhone: newPhone,
+      newEmail: newEmail,
+    );
+    if (check['isPhoneTaken'] == true) {
+      throw Exception('এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।');
+    }
+    if (check['isEmailTaken'] == true) {
+      throw Exception('এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।');
+    }
+
+    final userUpdates = <String, dynamic>{
+      'updated_at': FieldValue.serverTimestamp(),
+      'last_login_id_update': FieldValue.serverTimestamp(),
+      'lastUpdated': FieldValue.serverTimestamp(),
+      'profileUpdatedAt': FieldValue.serverTimestamp(),
+    };
+    if (newPhone.isNotEmpty) {
+      userUpdates['phone'] = newPhone.trim();
+      userUpdates['last_phone_update'] = FieldValue.serverTimestamp();
+    }
+    if (newEmail.isNotEmpty) {
+      userUpdates['email'] = newEmail.trim().toLowerCase();
+      userUpdates['last_email_update'] = FieldValue.serverTimestamp();
+    }
+
+    await db.collection('users').doc(userId).set(userUpdates, SetOptions(merge: true));
+  }
+
+  /// এডমিন কর্তৃক রিকোয়েস্ট বাতিল (Reject Request)
+  Future<void> rejectLoginUpdateRequest({
+    required String requestId,
+    String reason = '',
+  }) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    await db.collection('login_update_requests').doc(requestId).update({
+      'status': 'rejected',
+      'rejectedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'adminNote': reason.trim(),
+      'rejectedBy': 'Admin',
+    });
+  }
 }

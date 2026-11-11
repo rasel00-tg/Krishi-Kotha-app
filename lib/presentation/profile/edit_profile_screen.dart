@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/app_colors.dart';
@@ -364,6 +365,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _populateInitialData(null, user);
         }
 
+        final docData = snapshot.data?.data();
+        final lastLoginUpdate = docData?['last_login_id_update'] ?? docData?['lastLoginIdUpdate'];
+        final lastPhoneUpdate = docData?['last_phone_update'] ?? docData?['lastPhoneUpdate'] ?? lastLoginUpdate;
+        final lastEmailUpdate = docData?['last_email_update'] ?? docData?['lastEmailUpdate'] ?? lastLoginUpdate;
+
+        final phoneStatus = _formatCredentialStatus(lastPhoneUpdate);
+        final emailStatus = _formatCredentialStatus(lastEmailUpdate);
+
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.noScaling,
@@ -501,7 +510,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+
+                    // Top Section Row: Title & Login ID Update Action Button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.badge_outlined, size: 18, color: AppColors.primary),
+                              SizedBox(width: 6),
+                              Text(
+                                'ব্যক্তিগত তথ্য',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const UpdateLoginIdScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.security_rounded, size: 16, color: Color(0xFF1B5E20)),
+                            label: const Text(
+                              'লগইন আইডি আপডেট',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B5E20),
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE8F5E9),
+                              side: const BorderSide(color: Color(0xFFA5D6A7), width: 1.2),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              visualDensity: VisualDensity.compact,
+                              elevation: 0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
 
                     // Card Container with Editable Form Fields
                     Container(
@@ -543,41 +602,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                           const SizedBox(height: 18),
 
-                          // Phone Number
-                          _buildFieldLabel('মোবাইল নম্বর *'),
+                          // Phone Number (Locked / Read Only)
+                          _buildFieldLabel('মোবাইল নম্বর (নির্ধারিত)'),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            style: _phoneInputStyle,
+                            readOnly: true,
+                            style: _phoneInputStyle.copyWith(color: AppColors.textSecondary),
                             strutStyle: _phoneStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: '০১৭১২XXXXXX',
                               prefixIcon: Icons.phone_android_rounded,
+                            ).copyWith(
+                              fillColor: const Color(0xFFF1F5F1),
+                              filled: true,
+                              suffixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: Color(0xFF78909C)),
                             ),
-                            validator: (val) {
-                              if (val == null || val.trim().isEmpty) {
-                                return 'মোবাইল নম্বর প্রদান করুন';
-                              }
-                              return null;
-                            },
                           ),
+                          const SizedBox(height: 5),
+                          _buildStatusLabel(phoneStatus),
 
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 16),
 
-                          // Email
-                          _buildFieldLabel('ইমেইল অ্যাড্রেস (ঐচ্ছিক)'),
+                          // Email (Locked / Read Only)
+                          _buildFieldLabel('ইমেইল অ্যাড্রেস (নির্ধারিত)'),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            style: _uniformInputStyle,
+                            readOnly: true,
+                            style: _uniformInputStyle.copyWith(color: AppColors.textSecondary),
                             strutStyle: _uniformStrutStyle,
                             decoration: _buildInputDecoration(
                               hint: 'example@gmail.com',
                               prefixIcon: Icons.email_outlined,
+                            ).copyWith(
+                              fillColor: const Color(0xFFF1F5F1),
+                              filled: true,
+                              suffixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: Color(0xFF78909C)),
                             ),
                           ),
+                          const SizedBox(height: 5),
+                          _buildStatusLabel(emailStatus),
 
                           const SizedBox(height: 18),
 
@@ -730,7 +795,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     fontSize: 15.0,
     height: 1.25,
     fontWeight: FontWeight.w500,
-    letterSpacing: 0.8,
+    fontFamily: 'Roboto',
+    letterSpacing: 1.5,
     color: AppColors.textPrimary,
     fontFeatures: [
       ui.FontFeature.tabularFigures(),
@@ -780,21 +846,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         color: AppColors.textMuted,
         fontWeight: FontWeight.normal,
       ),
-      prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 20),
+      prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 21),
       filled: true,
-      fillColor: const Color(0xFFF9FBF9),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      fillColor: const Color(0xFFF7FAF7),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFDCE5DC)),
+        borderSide: const BorderSide(color: Color(0xFFDCE7DC), width: 1.1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFDCE5DC)),
+        borderSide: const BorderSide(color: Color(0xFFDCE7DC), width: 1.1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -802,7 +868,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.6),
       ),
     );
   }
@@ -997,6 +1063,45 @@ class _SquareImageCropperScreenState extends State<SquareImageCropperScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  String _formatCredentialStatus(dynamic updateTs) {
+    if (updateTs == null) return 'প্রাথমিক';
+    DateTime? dt;
+    if (updateTs is Timestamp) {
+      dt = updateTs.toDate();
+    } else if (updateTs is DateTime) {
+      dt = updateTs;
+    } else if (updateTs is String) {
+      dt = DateTime.tryParse(updateTs);
+    }
+    if (dt == null) return 'প্রাথমিক';
+    final formattedDate = DateFormat('dd/MM/yyyy, hh:mm a').format(dt);
+    final bnDate = BanglaNumberConverter.toBangla(formattedDate);
+    return 'আপডেট - $bnDate';
+  }
+
+  Widget _buildStatusLabel(String status) {
+    final isPrimary = status == 'প্রাথমিক';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isPrimary ? Icons.info_outline_rounded : Icons.history_rounded,
+          size: 13,
+          color: isPrimary ? const Color(0xFF78909C) : const Color(0xFF1B5E20),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          status,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isPrimary ? FontWeight.normal : FontWeight.bold,
+            color: isPrimary ? const Color(0xFF78909C) : const Color(0xFF1B5E20),
+          ),
+        ),
+      ],
     );
   }
 }

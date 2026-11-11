@@ -1840,6 +1840,17 @@
 
       <!-- ================= TAB: USER MANAGEMENT & CONTROL ================= -->
       <div id="tab-user-control" class="tab-content">
+        <!-- User Control Main Sub-tabs Bar -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 2px solid var(--border); padding-bottom: 10px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary uc-subtab-btn" id="ucSubtabBtnUsers" onclick="switchUcSubtab('users')" style="font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-users"></i> <span>ইউজার তালিকা</span>
+          </button>
+          <button type="button" class="btn btn-outline uc-subtab-btn" id="ucSubtabBtnRequests" onclick="switchUcSubtab('requests')" style="font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-clock-rotate-left"></i> <span>লগইন তথ্য হালনাগাদ রিকোয়েস্ট</span>
+            <span id="ucPendingBadge" style="display: none; background: #DC2626; color: white; border-radius: 12px; font-size: 11px; font-weight: 800; padding: 2px 8px; margin-left: 2px;">০</span>
+          </button>
+        </div>
+
         <!-- 1. Table View (Compact KPI, Search & User List) -->
         <div id="ucTableView">
           <!-- 1. Vibrant Overview Status Cards (Equal Width Grid Directly at Top) -->
@@ -2039,6 +2050,98 @@
         <!-- 2. Full-Screen User Details & Control View (Expanded beside fixed sidebar) -->
         <div id="ucDetailView" style="display: none; width: 100%;">
           <!-- Dynamically populated via renderUserDetailsView -->
+        </div>
+
+        <!-- 3. Login Update Requests View -->
+        <div id="ucRequestsView" style="display: none;">
+          <!-- KPI Cards for Login Requests -->
+          <div class="uc-metrics-grid" style="margin-top: 4px;">
+            <!-- Card 1: মোট আবেদন -->
+            <div style="background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 105px;">
+              <i class="fa-solid fa-list-check" style="position: absolute; right: 12px; bottom: 6px; font-size: 56px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                <span style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">মোট আবেদন</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
+                  <i class="fa-solid fa-file-lines"></i>
+                </div>
+              </div>
+              <div id="reqKpiTotal" style="color: #ffffff; font-size: 26px; font-weight: 800; margin-top: 8px; line-height: 1.2; position: relative; z-index: 1;">০ টি</div>
+            </div>
+
+            <!-- Card 2: অপেক্ষমাণ আবেদন -->
+            <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 105px;">
+              <i class="fa-solid fa-clock-rotate-left" style="position: absolute; right: 12px; bottom: 6px; font-size: 56px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                <span style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">অপেক্ষমাণ আবেদন</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+              </div>
+              <div id="reqKpiPending" style="color: #ffffff; font-size: 26px; font-weight: 800; margin-top: 8px; line-height: 1.2; position: relative; z-index: 1;">০ টি</div>
+            </div>
+
+            <!-- Card 3: অনুমোদিত আবেদন -->
+            <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 105px;">
+              <i class="fa-solid fa-circle-check" style="position: absolute; right: 12px; bottom: 6px; font-size: 56px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                <span style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">অনুমোদিত আবেদন</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
+                  <i class="fa-solid fa-check-double"></i>
+                </div>
+              </div>
+              <div id="reqKpiAccepted" style="color: #ffffff; font-size: 26px; font-weight: 800; margin-top: 8px; line-height: 1.2; position: relative; z-index: 1;">০ টি</div>
+            </div>
+
+            <!-- Card 4: বাতিল আবেদন -->
+            <div style="background: linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(244, 63, 94, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 105px;">
+              <i class="fa-solid fa-circle-xmark" style="position: absolute; right: 12px; bottom: 6px; font-size: 56px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                <span style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">বাতিল আবেদন</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
+                  <i class="fa-solid fa-ban"></i>
+                </div>
+              </div>
+              <div id="reqKpiRejected" style="color: #ffffff; font-size: 26px; font-weight: 800; margin-top: 8px; line-height: 1.2; position: relative; z-index: 1;">০ টি</div>
+            </div>
+          </div>
+
+          <!-- Requests Controls & Table Card -->
+          <div class="panel-card" style="margin-top: 16px; margin-bottom: 24px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--border);">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="reqFilterChips">
+                <button class="filter-pill active" onclick="setReqStatusFilter('pending', this)">অপেক্ষমাণ (<span id="reqPillPendingCount">০</span>)</button>
+                <button class="filter-pill" onclick="setReqStatusFilter('accepted', this)">অনুমোদিত (<span id="reqPillAcceptedCount">০</span>)</button>
+                <button class="filter-pill" onclick="setReqStatusFilter('rejected', this)">বাতিল (<span id="reqPillRejectedCount">০</span>)</button>
+              </div>
+
+              <div style="position: relative; min-width: 260px; flex: 1; max-width: 380px;">
+                <input type="text" id="reqSearchInput" placeholder="আবেদনকারী, ফোন বা ইমেইল দিয়ে খুঁজুন..." oninput="onReqSearchInput(this.value)" style="width: 100%; padding: 8px 12px 8px 34px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13px; outline: none; background: #fff;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                <thead>
+                  <tr style="background: #F1F8F1; border-bottom: 2px solid var(--border);">
+                    <th style="padding: 10px 12px; text-align: left; font-size: 12.5px; font-weight: 700; color: #1B5E20;">আবেদনকারী</th>
+                    <th style="padding: 10px 12px; text-align: left; font-size: 12.5px; font-weight: 700; color: #1B5E20;">বর্তমান তথ্য</th>
+                    <th style="padding: 10px 12px; text-align: left; font-size: 12.5px; font-weight: 700; color: #1B5E20;">আবেদনকৃত নতুন তথ্য</th>
+                    <th style="padding: 10px 12px; text-align: left; font-size: 12.5px; font-weight: 700; color: #1B5E20;">আবেদনের তারিখ</th>
+                    <th style="padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #1B5E20;">স্ট্যাটাস</th>
+                    <th style="padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #1B5E20;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="reqTableBody">
+                  <!-- Dynamically populated via renderLoginRequestsTable -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3101,6 +3204,127 @@
   <!-- ================= USER CONTROL MODALS ================= -->
   <!-- User Details are rendered full-screen in #ucDetailView beside the sidebar -->
 
+  <!-- Modal: Direct Edit User Login Credentials (Phone & Email) -->
+  <div id="modalDirectEditLogin" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: #166534;">
+          <i class="fa-solid fa-user-pen" style="color: #166534;"></i>
+          <span>সরাসরি লগইন তথ্য সম্পাদনা</span>
+        </h3>
+        <button onclick="closeDirectEditLoginModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+
+      <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 13px;">
+        ইউজার: <strong id="directEditTargetUserName" style="color: #166534;">-</strong>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="directEditTargetUid">UID: -</div>
+      </div>
+      <input type="hidden" id="directEditTargetUserId">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+          <i class="fa-solid fa-phone" style="color: #2E7D32; margin-right: 4px;"></i> মোবাইল নম্বর
+        </label>
+        <input type="tel" id="directEditPhoneInput" placeholder="01XXXXXXXXX"
+          style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13.5px; box-sizing: border-box; font-family: 'Roboto', Arial, sans-serif;" />
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+          <i class="fa-regular fa-envelope" style="color: #1565C0; margin-right: 4px;"></i> ইমেইল অ্যাড্রেস
+        </label>
+        <input type="email" id="directEditEmailInput" placeholder="example@email.com"
+          style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13.5px; box-sizing: border-box; font-family: 'Roboto', Arial, sans-serif;" />
+      </div>
+
+      <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 12px; margin-bottom: 18px; font-size: 11.5px; color: #1E40AF; line-height: 1.4;">
+        <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
+        সংরক্ষণের পূর্বে ফায়ারস্টোরে ইউনিক চেক করা হবে। ইতিমধ্যে অন্য কারো একাউন্টে বিদ্যমান নম্বর বা ইমেইল থাকলে আপডেট হবে না।
+      </div>
+
+      <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="closeDirectEditLoginModal()" style="padding: 8px 16px;">
+          বাতিল
+        </button>
+        <button type="button" class="btn" id="btnSubmitDirectEditLogin" onclick="submitDirectEditLogin()"
+          style="background: #16A34A; color: white; padding: 8px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-check"></i>
+          <span>যাচাই ও সংরক্ষণ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Check & Approve/Reject Login Update Request -->
+  <div id="modalCheckRequest" class="modal-overlay">
+    <div class="modal-box" style="max-width: 580px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: #166534;">
+          <i class="fa-solid fa-list-check" style="color: #166534;"></i>
+          <span>লগইন তথ্য ভেরিফিকেশন ও অনুমোদন</span>
+        </h3>
+        <button onclick="closeCheckRequestModal()"
+          style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+
+      <input type="hidden" id="checkReqId">
+      <input type="hidden" id="checkReqUserId">
+      <input type="hidden" id="checkReqNewPhone">
+      <input type="hidden" id="checkReqNewEmail">
+
+      <!-- Applicant & Comparison Box -->
+      <div style="background: #F8FAF8; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-primary);">
+          <i class="fa-solid fa-user" style="color: var(--primary);"></i>
+          <span id="checkReqApplicant">আবেদনকারী: ইউজার</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #1B5E20; margin-top: 4px;">
+          <i class="fa-regular fa-clock" style="color: var(--text-muted); font-size: 13px;"></i>
+          <span id="checkReqDate">আবেদনের তারিখ: অনুপলব্ধ</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #CBD5E1;">
+          <div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">বর্তমান তথ্য:</div>
+            <div id="checkReqCurrentPhone" style="font-size: 12px; color: var(--text-primary); margin-top: 2px;">ফোন: -</div>
+            <div id="checkReqCurrentEmail" style="font-size: 12px; color: var(--text-primary);">ইমেইল: -</div>
+          </div>
+          <div style="color: var(--text-muted); font-size: 16px;"><i class="fa-solid fa-arrow-right"></i></div>
+          <div>
+            <div style="font-size: 11.5px; font-weight: 700; color: #1B5E20;">আবেদনকৃত নতুন তথ্য:</div>
+            <div id="checkReqTargetPhone" style="font-size: 12px; font-weight: 700; color: #1B5E20; margin-top: 2px;">নতুন ফোন: -</div>
+            <div id="checkReqTargetEmail" style="font-size: 12px; font-weight: 700; color: #1B5E20;">নতুন ইমেইল: -</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time DB Uniqueness Check Box -->
+      <div id="checkReqStatusBox" style="margin-bottom: 14px;">
+        <!-- Dynamically injected: loading / conflict warning / available safe -->
+      </div>
+
+      <!-- Optional Admin Note -->
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">এডমিন মন্তব্য / বাতিলের কারণ (ঐচ্ছিক)</label>
+        <input type="text" id="checkReqAdminNote" placeholder="মন্তব্য বা বাতিলের কারণ লিখুন..."
+          style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 13px; box-sizing: border-box;" />
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" id="btnRejectLoginRequest" onclick="submitRejectLoginRequest()"
+          style="color: #DC2626; border-color: #DC2626; padding: 8px 16px; font-weight: 700;">
+          <i class="fa-solid fa-ban" style="margin-right: 4px;"></i> বাতিল করুন
+        </button>
+        <button type="button" class="btn" id="btnAcceptLoginRequest" onclick="submitAcceptLoginRequest()"
+          style="background: #16A34A; color: white; padding: 8px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-check"></i>
+          <span>অনুমোদন করুন</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Temporary Block User -->
   <div id="modalTempBlock" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
@@ -3639,14 +3863,22 @@
         updateUcDistrictFilterOptions(ucSelectedDivision || 'all');
         const distSelect = document.getElementById('ucDistrictFilter');
         if (distSelect) distSelect.value = ucSelectedDistrict || 'all';
+        if (typeof updateLoginRequestsBadge === 'function') updateLoginRequestsBadge();
         if (!currentDetailUserId) {
+          if (typeof currentUcSubtab !== 'undefined' && currentUcSubtab === 'requests') {
+            switchUcSubtab('requests');
+          } else {
+            switchUcSubtab('users');
+          }
+          document.getElementById('pageTitle').innerText = 'ইউজার কন্ট্রোল';
+        } else {
           const tView = document.getElementById('ucTableView');
           const dView = document.getElementById('ucDetailView');
-          if (tView) tView.style.display = 'block';
-          if (dView) dView.style.display = 'none';
-          document.getElementById('pageTitle').innerText = 'ইউজার কন্ট্রোল';
+          const rView = document.getElementById('ucRequestsView');
+          if (tView) tView.style.display = 'none';
+          if (rView) rView.style.display = 'none';
+          if (dView) dView.style.display = 'block';
         }
-        renderUserControlTable();
       }
 
       if (tabKey === 'settings-privacy') {
@@ -3981,6 +4213,35 @@
         });
       } catch (ppErr) {
         console.warn("Privacy policy listener init error:", ppErr);
+      }
+
+      // 9. Login Update Requests Listener (Real-time Firestore stream)
+      try {
+        db.collection('login_update_requests').onSnapshot(snapshot => {
+          loginUpdateRequests = [];
+          snapshot.forEach(doc => {
+            const d = doc.data() || {};
+            loginUpdateRequests.push({
+              id: doc.id,
+              ...d
+            });
+          });
+          loginUpdateRequests.sort((a, b) => {
+            const secA = a.createdAt ? (a.createdAt.seconds || 0) : 0;
+            const secB = b.createdAt ? (b.createdAt.seconds || 0) : 0;
+            return secB - secA;
+          });
+          updateLoginRequestsBadge();
+          renderLoginRequestsTable();
+          const dView = document.getElementById('ucDetailView');
+          if (dView && dView.style.display !== 'none' && typeof currentDetailUserId !== 'undefined' && currentDetailUserId) {
+            renderUserDetailsView(currentDetailUserId);
+          }
+        }, err => {
+          console.warn("Login update requests stream error:", err);
+        });
+      } catch (reqErr) {
+        console.warn("Login update requests listener init error:", reqErr);
       }
     }
 
@@ -6875,6 +7136,33 @@
       return `${day} ${month}, ${year} - ${hStr}:${mStr} ${ampm}`;
     }
 
+    function formatApplicationDateBn(rawDate) {
+      if (!rawDate) return 'অনুপলব্ধ';
+      let d = null;
+      if (typeof rawDate.toDate === 'function') {
+        d = rawDate.toDate();
+      } else if (rawDate.seconds) {
+        d = new Date(rawDate.seconds * 1000);
+      } else if (rawDate instanceof Date) {
+        d = rawDate;
+      } else if (typeof rawDate === 'string' || typeof rawDate === 'number') {
+        d = new Date(rawDate);
+      }
+      if (!d || isNaN(d.getTime())) return 'অনুপলব্ধ';
+
+      const day = toBnDigits(String(d.getDate()).padStart(2, '0'));
+      const month = toBnDigits(String(d.getMonth() + 1).padStart(2, '0'));
+      const year = toBnDigits(d.getFullYear());
+
+      let hours = d.getHours();
+      const period = hours < 12 ? 'সকাল' : (hours < 15 ? 'দুপুর' : (hours < 18 ? 'বিকাল' : 'রাত'));
+      hours = hours % 12 || 12;
+      const bHours = toBnDigits(String(hours).padStart(2, '0'));
+      const bMinutes = toBnDigits(String(d.getMinutes()).padStart(2, '0'));
+
+      return `আবেদনের তারিখ: ${day}/${month}/${year}, ${period} ${bHours}:${bMinutes}`;
+    }
+
     function formatPasswordResetDateBn(ts) {
       if (!ts) return 'এখনো পরিবর্তন করা হয়নি';
       let date = null;
@@ -7262,6 +7550,10 @@
       });
       const totalTicketsCount = userTickets.length;
 
+      // Check for active pending login update request for this user (Zero-load In-memory)
+      const userPendingReq = (loginUpdateRequests || []).find(r => (r.userId === userId || r.userId === u.id) && r.status === 'pending');
+      const hasPendingRequest = !!userPendingReq;
+
       // Password lock status calculation
       let isPwdLocked = false;
       let pwdLockMinutes = 0;
@@ -7393,8 +7685,21 @@
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">মোবাইল নম্বর</span>
-                <div style="width: 28px; height: 28px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-                  <i class="fa-solid fa-phone"></i>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  ${hasPendingRequest ? `
+                    <button type="button" class="btn" onclick="openCheckRequestModal('${userPendingReq.id}')" title="লগইন তথ্য পরিবর্তনের আবেদন অপেক্ষমাণ - যাচাই করতে ক্লিক করুন"
+                      style="background: #FFF3E0; color: #E65100; border: 1.2px solid #FFB74D; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(230,81,0,0.15);">
+                      <i class="fa-solid fa-hourglass-half"></i> <span>পেন্ডিং</span>
+                    </button>
+                  ` : `
+                    <button type="button" class="btn" onclick="openDirectEditLoginModal('${u.id}', 'phone')" title="ফোন নম্বর সম্পাদনা"
+                      style="background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                      <i class="fa-solid fa-pen-to-square"></i> <span>এডিট</span>
+                    </button>
+                  `}
+                  <div style="width: 28px; height: 28px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                    <i class="fa-solid fa-phone"></i>
+                  </div>
                 </div>
               </div>
               <div style="font-size: 13.5px; font-weight: 700; color: #1B5E20; word-break: break-all; margin-bottom: 6px;">
@@ -7402,9 +7707,15 @@
               </div>
             </div>
             <div>
-              <span style="font-size: 11px; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                <i class="fa-solid fa-circle-check" style="font-size: 9px;"></i> নিবন্ধিত প্রাইমারি ফোন
-              </span>
+              ${hasPendingRequest ? `
+                <span style="font-size: 11px; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-clock-rotate-left" style="font-size: 9px;"></i> আপডেট রিকোয়েস্ট অপেক্ষমাণ
+                </span>
+              ` : `
+                <span style="font-size: 11px; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-circle-check" style="font-size: 9px;"></i> নিবন্ধিত প্রাইমারি ফোন
+                </span>
+              `}
             </div>
           </div>
 
@@ -7413,8 +7724,21 @@
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">ইমেইল অ্যাড্রেস</span>
-                <div style="width: 28px; height: 28px; border-radius: 8px; background: #E3F2FD; color: #1565C0; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-                  <i class="fa-solid fa-envelope"></i>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  ${hasPendingRequest ? `
+                    <button type="button" class="btn" onclick="openCheckRequestModal('${userPendingReq.id}')" title="লগইন তথ্য পরিবর্তনের আবেদন অপেক্ষমাণ - যাচাই করতে ক্লিক করুন"
+                      style="background: #FFF3E0; color: #E65100; border: 1.2px solid #FFB74D; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(230,81,0,0.15);">
+                      <i class="fa-solid fa-hourglass-half"></i> <span>পেন্ডিং</span>
+                    </button>
+                  ` : `
+                    <button type="button" class="btn" onclick="openDirectEditLoginModal('${u.id}', 'email')" title="ইমেইল সম্পাদনা"
+                      style="background: #E3F2FD; color: #1565C0; border: 1px solid #90CAF9; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                      <i class="fa-solid fa-pen-to-square"></i> <span>এডিট</span>
+                    </button>
+                  `}
+                  <div style="width: 28px; height: 28px; border-radius: 8px; background: #E3F2FD; color: #1565C0; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                    <i class="fa-solid fa-envelope"></i>
+                  </div>
                 </div>
               </div>
               <div style="font-size: 13px; font-weight: 700; color: #0D47A1; word-break: break-all; margin-bottom: 6px;" title="${u.email || ''}">
@@ -7422,9 +7746,15 @@
               </div>
             </div>
             <div>
-              <span style="font-size: 11px; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                <i class="fa-solid fa-at" style="font-size: 9px;"></i> সেন্ট্রাল লগইন ইমেইল
-              </span>
+              ${hasPendingRequest ? `
+                <span style="font-size: 11px; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-clock-rotate-left" style="font-size: 9px;"></i> আপডেট রিকোয়েস্ট অপেক্ষমাণ
+                </span>
+              ` : `
+                <span style="font-size: 11px; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-at" style="font-size: 9px;"></i> সেন্ট্রাল লগইন ইমেইল
+                </span>
+              `}
             </div>
           </div>
 
@@ -7557,6 +7887,25 @@
               </div>
             </div>
 
+            <!-- 0. Direct Login ID (Phone & Email) Edit Option -->
+            <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div style="font-size: 13.5px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-user-pen"></i>
+                  <span>সরাসরি লগইন তথ্য সম্পাদনা (ফোন ও ইমেইল)</span>
+                </div>
+                <span style="font-size: 11px; background: #DCFCE7; color: #15803D; padding: 2px 8px; border-radius: 6px; font-weight: 600;">অ্যাডমিন এডিট</span>
+              </div>
+              <p style="font-size: 12px; color: #166534; margin: 0 0 10px; line-height: 1.4;">
+                এডমিন প্যানেল থেকে ইউজারের ফোন নম্বর ও ইমেইল সরাসরি আপডেট করুন। সংরক্ষণের পূর্বে ফায়ারস্টোরে ইউনিক চেক করা হবে।
+              </p>
+              <button type="button" class="btn btn-sm" onclick="openDirectEditLoginModal('${u.id}')"
+                style="background: #16A34A; color: white; border: none; font-weight: 700; padding: 8px 16px; border-radius: 8px; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.25);">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>ফোন ও ইমেইল এডিট করুন</span>
+              </button>
+            </div>
+
             <!-- 1. 30-Day Edit Limit Card -->
             <div style="background: #FFFDE7; border: 1.5px solid #FFF59D; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -7674,6 +8023,22 @@
           </div>
 
           <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+            ${hasPendingRequest ? `
+              <!-- Pending Request Verification Action Button -->
+              <button type="button" class="btn" onclick="openCheckRequestModal('${userPendingReq.id}')"
+                style="background: #E65100; color: #FFFFFF; border: 1.5px solid #BF360C; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 2px 8px rgba(230,81,0,0.3); transition: all 0.2s ease;">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <span>লগইন রিকোয়েস্ট অপেক্ষমাণ (যাচাই করুন)</span>
+              </button>
+            ` : `
+              <!-- Direct Login ID Edit Button -->
+              <button type="button" class="btn" onclick="openDirectEditLoginModal('${u.id}')"
+                style="background: #1B5E20; color: #FFFFFF; border: 1.5px solid #0E3D12; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 2px 8px rgba(27,94,32,0.25); transition: all 0.2s ease;">
+                <i class="fa-solid fa-user-pen"></i>
+                <span>লগইন আইডি এডিট (ফোন/ইমেইল)</span>
+              </button>
+            `}
+
             <!-- Login Lock Reset Button -->
             <button type="button" class="btn" onclick="resetUserLoginLock('${u.id}', '${u.name}')"
               style="background: #FFF3E0; color: #E65100; border: 1.5px solid #FFCC80; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease;">
@@ -7720,8 +8085,15 @@
       currentDetailUserId = null;
       const tView = document.getElementById('ucTableView');
       const dView = document.getElementById('ucDetailView');
-      if (tView) tView.style.display = 'block';
+      const rView = document.getElementById('ucRequestsView');
       if (dView) dView.style.display = 'none';
+      if (typeof currentUcSubtab !== 'undefined' && currentUcSubtab === 'requests') {
+        if (rView) rView.style.display = 'block';
+        if (tView) tView.style.display = 'none';
+      } else {
+        if (tView) tView.style.display = 'block';
+        if (rView) rView.style.display = 'none';
+      }
 
       const pageTitleEl = document.getElementById('pageTitle');
       if (pageTitleEl) pageTitleEl.innerText = 'ইউজার কন্ট্রোল';
@@ -7733,6 +8105,166 @@
 
     function closeUserDetailsModal() {
       closeUserDetailsView();
+    }
+
+    function openDirectEditLoginModal(userId, initialField = 'phone') {
+      const u = (users || []).find(x => x.id === userId);
+      if (!u) return;
+
+      document.getElementById('directEditTargetUserId').value = userId;
+      document.getElementById('directEditTargetUserName').innerText = u.name || 'ইউজার';
+      document.getElementById('directEditTargetUid').innerText = `UID: ${u.id}`;
+      document.getElementById('directEditPhoneInput').value = u.phone || '';
+      document.getElementById('directEditEmailInput').value = u.email || '';
+
+      const m = document.getElementById('modalDirectEditLogin');
+      if (m) m.classList.add('active');
+
+      setTimeout(() => {
+        const targetInput = initialField === 'email' ? document.getElementById('directEditEmailInput') : document.getElementById('directEditPhoneInput');
+        if (targetInput) targetInput.focus();
+      }, 150);
+    }
+
+    function closeDirectEditLoginModal() {
+      const m = document.getElementById('modalDirectEditLogin');
+      if (m) m.classList.remove('active');
+    }
+
+    async function submitDirectEditLogin() {
+      const userId = document.getElementById('directEditTargetUserId').value;
+      const u = (users || []).find(x => x.id === userId);
+      if (!u) return;
+
+      const newPhone = (document.getElementById('directEditPhoneInput').value || '').trim();
+      const newEmail = (document.getElementById('directEditEmailInput').value || '').trim().toLowerCase();
+
+      const currentPhone = (u.phone || '').trim();
+      const currentEmail = (u.email || '').trim().toLowerCase();
+
+      if (newPhone === currentPhone && newEmail === currentEmail) {
+        showNotification('আপনি বর্তমান তথ্যই প্রদান করেছেন। কোনো পরিবর্তন শনাক্ত হয়নি।', 'info');
+        return;
+      }
+
+      if (newPhone && !/^01[3-9]\d{8}$/.test(newPhone)) {
+        showNotification('সঠিক ১১ ডিজিটের মোবাইল নম্বর লিখুন (যেমন: 01XXXXXXXXX)', 'error');
+        return;
+      }
+
+      if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        showNotification('সঠিক ইমেইল অ্যাড্রেস লিখুন', 'error');
+        return;
+      }
+
+      // 1. Strict Unique Check on Firestore users collection
+      showAdminLoading('ইউনিকনেস যাচাই করা হচ্ছে...', 'ফায়ারস্টোর ডেটাবেজে সার্চ করা হচ্ছে');
+      let isPhoneTaken = false;
+      let isEmailTaken = false;
+
+      try {
+        if (newPhone && newPhone !== currentPhone) {
+          const pVariants = [newPhone];
+          if (newPhone.startsWith('01')) {
+            pVariants.push('+88' + newPhone);
+            pVariants.push('88' + newPhone);
+          }
+          for (const v of pVariants) {
+            const pSnap = await db.collection('users').where('phone', '==', v).limit(5).get();
+            if (pSnap.docs.some(d => d.id !== userId)) {
+              isPhoneTaken = true;
+              break;
+            }
+            const pSnap2 = await db.collection('users').where('phoneNumber', '==', v).limit(5).get();
+            if (pSnap2.docs.some(d => d.id !== userId)) {
+              isPhoneTaken = true;
+              break;
+            }
+          }
+        }
+
+        if (newEmail && newEmail !== currentEmail) {
+          const eSnap = await db.collection('users').where('email', '==', newEmail).limit(5).get();
+          if (eSnap.docs.some(d => d.id !== userId)) isEmailTaken = true;
+        }
+      } catch (err) {
+        console.error('Unique check error:', err);
+        hideAdminDialog();
+        showAdminError('যাচাই ব্যর্থ', 'ডেটাবেজ তল্লাশিতে ত্রুটি হয়েছে: ' + (err.message || 'ত্রুটি'));
+        return;
+      }
+
+      hideAdminDialog();
+
+      if (isPhoneTaken || isEmailTaken) {
+        let conflictMsg = '';
+        if (isPhoneTaken && isEmailTaken) {
+          conflictMsg = 'এই মোবাইল নম্বরটি এবং ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক তথ্য দিন।';
+        } else if (isPhoneTaken) {
+          conflictMsg = 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।';
+        } else {
+          conflictMsg = 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।';
+        }
+        showAdminError('তথ্য ইতিমধ্যে ব্যবহৃত', conflictMsg);
+        return;
+      }
+
+      // 2. Confirmation Dialog
+      const confirmed = await showAdminConfirm(
+        'আপডেট নিশ্চিতকরণ',
+        'আপনি কি নিশ্চিত যে এই ইউজারের লগইন তথ্য আপডেট করতে চান?',
+        null,
+        'হ্যাঁ, আপডেট করুন',
+        false
+      );
+      if (!confirmed) return;
+
+      // 3. Save updates in try-catch-finally
+      const btn = document.getElementById('btnSubmitDirectEditLogin');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+
+      showAdminLoading('লগইন তথ্য আপডেট হচ্ছে...', 'ফায়ারস্টোরে রিয়েল-টাইম তথ্য সিঙ্ক করা হচ্ছে');
+
+      try {
+        const updates = {
+          updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+          last_login_id_update: firebase.firestore.FieldValue.serverTimestamp(),
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+          profileUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (newPhone !== currentPhone) {
+          updates.phone = newPhone;
+          updates.last_phone_update = firebase.firestore.FieldValue.serverTimestamp();
+        }
+        if (newEmail !== currentEmail) {
+          updates.email = newEmail;
+          updates.last_email_update = firebase.firestore.FieldValue.serverTimestamp();
+        }
+
+        await db.collection('users').doc(userId).set(updates, { merge: true });
+
+        // Update local object
+        if (updates.phone) u.phone = updates.phone;
+        if (updates.email) u.email = updates.email;
+
+        closeDirectEditLoginModal();
+        showAdminSuccess('সফল হয়েছে!', 'ইউজারের লগইন তথ্য সফলভাবে আপডেট হয়েছে। ইউজার নতুন তথ্য দিয়ে অবিলম্বে লগইন করতে পারবেন।');
+
+        renderUserDetailsView(userId);
+        renderUserControlTable();
+      } catch (err) {
+        console.error('Direct edit save error:', err);
+        showAdminError('আপডেট ব্যর্থ', 'ত্রুটি: ' + (err.message || 'আপডেট করা সম্ভব হয়নি।'));
+      } finally {
+        hideAdminDialog();
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>যাচাই ও সংরক্ষণ</span>';
+        }
+      }
     }
 
     function openTempBlockModal(userId, userName) {
@@ -8045,6 +8577,438 @@
       }
     }
 
+
+    // ==================== LOGIN UPDATE REQUESTS SUB-TAB LOGIC ====================
+    let currentUcSubtab = 'users';
+    let reqStatusFilter = 'pending';
+    let reqSearchQuery = '';
+
+    function switchUcSubtab(subtab) {
+      currentUcSubtab = subtab;
+      const btnUsers = document.getElementById('ucSubtabBtnUsers');
+      const btnReqs = document.getElementById('ucSubtabBtnRequests');
+      const tView = document.getElementById('ucTableView');
+      const rView = document.getElementById('ucRequestsView');
+      const dView = document.getElementById('ucDetailView');
+
+      if (subtab === 'users') {
+        if (btnUsers) {
+          btnUsers.classList.remove('btn-outline');
+          btnUsers.classList.add('btn-primary', 'active');
+        }
+        if (btnReqs) {
+          btnReqs.classList.remove('btn-primary', 'active');
+          btnReqs.classList.add('btn-outline');
+        }
+        if (tView) tView.style.display = 'block';
+        if (rView) rView.style.display = 'none';
+        if (dView) dView.style.display = 'none';
+        renderUserControlTable();
+      } else {
+        if (btnReqs) {
+          btnReqs.classList.remove('btn-outline');
+          btnReqs.classList.add('btn-primary', 'active');
+        }
+        if (btnUsers) {
+          btnUsers.classList.remove('btn-primary', 'active');
+          btnUsers.classList.add('btn-outline');
+        }
+        if (tView) tView.style.display = 'none';
+        if (dView) dView.style.display = 'none';
+        if (rView) rView.style.display = 'block';
+        renderLoginRequestsTable();
+      }
+    }
+
+    function updateLoginRequestsBadge() {
+      const pendingCount = (loginUpdateRequests || []).filter(r => r.status === 'pending').length;
+      const badge = document.getElementById('ucPendingBadge');
+      if (badge) {
+        if (pendingCount > 0) {
+          badge.style.display = 'inline-block';
+          badge.innerText = toBnDigits(pendingCount);
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+
+    function setReqStatusFilter(status, btn) {
+      reqStatusFilter = status;
+      const chips = document.querySelectorAll('#reqFilterChips .filter-pill');
+      chips.forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderLoginRequestsTable();
+    }
+
+    function onReqSearchInput(val) {
+      reqSearchQuery = (val || '').trim().toLowerCase();
+      renderLoginRequestsTable();
+    }
+
+    function renderLoginRequestsTable() {
+      const list = loginUpdateRequests || [];
+      const totalCount = list.length;
+      const pendingCount = list.filter(r => r.status === 'pending').length;
+      const acceptedCount = list.filter(r => r.status === 'accepted').length;
+      const rejectedCount = list.filter(r => r.status === 'rejected').length;
+
+      const kpiTot = document.getElementById('reqKpiTotal');
+      const kpiPen = document.getElementById('reqKpiPending');
+      const kpiAcc = document.getElementById('reqKpiAccepted');
+      const kpiRej = document.getElementById('reqKpiRejected');
+
+      if (kpiTot) kpiTot.innerText = toBnDigits(totalCount) + ' টি';
+      if (kpiPen) kpiPen.innerText = toBnDigits(pendingCount) + ' টি';
+      if (kpiAcc) kpiAcc.innerText = toBnDigits(acceptedCount) + ' টি';
+      if (kpiRej) kpiRej.innerText = toBnDigits(rejectedCount) + ' টি';
+
+      const pillPen = document.getElementById('reqPillPendingCount');
+      const pillAcc = document.getElementById('reqPillAcceptedCount');
+      const pillRej = document.getElementById('reqPillRejectedCount');
+
+      if (pillPen) pillPen.innerText = toBnDigits(pendingCount);
+      if (pillAcc) pillAcc.innerText = toBnDigits(acceptedCount);
+      if (pillRej) pillRej.innerText = toBnDigits(rejectedCount);
+
+      const filtered = list.filter(r => {
+        const matchesStatus = r.status === reqStatusFilter;
+        const q = reqSearchQuery;
+        const matchesQuery = !q ||
+          (r.userName || '').toLowerCase().includes(q) ||
+          (r.currentPhone || '').toLowerCase().includes(q) ||
+          (r.newPhone || '').toLowerCase().includes(q) ||
+          (r.currentEmail || '').toLowerCase().includes(q) ||
+          (r.newEmail || '').toLowerCase().includes(q);
+        return matchesStatus && matchesQuery;
+      });
+
+      const tbody = document.getElementById('reqTableBody');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 13.5px;">
+              <i class="fa-solid fa-file-circle-question" style="font-size: 36px; color: #CBD5E1; margin-bottom: 10px; display: block;"></i>
+              কোনো আবেদন পাওয়া যায়নি।
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        let statusBadge = '';
+        if (r.status === 'pending') {
+          statusBadge = `<span class="badge" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700;">অপেক্ষমাণ</span>`;
+        } else if (r.status === 'accepted') {
+          statusBadge = `<span class="badge" style="background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700;">অনুমোদিত</span>`;
+        } else {
+          statusBadge = `<span class="badge" style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700;">বাতিল</span>`;
+        }
+
+        const formattedDate = formatApplicationDateBn(r.createdAt || r.timestamp);
+
+        const newPhoneText = r.newPhone ? `<div style="font-size: 12.5px; font-weight: 700; color: #166534;"><i class="fa-solid fa-phone" style="font-size: 11px; margin-right: 4px;"></i>${r.newPhone}</div>` : '';
+        const newEmailText = r.newEmail ? `<div style="font-size: 12px; font-weight: 600; color: #1E40AF;"><i class="fa-regular fa-envelope" style="font-size: 11px; margin-right: 4px;"></i>${r.newEmail}</div>` : '';
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;" onmouseover="this.style.background='#F9FAF9'" onmouseout="this.style.background='white'">
+            <td style="padding: 12px;">
+              <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);">${r.userName || 'ইউজার'}</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">UID: ${r.userId || r.id}</div>
+            </td>
+            <td style="padding: 12px; font-size: 12px; color: var(--text-muted);">
+              <div>ফোন: ${r.currentPhone || 'অনুপলব্ধ'}</div>
+              <div>ইমেইল: ${r.currentEmail || 'অনুপলব্ধ'}</div>
+            </td>
+            <td style="padding: 12px;">
+              ${newPhoneText}
+              ${newEmailText}
+              ${!newPhoneText && !newEmailText ? '<span style="font-size: 12px; color: var(--text-muted);">অপরিবর্তিত</span>' : ''}
+            </td>
+            <td style="padding: 12px; font-size: 12px; color: #1B5E20; font-weight: 600;">
+              ${formattedDate}
+            </td>
+            <td style="padding: 12px; text-align: center;">
+              ${statusBadge}
+            </td>
+            <td style="padding: 12px; text-align: center;">
+              <button type="button" class="btn" onclick="openCheckRequestModal('${r.id}')"
+                style="background: #166534; color: white; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-list-check"></i>
+                <span>${r.status === 'pending' ? 'যাচাই ও অনুমোদন' : 'বিস্তারিত'}</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function openCheckRequestModal(reqId) {
+      const req = (loginUpdateRequests || []).find(x => x.id === reqId);
+      if (!req) return;
+
+      document.getElementById('checkReqId').value = req.id;
+      document.getElementById('checkReqUserId').value = req.userId || '';
+      document.getElementById('checkReqNewPhone').value = req.newPhone || '';
+      document.getElementById('checkReqNewEmail').value = req.newEmail || '';
+
+      document.getElementById('checkReqApplicant').innerText = `আবেদনকারী: ${req.userName || 'ইউজার'} (UID: ${req.userId || req.id})`;
+      document.getElementById('checkReqDate').innerText = formatApplicationDateBn(req.createdAt || req.timestamp);
+
+      document.getElementById('checkReqCurrentPhone').innerText = `ফোন: ${req.currentPhone || 'অনুপলব্ধ'}`;
+      document.getElementById('checkReqCurrentEmail').innerText = `ইমেইল: ${req.currentEmail || 'অনুপলব্ধ'}`;
+
+      document.getElementById('checkReqTargetPhone').innerText = `নতুন ফোন: ${req.newPhone || 'অপরিবর্তিত'}`;
+      document.getElementById('checkReqTargetEmail').innerText = `নতুন ইমেইল: ${req.newEmail || 'অপরিবর্তিত'}`;
+
+      document.getElementById('checkReqAdminNote').value = req.adminNote || req.rejectReason || '';
+
+      const statusBox = document.getElementById('checkReqStatusBox');
+      const btnAccept = document.getElementById('btnAcceptLoginRequest');
+      const btnReject = document.getElementById('btnRejectLoginRequest');
+
+      if (req.status !== 'pending') {
+        if (btnAccept) btnAccept.style.display = 'none';
+        if (btnReject) btnReject.style.display = 'none';
+        if (statusBox) {
+          statusBox.innerHTML = `
+            <div style="background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; color: #475569;">
+              এই আবেদনটির স্থিতি ইতিমধ্যে <strong>${req.status === 'accepted' ? 'অনুমোদিত' : 'বাতিল'}</strong> হিসেবে চিহ্নিত।
+            </div>
+          `;
+        }
+      } else {
+        if (btnAccept) { btnAccept.style.display = 'inline-flex'; btnAccept.disabled = true; }
+        if (btnReject) btnReject.style.display = 'inline-flex';
+
+        if (statusBox) {
+          statusBox.innerHTML = `
+            <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #1E40AF;">
+              <div class="spinner-border text-primary" role="status" style="width: 16px; height: 16px; border-width: 2px;"></div>
+              <span>ফায়ারস্টোর ডেটাবেজে ইউনিকনেস যাচাই করা হচ্ছে...</span>
+            </div>
+          `;
+        }
+
+        const m = document.getElementById('modalCheckRequest');
+        if (m) m.classList.add('active');
+
+        // Execute Real-time Unique check
+        let isPhoneTaken = false;
+        let isEmailTaken = false;
+        let phoneUser = '';
+        let emailUser = '';
+
+        try {
+          if (req.newPhone && db) {
+            const pSnap = await db.collection('users').where('phone', '==', req.newPhone.trim()).limit(1).get();
+            if (!pSnap.empty && pSnap.docs[0].id !== req.userId) {
+              isPhoneTaken = true;
+              phoneUser = (pSnap.docs[0].data() || {}).name || 'অন্য ইউজার';
+            }
+          }
+
+          if (req.newEmail && db) {
+            const eSnap = await db.collection('users').where('email', '==', req.newEmail.trim().toLowerCase()).limit(1).get();
+            if (!eSnap.empty && eSnap.docs[0].id !== req.userId) {
+              isEmailTaken = true;
+              emailUser = (eSnap.docs[0].data() || {}).name || 'অন্য ইউজার';
+            }
+          }
+
+          if (isPhoneTaken || isEmailTaken) {
+            let conflictMsg = '';
+            if (isPhoneTaken && isEmailTaken) {
+              conflictMsg = 'এই মোবাইল নম্বরটি এবং ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক তথ্য দিন।';
+            } else if (isPhoneTaken) {
+              conflictMsg = 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।';
+            } else {
+              conflictMsg = 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।';
+            }
+
+            if (statusBox) {
+              statusBox.innerHTML = `
+                <div style="background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: 8px; padding: 10px 12px;">
+                  <div style="display: flex; align-items: center; gap: 6px; color: #DC2626; font-size: 13px; font-weight: 700;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>সতর্কবার্তা: তথ্য ইতিমধ্যেই বিদ্যমান!</span>
+                  </div>
+                  <div style="font-size: 12px; color: #991B1B; margin-top: 5px;">
+                    ${conflictMsg}
+                    ${phoneUser ? `<br>• ফোন ব্যবহারকারী: "${phoneUser}"` : ''}
+                    ${emailUser ? `<br>• ইমেইল ব্যবহারকারী: "${emailUser}"` : ''}
+                  </div>
+                  <div style="font-size: 11px; color: #7F1D1D; margin-top: 4px; font-style: italic;">
+                    কনফ্লিক্টের কারণে এই রিকোয়েস্টটি অনুমোদন করা যাবে না। অনুগ্রহ করে কারণ উল্লেখপূর্বক বাতিল করুন।
+                  </div>
+                </div>
+              `;
+            }
+            if (btnAccept) btnAccept.disabled = true;
+          } else {
+            if (statusBox) {
+              statusBox.innerHTML = `
+                <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-circle-check" style="color: #16A34A; font-size: 18px;"></i>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: #15803D;">তথ্য উপলব্ধ (Available) ও নিরাপদ</div>
+                    <div style="font-size: 11.5px; color: #166534;">এই নতুন তথ্য দিয়ে অন্য কোনো ইউজারের সক্রিয় অ্যাকাউন্ট নেই। আপনি নিশ্চিন্তে অনুমোদন করতে পারেন।</div>
+                  </div>
+                </div>
+              `;
+            }
+            if (btnAccept) btnAccept.disabled = false;
+          }
+        } catch (err) {
+          console.error('Check unique error:', err);
+          if (statusBox) {
+            statusBox.innerHTML = `
+              <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #DC2626;">
+                যাচাই করতে সমস্যা হয়েছে: ${err.message || 'ত্রুটি'}
+              </div>
+            `;
+          }
+        }
+        return;
+      }
+
+      const m = document.getElementById('modalCheckRequest');
+      if (m) m.classList.add('active');
+    }
+
+    function closeCheckRequestModal() {
+      const m = document.getElementById('modalCheckRequest');
+      if (m) m.classList.remove('active');
+    }
+
+    async function submitAcceptLoginRequest() {
+      const reqId = document.getElementById('checkReqId').value;
+      const userId = document.getElementById('checkReqUserId').value;
+      const newPhone = document.getElementById('checkReqNewPhone').value;
+      const newEmail = document.getElementById('checkReqNewEmail').value;
+
+      const confirmed = await showAdminConfirm(
+        'অনুমোদনের নিশ্চিতকরণ',
+        'আপনি কি নিশ্চিত যে এই রিকোয়েস্টটি গ্রহণ ও অনুমোদন করতে চান? ইউজারের বর্তমান লগইন আইডি তৎক্ষণাৎ পরিবর্তিত হবে।',
+        null,
+        'হ্যাঁ, অনুমোদন করুন',
+        false
+      );
+      if (!confirmed) return;
+
+      closeCheckRequestModal();
+      showAdminLoading('রিকোয়েস্ট অনুমোদন হচ্ছে....', 'ইউজার ডকুমেন্টে নতুন তথ্য সিঙ্ক করা হচ্ছে');
+
+      try {
+        // Strict Hard Check immediately before acceptance
+        if (newPhone) {
+          const cleanPhone = newPhone.trim();
+          const pVariants = [cleanPhone];
+          if (cleanPhone.startsWith('01')) {
+            pVariants.push('+88' + cleanPhone);
+            pVariants.push('88' + cleanPhone);
+          }
+          let isPhoneConflict = false;
+          for (const v of pVariants) {
+            const pCheck = await db.collection('users').where('phone', '==', v).limit(5).get();
+            if (pCheck.docs.some(d => d.id !== userId)) {
+              isPhoneConflict = true;
+              break;
+            }
+            const pCheck2 = await db.collection('users').where('phoneNumber', '==', v).limit(5).get();
+            if (pCheck2.docs.some(d => d.id !== userId)) {
+              isPhoneConflict = true;
+              break;
+            }
+          }
+          if (isPhoneConflict) {
+            hideAdminDialog();
+            showAdminError('অনুমোদন ব্যর্থ', 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।');
+            return;
+          }
+        }
+        if (newEmail) {
+          const eCheck = await db.collection('users').where('email', '==', newEmail.trim().toLowerCase()).limit(5).get();
+          if (eCheck.docs.some(d => d.id !== userId)) {
+            hideAdminDialog();
+            showAdminError('অনুমোদন ব্যর্থ', 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।');
+            return;
+          }
+        }
+
+        const userUpdates = {
+          updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+          last_login_id_update: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (newPhone) {
+          userUpdates.phone = newPhone.trim();
+          userUpdates.last_phone_update = firebase.firestore.FieldValue.serverTimestamp();
+        }
+        if (newEmail) {
+          userUpdates.email = newEmail.trim().toLowerCase();
+          userUpdates.last_email_update = firebase.firestore.FieldValue.serverTimestamp();
+        }
+
+        await db.collection('users').doc(userId).set(userUpdates, { merge: true });
+
+        await db.collection('login_update_requests').doc(reqId).update({
+          status: 'accepted',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          acceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          adminNote: document.getElementById('checkReqAdminNote').value || ''
+        });
+
+        hideAdminDialog();
+        showAdminSuccess('অনুমোদন সম্পন্ন!', 'রিকোয়েস্টটি সফলভাবে গৃহীত হয়েছে এবং ইউজারের লগইন তথ্য অবিলম্বে আপডেট হয়েছে।');
+        if (typeof currentDetailUserId !== 'undefined' && currentDetailUserId === userId) {
+          renderUserDetailsView(userId);
+        }
+      } catch (err) {
+        console.error('Accept request error:', err);
+        hideAdminDialog();
+        showAdminError('অনুমোদন ব্যর্থ', 'ত্রুটি: ' + (err.message || 'অনুমোদন করা সম্ভব হয়নি।'));
+      }
+    }
+
+    async function submitRejectLoginRequest() {
+      const reqId = document.getElementById('checkReqId').value;
+      const reason = (document.getElementById('checkReqAdminNote').value || '').trim();
+
+      const confirmed = await showAdminConfirm(
+        'বাতিলের নিশ্চিতকরণ',
+        'আপনি কি নিশ্চিত যে এই রিকোয়েস্টটি বাতিল করতে চান?',
+        null,
+        'হ্যাঁ, বাতিল করুন',
+        true
+      );
+      if (!confirmed) return;
+
+      closeCheckRequestModal();
+      showAdminLoading('রিকোয়েস্ট বাতিল হচ্ছে....', 'ক্লাউড ডেটাবেজে স্থিতি আপডেট হচ্ছে');
+
+      try {
+        await db.collection('login_update_requests').doc(reqId).update({
+          status: 'rejected',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          adminNote: reason || 'তথ্য সঠিক নয় বা এডমিন কর্তৃক প্রত্যাখ্যাত।',
+          rejectReason: reason || 'তথ্য সঠিক নয় বা এডমিন কর্তৃক প্রত্যাখ্যাত।'
+        });
+
+        hideAdminDialog();
+        showAdminSuccess('বাতিল সম্পন্ন', 'রিকোয়েস্টটি সফলভাবে বাতিল করা হয়েছে।');
+        if (typeof currentDetailUserId !== 'undefined' && currentDetailUserId) {
+          renderUserDetailsView(currentDetailUserId);
+        }
+      } catch (err) {
+        console.error('Reject request error:', err);
+        hideAdminDialog();
+        showAdminError('বাতিল ব্যর্থ', 'ত্রুটি: ' + (err.message || 'বাতিল করা সম্ভব হয়নি।'));
+      }
+    }
 
     // Dismiss any modal on overlay outside-click (excluding marketModal to prevent accidental form loss)
     document.addEventListener('click', (e) => {

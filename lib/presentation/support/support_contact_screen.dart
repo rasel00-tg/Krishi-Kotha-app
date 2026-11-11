@@ -83,6 +83,7 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
     final loadingCtrl = AppUnifiedDialog.showLoading(
       context,
       message: 'বার্তা পাঠানো হচ্ছে....',
+      barrierDismissible: false,
     );
 
     bool isSuccess = false;
@@ -122,6 +123,7 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
         'status': 'pending',
         'adminReply': '',
         'officerReply': '',
+        'reply': '',
         'createdAt': FieldValue.serverTimestamp(),
         'timestamp': FieldValue.serverTimestamp(),
       };
@@ -142,6 +144,12 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
         );
       }
 
+      // ফর্মের মেসেজ ফিল্ড রিসেট
+      _detailsController.clear();
+      setState(() {
+        _selectedSubject = 'একাউন্ট সমস্যা';
+      });
+
       isSuccess = true;
     } catch (e) {
       debugPrint('Error submitting support ticket: $e');
@@ -149,31 +157,26 @@ class _SupportContactScreenState extends State<SupportContactScreen> {
     } finally {
       // ১. গ্যারান্টিড মোডাল ব্যারিয়ার ও লোডার ডিসমিসাল
       loadingCtrl.dismiss();
-      if (context.mounted && Navigator.of(context, rootNavigator: true).canPop()) {
-        try {
-          Navigator.of(context, rootNavigator: true).pop();
-        } catch (_) {}
-      }
+      AppUnifiedDialog.safeDismissLoading(context);
       // ২. পয়েন্টার ও সাবমিট স্টেট সাথে সাথে আনলক
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
     }
 
-    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর ক্লিকেবল ডায়ালগ প্রদর্শন
+    // ৩. লোডার সম্পূর্ণ বন্ধ হওয়ার পর সাকসেস ডায়ালগ প্রদর্শন
     if (isSuccess && mounted) {
-      _detailsController.clear();
-      setState(() {
-        _selectedSubject = 'একাউন্ট সমস্যা';
-      });
-
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
       await AppUnifiedDialog.showSuccess(
         context,
         title: 'বার্তা সফলভাবে গৃহীত হয়েছে!',
-        message: 'আপনার বার্তা সফলভাবে গৃহীত হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
+        message: 'আপনার মেসেজটি সফলভাবে পাঠানো হয়েছে! আমাদের সাপোর্ট টিম দ্রুত আপনার সাথে যোগাযোগ করবে।',
         buttonText: 'ঠিক আছে',
       );
     } else if (errorMessage != null && mounted) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
       await AppUnifiedDialog.showError(
         context,
         title: 'বার্তা পাঠানো সম্ভব হয়নি',
