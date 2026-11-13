@@ -6,6 +6,7 @@ import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
 import '../widgets/admin_delete_dialog.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class MarketPricesManagementScreen extends StatefulWidget {
   const MarketPricesManagementScreen({super.key});
@@ -18,6 +19,21 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
   String _selectedDivision = 'সকল বিভাগ';
   String _selectedDistrict = 'সারাদেশ / সকল জেলা';
   final TextEditingController _searchCtrl = TextEditingController();
+  Stream<List<AdminMarketPriceModel>>? _marketPricesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _initMarketStream();
+  }
+
+  void _initMarketStream() {
+    _marketPricesStream = AdminFirestoreService.instance.getMarketPricesStream(
+      division: _selectedDivision,
+      district: _selectedDistrict,
+      searchQuery: _searchCtrl.text,
+    );
+  }
 
   @override
   void dispose() {
@@ -30,6 +46,7 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
       _selectedDivision = 'সকল বিভাগ';
       _selectedDistrict = 'সারাদেশ / সকল জেলা';
       _searchCtrl.clear();
+      _initMarketStream();
     });
   }
 
@@ -434,6 +451,7 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                             setState(() {
                               _selectedDivision = val;
                               _selectedDistrict = 'সারাদেশ / সকল জেলা';
+                              _initMarketStream();
                             });
                           }
                         },
@@ -465,7 +483,12 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                             .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null) setState(() => _selectedDistrict = val);
+                          if (val != null) {
+                            setState(() {
+                              _selectedDistrict = val;
+                              _initMarketStream();
+                            });
+                          }
                         },
                       ),
                     ],
@@ -478,6 +501,11 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                   height: 42,
                   child: TextField(
                     controller: _searchCtrl,
+                    onChanged: (_) {
+                      setState(() {
+                        _initMarketStream();
+                      });
+                    },
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
                       hintText: 'পণ্য, বাজার বা জেলা দিয়ে খুঁজুন...',
@@ -488,7 +516,9 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                               icon: const Icon(Icons.clear_rounded, size: 16),
                               onPressed: () {
                                 _searchCtrl.clear();
-                                setState(() {});
+                                setState(() {
+                                  _initMarketStream();
+                                });
                               },
                             )
                           : null,
@@ -541,11 +571,7 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                       ),
                     ),
                     StreamBuilder<List<AdminMarketPriceModel>>(
-                      stream: AdminFirestoreService.instance.getMarketPricesStream(
-                        division: _selectedDivision,
-                        district: _selectedDistrict,
-                        searchQuery: _searchCtrl.text,
-                      ),
+                      stream: _marketPricesStream,
                       builder: (context, snapshot) {
                         final count = snapshot.data?.length ?? 0;
                         return Container(
@@ -570,17 +596,10 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                 const Divider(color: AdminColors.divider, height: 28),
 
                 StreamBuilder<List<AdminMarketPriceModel>>(
-                  stream: AdminFirestoreService.instance.getMarketPricesStream(
-                    division: _selectedDivision,
-                    district: _selectedDistrict,
-                    searchQuery: _searchCtrl.text,
-                  ),
+                  stream: _marketPricesStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                      return const Center(child: Padding(
-                        padding: EdgeInsets.all(40),
-                        child: CircularProgressIndicator(),
-                      ));
+                      return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
                     }
 
                     final list = snapshot.data ?? [];
@@ -597,7 +616,15 @@ class _MarketPricesManagementScreenState extends State<MarketPricesManagementScr
                             children: [
                               Icon(isFiltered ? Icons.search_off_rounded : Icons.storefront_outlined, size: 48, color: AdminColors.textMuted),
                               const SizedBox(height: 12),
-                              Text(
+                              const Text(
+                                'কোনো তথ্য পাওয়া যায়নি',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AdminColors.textMuted),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
                                 isFiltered ? 'নির্বাচিত জেলায় কোনো বাজার দর পাওয়া যায়নি।' : 'বর্তমানে কোনো তথ্য নেই',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AdminColors.textPrimary),
                               ),

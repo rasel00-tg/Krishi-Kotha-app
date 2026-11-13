@@ -4,6 +4,7 @@ import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
 import '../widgets/admin_delete_dialog.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class CropsManagementScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -15,10 +16,14 @@ class CropsManagementScreen extends StatefulWidget {
 
 class _CropsManagementScreenState extends State<CropsManagementScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final Stream<List<AdminCropModel>> _cropsStream;
+  late final Stream<List<AdminPestModel>> _pestsStream;
 
   @override
   void initState() {
     super.initState();
+    _cropsStream = AdminFirestoreService.instance.getCropsStream();
+    _pestsStream = AdminFirestoreService.instance.getPestsStream();
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -177,13 +182,10 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: StreamBuilder<List<AdminCropModel>>(
-        stream: AdminFirestoreService.instance.getCropsStream(),
+        stream: _cropsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const Center(child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
-            ));
+            return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
           }
 
           final crops = snapshot.data ?? [];
@@ -191,7 +193,14 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(40),
-                child: Text('বর্তমানে কোনো তথ্য নেই'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.grass_outlined, size: 44, color: AdminColors.textMuted),
+                    SizedBox(height: 10),
+                    Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             );
           }
@@ -663,13 +672,10 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: StreamBuilder<List<AdminPestModel>>(
-        stream: AdminFirestoreService.instance.getPestsStream(),
+        stream: _pestsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const Center(child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
-            ));
+            return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
           }
 
           final pests = snapshot.data ?? [];
@@ -677,7 +683,14 @@ class _CropsManagementScreenState extends State<CropsManagementScreen> with Sing
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(40),
-                child: Text('বর্তমানে কোনো তথ্য নেই'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.pest_control_outlined, size: 44, color: AdminColors.textMuted),
+                    SizedBox(height: 10),
+                    Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             );
           }

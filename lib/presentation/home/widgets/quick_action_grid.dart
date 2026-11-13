@@ -5,6 +5,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/bangla_number_converter.dart';
 import '../../../data/services/firestore_service.dart';
 import '../agri_service_detail_screen.dart';
+import '../crop_calendar_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -470,21 +471,21 @@ class QuickActionGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     // ২. অবশিষ্ট সেবাগুলোর মার্জিত আইকন গ্রিড তালিকা ("রোগ শনাক্ত" ব্যানার কার্ডে যাওয়ার পর বাকি ১২টি সেবা)
     final List<QuickActionItem> items = [
-      // ১. চাষ ক্যালেন্ডার
+      // ১. চাষ ক্যালেন্ডার (ফুল পেজ ও মাসভিত্তিক ফিল্টারিং)
       QuickActionItem(
         id: 'crop_calendar',
         title: 'চাষ ক্যালেন্ডার',
         icon: Icons.calendar_month_rounded,
         color: const Color(0xFF7B1FA2),
         bgColor: const Color(0xFFF3E5F5),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'calendar',
-          title: 'চাষ ক্যালেন্ডার',
-          icon: Icons.calendar_month_rounded,
-          color: const Color(0xFF7B1FA2),
-          bgColor: const Color(0xFFF3E5F5),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CropCalendarScreen(),
+            ),
+          );
+        },
       ),
       // ২. কৃষি বিশেষজ্ঞ
       QuickActionItem(

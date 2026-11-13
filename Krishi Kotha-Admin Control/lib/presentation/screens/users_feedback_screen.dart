@@ -4,6 +4,7 @@ import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class UsersFeedbackScreen extends StatefulWidget {
   const UsersFeedbackScreen({super.key});
@@ -25,9 +26,16 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
   bool _isSavingSettings = false;
   bool _isSettingsLoaded = false;
 
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _faqsStream;
+  late final Stream<List<AdminUserModel>> _usersStream;
+  late final Stream<List<AdminSupportTicketModel>> _ticketsStream;
+
   @override
   void initState() {
     super.initState();
+    _faqsStream = FirebaseFirestore.instance.collection('faqs').snapshots();
+    _usersStream = AdminFirestoreService.instance.getUsersStream();
+    _ticketsStream = AdminFirestoreService.instance.getSupportTicketsStream();
     _tabController = TabController(length: 4, vsync: this);
   }
 
@@ -404,15 +412,10 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
 
           // Real-time FAQs List via StreamBuilder
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance.collection('faqs').snapshots(),
+            stream: _faqsStream,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: CircularProgressIndicator(color: AdminColors.primary),
-                  ),
-                );
+              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
               }
 
               if (snapshot.hasError) {
@@ -802,7 +805,7 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
                 ),
                 StreamBuilder<List<AdminUserModel>>(
-                  stream: AdminFirestoreService.instance.getUsersStream(),
+                  stream: _usersStream,
                   builder: (context, snapshot) {
                     final count = snapshot.data?.length ?? 0;
                     return Container(
@@ -819,20 +822,17 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
             ),
             const Divider(color: AdminColors.divider, height: 28),
             StreamBuilder<List<AdminUserModel>>(
-              stream: AdminFirestoreService.instance.getUsersStream(),
+              stream: _usersStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                  return const Center(child: Padding(
-                    padding: EdgeInsets.all(40),
-                    child: CircularProgressIndicator(),
-                  ));
+                  return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
                 }
 
                 final users = snapshot.data ?? [];
                 if (users.isEmpty) {
                   return const Center(child: Padding(
                     padding: EdgeInsets.all(40),
-                    child: Text('বর্তমানে কোনো তথ্য নেই'),
+                    child: Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontWeight: FontWeight.w600)),
                   ));
                 }
 
@@ -906,20 +906,17 @@ class _UsersFeedbackScreenState extends State<UsersFeedbackScreen> with SingleTi
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: StreamBuilder<List<AdminSupportTicketModel>>(
-        stream: AdminFirestoreService.instance.getSupportTicketsStream(),
+        stream: _ticketsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const Center(child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
-            ));
+            return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
           }
 
           final tickets = snapshot.data ?? [];
           if (tickets.isEmpty) {
             return const Center(child: Padding(
               padding: EdgeInsets.all(40),
-              child: Text('বর্তমানে কোনো তথ্য নেই'),
+              child: Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontWeight: FontWeight.w600)),
             ));
           }
 

@@ -5,6 +5,7 @@ import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
 import '../widgets/admin_delete_dialog.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class NotificationsManagementScreen extends StatefulWidget {
   const NotificationsManagementScreen({super.key});
@@ -19,6 +20,14 @@ class _NotificationsManagementScreenState extends State<NotificationsManagementS
   final _messageController = TextEditingController();
   String _selectedType = 'general';
   bool _isSubmitting = false;
+
+  late final Stream<List<AdminNotificationModel>> _notificationsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsStream = AdminFirestoreService.instance.getNotificationsStream();
+  }
 
   final Map<String, String> _typeLabels = {
     'general': 'সাধারণ নোটিশ',
@@ -292,7 +301,7 @@ class _NotificationsManagementScreenState extends State<NotificationsManagementS
               ),
               // StreamBuilder count badge
               StreamBuilder<List<AdminNotificationModel>>(
-                stream: AdminFirestoreService.instance.getNotificationsStream(),
+                stream: _notificationsStream,
                 builder: (context, snapshot) {
                   final count = snapshot.data?.length ?? 0;
                   return Container(
@@ -318,17 +327,28 @@ class _NotificationsManagementScreenState extends State<NotificationsManagementS
 
           // Real-time StreamBuilder List
           StreamBuilder<List<AdminNotificationModel>>(
-            stream: AdminFirestoreService.instance.getNotificationsStream(),
+            stream: _notificationsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: CircularProgressIndicator(),
-                ));
+                return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
               }
 
               final list = snapshot.data ?? [];
               if (list.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications_off_outlined, size: 44, color: AdminColors.textMuted),
+                        SizedBox(height: 10),
+                        Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                );
+              }
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.all(40),

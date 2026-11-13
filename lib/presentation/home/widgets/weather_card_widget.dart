@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/bangla_number_converter.dart';
-import '../../../core/utils/district_data.dart';
 import '../../../core/widgets/shimmer_loader.dart';
+import '../../../data/services/firebase_service.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/weather_provider.dart';
 import '../../../data/models/weather_info_model.dart';
@@ -17,45 +20,155 @@ class WeatherCardWidget extends StatefulWidget {
 }
 
 class _WeatherCardWidgetState extends State<WeatherCardWidget> {
-  bool _profileDistrictSynced = false;
+  String? _lastSyncedDistrict;
+  String? _activeUid;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSubscription;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_profileDistrictSynced) {
+    _initRealtimeDistrictListener();
+  }
+
+  @override
+  void dispose() {
+    _userDocSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initRealtimeDistrictListener() {
+    try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final profileDistrict = authProvider.user?.district;
-      if (profileDistrict != null && profileDistrict.trim().isNotEmpty) {
-        _profileDistrictSynced = true;
+      final user = authProvider.user;
+      final uid = user?.uid;
+
+      // ১. ইনিশিয়াল প্রোফাইল জেলা চেক ও বাইন্ডিং
+      final profileDistrict = user?.district?.trim().replaceAll(' জেলা', '');
+      if (profileDistrict != null &&
+          profileDistrict.isNotEmpty &&
+          _lastSyncedDistrict == null) {
+        _lastSyncedDistrict = profileDistrict;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             Provider.of<WeatherProvider>(context, listen: false)
-                .setInitialDistrict(profileDistrict.trim());
+                .setInitialDistrict(profileDistrict);
           }
         });
       }
+
+      // ২. ফায়ারস্টোরে বর্তমান ইউজারের (currentUser) ডকুমেন্টে রিয়েল-টাইম লিসেনার
+      if (uid != null &&
+          uid.isNotEmpty &&
+          !uid.startsWith('guest_') &&
+          FirebaseService.isFirebaseInitialized &&
+          _activeUid != uid) {
+        _activeUid = uid;
+        _userDocSubscription?.cancel();
+        _userDocSubscription = FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .snapshots()
+            .listen(
+          (snapshot) {
+            try {
+              if (snapshot.exists && snapshot.data() != null) {
+                final data = snapshot.data()!;
+                final firestoreDistrict =
+                    (data['district'] as String?)?.trim().replaceAll(' জেলা', '');
+                if (firestoreDistrict != null &&
+                    firestoreDistrict.isNotEmpty &&
+                    _lastSyncedDistrict != firestoreDistrict) {
+                  _lastSyncedDistrict = firestoreDistrict;
+                  // জেলা পরিবর্তন হয়েছে! ২ ঘণ্টার ক্যাশ ও ১০ মিনিট থ্রটলিং বাইপাস করে সাথে সাথে ফোর্স API কল
+                  if (mounted) {
+                    Provider.of<WeatherProvider>(context, listen: false)
+                        .onProfileDistrictChanged(firestoreDistrict);
+                  }
+                }
+              }
+            } catch (snapErr) {
+              debugPrint('User district snapshot processing error: $snapErr');
+            }
+          },
+          onError: (err) {
+            debugPrint('User district listener error: $err');
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('Real-time district listener init notice: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final weatherProvider = Provider.of<WeatherProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final currentUid = authProvider.user?.uid;
 
-    // Also auto-sync if user logged in dynamically
-    final authUserDistrict = Provider.of<AuthProvider>(context, listen: false).user?.district;
-    if (!_profileDistrictSynced && authUserDistrict != null && authUserDistrict.trim().isNotEmpty) {
-      _profileDistrictSynced = true;
+    // যদি ইউজার লগইন স্টেট বা ইউআইডি পরিবর্তন হয়, রিয়েল-টাইম লিসেনার সক্রিয় করা
+    if (currentUid != _activeUid) {
+      _initRealtimeDistrictListener();
+    }
+
+    // লোকাল ফলব্যাক সিঙ্ক (গেস্ট বা ক্যাশড প্রোফাইলের ক্ষেত্রে)
+    final localDistrict = authProvider.user?.district?.trim().replaceAll(' জেলা', '');
+    if (localDistrict != null &&
+        localDistrict.isNotEmpty &&
+        _lastSyncedDistrict != null &&
+        _lastSyncedDistrict != localDistrict) {
+      _lastSyncedDistrict = localDistrict;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          weatherProvider.setInitialDistrict(authUserDistrict.trim());
+          weatherProvider.onProfileDistrictChanged(localDistrict);
         }
       });
     }
 
     if (weatherProvider.isLoading && weatherProvider.weatherInfo == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-        child: ShimmerCardLoader(height: 165),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 195,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        ShimmerCardLoader(height: 24, width: 85, borderRadius: 12),
+                        SizedBox(height: 8),
+                        ShimmerCardLoader(height: 40, width: 75, borderRadius: 8),
+                        SizedBox(height: 8),
+                        ShimmerCardLoader(height: 16, width: 95, borderRadius: 6),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 140),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: const [
+                        ShimmerCardLoader(height: 24, width: 75, borderRadius: 12),
+                        SizedBox(height: 8),
+                        ShimmerCardLoader(height: 24, width: 75, borderRadius: 12),
+                        SizedBox(height: 8),
+                        ShimmerCardLoader(height: 24, width: 85, borderRadius: 12),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            const ShimmerCardLoader(height: 64, borderRadius: 16),
+          ],
+        ),
       );
     }
 
@@ -64,265 +177,354 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1B5E20), // ডিপ ফরেস্ট এমারেল্ড
-            Color(0xFF2E7D32), // ভাইব্রেন্ট এগ্রি গ্রিন
-            Color(0xFF388E3C), // সফট লিফ গ্রিন
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.24), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1B5E20).withOpacity(0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: const Color(0xFF2979FF).withOpacity(0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ১. টপ হেডার: স্লিক পিল জেলা ড্রপডাউন ও ওয়েদার কন্ডিশন ব্যাজ
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ১. অ্যানিমেশন + দুপাশে ওয়েদার ডেটা (Stack Layout)
+          SizedBox(
+            height: 195,
+            width: double.infinity,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                // সফট কার্ভড পিল/ক্যাপসুল শেপে ৬৪ জেলার ড্রপডাউন ট্রিগার
-                InkWell(
-                  onTap: () => _showDistrictPicker(context, weatherProvider),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on_rounded, color: Color(0xFFFFD54F), size: 15),
-                        const SizedBox(width: 4),
-                        Text(
-                          weather.district,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.1,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 17),
-                      ],
-                    ),
+                // সেন্টারে Lottie অ্যানিমেশন
+                SizedBox(
+                  width: 175,
+                  height: 175,
+                  child: Lottie.asset(
+                    'assets/animation/home animation.json',
+                    fit: BoxFit.contain,
+                    repeat: true,
+                    errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                   ),
                 ),
 
-                // ওয়েদার কন্ডিশন ক্যাপসুল
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.22),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                // সময়-ভিত্তিক ডাইনামিক গ্রিটিং (Time-based Dynamic Greeting)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _buildDynamicGreetingBadge(),
                   ),
-                  child: Row(
+                ),
+
+                // বাম পাশে: বর্তমান তাপমাত্রা (Degree), লোকেশন ও অবস্থা
+                Positioned(
+                  left: 0,
+                  top: 25,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        _getWeatherIcon(weather.conditionBn),
-                        color: const Color(0xFFFFD54F),
-                        size: 14,
+                      // লোকেশন চিপ ও রিফ্রেশ বাটন
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ইউজার প্রোফাইল জেলা লোকেশন চিপ (ড্রপডাউন আইকনহীন, প্রোফাইল অটো-বাইন্ডিং)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F8E9),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  weather.district,
+                                  style: const TextStyle(
+                                    color: Color(0xFF1B5E20),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                if (weatherProvider.isLoading) ...[
+                                  const SizedBox(width: 4),
+                                  const SizedBox(
+                                    width: 10,
+                                    height: 10,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.5,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+
+                          // ম্যানুয়াল রিফ্রেশ বাটন (১০ মিনিট থ্রটলিং প্রটেকশন ও লোগো ডায়ালগ সহ)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: weatherProvider.isLoading
+                                  ? null
+                                  : () => weatherProvider.manualRefresh(context),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F8E9),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                                ),
+                                child: weatherProvider.isLoading
+                                    ? const SizedBox(
+                                        width: 13,
+                                        height: 13,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1.5,
+                                          color: AppColors.primary,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.refresh_rounded,
+                                        color: AppColors.primary,
+                                        size: 13,
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        weather.conditionBn,
-                        style: const TextStyle(
-                          color: Color(0xFFE8F5E9),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      const SizedBox(height: 6),
+
+                      // বর্তমান তাপমাত্রা (Degree)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            BanglaNumberConverter.toBangla(weather.currentTemp.toStringAsFixed(0)),
+                            style: const TextStyle(
+                              fontSize: 38,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1E293B),
+                              height: 1.0,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          const Text(
+                            '°C',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+
+                      // আবহাওয়ার অবস্থা
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getWeatherIcon(weather.conditionBn),
+                            color: const Color(0xFFF59E0B),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            weather.conditionBn,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF475569),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ডান পাশে: আর্দ্রতা, বৃষ্টির সম্ভাবনা ও অন্যান্য মেট্রিক্স
+                Positioned(
+                  right: 0,
+                  top: 25,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // আর্দ্রতা
+                      _buildOverlayMetricPill(
+                        icon: Icons.opacity_rounded,
+                        iconColor: const Color(0xFF0288D1),
+                        label: 'আর্দ্রতা',
+                        value: '${BanglaNumberConverter.toBangla(weather.humidity)}%',
+                      ),
+                      const SizedBox(height: 6),
+
+                      // বৃষ্টির সম্ভাবনা
+                      _buildOverlayMetricPill(
+                        icon: Icons.water_drop_outlined,
+                        iconColor: const Color(0xFF00897B),
+                        label: 'বৃষ্টি',
+                        value: '${BanglaNumberConverter.toBangla(weather.rainProbability)}%',
+                      ),
+                      const SizedBox(height: 6),
+
+                      // বাতাস
+                      _buildOverlayMetricPill(
+                        icon: Icons.air_rounded,
+                        iconColor: const Color(0xFF5C6BC0),
+                        label: 'বাতাস',
+                        value: '${BanglaNumberConverter.toBangla(weather.windSpeedKmH.toStringAsFixed(0))} কিমি/ঘ',
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
 
-            const SizedBox(height: 10),
+          const SizedBox(height: 4),
 
-            // ২. বড় ও ক্রিস্প লাইভ তাপমাত্রা এবং আধুনিক মেট্রিক্স ইন্ডিকেটর
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // বড় লাইভ তাপমাত্রা
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      BanglaNumberConverter.toBangla(weather.currentTemp.toStringAsFixed(0)),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 42,
-                        fontWeight: FontWeight.w900,
-                        height: 1.0,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const Text(
-                      '°C',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // লাইভ মেট্রিক্স ব্যাজসমূহ (বৃষ্টির শঙ্কা, আর্দ্রতা, বাতাসের গতি)
-                Row(
-                  children: [
-                    _buildMetricItem(
-                      icon: Icons.water_drop_outlined,
-                      label: AppStrings.rainChance,
-                      value: '${BanglaNumberConverter.toBangla(weather.rainProbability)}%',
-                    ),
-                    const SizedBox(width: 12),
-                    _buildMetricItem(
-                      icon: Icons.opacity_rounded,
-                      label: AppStrings.humidity,
-                      value: '${BanglaNumberConverter.toBangla(weather.humidity)}%',
-                    ),
-                    const SizedBox(width: 12),
-                    _buildMetricItem(
-                      icon: Icons.air_rounded,
-                      label: 'বাতাস',
-                      value: '${BanglaNumberConverter.toBangla(weather.windSpeed.toStringAsFixed(0))} কিমি/ঘ',
-                    ),
-                  ],
+          // ২. কম্প্যাক্ট ৫-দিনের পূর্বাভাস (Compact 5-Day Forecast with soft dividers)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
+            child: Row(
+              children: List.generate(weather.fiveDayForecast.length, (index) {
+                final f = weather.fiveDayForecast[index];
+                final isLast = index == weather.fiveDayForecast.length - 1;
 
-            const SizedBox(height: 10),
-
-            // ৩. পরবর্তী ৩ দিনের সংক্ষিপ্ত কৃষি পূর্বাভাস
-            const Divider(color: Colors.white24, height: 1),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  AppStrings.weatherForecast3Days,
-                  style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'আপডেট: ${BanglaNumberConverter.toBangla('আজ')}',
-                  style: const TextStyle(color: Colors.white60, fontSize: 10.5),
-                ),
-              ],
+                return Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                f.dayNameBn,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF334155),
+                                ),
+                              ),
+                              if (f.dateBn.isNotEmpty)
+                                Text(
+                                  f.dateBn,
+                                  style: const TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              const SizedBox(height: 2),
+                              Icon(
+                                _getWeatherIcon(f.conditionBn),
+                                color: const Color(0xFFF59E0B),
+                                size: 15,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${BanglaNumberConverter.toBangla(f.tempMax.toStringAsFixed(0))}° / ${BanglaNumberConverter.toBangla(f.tempMin.toStringAsFixed(0))}°',
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                'বৃষ্টি ${BanglaNumberConverter.toBangla(f.rainProbability)}%',
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF059669),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (!isLast)
+                        Container(
+                          width: 1,
+                          height: 48,
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                    ],
+                  ),
+                );
+              }),
             ),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: weather.threeDayForecast.map((f) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                  child: _buildForecastDay(f),
-                ),
-              )).toList(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMetricItem({
+  /// ভাসমান ওভারলে মেট্রিক পিল
+  Widget _buildOverlayMetricPill({
     required IconData icon,
+    required Color iconColor,
     required String label,
     required String value,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white70, size: 13),
-            const SizedBox(width: 3),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10.5, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForecastDay(ForecastDay f) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(icon, color: iconColor, size: 12),
+          const SizedBox(width: 4),
           Text(
-            f.dayName,
-            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 2),
-          Icon(
-            _getWeatherIcon(f.condition),
-            color: const Color(0xFFFFD54F),
-            size: 16,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${BanglaNumberConverter.toBangla(f.tempMax.toStringAsFixed(0))}° / ${BanglaNumberConverter.toBangla(f.tempMin.toStringAsFixed(0))}°',
-            style: const TextStyle(color: Colors.white70, fontSize: 10.5, fontWeight: FontWeight.w600),
+            '$label ',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF64748B),
+            ),
           ),
           Text(
-            'বৃষ্টি: ${BanglaNumberConverter.toBangla(f.rainChance)}%',
-            style: const TextStyle(color: Color(0xFFC8E6C9), fontSize: 9.5, fontWeight: FontWeight.w600),
+            value,
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
           ),
         ],
       ),
@@ -343,168 +545,86 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
     return Icons.wb_sunny_rounded;
   }
 
-  // বাংলাদেশের পূর্ণাঙ্গ ৬৪ জেলার সার্চেবল প্রিমিয়াম ড্রপডাউন বটম-শীট
-  void _showDistrictPicker(BuildContext context, WeatherProvider provider) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        String searchQuery = '';
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final List<String> all64Districts = BangladeshLocationData.districts;
-            final filtered = searchQuery.isEmpty
-                ? all64Districts
-                : all64Districts.where((d) => d.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+  /// সময়-ভিত্তিক ডাইনামিক গ্রিটিং ব্যাজ উইজেট
+  Widget _buildDynamicGreetingBadge() {
+    final hour = DateTime.now().hour;
+    final greeting = _getDynamicGreeting(hour);
+    final icon = _getGreetingIcon(hour);
 
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.75,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  // ড্র্যাগ হ্যান্ডেল
-                  Container(
-                    margin: const EdgeInsets.only(top: 10, bottom: 6),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-
-                  // হেডার
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.location_on_rounded, color: AppColors.primary, size: 20),
-                            SizedBox(width: 6),
-                            Text(
-                              'জেলা নির্বাচন করুন (৬৪ জেলা)',
-                              style: TextStyle(
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 22, color: Colors.grey),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // সার্চ ইনপুট ফিল্ড
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F2),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8E2)),
-                      ),
-                      child: TextField(
-                        onChanged: (val) {
-                          setModalState(() {
-                            searchQuery = val.trim();
-                          });
-                        },
-                        style: const TextStyle(fontSize: 14),
-                        decoration: const InputDecoration(
-                          hintText: 'জেলার নাম খুঁজুন...',
-                          hintStyle: TextStyle(fontSize: 13, color: Color(0xFF758577)),
-                          prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // ৬৪ জেলার গ্রিড লিস্ট
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'কোনো জেলা পাওয়া যায়নি',
-                              style: TextStyle(color: Colors.grey, fontSize: 14),
-                            ),
-                          )
-                        : GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 2.8,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                            ),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final district = filtered[index];
-                              final isSelected = district == provider.selectedDistrict;
-
-                              return InkWell(
-                                onTap: () {
-                                  provider.updateDistrict(district);
-                                  Navigator.pop(ctx);
-                                },
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFFE8F5E9) : const Color(0xFFF8FAF7),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected ? AppColors.primary : const Color(0xFFE0E0E0),
-                                      width: isSelected ? 1.5 : 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        isSelected ? Icons.check_circle_rounded : Icons.location_city_rounded,
-                                        size: 16,
-                                        color: isSelected ? AppColors.primary : Colors.grey,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          district,
-                                          style: TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                            color: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFC8E6C9),
+          width: 0.9,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1B5E20).withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 13,
+            color: const Color(0xFF2E7D32),
+          ),
+          const SizedBox(width: 4.5),
+          Text(
+            greeting,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1B5E20),
+              letterSpacing: 0.2,
+              shadows: [
+                Shadow(
+                  color: Colors.white,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  /// সময় অনুযায়ী ডাইনামিক গ্রিটিং টেক্সট নির্বাচন
+  String _getDynamicGreeting(int hour) {
+    if (hour >= 6 && hour < 12) {
+      return 'শুভ সকাল';
+    } else if (hour >= 12 && hour < 16) {
+      return 'শুভ অপরাহ্ণ';
+    } else if (hour >= 16 && hour < 18) {
+      return 'শুভ বিকেল';
+    } else if (hour >= 18 && hour < 20) {
+      return 'শুভ সন্ধ্যা';
+    } else {
+      return 'শুভ রাত্রি';
+    }
+  }
+
+  /// গ্রিটিং আইকন নির্বাচন
+  IconData _getGreetingIcon(int hour) {
+    if (hour >= 6 && hour < 12) {
+      return Icons.wb_sunny_rounded;
+    } else if (hour >= 12 && hour < 16) {
+      return Icons.light_mode_rounded;
+    } else if (hour >= 16 && hour < 18) {
+      return Icons.wb_twilight_rounded;
+    } else if (hour >= 18 && hour < 20) {
+      return Icons.nights_stay_rounded;
+    } else {
+      return Icons.bedtime_rounded;
+    }
   }
 }

@@ -517,6 +517,31 @@ class FirestoreService {
         .map((snapshot) => snapshot.data() ?? {});
   }
 
+  // ==================== FARMING CROP CALENDAR (চাষ ক্যালেন্ডার) ====================
+  Stream<List<Map<String, dynamic>>> getFarmingCalendarStream({String? month}) {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection('farming_calendar');
+    
+    if (month != null && month.isNotEmpty && month != 'সব মাস') {
+      query = query.where('month', isEqualTo: month);
+    }
+    
+    return query.snapshots().map((snapshot) {
+      final list = snapshot.docs.map((doc) {
+        final d = Map<String, dynamic>.from(doc.data());
+        d['id'] = doc.id;
+        return d;
+      }).toList();
+
+      list.sort((a, b) {
+        final idxA = a['monthIndex'] as int? ?? 99;
+        final idxB = b['monthIndex'] as int? ?? 99;
+        return idxA.compareTo(idxB);
+      });
+
+      return list;
+    });
+  }
+
   void dispose() {
     _cropsController.close();
     _pestsController.close();

@@ -82,17 +82,18 @@
       position: relative;
     }
 
-    /* App Bar */
+    /* App Bar - Seamless Transparent Header matching Flutter App */
     .app-bar {
-      background: var(--primary);
-      color: #fff;
-      padding: 12px 20px;
+      background: transparent !important;
+      color: var(--text-primary);
+      padding: 10px 16px 2px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-      z-index: 10;
+      box-shadow: none !important;
+      z-index: 20;
       width: 100%;
+      box-sizing: border-box;
     }
 
     .app-bar-inner {
@@ -102,49 +103,58 @@
       align-items: center;
     }
 
-    .app-bar-user {
+    .app-header-logo-wrap {
       display: flex;
       align-items: center;
-      gap: 12px;
+      transform: translateY(2px);
     }
 
-    .user-avatar-badge {
-      width: 46px;
-      height: 46px;
-      background: #FFFFFF;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      color: var(--primary);
-      overflow: hidden;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
-      border: 2px solid #FFFFFF;
-      flex-shrink: 0;
-    }
-
-    .app-header-logo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .app-bar-text h2 {
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    .app-bar-text p {
-      font-size: 12px;
-      color: #E8F5E9;
+    .app-header-logo-img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.06));
     }
 
     .app-bar-actions {
       display: flex;
       gap: 8px;
+      align-items: center;
+      transform: translateY(2px);
+    }
+
+    .notification-circle-btn {
+      width: 40px;
+      height: 40px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      color: #1E293B;
+      font-size: 19px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .notification-circle-btn:hover {
+      background: #EDF2F7;
+      transform: scale(1.04);
+    }
+
+    .bell-badge-dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: #E53935;
+      border-radius: 50%;
+      border: 1.5px solid #FFFFFF;
+      display: block;
     }
 
     .icon-btn {
@@ -581,151 +591,229 @@
       line-height: 1.4;
     }
 
-    /* Weather Card */
-    .weather-card {
-      background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%);
-      color: #fff;
-      border-radius: 18px;
-      margin: 6px 0 10px 0;
-      padding: 14px 16px;
-      box-shadow: 0 6px 14px rgba(27, 94, 32, 0.22);
+    /* Real-Time Modern Weather Section (Seamless & Transparent Matching Flutter App) */
+    .weather-modern-section {
       width: 100%;
-      box-sizing: border-box;
+      margin: 0 0 14px 0;
+      position: relative;
+      z-index: 2;
     }
 
-    .weather-top {
+    .weather-stack-container {
+      position: relative;
+      width: 100%;
+      height: 195px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
+      overflow: visible;
     }
 
-    .location-chip {
-      background: rgba(255, 255, 255, 0.18);
-      padding: 3px 9px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
+    .weather-lottie-center {
+      position: absolute;
+      width: 175px;
+      height: 175px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .weather-dynamic-greeting-wrap {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    .dynamic-greeting-pill {
+      background: rgba(255, 255, 255, 0.94);
+      padding: 3.5px 12px;
+      border-radius: 14px;
+      border: 0.9px solid #C8E6C9;
+      box-shadow: 0 2px 8px rgba(27, 94, 32, 0.08);
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      color: #1B5E20;
     }
 
-    .weather-condition-tag {
-      background: rgba(0, 0, 0, 0.25);
-      padding: 2.5px 9px;
-      border-radius: 14px;
-      font-size: 11.5px;
-      color: #E8F5E9;
-    }
-
-    .weather-main {
+    .weather-left-col {
+      position: absolute;
+      left: 0;
+      top: 25px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 4;
     }
 
-    .temp-large {
-      font-size: 40px;
-      font-weight: 700;
-      line-height: 1;
+    .location-chip-modern {
+      background: #F1F8E9;
+      border: 1px solid #C8E6C9;
+      border-radius: 16px;
+      padding: 3px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .weather-refresh-btn {
+      background: transparent;
+      border: none;
+      color: #2E7D32;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 3px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .weather-refresh-btn:hover {
+      background: rgba(46, 125, 50, 0.1);
+    }
+
+    .weather-refresh-btn.spinning i {
+      animation: premiumSpin 0.75s linear infinite;
+    }
+
+    .temp-large-modern {
+      font-size: 38px;
+      font-weight: 900;
+      color: #1E293B;
+      line-height: 1.05;
+      letter-spacing: -1px;
+      margin-top: 6px;
       display: flex;
       align-items: flex-start;
     }
 
-    .temp-large span {
+    .temp-large-modern .degree-c {
       font-size: 18px;
+      font-weight: 800;
+      color: #64748B;
       margin-left: 2px;
-      color: rgba(255, 255, 255, 0.8);
     }
 
-    .weather-metrics {
+    .weather-condition-modern {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    .weather-right-col {
+      position: absolute;
+      right: 0;
+      top: 25px;
       display: flex;
-      gap: 14px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      z-index: 4;
     }
 
-    .metric-item {
-      text-align: right;
-    }
-
-    .metric-label {
-      font-size: 10.5px;
-      color: rgba(255, 255, 255, 0.7);
-      display: flex;
+    .metric-overlay-pill {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 4px 8px;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
-      justify-content: flex-end;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    .metric-value {
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
+    .metric-overlay-pill .m-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #64748B;
     }
 
-    .farming-tip-box {
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 10px;
-      padding: 7px 10px;
-      font-size: 12px;
-      line-height: 1.3;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
+    .metric-overlay-pill .m-val {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #1E293B;
     }
 
-    .farming-tip-box i {
-      color: #FFE082;
-      font-size: 16px;
+    .forecast-card-5day {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 7px 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      margin-top: 4px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    .forecast-divider {
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      padding-top: 7px;
-    }
-
-    .forecast-header {
-      font-size: 10.5px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.75);
-      margin-bottom: 6px;
-    }
-
-    .forecast-days {
+    .forecast-5day-grid {
       display: flex;
       justify-content: space-between;
-      gap: 6px;
+      align-items: stretch;
+      width: 100%;
     }
 
-    .forecast-day-box {
+    .forecast-day-col {
       flex: 1;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 5px 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
+      padding: 2px 1px;
     }
 
-    .forecast-day-box .day-title {
-      font-size: 11px;
+    .forecast-day-divider {
+      width: 1px;
+      background: #E2E8F0;
+      margin: 4px 0;
+    }
+
+    .forecast-day-name {
+      font-size: 10.5px;
       font-weight: 700;
+      color: #334155;
     }
 
-    .forecast-day-box i {
-      color: #FFD54F;
+    .forecast-day-date {
+      font-size: 8.5px;
+      font-weight: 500;
+      color: #64748B;
+      margin-top: 1px;
+    }
+
+    .forecast-day-icon {
       font-size: 15px;
+      color: #F59E0B;
       margin: 3px 0;
     }
 
-    .forecast-day-box .day-temp {
-      font-size: 10.5px;
-      font-weight: 600;
+    .forecast-day-temp {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #1E293B;
+      white-space: nowrap;
     }
 
-    .forecast-day-box .day-rain {
-      font-size: 9px;
-      color: rgba(255, 255, 255, 0.7);
+    .forecast-day-rain {
+      font-size: 8.5px;
+      font-weight: 600;
+      color: #059669;
+      margin-top: 1px;
+      white-space: nowrap;
     }
 
     /* Section Headers */
@@ -1165,24 +1253,14 @@
     }
 
     #tab-home .weather-sticky-wrap {
-      position: sticky;
-      top: 0;
-      z-index: 25;
-      padding: 2px 0 8px 0;
-      background: linear-gradient(180deg, rgba(244, 247, 252, 0.98) 75%, rgba(244, 247, 252, 0) 100%);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      margin-top: -4px;
-      margin-bottom: 6px;
-    }
-
-    #tab-home .weather-card {
-      border: 1.2px solid rgba(255, 255, 255, 0.32);
-      border-radius: 20px;
-      box-shadow: 0 12px 28px rgba(27, 94, 32, 0.28), 0 4px 14px rgba(41, 121, 255, 0.10);
       position: relative;
-      margin: 0;
-      z-index: 1;
+      z-index: 25;
+      padding: 0 0 6px 0;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      margin-top: 0;
+      margin-bottom: 6px;
     }
 
     #tab-home .quick-card {
@@ -2166,22 +2244,15 @@
 
   <!-- Full Screen Responsive App Root (Edge-to-Edge) -->
   <div class="app-screen">
-    <!-- App Bar -->
+    <!-- Seamless Transparent App Bar Matching Flutter Header -->
     <div class="app-bar" id="mainAppBar">
       <div class="app-bar-inner">
-        <div class="app-bar-user">
-          <div class="user-avatar-badge" title="কৃষি কথা লোগো">
-            <img src="pnglogo.png" alt="কৃষি কথা লোগো" class="app-header-logo"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
-            <i class="fa-solid fa-leaf" style="display:none; color: var(--primary);"></i>
-          </div>
-          <div class="app-bar-text">
-            <h2>কৃষি কথা – Krishi Kotha</h2>
-            <p>কৃষকের পাশে সবসময়</p>
-          </div>
+        <div class="app-header-logo-wrap" title="কৃষি কথা – Krishi Kotha">
+          <img src="pnglogo.png" alt="কৃষি কথা লোগো" class="app-header-logo-img"
+            onerror="this.src='pnglogo.png'" />
         </div>
         <div class="app-bar-actions">
-          <button class="icon-btn notification-bell-btn" onclick="openNotificationsPage()"
+          <button class="notification-circle-btn" onclick="openNotificationsPage()"
             title="বিজ্ঞপ্তি ও নোটিফিকেশন">
             <i class="fa-solid fa-bell"></i>
             <span class="bell-badge-dot" id="bellBadgeDot"></span>
@@ -2223,61 +2294,66 @@
             style="position: absolute; top: 520px; right: 25px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(232, 234, 246, 0.32) 0%, rgba(197, 202, 233, 0.14) 65%, transparent 80%); filter: blur(25px);">
           </div>
         </div>
-        <!-- Real-Time Weather Card (Pinned Sticky Header) -->
+        <!-- Real-Time Weather Section Matching Flutter Layout (Lottie, Dynamic Greeting, No Dropdown Icon & 5-Day Forecast) -->
         <div class="weather-sticky-wrap">
-          <div class="weather-card">
-            <div class="weather-top">
-              <div class="location-chip" onclick="openDistrictPicker()">
-                <i class="fa-solid fa-location-dot"></i>
-                <span id="weatherDistrict">ঢাকা জেলা</span>
-                <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+          <div class="weather-modern-section">
+            <!-- Stack: Animation in center, Greeting at top, Weather Left, Metrics Right -->
+            <div class="weather-stack-container">
+              <!-- Central Lottie Animation -->
+              <div class="weather-lottie-center">
+                <lottie-player src="assets/animation/home animation.json" background="transparent" speed="1" style="width: 175px; height: 175px;" loop autoplay></lottie-player>
               </div>
-              <div class="weather-condition-tag" id="weatherCondition">
-                আংশিক মেঘলা
+
+              <!-- Dynamic Greeting Badge (Top Center) -->
+              <div class="weather-dynamic-greeting-wrap">
+                <div class="dynamic-greeting-pill" id="dynamicGreetingPill">
+                  <i class="fa-solid fa-sun" id="greetingIcon" style="color: #2E7D32; font-size: 13px;"></i>
+                  <span id="greetingText">শুভ সকাল</span>
+                </div>
+              </div>
+
+              <!-- Left Side: Location Chip, Degree, Condition -->
+              <div class="weather-left-col">
+                <div class="location-chip-modern" id="weatherLocationChip" onclick="openDistrictPicker()" title="জেলা নির্বাচন করুন" style="cursor: pointer;">
+                  <i class="fa-solid fa-location-dot" style="color: #2E7D32; font-size: 13px;"></i>
+                  <span id="weatherDistrict" style="color: #1B5E20; font-weight: 800; font-size: 12.5px;">ঢাকা</span>
+                  <button class="weather-refresh-btn" id="weatherRefreshBtn" onclick="event.stopPropagation(); manualRefreshWeather();" title="আবহাওয়া রিফ্রেশ">
+                    <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+                  </button>
+                </div>
+                <div class="temp-large-modern">
+                  <span id="tempValue">২৮</span><span class="degree-c">°C</span>
+                </div>
+                <div class="weather-condition-modern">
+                  <i class="fa-solid fa-sun" id="weatherConditionIcon" style="color: #F59E0B; font-size: 14px;"></i>
+                  <span id="weatherCondition">পরিষ্কার আকাশ</span>
+                </div>
+              </div>
+
+              <!-- Right Side: Humidity, Rain, Wind Metrics -->
+              <div class="weather-right-col">
+                <div class="metric-overlay-pill">
+                  <i class="fa-solid fa-droplet" style="color: #0288D1; font-size: 12px;"></i>
+                  <span class="m-label">আর্দ্রতা</span>
+                  <span class="m-val" id="humidityValue">৬৫%</span>
+                </div>
+                <div class="metric-overlay-pill">
+                  <i class="fa-solid fa-cloud-rain" style="color: #00897B; font-size: 12px;"></i>
+                  <span class="m-label">বৃষ্টি</span>
+                  <span class="m-val" id="rainValue">২০%</span>
+                </div>
+                <div class="metric-overlay-pill">
+                  <i class="fa-solid fa-wind" style="color: #5C6BC0; font-size: 12px;"></i>
+                  <span class="m-label">বাতাস</span>
+                  <span class="m-val" id="windValue">১২ কিমি/ঘ</span>
+                </div>
               </div>
             </div>
 
-            <div class="weather-main">
-              <div class="temp-large">
-                <span id="tempValue">২৮</span><span>°C</span>
-              </div>
-              <div class="weather-metrics">
-                <div class="metric-item">
-                  <div class="metric-label"><i class="fa-solid fa-cloud-rain"></i> বৃষ্টি</div>
-                  <div class="metric-value" id="rainValue">৩৫%</div>
-                </div>
-                <div class="metric-item">
-                  <div class="metric-label"><i class="fa-solid fa-droplet"></i> আর্দ্রতা</div>
-                  <div class="metric-value" id="humidityValue">৭২%</div>
-                </div>
-                <div class="metric-item">
-                  <div class="metric-label"><i class="fa-solid fa-wind"></i> বাতাস</div>
-                  <div class="metric-value" id="windValue">১২ কিমি/ঘণ্টা</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="forecast-divider">
-              <div class="forecast-header">পরবর্তী ৩ দিনের কৃষি পূর্বাভাস</div>
-              <div class="forecast-days">
-                <div class="forecast-day-box">
-                  <div class="day-title">আজ</div>
-                  <i class="fa-solid fa-cloud-sun"></i>
-                  <div class="day-temp">৩১° / ২২°</div>
-                  <div class="day-rain">বৃষ্টি ৩৫%</div>
-                </div>
-                <div class="forecast-day-box">
-                  <div class="day-title">আগামীকাল</div>
-                  <i class="fa-solid fa-sun"></i>
-                  <div class="day-temp">৩২° / ২৩°</div>
-                  <div class="day-rain">বৃষ্টি ১৫%</div>
-                </div>
-                <div class="forecast-day-box">
-                  <div class="day-title">পরশু</div>
-                  <i class="fa-solid fa-cloud-bolt"></i>
-                  <div class="day-temp">২৯° / ২১°</div>
-                  <div class="day-rain">বৃষ্টি ৭৫%</div>
-                </div>
+            <!-- Compact 5-Day Forecast Card -->
+            <div class="forecast-card-5day">
+              <div class="forecast-5day-grid" id="forecast5DayGrid">
+                <!-- Dynamically populated 5 days -->
               </div>
             </div>
           </div>
@@ -2358,8 +2434,8 @@
         </div>
 
         <div class="quick-grid" style="margin-bottom: 24px;">
-          <!-- ১. চাষ ক্যালেন্ডার -->
-          <div class="quick-card" onclick="openServiceModal('calendar')">
+          <!-- ১. চাষ ক্যালেন্ডার (ফুল পেজ ও মাসভিত্তিক ফিল্টারিং) -->
+          <div class="quick-card" onclick="openCropCalendarPage()">
             <div class="quick-icon-wrap" style="background: #F3E5F5; color: #7B1FA2;">
               <i class="fa-solid fa-calendar-days"></i>
             </div>
@@ -3275,6 +3351,54 @@
           <!-- Extra bottom spacer for smooth scrolling above floating nav -->
           <div style="height: 60px;"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN CROP CALENDAR PAGE MATCHING FLUTTER CROP_CALENDAR_SCREEN -->
+    <div class="full-screen-page" id="cropCalendarPage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <div class="page-topbar" style="background: #fff; border-bottom: 1px solid #E0EFE0; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+        <button class="topbar-back-btn" onclick="closeCropCalendarPage()" style="background: none; border: none; font-size: 18px; color: #1E281F; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #1E281F; margin: 0;">ফসল চাষ ক্যালেন্ডার</h3>
+          <p style="font-size: 11px; color: #4A5B4C; margin: 2px 0 0 0;">মাসভিত্তিক ফসল রোপণ ও পরিচর্যার সময়সূচি</p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <!-- Search Bar -->
+      <div style="background: #fff; padding: 10px 16px 8px 16px;">
+        <div style="background: #F1F8F1; border: 1px solid #E0EFE0; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px;">
+          <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
+          <input type="text" id="cropCalendarSearchInput" placeholder="ফসলের নাম বা মৌসুম খুঁজুন..." oninput="onCropCalendarSearch(this.value)" style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
+        </div>
+      </div>
+
+      <!-- Horizontal Month Filter Chips -->
+      <div style="background: #fff; padding: 4px 0 12px 0; border-bottom: 1px solid #E8EFE8;">
+        <div class="month-chips-scroll" id="calendarMonthChips" style="display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none;">
+          <!-- Dynamically populated month chips -->
+        </div>
+      </div>
+
+      <!-- Month Banner -->
+      <div id="calendarMonthBanner" style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div>
+            <h4 id="calendarBannerMonthTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;"></h4>
+            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">এই মাসের উপযুক্ত ফসল ও পরিচর্যার পরামর্শ নিচে প্রদর্শিত হচ্ছে</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Items List -->
+      <div id="calendarCropsListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <!-- Dynamically rendered crop cards -->
       </div>
     </div>
 
@@ -10917,44 +11041,553 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function selectDistrict(d) {
-      selectedDistrictName = d;
+      selectedDistrictName = (d || 'ঢাকা').replace(' জেলা', '').trim();
       const distEl = document.getElementById('weatherDistrict');
-      if (distEl) distEl.innerText = `${d} জেলা`;
+      if (distEl) distEl.innerText = selectedDistrictName;
       const locSub = document.getElementById('userLocationSub');
-      if (locSub) locSub.innerText = `${d} • সদর`;
+      if (locSub) locSub.innerText = `${selectedDistrictName} • সদর`;
       closeModal('districtPickerModal');
+      fetchLiveWeather(selectedDistrictName);
+    }
 
-      // Update weather sample values based on district
+    // Coordinates & English names mapping for all 64 districts of Bangladesh
+    const districtCoords = {
+      'কক্সবাজার': { lat: 21.4272, lon: 92.0058, en: "Cox's Bazar" },
+      'কিশোরগঞ্জ': { lat: 24.4449, lon: 90.7766, en: "Kishoreganj" },
+      'কুড়িগ্রাম': { lat: 25.8054, lon: 89.6362, en: "Kurigram" },
+      'কুষ্টিয়া': { lat: 23.9013, lon: 89.1205, en: "Kushtia" },
+      'কুমিল্লা': { lat: 23.4682, lon: 91.1788, en: "Comilla" },
+      'খাগড়াছড়ি': { lat: 23.1193, lon: 91.9847, en: "Khagrachhari" },
+      'খুলনা': { lat: 22.8456, lon: 89.5403, en: "Khulna" },
+      'গাইবান্ধা': { lat: 25.3288, lon: 89.5281, en: "Gaibandha" },
+      'গাজীপুর': { lat: 23.9999, lon: 90.4203, en: "Gazipur" },
+      'গোপালগঞ্জ': { lat: 23.0051, lon: 89.8266, en: "Gopalganj" },
+      'চট্টগ্রাম': { lat: 22.3569, lon: 91.7832, en: "Chittagong" },
+      'চুয়াডাঙ্গা': { lat: 23.6402, lon: 88.8418, en: "Chuadanga" },
+      'চাঁদপুর': { lat: 23.2321, lon: 90.6631, en: "Chandpur" },
+      'চাঁপাইনবাবগঞ্জ': { lat: 24.5965, lon: 88.2775, en: "Nawabganj" },
+      'জয়পুরহাট': { lat: 25.1015, lon: 89.0295, en: "Joypurhat" },
+      'জামালপুর': { lat: 24.9375, lon: 89.9378, en: "Jamalpur" },
+      'ঝালকাঠি': { lat: 22.6406, lon: 90.1987, en: "Jhalokati" },
+      'ঝিনাইদহ': { lat: 23.5448, lon: 89.1539, en: "Jhenaidah" },
+      'টাঙ্গাইল': { lat: 24.2513, lon: 89.9167, en: "Tangail" },
+      'ঠাকুরগাঁও': { lat: 26.0337, lon: 88.4617, en: "Thakurgaon" },
+      'ঢাকা': { lat: 23.8103, lon: 90.4125, en: "Dhaka" },
+      'দিনাজপুর': { lat: 25.6217, lon: 88.6355, en: "Dinajpur" },
+      'নওগাঁ': { lat: 24.7936, lon: 88.9318, en: "Naogaon" },
+      'নড়াইল': { lat: 23.1725, lon: 89.5127, en: "Narail" },
+      'নরসিংদী': { lat: 23.9193, lon: 90.7202, en: "Narsingdi" },
+      'নাটোর': { lat: 24.4206, lon: 88.9324, en: "Natore" },
+      'নারায়ণগঞ্জ': { lat: 23.6238, lon: 90.5000, en: "Narayanganj" },
+      'নীলফামারী': { lat: 25.9318, lon: 88.8560, en: "Nilphamari" },
+      'নেত্রকোণা': { lat: 24.8709, lon: 90.7279, en: "Netrokona" },
+      'নোয়াখালী': { lat: 22.8696, lon: 91.0994, en: "Noakhali" },
+      'পঞ্চগড়': { lat: 26.3411, lon: 88.5542, en: "Panchagarh" },
+      'পটুয়াখালী': { lat: 22.3596, lon: 90.3299, en: "Patuakhali" },
+      'পাবনা': { lat: 24.0064, lon: 89.2372, en: "Pabna" },
+      'পিরোজপুর': { lat: 22.5841, lon: 89.9720, en: "Pirojpur" },
+      'ফরিদপুর': { lat: 23.6071, lon: 89.8429, en: "Faridpur" },
+      'ফেনী': { lat: 23.0159, lon: 91.3976, en: "Feni" },
+      'বগুড়া': { lat: 24.8465, lon: 89.3777, en: "Bogra" },
+      'বরগুনা': { lat: 22.0953, lon: 90.1121, en: "Barguna" },
+      'বরিশাল': { lat: 22.7010, lon: 90.3535, en: "Barisal" },
+      'বাগেরহাট': { lat: 22.6516, lon: 89.7859, en: "Bagerhat" },
+      'বান্দরবান': { lat: 22.1953, lon: 92.2184, en: "Bandarban" },
+      'ব্রাহ্মণবাড়িয়া': { lat: 23.9571, lon: 91.1119, en: "Brahmanbaria" },
+      'ভোলা': { lat: 22.6859, lon: 90.6481, en: "Bhola" },
+      'ময়মনসিংহ': { lat: 24.7471, lon: 90.4203, en: "Mymensingh" },
+      'মাগুরা': { lat: 23.4873, lon: 89.4199, en: "Magura" },
+      'মাদারীপুর': { lat: 23.1641, lon: 90.1897, en: "Madaripur" },
+      'মানিকগঞ্জ': { lat: 23.8644, lon: 90.0047, en: "Manikganj" },
+      'মুন্সীগঞ্জ': { lat: 23.5422, lon: 90.5305, en: "Munshiganj" },
+      'মেহেরপুর': { lat: 23.7622, lon: 88.6318, en: "Meherpur" },
+      'মৌলভীবাজার': { lat: 24.4829, lon: 91.7774, en: "Moulvibazar" },
+      'যশোর': { lat: 23.1664, lon: 89.2182, en: "Jessore" },
+      'রংপুর': { lat: 25.7439, lon: 89.2752, en: "Rangpur" },
+      'রাঙ্গামাটি': { lat: 22.7324, lon: 92.2985, en: "Rangamati" },
+      'রাজবাড়ী': { lat: 23.7574, lon: 89.6445, en: "Rajbari" },
+      'রাজশাহী': { lat: 24.3636, lon: 88.6241, en: "Rajshahi" },
+      'লক্ষ্মীপুর': { lat: 22.9425, lon: 90.8412, en: "Lakshmipur" },
+      'লালমনিরহাট': { lat: 25.9923, lon: 89.2847, en: "Lalmonirhat" },
+      'শরীয়তপুর': { lat: 23.2423, lon: 90.3537, en: "Shariatpur" },
+      'শেরপুর': { lat: 25.0205, lon: 90.0153, en: "Sherpur" },
+      'সাতক্ষীরা': { lat: 22.7185, lon: 89.0705, en: "Satkhira" },
+      'সিরাজগঞ্জ': { lat: 24.4534, lon: 89.7008, en: "Sirajganj" },
+      'সিলেট': { lat: 24.8949, lon: 91.8687, en: "Sylhet" },
+      'সুনামগঞ্জ': { lat: 25.0658, lon: 91.3950, en: "Sunamganj" },
+      'হবিগঞ্জ': { lat: 24.3749, lon: 91.4155, en: "Habiganj" }
+    };
+
+    function updateDynamicGreeting() {
+      const hour = new Date().getHours();
+      let greeting = 'শুভ সকাল';
+      let icon = 'fa-sun';
+      if (hour >= 6 && hour < 12) {
+        greeting = 'শুভ সকাল';
+        icon = 'fa-sun';
+      } else if (hour >= 12 && hour < 16) {
+        greeting = 'শুভ অপরাহ্ণ';
+        icon = 'fa-cloud-sun';
+      } else if (hour >= 16 && hour < 18) {
+        greeting = 'শুভ বিকেল';
+        icon = 'fa-cloud-sun';
+      } else if (hour >= 18 && hour < 20) {
+        greeting = 'শুভ সন্ধ্যা';
+        icon = 'fa-moon';
+      } else {
+        greeting = 'শুভ রাত্রি';
+        icon = 'fa-bed';
+      }
+      const gText = document.getElementById('greetingText');
+      const gIcon = document.getElementById('greetingIcon');
+      if (gText) gText.innerText = greeting;
+      if (gIcon) gIcon.className = 'fa-solid ' + icon;
+    }
+
+    function translateConditionBn(main, desc) {
+      const m = (main || '').toLowerCase();
+      const d = (desc || '').toLowerCase();
+      if (d.includes('thunderstorm') || m.includes('thunder')) return 'বজ্রসহ বৃষ্টি';
+      if (d.includes('heavy rain')) return 'ভারী বৃষ্টি';
+      if (d.includes('moderate rain')) return 'মাঝারি বৃষ্টি';
+      if (d.includes('light rain') || d.includes('drizzle')) return 'হালকা বৃষ্টি';
+      if (d.includes('shower rain')) return 'বৃষ্টির সম্ভাবনা';
+      if (m.includes('rain')) return 'বৃষ্টি';
+      if (d.includes('overcast')) return 'ঘন মেঘলা';
+      if (d.includes('broken clouds')) return 'মেঘলা আকাশ';
+      if (d.includes('scattered clouds')) return 'আংশিক মেঘলা';
+      if (d.includes('few clouds')) return 'হালকা মেঘ';
+      if (m.includes('clouds')) return 'আংশিক মেঘলা';
+      if (d.includes('clear') || m.includes('clear')) return 'পরিষ্কার আকাশ';
+      if (d.includes('mist') || d.includes('fog')) return 'কুয়াশাচ্ছন্ন';
+      if (d.includes('haze')) return 'কুয়াশা / ধোঁয়াশা';
+      return 'স্বাভাবিক আবহাওয়া';
+    }
+
+    function getWeatherIconClass(conditionBn) {
+      const c = (conditionBn || '').toLowerCase();
+      if (c.includes('বৃষ্টি')) return { icon: 'fa-cloud-rain', color: '#0288D1' };
+      if (c.includes('বজ্র')) return { icon: 'fa-cloud-bolt', color: '#D97706' };
+      if (c.includes('মেঘ')) return { icon: 'fa-cloud', color: '#64748B' };
+      if (c.includes('কুয়াশা') || c.includes('ধোঁয়াশা')) return { icon: 'fa-smog', color: '#78909C' };
+      return { icon: 'fa-sun', color: '#F59E0B' };
+    }
+
+    const bdWeekdays = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি', 'রবি'];
+    const bdMonths = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে'];
+
+    async function fetchLiveWeather(district) {
+      const cleanDistrict = (district || 'ঢাকা').replace(' জেলা', '').trim();
+      selectedDistrictName = cleanDistrict;
+      const distEl = document.getElementById('weatherDistrict');
+      if (distEl) distEl.innerText = cleanDistrict;
+
+      const refreshBtn = document.getElementById('weatherRefreshBtn');
+      if (refreshBtn) refreshBtn.classList.add('spinning');
+
+      const coord = districtCoords[cleanDistrict] || { lat: 23.8103, lon: 90.4125, en: 'Dhaka' };
+      const apiKey = '689052eda359281e3e2daff40d3dc623';
+
+      try {
+        const [currRes, foreRes] = await Promise.allSettled([
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${coord.lat}&lon=${coord.lon}&appid=${apiKey}&units=metric`),
+          fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${coord.lat}&lon=${coord.lon}&appid=${apiKey}&units=metric`)
+        ]);
+
+        let currData = null;
+        let foreData = null;
+
+        if (currRes.status === 'fulfilled' && currRes.value.ok) {
+          currData = await currRes.value.json();
+        }
+        if (foreRes.status === 'fulfilled' && foreRes.value.ok) {
+          foreData = await foreRes.value.json();
+        }
+
+        if (currData && currData.main) {
+          const temp = Math.round(currData.main.temp);
+          const hum = currData.main.humidity;
+          const wind = Math.round((currData.wind?.speed || 2.5) * 3.6);
+          const wObj = (currData.weather && currData.weather[0]) || {};
+          const condBn = translateConditionBn(wObj.main, wObj.description);
+          const iconConfig = getWeatherIconClass(condBn);
+
+          let rainProb = 20;
+          if (foreData && foreData.list && foreData.list.length > 0) {
+            const firstPop = foreData.list[0].pop;
+            if (firstPop !== undefined) rainProb = Math.round(firstPop * 100);
+          }
+
+          document.getElementById('tempValue').innerText = toBangla(temp);
+          document.getElementById('humidityValue').innerText = toBangla(hum) + '%';
+          document.getElementById('windValue').innerText = toBangla(wind) + ' কিমি/ঘ';
+          document.getElementById('rainValue').innerText = toBangla(rainProb) + '%';
+          document.getElementById('weatherCondition').innerText = condBn;
+          const condIcon = document.getElementById('weatherConditionIcon');
+          if (condIcon) {
+            condIcon.className = 'fa-solid ' + iconConfig.icon;
+            condIcon.style.color = iconConfig.color;
+          }
+        }
+
+        if (foreData && foreData.list) {
+          render5DayForecastFromApi(foreData.list);
+        } else {
+          renderFallback5DayForecast(cleanDistrict);
+        }
+      } catch (err) {
+        console.warn('Live weather fetch fallback:', err);
+        renderFallbackWeather(cleanDistrict);
+      } finally {
+        if (refreshBtn) refreshBtn.classList.remove('spinning');
+      }
+    }
+
+    function render5DayForecastFromApi(list) {
+      const groups = {};
+      const dates = [];
+      list.forEach(item => {
+        const d = new Date((item.dt + 6 * 3600) * 1000);
+        const key = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+        if (!groups[key]) {
+          groups[key] = [];
+          dates.push({ key, date: d });
+        }
+        groups[key].push(item);
+      });
+
+      const dayKeys = dates.slice(0, 5);
+      const container = document.getElementById('forecast5DayGrid');
+      if (!container) return;
+
+      container.innerHTML = dayKeys.map((dk, idx) => {
+        const items = groups[dk.key];
+        let maxT = -999, minT = 999, maxPop = 0;
+        let condCounts = {};
+
+        items.forEach(it => {
+          if (it.main.temp_max > maxT) maxT = it.main.temp_max;
+          if (it.main.temp_min < minT) minT = it.main.temp_min;
+          if (it.pop && it.pop > maxPop) maxPop = it.pop;
+          const c = translateConditionBn(it.weather[0]?.main, it.weather[0]?.description);
+          condCounts[c] = (condCounts[c] || 0) + 1;
+        });
+
+        const bestCond = Object.keys(condCounts).sort((a, b) => condCounts[b] - condCounts[a])[0] || 'পরিষ্কার আকাশ';
+        const iconConfig = getWeatherIconClass(bestCond);
+
+        let dayTitle = 'আজ';
+        if (idx === 1) dayTitle = 'কাল';
+        else if (idx > 1) {
+          const dayIdx = (dk.date.getUTCDay() + 6) % 7;
+          dayTitle = bdWeekdays[dayIdx] || 'দিন';
+        }
+
+        const dateStr = toBangla(dk.date.getUTCDate()) + ' ' + bdMonths[dk.date.getUTCMonth()];
+        const isLast = idx === dayKeys.length - 1;
+
+        return `
+          <div class="forecast-day-col">
+            <span class="forecast-day-name">${dayTitle}</span>
+            <span class="forecast-day-date">${dateStr}</span>
+            <i class="fa-solid ${iconConfig.icon} forecast-day-icon" style="color: ${iconConfig.color};"></i>
+            <span class="forecast-day-temp">${toBangla(Math.round(maxT))}° / ${toBangla(Math.round(minT))}°</span>
+            <span class="forecast-day-rain">বৃষ্টি ${toBangla(Math.round(maxPop * 100))}%</span>
+          </div>
+          ${!isLast ? '<div class="forecast-day-divider"></div>' : ''}
+        `;
+      }).join('');
+    }
+
+    function renderFallback5DayForecast(cleanDistrict) {
+      const container = document.getElementById('forecast5DayGrid');
+      if (!container) return;
+
+      const now = new Date();
+      const days = [];
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(now.getTime() + i * 24 * 3600 * 1000);
+        let title = 'আজ';
+        if (i === 1) title = 'কাল';
+        else if (i > 1) title = bdWeekdays[(d.getDay() + 6) % 7];
+        days.push({
+          title,
+          date: toBangla(d.getDate()) + ' ' + bdMonths[d.getMonth()],
+          max: 30 + (i % 3),
+          min: 21 + (i % 2),
+          rain: 15 + i * 5,
+          icon: i === 2 ? 'fa-cloud-rain' : (i === 3 ? 'fa-cloud' : 'fa-sun'),
+          color: i === 2 ? '#0288D1' : (i === 3 ? '#64748B' : '#F59E0B')
+        });
+      }
+
+      container.innerHTML = days.map((d, idx) => `
+        <div class="forecast-day-col">
+          <span class="forecast-day-name">${d.title}</span>
+          <span class="forecast-day-date">${d.date}</span>
+          <i class="fa-solid ${d.icon} forecast-day-icon" style="color: ${d.color};"></i>
+          <span class="forecast-day-temp">${toBangla(d.max)}° / ${toBangla(d.min)}°</span>
+          <span class="forecast-day-rain">বৃষ্টি ${toBangla(d.rain)}%</span>
+        </div>
+        ${idx < 4 ? '<div class="forecast-day-divider"></div>' : ''}
+      `).join('');
+    }
+
+    function renderFallbackWeather(cleanDistrict) {
       const tempEl = document.getElementById('tempValue');
       const rainEl = document.getElementById('rainValue');
       const condEl = document.getElementById('weatherCondition');
       const humEl = document.getElementById('humidityValue');
       const windEl = document.getElementById('windValue');
 
-      if (['রংপুর', 'দিনাজপুর', 'ঠাকুরগাঁও', 'পঞ্চগড়', 'লালমনিরহাট'].includes(d)) {
-        if (tempEl) tempEl.innerText = '২৭';
-        if (rainEl) rainEl.innerText = '১০%';
-        if (condEl) condEl.innerText = 'রোদেলা ও শুষ্ক';
-        if (humEl) humEl.innerText = '৫৮%';
-        if (windEl) windEl.innerText = '৮ কিমি/ঘণ্টা';
-      } else if (['সিলেট', 'মৌলভীবাজার', 'চট্টগ্রাম', 'কক্সবাজার', 'বান্দরবান'].includes(d)) {
-        if (tempEl) tempEl.innerText = '২৯';
-        if (rainEl) rainEl.innerText = '৬৫%';
-        if (condEl) condEl.innerText = 'বৃষ্টির সম্ভাবনা';
-        if (humEl) humEl.innerText = '৮২%';
-        if (windEl) windEl.innerText = '১৫ কিমি/ঘণ্টা';
-      } else if (['খুলনা', 'যশোর', 'কুষ্টিয়া', 'রাজশাহী', 'চুয়াডাঙ্গা'].includes(d)) {
-        if (tempEl) tempEl.innerText = '৩২';
-        if (rainEl) rainEl.innerText = '১৫%';
-        if (condEl) condEl.innerText = 'উষ্ণ ও রৌদ্রোজ্জ্বল';
-        if (humEl) humEl.innerText = '৫৫%';
-        if (windEl) windEl.innerText = '১০ কিমি/ঘণ্টা';
+      if (tempEl) tempEl.innerText = '২৮';
+      if (rainEl) rainEl.innerText = '২০%';
+      if (condEl) condEl.innerText = 'পরিষ্কার আকাশ';
+      if (humEl) humEl.innerText = '৬৫%';
+      if (windEl) windEl.innerText = '১২ কিমি/ঘ';
+
+      renderFallback5DayForecast(cleanDistrict);
+    }
+
+    function manualRefreshWeather() {
+      fetchLiveWeather(selectedDistrictName || 'ঢাকা');
+    }
+
+    // ================= FULL PAGE CROP CALENDAR CONTROLLER =================
+    const calendarMonths = [
+      'সব মাস', 'বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+      'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'
+    ];
+    const calendarMonthEnMap = {
+      'বৈশাখ': 'এপ্রিল - মে',
+      'জ্যৈষ্ঠ': 'মে - জুন',
+      'আষাঢ়': 'জুন - জুলাই',
+      'শ্রাবণ': 'জুলাই - আগস্ট',
+      'ভাদ্র': 'আগস্ট - সেপ্টেম্বর',
+      'আশ্বিন': 'সেপ্টেম্বর - অক্টোবর',
+      'কার্তিক': 'অক্টোবর - নভেম্বর',
+      'অগ্রহায়ণ': 'নভেম্বর - ডিসেম্বর',
+      'পৌষ': 'ডিসেম্বর - জানুয়ারি',
+      'মাঘ': 'জানুয়ারি - ফেব্রুয়ারি',
+      'ফাল্গুন': 'ফেব্রুয়ারি - মার্চ',
+      'চৈত্র': 'মার্চ - এপ্রিল'
+    };
+
+    let selectedCalendarMonth = 'সব মাস';
+    let calendarSearchQuery = '';
+    let defaultCalendarData = [
+      {
+        cropName: 'বোরো ধান (ব্রি ধান-২৮, ২৯, ৮৯)',
+        cropCategory: 'দানা জাতীয় ফসল',
+        season: 'রবি মৌসুম',
+        month: 'কার্তিক, অগ্রহায়ণ, পৌষ',
+        description: 'বাংলাদেশে সবচেয়ে বেশি ফলনশীল ধান। সঠিক সময়ে বীজতলা তৈরি ও চারা রোপণ অত্যন্ত গুরুত্বপূর্ণ।',
+        sowingTime: 'কার্তিক থেকে অগ্রহায়ণ (বীজ বপন)',
+        plantingTime: 'পৌষ থেকে মাঘ (চারা রোপণ)',
+        careInstructions: 'চারা রোপণের সময় লাইন টু লাইন ২০ সেমি ও গাছ থেকে গাছ ১৫ সেমি দূরত্ব রাখুন। পর্যাপ্ত সেচ নিশ্চিত করুন।',
+        fertilizerRecommendation: 'ইউরিয়া, টিএসপি, এমওপি এবং জিপসাম সার সঠিক অনুপাতে ৩ কিস্তিতে প্রয়োগ করুন।'
+      },
+      {
+        cropName: 'গম (বারি গম-৩৩, ৩৪)',
+        cropCategory: 'দানা জাতীয় ফসল',
+        season: 'রবি মৌসুম',
+        month: 'কার্তিক, অগ্রহায়ণ',
+        description: 'উচ্চ পুষ্টিসমৃদ্ধ খাদ্যশস্য। আগাম রবি মৌসুমে বপন করলে ব্লাস্ট রোগ থেকে রক্ষা পাওয়া যায়।',
+        sowingTime: 'মধ্য-কার্তিক থেকে অগ্রহায়ণের প্রথম সপ্তাহ',
+        plantingTime: 'সরাসরি জমিতে বীজ বপন',
+        careInstructions: 'বীজ বপনের পূর্বে ভিটাভেক্স-২০০ দিয়ে শোধন করুন। জমিতে রস নিশ্চিত করে প্রথম সেচ দিন।',
+        fertilizerRecommendation: 'জমি তৈরির শেষ চাষে সব টিএসপি, এমওপি ও অর্ধেক ইউরিয়া দিন।'
+      },
+      {
+        cropName: 'গোল আলু (ডায়মন্ড, কার্ডিনাল)',
+        cropCategory: 'কন্দ জাতীয় ফসল',
+        season: 'রবি মৌসুম',
+        month: 'কার্তিক, অগ্রহায়ণ',
+        description: 'উচ্চ ফলনশীল অর্থকরী ফসল। শীতের শুষ্ক আবহাওয়ায় সবচেয়ে ভালো জন্মে।',
+        sowingTime: 'মধ্য-কার্তিক থেকে অগ্রহায়ণ',
+        plantingTime: 'বীজ আলু কাটিং করে রোপণ',
+        careInstructions: 'মাটিতে যাতে পানি না জমে সেদিকে খেয়াল রাখুন। গাছ ১৫ সেমি বড় হলে গোড়ায় মাটি তুলে দিন।',
+        fertilizerRecommendation: 'গোবর সার বেশি প্রয়োগ করুন এবং পটাশ সার নিয়মিত মাত্রায় বজায় রাখুন।'
+      },
+      {
+        cropName: 'তোষা পাট (ও-৯৮৯৭, রবি-১)',
+        cropCategory: 'আঁশ জাতীয় ফসল',
+        season: 'খরিপ-১ মৌসুম',
+        month: 'চৈত্র, বৈশাখ',
+        description: 'সোনালী আঁশ হিসেবে পরিচিত। উষ্ণ ও আর্দ্র আবহাওয়ায় খুব দ্রুত বাড়ে।',
+        sowingTime: 'মধ্য-চৈত্র থেকে বৈশাখ',
+        plantingTime: 'সরাসরি সারিবদ্ধ বপন',
+        careInstructions: 'গাছ ঘন হলে ১৫-২০ দিন পর চারা পাতলা করে দিন এবং নিড়ানি দিয়ে আগাছা দমন করুন।',
+        fertilizerRecommendation: 'ইউরিয়া দুই কিস্তিতে দিন: অর্ধেক শেষ চাষে ও বাকি অর্ধেক বপনের ৪০-৪৫ দিন পর।'
+      },
+      {
+        cropName: 'গ্রীষ্মকালীন ভুট্টা (হাইব্রিড)',
+        cropCategory: 'দানা ও পশুখাদ্য',
+        season: 'খরিপ-১ মৌসুম',
+        month: 'ফাল্গুন, চৈত্র, বৈশাখ',
+        description: 'উচ্চ ফলনশীল বহুমুখী খাদ্য ও পশুখাদ্য শস্য।',
+        sowingTime: 'ফাল্গুন থেকে চৈত্র',
+        plantingTime: 'সারি করে বপন',
+        careInstructions: 'ফল আর্মিওয়ার্ম পোকা নজরদারিতে রাখুন এবং অনুমোদিত জৈব বা ফেরোমোন ফাঁদ ব্যবহার করুন।',
+        fertilizerRecommendation: 'দস্তা ও বোরন সার প্রয়োগ করলে ভুট্টার মোচায় দানার পুষ্টতা বাড়ে।'
+      },
+      {
+        cropName: 'রোপা আমন ধান (ব্রি ধান-৪৯, ৭১, ৭৫)',
+        cropCategory: 'দানা জাতীয় ফসল',
+        season: 'খরিপ-২ মৌসুম',
+        month: 'আষাঢ়, শ্রাবণ, ভাদ্র',
+        description: 'বর্ষাকালীন প্রধান খাদ্যশস্য। বৃষ্টির পানির উপর নির্ভরশীল প্রধান ফসল।',
+        sowingTime: 'আষাঢ়ের মাঝামাঝি (বীজতলা)',
+        plantingTime: 'শ্রাবণ মাসের মধ্যে চারা রোপণ',
+        careInstructions: 'রোপণের পর জমিতে ২-৩ ইঞ্চি পানি রাখুন। মাজরা পোকা দমনে আলোক ফাঁদ ব্যবহার করুন।',
+        fertilizerRecommendation: 'ইউরিয়া সার সমান তিন কিস্তিতে প্রয়োগ করতে হবে।'
+      }
+    ];
+
+    function openCropCalendarPage() {
+      const page = document.getElementById('cropCalendarPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+      renderCalendarMonthChips();
+      renderCalendarCrops();
+      initFirestoreCalendarSync();
+    }
+
+    function closeCropCalendarPage() {
+      const page = document.getElementById('cropCalendarPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+    }
+
+    function renderCalendarMonthChips() {
+      const container = document.getElementById('calendarMonthChips');
+      if (!container) return;
+      container.innerHTML = calendarMonths.map(m => {
+        const isSel = selectedCalendarMonth === m;
+        return `
+          <button type="button" onclick="selectCalendarMonth('${m}')" style="
+            background: ${isSel ? '#2E7D32' : '#F3F7F3'};
+            color: ${isSel ? '#fff' : '#1E281F'};
+            border: 1px solid ${isSel ? '#2E7D32' : '#D8E4D8'};
+            border-radius: 20px;
+            padding: 7px 15px;
+            font-size: 12.5px;
+            font-weight: ${isSel ? '700' : '600'};
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: ${isSel ? '0 2px 6px rgba(46,125,50,0.25)' : 'none'};
+          ">${m}</button>
+        `;
+      }).join('');
+    }
+
+    function selectCalendarMonth(m) {
+      selectedCalendarMonth = m;
+      renderCalendarMonthChips();
+      renderCalendarCrops();
+    }
+
+    function onCropCalendarSearch(val) {
+      calendarSearchQuery = (val || '').trim().toLowerCase();
+      renderCalendarCrops();
+    }
+
+    function renderCalendarCrops() {
+      const banner = document.getElementById('calendarMonthBanner');
+      const bTitle = document.getElementById('calendarBannerMonthTitle');
+      if (selectedCalendarMonth !== 'সব মাস' && calendarMonthEnMap[selectedCalendarMonth]) {
+        if (banner) banner.style.display = 'block';
+        if (bTitle) bTitle.innerText = `${selectedCalendarMonth} (${calendarMonthEnMap[selectedCalendarMonth]})`;
       } else {
-        if (tempEl) tempEl.innerText = '২৮';
-        if (rainEl) rainEl.innerText = '৩৫%';
-        if (condEl) condEl.innerText = 'আংশিক মেঘলা';
-        if (humEl) humEl.innerText = '৭২%';
-        if (windEl) windEl.innerText = '১২ কিমি/ঘণ্টা';
+        if (banner) banner.style.display = 'none';
+      }
+
+      let filtered = [...defaultCalendarData];
+      if (selectedCalendarMonth !== 'সব মাস') {
+        filtered = filtered.filter(item => (item.month || '').includes(selectedCalendarMonth));
+      }
+      if (calendarSearchQuery) {
+        filtered = filtered.filter(item => {
+          const text = ((item.cropName || '') + ' ' + (item.season || '') + ' ' + (item.cropCategory || '') + ' ' + (item.description || '')).toLowerCase();
+          return text.includes(calendarSearchQuery);
+        });
+      }
+
+      const container = document.getElementById('calendarCropsListContainer');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; color: #758577;">
+            <i class="fa-solid fa-seedling" style="font-size: 40px; color: #C8E6C9; margin-bottom: 12px;"></i>
+            <h4 style="font-size: 15px; font-weight: 700; color: #1E281F;">কোনো ফসলের তথ্য পাওয়া যায়নি</h4>
+            <p style="font-size: 12px; margin-top: 4px;">অন্য কোনো মাস নির্বাচন করুন বা সার্চ শব্দ পরিবর্তন করুন</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div>
+              <h4 style="font-size: 15.5px; font-weight: 800; color: #1B5E20; margin: 0;">${item.cropName}</h4>
+              <span style="font-size: 11px; color: #64748B; font-weight: 600;">${item.cropCategory} • ${item.season}</span>
+            </div>
+            <span style="background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px;">
+              ${item.month}
+            </span>
+          </div>
+
+          <p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 12px;">${item.description}</p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 10px;">
+              <div style="font-size: 10.5px; color: #64748B; font-weight: 600;"><i class="fa-solid fa-clock" style="color: #0288D1; margin-right: 4px;"></i>বপন সময়</div>
+              <div style="font-size: 12px; font-weight: 700; color: #1E281F; margin-top: 2px;">${item.sowingTime}</div>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 10px;">
+              <div style="font-size: 10.5px; color: #64748B; font-weight: 600;"><i class="fa-solid fa-plant-wilt" style="color: #00897B; margin-right: 4px;"></i>রোপণ পদ্ধতি</div>
+              <div style="font-size: 12px; font-weight: 700; color: #1E281F; margin-top: 2px;">${item.plantingTime}</div>
+            </div>
+          </div>
+
+          <div style="background: #F1F8E9; border-left: 3px solid #2E7D32; border-radius: 0 8px 8px 0; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; line-height: 1.4; color: #1E281F;">
+            <strong style="color: #1B5E20;">পরিচর্যা:</strong> ${item.careInstructions}
+          </div>
+          <div style="background: #E3F2FD; border-left: 3px solid #1565C0; border-radius: 0 8px 8px 0; padding: 8px 10px; font-size: 12px; line-height: 1.4; color: #1E281F;">
+            <strong style="color: #1565C0;">সার প্রয়োগ:</strong> ${item.fertilizerRecommendation}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function initFirestoreCalendarSync() {
+      if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        db.collection('farming_calendar').onSnapshot(snapshot => {
+          if (snapshot && !snapshot.empty) {
+            const list = [];
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              list.push({ ...d, id: doc.id });
+            });
+            if (list.length > 0) {
+              defaultCalendarData = list;
+              renderCalendarCrops();
+            }
+          }
+        }, err => console.warn('Calendar sync note:', err));
       }
     }
 
@@ -13504,9 +14137,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (pmChar) pmChar.innerText = name.charAt(0) || 'ক';
 
       if (district) {
-        selectedDistrictName = district;
+        selectedDistrictName = district.replace(' জেলা', '').trim();
         const wd = document.getElementById('weatherDistrict');
-        if (wd) wd.innerText = district + ' জেলা';
+        if (wd) wd.innerText = selectedDistrictName;
+        fetchLiveWeather(selectedDistrictName);
       }
     }
 
@@ -16804,6 +17438,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       document.body.style.overflow = '';
 
       showInitialLoaders();
+      updateDynamicGreeting();
+      setInterval(updateDynamicGreeting, 60000);
+      fetchLiveWeather(selectedDistrictName || 'ঢাকা');
       fetchMarketViaRest();
       renderCommunityPosts();
       updateNotificationBadge();

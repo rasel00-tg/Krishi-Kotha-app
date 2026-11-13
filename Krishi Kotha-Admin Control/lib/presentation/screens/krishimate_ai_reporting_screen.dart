@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/constants/admin_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../widgets/admin_stat_card.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class KrishiMateAiReportingScreen extends StatefulWidget {
   const KrishiMateAiReportingScreen({super.key});
@@ -15,6 +16,16 @@ class KrishiMateAiReportingScreen extends StatefulWidget {
 class _KrishiMateAiReportingScreenState extends State<KrishiMateAiReportingScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late final Stream<QuerySnapshot> _prescriptionsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _prescriptionsStream = FirebaseFirestore.instance
+        .collection('disease_prescriptions')
+        .orderBy('created_at', descending: true)
+        .snapshots();
+  }
 
   @override
   void dispose() {
@@ -429,10 +440,7 @@ class _KrishiMateAiReportingScreenState extends State<KrishiMateAiReportingScree
     final isMobile = ResponsiveLayout.isMobile(context);
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('disease_prescriptions')
-          .orderBy('created_at', descending: true)
-          .snapshots(),
+      stream: _prescriptionsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           // Fallback without orderBy if Firestore index is required
@@ -440,7 +448,7 @@ class _KrishiMateAiReportingScreenState extends State<KrishiMateAiReportingScree
             stream: FirebaseFirestore.instance.collection('disease_prescriptions').snapshots(),
             builder: (ctx, fallbackSnap) {
               if (fallbackSnap.connectionState == ConnectionState.waiting && !fallbackSnap.hasData) {
-                return const Center(child: CircularProgressIndicator(color: AdminColors.primary));
+                return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
               }
               return _buildContent(fallbackSnap.data?.docs ?? [], isMobile);
             },
@@ -448,7 +456,7 @@ class _KrishiMateAiReportingScreenState extends State<KrishiMateAiReportingScree
         }
 
         if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator(color: AdminColors.primary));
+          return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
         }
 
         final docs = snapshot.data?.docs ?? [];

@@ -941,4 +941,61 @@ class AdminFirestoreService {
       'rejectedBy': 'Admin',
     });
   }
+
+  // ==================== 9. FARMING CALENDAR (চাষ ক্যালেন্ডার মনিটরিং) ====================
+  Stream<List<Map<String, dynamic>>> getFarmingCalendarStream({String? month}) {
+    final db = _db;
+    if (db == null) return const Stream.empty();
+
+    Query<Map<String, dynamic>> query = db.collection('farming_calendar');
+    if (month != null && month.isNotEmpty && month != 'সব মাস') {
+      query = query.where('month', isEqualTo: month);
+    }
+
+    return query.snapshots().map((snapshot) {
+      final list = snapshot.docs.map((doc) {
+        final d = Map<String, dynamic>.from(doc.data());
+        d['id'] = doc.id;
+        return d;
+      }).toList();
+
+      list.sort((a, b) {
+        final idxA = a['monthIndex'] as int? ?? 99;
+        final idxB = b['monthIndex'] as int? ?? 99;
+        return idxA.compareTo(idxB);
+      });
+
+      return list;
+    });
+  }
+
+  Future<void> addFarmingCalendarItem(Map<String, dynamic> data) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    final docId = data['id']?.toString().isNotEmpty == true
+        ? data['id'].toString()
+        : 'fc_${DateTime.now().millisecondsSinceEpoch}';
+
+    data['id'] = docId;
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+
+    await db.collection('farming_calendar').doc(docId).set(data);
+  }
+
+  Future<void> updateFarmingCalendarItem(String id, Map<String, dynamic> data) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await db.collection('farming_calendar').doc(id).set(data, SetOptions(merge: true));
+  }
+
+  Future<void> deleteFarmingCalendarItem(String id) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    await db.collection('farming_calendar').doc(id).delete();
+  }
 }

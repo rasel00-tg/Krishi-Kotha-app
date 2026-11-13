@@ -6,6 +6,7 @@ import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -21,6 +22,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   String _activeMainTab = 'users'; // 'users' or 'login_requests'
   String _requestStatusFilter = 'pending'; // 'pending', 'accepted', 'rejected'
   bool _isLoading = false;
+
+  late final Stream<List<AdminUserModel>> _usersStream;
+  late final Stream<List<Map<String, dynamic>>> _loginRequestsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _usersStream = AdminFirestoreService.instance.getUsersStream();
+    _loginRequestsStream = AdminFirestoreService.instance.getLoginUpdateRequestsStream();
+  }
 
   @override
   void dispose() {
@@ -1737,7 +1748,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Widget _buildMainSubTabs() {
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: AdminFirestoreService.instance.getLoginUpdateRequestsStream(),
+      stream: _loginRequestsStream,
       builder: (context, reqSnap) {
         final pendingCount = (reqSnap.data ?? []).where((r) => r['status'] == 'pending').length;
         return Wrap(
@@ -1811,10 +1822,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Widget _buildUsersTableView() {
     return StreamBuilder<List<AdminUserModel>>(
-      stream: AdminFirestoreService.instance.getUsersStream(),
+      stream: _usersStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: CircularProgressIndicator(color: AdminColors.primary)));
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
         }
 
         final allUsers = snapshot.data ?? [];
@@ -2014,15 +2025,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   // ==================== LOGIN ID UPDATE REQUESTS VIEW ====================
   Widget _buildLoginRequestsView() {
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: AdminFirestoreService.instance.getLoginUpdateRequestsStream(),
+      stream: _loginRequestsStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: CircularProgressIndicator(color: AdminColors.primary),
-            ),
-          );
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....');
         }
 
         final allRequests = snapshot.data ?? [];

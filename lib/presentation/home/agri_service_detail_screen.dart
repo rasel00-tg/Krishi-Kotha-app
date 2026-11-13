@@ -3,6 +3,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../data/services/firestore_service.dart';
+import 'crop_calendar_screen.dart';
 
 class AgriServiceDetailScreen extends StatefulWidget {
   final String serviceId;
@@ -556,6 +557,27 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
   Widget _buildCalendarContent() {
     return Column(
       children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CropCalendarScreen()),
+              );
+            },
+            icon: const Icon(Icons.calendar_month_rounded, size: 18),
+            label: const Text('সম্পূর্ণ চাষ ক্যালেন্ডার পেজ দেখুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7B1FA2),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
         _buildInfoCard(
           title: 'রবি মৌসুম (কার্তিক - ফাল্গুন / অক্টোবর - মার্চ)',
           icon: Icons.ac_unit,

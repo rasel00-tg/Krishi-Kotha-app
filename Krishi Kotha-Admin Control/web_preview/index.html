@@ -965,6 +965,30 @@
         </svg>
         <span>ড্যাশবোর্ড</span>
       </li>
+      <!-- হোমপেজ মেইন মেনু ও ফসল ক্যালেন্ডার সাব-মেনু (ড্যাশবোর্ডের ঠিক নিচে) -->
+      <li class="menu-item" id="menuHomepageParent" onclick="toggleHomepageSubmenu(event)">
+        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span style="flex: 1;">হোমপেজ</span>
+        <i class="fa-solid fa-chevron-down" id="homepageCaret"
+          style="font-size: 11px; margin-left: 6px; transition: transform 0.2s;"></i>
+      </li>
+      <div id="homepageSubmenu" style="display: none; padding-left: 18px; margin: 2px 0 6px 0;">
+        <li class="menu-item submenu-item" id="submenuItemCropCalendar" onclick="switchTab('farming-calendar')"
+          style="padding: 10px 14px; font-size: 13px; border-radius: 8px;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+            <line x1="16" x2="16" y1="2" y2="6" />
+            <line x1="8" x2="8" y1="2" y2="6" />
+            <line x1="3" x2="21" y1="10" y2="10" />
+          </svg>
+          <span>ফসল ক্যালেন্ডার মনিটরিং</span>
+        </li>
+      </div>
       <li class="menu-item" id="menuItemUserControl" onclick="switchTab('user-control')">
         <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2145,6 +2169,68 @@
         </div>
       </div>
 
+      <!-- ================= TAB 9: HOMEPAGE - FARMING CALENDAR MONITORING ================= -->
+      <div id="tab-farming-calendar" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
+          <div>
+            <h2>হোমপেজ • ফসল ক্যালেন্ডার মনিটরিং</h2>
+            <p>১২ মাসের কৃষিভিত্তিক রোপণ ও পরিচর্যা ক্যালেন্ডার ডেটাবেজ কন্ট্রোল। এখান থেকে তথ্য যুক্ত, সম্পাদনা বা মুছে ফেললে তা সরাসরি অ্যাপের চাষ ক্যালেন্ডার ফুল পেজে রিয়েল-টাইমে প্রদর্শিত হবে।</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" style="background: #fff; color: #1B5E20; font-weight: bold;" onclick="openAddFarmingCalendarModal()">
+              <i class="fa-solid fa-plus"></i> নতুন ফসল যোগ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="card" style="padding: 16px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+            <div style="flex: 1; min-width: 250px; position: relative;">
+              <input type="text" id="fcSearchInput" placeholder="ফসলের নাম, মৌসুম বা ধরণ দিয়ে খুঁজুন..." 
+                oninput="renderFarmingCalendar()"
+                style="width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: var(--text-muted); font-size: 14px;"></i>
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted);" id="fcItemCount">
+              মোট ফসল: 0 টি
+            </div>
+          </div>
+
+          <!-- Month filter chips -->
+          <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;" id="fcMonthChipsContainer">
+            <!-- Dynamically populated via renderFarmingCalendar() -->
+          </div>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div class="table-container" style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+              <thead>
+                <tr style="background: #F8FAF7; border-bottom: 1.5px solid var(--border); color: var(--text-primary); font-weight: bold;">
+                  <th style="padding: 14px 16px;">ছবি ও ফসল</th>
+                  <th style="padding: 14px 16px;">উপযুক্ত মাস</th>
+                  <th style="padding: 14px 16px;">মৌসুম ও বিভাগ</th>
+                  <th style="padding: 14px 16px;">বপন ও সংগ্রহের সময়</th>
+                  <th style="padding: 14px 16px;">বিবরণ ও পরিচর্যা টিপস</th>
+                  <th style="padding: 14px 16px; text-align: center;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="farmingCalendarTableBody">
+                <tr>
+                  <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                    তথ্য লোডিং হচ্ছে.....
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ================= TAB 8: APP SETTINGS - PRIVACY POLICY ================= -->
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
@@ -2366,6 +2452,133 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Farming Calendar Add/Edit Modal (Spacious 720px Dialog with Local Image Picker) -->
+  <div class="modal-overlay" id="farmingCalendarModal">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 720px; width: 94%; max-height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px; background: #fff; box-shadow: 0 16px 40px rgba(0,0,0,0.18);">
+      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff;">
+        <h3 style="margin: 0; font-size: 17px; font-weight: bold; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-calendar-plus" style="color: var(--primary); font-size: 19px;"></i>
+          <span id="fcModalTitle">নতুন ফসলের চাষ ক্যালেন্ডার যোগ</span>
+        </h3>
+        <button type="button" onclick="closeFarmingCalendarModal()" style="background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1;">✕</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 22px 24px; flex: 1;">
+        <input type="hidden" id="fcEditId" value="">
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">ফসলের নাম *</label>
+          <input type="text" id="fcInputCropName" class="form-control" placeholder="ফসলের নাম লিখুন (যেমন: বোরো ধান, আলু, তোষা পাট)" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">উপযুক্ত মাস *</label>
+            <select id="fcSelectMonth" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; background: #fff;">
+              <option value="বৈশাখ">বৈশাখ (এপ্রিল - মে)</option>
+              <option value="জ্যৈষ্ঠ">জ্যৈষ্ঠ (মে - জুন)</option>
+              <option value="আষাঢ়">আষাঢ় (জুন - জুলাই)</option>
+              <option value="শ্রাবণ">শ্রাবণ (জুলাই - আগস্ট)</option>
+              <option value="ভাদ্র">ভাদ্র (আগস্ট - সেপ্টেম্বর)</option>
+              <option value="আশ্বিন">আশ্বিন (সেপ্টেম্বর - অক্টোবর)</option>
+              <option value="কার্তিক">কার্তিক (অক্টোবর - নভেম্বর)</option>
+              <option value="অগ্রহায়ণ">অগ্রহায়ণ (নভেম্বর - ডিসেম্বর)</option>
+              <option value="পৌষ">পৌষ (ডিসেম্বর - জানুয়ারি)</option>
+              <option value="মাঘ">মাঘ (জানুয়ারি - ফেব্রুয়ারি)</option>
+              <option value="ফাল্গুন">ফাল্গুন (ফেব্রুয়ারি - মার্চ)</option>
+              <option value="চৈত্র">চৈত্র (মার্চ - এপ্রিল)</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">মৌসুম *</label>
+            <select id="fcSelectSeason" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; background: #fff;">
+              <option value="রবি মৌসুম">রবি মৌসুম (শীতকালীন)</option>
+              <option value="খরিপ-১ মৌসুম">খরিপ-১ মৌসুম (গ্রীষ্মকালীন)</option>
+              <option value="খরিপ-২ মৌসুম">খরিপ-২ মৌসুম (বর্ষাকালীন)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">ফসলের ধরণ / বিভাগ *</label>
+          <select id="fcSelectCategory" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; background: #fff;">
+            <option value="দানা জাতীয় ফসল">দানা জাতীয় ফসল (ধান, গম, ভুট্টা)</option>
+            <option value="শাকসবজি">শাকসবজি ও কন্দাল ফসল</option>
+            <option value="ডাল ও তৈলবীজ">ডাল ও তৈলবীজ (সরিষা, মসুর, তিল)</option>
+            <option value="অর্থকরী ফসল">অর্থকরী ফসল (পাট, তুলা, আখ)</option>
+            <option value="ফলমূল ও ফসল">ফলমূল ও ফসল</option>
+            <option value="মসলা জাতীয়">মসলা জাতীয় (পেঁয়াজ, রসুন, মরিচ)</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">বপন / রোপণের সময়</label>
+            <input type="text" id="fcInputSowing" class="form-control" placeholder="বপন বা রোপণের সময় লিখুন (যেমন: মধ্য-কার্তিক থেকে অগ্রহায়ণ)" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">ফসল তোলার সময়</label>
+            <input type="text" id="fcInputHarvesting" class="form-control" placeholder="ফসল তোলার সময় লিখুন (যেমন: চৈত্র থেকে বৈশাখ)" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">চাষের সংক্ষিপ্ত বিবরণ</label>
+          <textarea id="fcInputDesc" rows="2" placeholder="ফসলের জাত ও চাষাবাদ সম্পর্কে সংক্ষিপ্ত বিবরণ লিখুন..." style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; resize: vertical;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">পরিচর্যা ও সার প্রয়োগ পরামর্শ</label>
+          <textarea id="fcInputCareTips" rows="2" placeholder="সার প্রয়োগ, সেচ ও নিড়ানির গুরুত্বপূর্ণ টিপস লিখুন..." style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; resize: vertical;"></textarea>
+        </div>
+
+        <!-- লোকাল ইমেজ পিকার ও প্রিভিউ (ইমেজ URL ফিল্ড বাতিল) -->
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">ফসলের ছবি</label>
+          <input type="hidden" id="fcExistingImageUrl" value="">
+          
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('fcFileInput').click()"
+              style="padding: 9px 18px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; border: 1.5px dashed var(--primary); color: var(--primary); background: #F4FBF4; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" x2="12" y1="3" y2="15" />
+              </svg>
+              <span id="fcPickBtnText">ছবি নির্বাচন করুন</span>
+            </button>
+            <input type="file" id="fcFileInput" accept="image/*" style="display: none;" onchange="handleFcImagePick(this)">
+            <span style="font-size: 12px; color: var(--text-muted);">ডিভাইস থেকে ছবি আপলোড (স্বয়ংক্রিয় কম্প্রেশন সহ Cloudflare R2-তে সংরক্ষিত হবে)</span>
+          </div>
+
+          <!-- কম্প্রেশন ও আপলোড স্ট্যাটাস ব্যাজ -->
+          <div id="fcUploadStatus" style="font-size: 12px; margin-top: 8px; display: none;"></div>
+
+          <!-- লোকাল ইমেজ প্রিভিউ বক্স -->
+          <div id="fcImgPreviewBox" style="margin-top: 12px; display: none;">
+            <div style="position: relative; display: inline-block; border-radius: 12px; overflow: visible; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border: 1px solid var(--border); background: #fff; padding: 4px;">
+              <img id="fcImgPreview" src="" alt="ফসলের ছবি প্রিভিউ"
+                style="max-height: 140px; min-height: 90px; max-width: 100%; border-radius: 8px; object-fit: cover; display: block;">
+              <button type="button" onclick="removeFcImage()"
+                style="position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s;"
+                onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"
+                title="ছবি মুছে ফেলুন">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: #F8FAF7;">
+        <button type="button" class="btn btn-outline" onclick="closeFarmingCalendarModal()" style="padding: 9px 18px; border-radius: 8px; font-size: 13.5px;">বাতিল</button>
+        <button type="button" class="btn btn-primary" id="btnSaveFarmingCalendar" onclick="submitSaveFarmingCalendar()" style="padding: 9px 22px; border-radius: 8px; font-size: 13.5px; font-weight: 600;">
+          <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
+        </button>
+      </div>
     </div>
   </div>
 
@@ -3467,8 +3680,7 @@
           </div>
           <img src="pnglogo.png" style="width: 58px; height: 58px; object-fit: contain;" alt="কৃষি কথা">
         </div>
-        <div id="adminLoadingTitle" style="font-size: 17px; font-weight: 800; color: #1B5E20; margin-bottom: 5px;">ডাটা
-          সেভ হচ্ছে....</div>
+        <div id="adminLoadingTitle" style="font-size: 17px; font-weight: 800; color: #1B5E20; margin-bottom: 5px;">তথ্য লোডিং হচ্ছে...</div>
         <div id="adminLoadingSubtitle" style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">অনুগ্রহ
           করে অপেক্ষা করুন</div>
       </div>
@@ -3555,8 +3767,11 @@
     let adminDialogCanDismiss = false;
     window.adminErrorDoneCb = null;
 
-    function showAdminLoading(title = 'ডাটা সেভ হচ্ছে....', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন') {
+    let adminLoadingTimeoutTimer = null;
+
+    function showAdminLoading(title = 'তথ্য লোডিং হচ্ছে...', subtitle = 'অনুগ্রহ করে অপেক্ষা করুন', timeoutMs = 8000) {
       if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      if (adminLoadingTimeoutTimer) { clearTimeout(adminLoadingTimeoutTimer); adminLoadingTimeoutTimer = null; }
       adminDialogCanDismiss = false;
       const overlay = document.getElementById('adminUnifiedDialogOverlay');
       if (!overlay) return;
@@ -3569,7 +3784,26 @@
       document.getElementById('adminLoadingTitle').innerText = title;
       document.getElementById('adminLoadingSubtitle').innerText = subtitle;
 
+      // Fully block pointer & touch events across entire application
       overlay.style.display = 'flex';
+      overlay.style.pointerEvents = 'all';
+
+      // Safety timeout firewall to prevent permanent lock
+      adminLoadingTimeoutTimer = setTimeout(() => {
+        safeDismissLoading();
+      }, timeoutMs);
+    }
+
+    function safeDismissLoading() {
+      if (adminLoadingTimeoutTimer) {
+        clearTimeout(adminLoadingTimeoutTimer);
+        adminLoadingTimeoutTimer = null;
+      }
+      hideAdminDialog();
+    }
+
+    function hideAdminLoading() {
+      safeDismissLoading();
     }
 
     function showAdminSuccess(title = 'সফল হয়েছে!', msg = '', onDone = null, duration = 1800) {
@@ -3693,6 +3927,7 @@
 
     function hideAdminDialog() {
       if (adminSuccessTimer) { clearTimeout(adminSuccessTimer); adminSuccessTimer = null; }
+      if (adminLoadingTimeoutTimer) { clearTimeout(adminLoadingTimeoutTimer); adminLoadingTimeoutTimer = null; }
       const overlay = document.getElementById('adminUnifiedDialogOverlay');
       if (overlay) overlay.style.display = 'none';
       if (window.adminErrorDoneCb) {
@@ -3815,6 +4050,22 @@
       }
     });
 
+    function toggleHomepageSubmenu(e) {
+      if (e) e.stopPropagation();
+      const sub = document.getElementById('homepageSubmenu');
+      const caret = document.getElementById('homepageCaret');
+      if (!sub) return;
+      const isClosed = sub.style.display === 'none' || !sub.style.display;
+      if (isClosed) {
+        sub.style.display = 'block';
+        if (caret) caret.style.transform = 'rotate(180deg)';
+        switchTab('farming-calendar');
+      } else {
+        sub.style.display = 'none';
+        if (caret) caret.style.transform = 'rotate(0deg)';
+      }
+    }
+
     function toggleSettingsSubmenu(e) {
       if (e) e.stopPropagation();
       const sub = document.getElementById('settingsSubmenu');
@@ -3834,73 +4085,121 @@
     function switchTab(tabKey) {
       if (tabKey === 'users') tabKey = 'support';
 
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+      // 1. Global Non-Dismissible Screen-Blocking Loading Overlay
+      showAdminLoading('তথ্য লোডিং হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন');
 
-      const targetTab = document.getElementById('tab-' + tabKey);
-      if (targetTab) targetTab.classList.add('active');
+      try {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
 
-      const titles = {
-        'dashboard': 'ড্যাশবোর্ড ওভারভিউ',
-        'notifications': 'লাইভ নোটিফিকেশন ম্যানেজমেন্ট',
-        'market': 'বাজার দর ইনপুট ও আপডেট',
-        'crops': 'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
-        'pests': 'রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)',
-        'support': 'সাপোর্ট ও যোগাযোগ ব্যবস্থাপনা (Support & Contact)',
-        'users': 'সাপোর্ট ও যোগাযোগ ব্যবস্থাপনা (Support & Contact)',
-        'krishimate-ai': 'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
-        'user-control': 'ইউজার কন্ট্রোল',
-        'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
-      };
-      document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
+        const targetTab = document.getElementById('tab-' + tabKey);
+        if (targetTab) targetTab.classList.add('active');
 
-      if (tabKey === 'support') {
-        renderSupportTicketsTable();
-        initAdminFaqsLiveSync();
-      }
+        const titles = {
+          'dashboard': 'ড্যাশবোর্ড ওভারভিউ',
+          'notifications': 'লাইভ নোটিফিকেশন ম্যানেজমেন্ট',
+          'market': 'বাজার দর ইনপুট ও আপডেট',
+          'crops': 'ফসলের তথ্য ব্যবস্থাপনা (Crops Management)',
+          'pests': 'রোগবালাই ও প্রতিকার ব্যবস্থাপনা (Pests & Diseases)',
+          'support': 'সাপোর্ট ও যোগাযোগ ব্যবস্থাপনা (Support & Contact)',
+          'users': 'সাপোর্ট ও যোগাযোগ ব্যবস্থাপনা (Support & Contact)',
+          'krishimate-ai': 'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
+          'user-control': 'ইউজার কন্ট্রোল',
+          'farming-calendar': 'হোমপেজ • ফসল ক্যালেন্ডার মনিটরিং',
+          'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
+        };
+        document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
 
-      if (tabKey === 'user-control') {
-        updateUcDistrictFilterOptions(ucSelectedDivision || 'all');
-        const distSelect = document.getElementById('ucDistrictFilter');
-        if (distSelect) distSelect.value = ucSelectedDistrict || 'all';
-        if (typeof updateLoginRequestsBadge === 'function') updateLoginRequestsBadge();
-        if (!currentDetailUserId) {
-          if (typeof currentUcSubtab !== 'undefined' && currentUcSubtab === 'requests') {
-            switchUcSubtab('requests');
+        // 2. Instant Reactive Rendering of Tab Data without requiring page refresh
+        if (tabKey === 'dashboard') {
+          renderNotifications();
+          renderMarketList();
+        } else if (tabKey === 'notifications') {
+          renderNotifications();
+        } else if (tabKey === 'market') {
+          renderMarketList();
+        } else if (tabKey === 'crops') {
+          renderCrops();
+        } else if (tabKey === 'pests') {
+          renderCrops();
+        } else if (tabKey === 'support') {
+          renderSupportTicketsTable();
+          initAdminFaqsLiveSync();
+        } else if (tabKey === 'krishimate-ai') {
+          renderKrishiMateDashboard();
+        } else if (tabKey === 'user-control') {
+          updateUcDistrictFilterOptions(ucSelectedDivision || 'all');
+          const distSelect = document.getElementById('ucDistrictFilter');
+          if (distSelect) distSelect.value = ucSelectedDistrict || 'all';
+          if (typeof updateLoginRequestsBadge === 'function') updateLoginRequestsBadge();
+          if (!currentDetailUserId) {
+            if (typeof currentUcSubtab !== 'undefined' && currentUcSubtab === 'requests') {
+              switchUcSubtab('requests');
+            } else {
+              switchUcSubtab('users');
+            }
+            document.getElementById('pageTitle').innerText = 'ইউজার কন্ট্রোল';
           } else {
-            switchUcSubtab('users');
+            const tView = document.getElementById('ucTableView');
+            const dView = document.getElementById('ucDetailView');
+            const rView = document.getElementById('ucRequestsView');
+            if (tView) tView.style.display = 'none';
+            if (rView) rView.style.display = 'none';
+            if (dView) dView.style.display = 'block';
           }
-          document.getElementById('pageTitle').innerText = 'ইউজার কন্ট্রোল';
-        } else {
-          const tView = document.getElementById('ucTableView');
-          const dView = document.getElementById('ucDetailView');
-          const rView = document.getElementById('ucRequestsView');
-          if (tView) tView.style.display = 'none';
-          if (rView) rView.style.display = 'none';
-          if (dView) dView.style.display = 'block';
+          renderUserControlTable();
+        } else if (tabKey === 'farming-calendar') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) sub.style.display = 'block';
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemCropCalendar');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          renderFarmingCalendar();
+        } else if (tabKey === 'settings-privacy') {
+          const sub = document.getElementById('settingsSubmenu');
+          const caret = document.getElementById('settingsCaret');
+          if (sub) sub.style.display = 'block';
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemPrivacy');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuSettingsParent');
+          if (parent) parent.classList.add('active');
+          updatePolicyCounters();
+          updatePolicyPreview();
         }
-      }
 
-      if (tabKey === 'settings-privacy') {
-        const sub = document.getElementById('settingsSubmenu');
-        const caret = document.getElementById('settingsCaret');
-        if (sub) sub.style.display = 'block';
-        if (caret) caret.style.transform = 'rotate(180deg)';
-        const subItem = document.getElementById('submenuItemPrivacy');
-        if (subItem) subItem.classList.add('active');
-        const parent = document.getElementById('menuSettingsParent');
-        if (parent) parent.classList.add('active');
-        updatePolicyCounters();
-        updatePolicyPreview();
-      } else {
-        const keys = ['dashboard', 'user-control', 'notifications', 'market', 'crops', 'pests', 'support', 'krishimate-ai'];
-        const idx = keys.indexOf(tabKey);
-        if (idx >= 0) {
-          const items = document.querySelectorAll('.menu > .menu-item');
-          if (items[idx]) items[idx].classList.add('active');
+        if (tabKey !== 'farming-calendar') {
+          const subCrop = document.getElementById('submenuItemCropCalendar');
+          if (subCrop) subCrop.classList.remove('active');
         }
-        const subItem = document.getElementById('submenuItemPrivacy');
-        if (subItem) subItem.classList.remove('active');
+
+        if (tabKey !== 'settings-privacy') {
+          const menuMap = {
+            'dashboard': document.querySelector('.menu > .menu-item:first-child'),
+            'user-control': document.getElementById('menuItemUserControl'),
+            'notifications': document.querySelector('.menu-item[onclick*="notifications"]'),
+            'market': document.querySelector('.menu-item[onclick*="market"]'),
+            'crops': document.querySelector('.menu-item[onclick*="crops"]'),
+            'pests': document.querySelector('.menu-item[onclick*="pests"]'),
+            'support': document.getElementById('menuItemSupport'),
+            'krishimate-ai': document.querySelector('.menu-item[onclick*="krishimate-ai"]')
+          };
+          if (menuMap[tabKey]) {
+            menuMap[tabKey].classList.add('active');
+          }
+          const subItem = document.getElementById('submenuItemPrivacy');
+          if (subItem) subItem.classList.remove('active');
+        }
+      } catch (err) {
+        console.error("Tab switch render error:", err);
+      } finally {
+        // Fast, smooth release of screen-blocking loading overlay
+        setTimeout(() => {
+          safeDismissLoading();
+        }, 280);
       }
     }
 
@@ -4988,7 +5287,8 @@
       pest: { file: null, blobUrl: null },
       notif: { file: null, blobUrl: null },
       market: { file: null, blobUrl: null },
-      privacy: { file: null, blobUrl: null, rawImg: null, isDeleted: false }
+      privacy: { file: null, blobUrl: null, rawImg: null, isDeleted: false },
+      fc: { file: null, blobUrl: null, isDeleted: false }
     };
 
     // Step 1: Pre-upload Local Memory Hold (Local File Preview Only)
@@ -5058,6 +5358,20 @@
 
     function removeNotifImage() {
       removeImageSelection('notif', 'notifFileInput', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg');
+    }
+
+    function handleFcImagePick(inputElement) {
+      handleImagePick(inputElement, 'fc', 'fcImgPreviewBox', 'fcUploadStatus', 'fcExistingImageUrl');
+      if (pendingUploads.fc) pendingUploads.fc.isDeleted = false;
+      const pickBtnText = document.getElementById('fcPickBtnText');
+      if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+    }
+
+    function removeFcImage() {
+      removeImageSelection('fc', 'fcFileInput', 'fcImgPreviewBox', 'fcUploadStatus', 'fcExistingImageUrl');
+      if (pendingUploads.fc) pendingUploads.fc.isDeleted = true;
+      const pickBtnText = document.getElementById('fcPickBtnText');
+      if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
     }
 
     function handleMarketImagePick(inputElement) {
@@ -9395,11 +9709,408 @@
       if (modal) modal.classList.remove('active');
     }
 
+    // ==================== HOMEPAGE - FARMING CALENDAR MONITORING ====================
+    let farmingCalendarItems = [];
+    let fcIsLoading = true;
+    let fcSelectedMonth = 'all';
+    const banglaMonthsList = [
+      'বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+      'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'
+    ];
+
+    function setFcMonthFilter(month) {
+      fcSelectedMonth = month;
+      renderFarmingCalendar();
+    }
+
+    function renderFarmingCalendar() {
+      // 1. Render month chips
+      const chipsContainer = document.getElementById('fcMonthChipsContainer');
+      if (chipsContainer) {
+        let chipsHtml = `
+          <button type="button" onclick="setFcMonthFilter('all')" 
+            style="padding: 7px 16px; border-radius: 20px; font-size: 12.5px; font-weight: 700; cursor: pointer; border: 1.5px solid ${fcSelectedMonth === 'all' ? '#1B5E20' : '#C8E6C9'}; background: ${fcSelectedMonth === 'all' ? '#1B5E20' : '#fff'}; color: ${fcSelectedMonth === 'all' ? '#fff' : '#2E7D32'}; white-space: nowrap; transition: all 0.2s;">
+            সব মাস
+          </button>
+        `;
+        banglaMonthsList.forEach(m => {
+          const isAct = fcSelectedMonth === m;
+          chipsHtml += `
+            <button type="button" onclick="setFcMonthFilter('${m}')" 
+              style="padding: 7px 15px; border-radius: 20px; font-size: 12.5px; font-weight: 700; cursor: pointer; border: 1.5px solid ${isAct ? '#1B5E20' : '#E0E0E0'}; background: ${isAct ? '#1B5E20' : '#fff'}; color: ${isAct ? '#fff' : '#455A64'}; white-space: nowrap; transition: all 0.2s;">
+              ${m}
+            </button>
+          `;
+        });
+        chipsContainer.innerHTML = chipsHtml;
+      }
+
+      // 2. Filter data
+      const searchVal = (document.getElementById('fcSearchInput')?.value || '').trim().toLowerCase();
+      let list = [...farmingCalendarItems];
+
+      if (fcSelectedMonth !== 'all') {
+        list = list.filter(item => item.month === fcSelectedMonth);
+      }
+
+      if (searchVal) {
+        list = list.filter(item => {
+          const name = (item.cropName || '').toLowerCase();
+          const cat = (item.cropCategory || '').toLowerCase();
+          const season = (item.season || '').toLowerCase();
+          const month = (item.month || '').toLowerCase();
+          const desc = (item.description || '').toLowerCase();
+          return name.includes(searchVal) || cat.includes(searchVal) || season.includes(searchVal) || month.includes(searchVal) || desc.includes(searchVal);
+        });
+      }
+
+      const countEl = document.getElementById('fcItemCount');
+      if (countEl) countEl.innerText = `মোট ফসল: ${list.length} টি`;
+
+      // 3. Render table
+      const tbody = document.getElementById('farmingCalendarTableBody');
+      if (!tbody) return;
+
+      if (fcIsLoading) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+              তথ্য লোডিং হচ্ছে.....
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+              <i class="fa-solid fa-calendar-xmark" style="font-size: 38px; color: #B0BEC5; margin-bottom: 10px; display: block;"></i>
+              চাষ ক্যালেন্ডারে কোনো তথ্য নেই। "নতুন ফসল যোগ করুন" বাটনে ক্লিক করে তথ্য যুক্ত করুন।
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(item => {
+        const img = item.imageUrl || 'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=200';
+        return `
+          <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;">
+            <td style="padding: 14px 16px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="${escapeHtml(img)}" alt="${escapeHtml(item.cropName)}" 
+                  style="width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);"
+                  onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=200';">
+                <div>
+                  <div style="font-weight: 700; color: var(--text-primary); font-size: 14px;">${escapeHtml(item.cropName)}</div>
+                  <span style="display: inline-block; font-size: 11px; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 12px; font-weight: 600; margin-top: 3px;">
+                    ${escapeHtml(item.cropCategory || 'ফসল')}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td style="padding: 14px 16px;">
+              <span style="display: inline-flex; align-items: center; gap: 5px; background: #E8F5E9; color: #1B5E20; padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: 13px; border: 1px solid #C8E6C9;">
+                <i class="fa-regular fa-calendar-check" style="font-size: 12px;"></i> ${escapeHtml(item.month)}
+              </span>
+            </td>
+            <td style="padding: 14px 16px;">
+              <span style="display: inline-block; font-size: 12px; background: #FFF3E0; color: #E65100; padding: 4px 9px; border-radius: 6px; font-weight: 600;">
+                ${escapeHtml(item.season || 'মৌসুম')}
+              </span>
+            </td>
+            <td style="padding: 14px 16px; font-size: 12.5px;">
+              <div style="color: #2E7D32; margin-bottom: 3px;"><strong>বপন:</strong> ${escapeHtml(item.sowingTime || '–')}</div>
+              <div style="color: #BF360C;"><strong>তোলা:</strong> ${escapeHtml(item.harvestingTime || '–')}</div>
+            </td>
+            <td style="padding: 14px 16px; font-size: 12.5px; max-width: 280px;">
+              <div style="color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${escapeHtml(item.description || '')}">
+                ${escapeHtml(item.description || '–')}
+              </div>
+              ${item.careTips ? `
+                <div style="color: #455A64; font-size: 11.5px; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;" title="${escapeHtml(item.careTips)}">
+                  💡 <em>${escapeHtml(item.careTips)}</em>
+                </div>
+              ` : ''}
+            </td>
+            <td style="padding: 14px 16px; text-align: center;">
+              <div style="display: inline-flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-outline" style="padding: 6px 10px; font-size: 12px; color: #1B5E20; border-color: #A5D6A7;" 
+                  onclick="openEditFarmingCalendarModal('${item.id}')" title="সম্পাদনা করুন">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button type="button" class="btn btn-outline" style="padding: 6px 10px; font-size: 12px; color: #C62828; border-color: #FFCDD2;" 
+                  onclick="deleteFarmingCalendarItem('${item.id}')" title="মুছে ফেলুন">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openAddFarmingCalendarModal() {
+      document.getElementById('fcEditId').value = '';
+      document.getElementById('fcModalTitle').innerText = 'নতুন ফসলের চাষ ক্যালেন্ডার যোগ';
+      document.getElementById('fcInputCropName').value = '';
+      document.getElementById('fcSelectMonth').value = fcSelectedMonth !== 'all' ? fcSelectedMonth : 'বৈশাখ';
+      document.getElementById('fcSelectSeason').value = 'রবি মৌসুম';
+      document.getElementById('fcSelectCategory').value = 'দানা জাতীয় ফসল';
+      document.getElementById('fcInputSowing').value = '';
+      document.getElementById('fcInputHarvesting').value = '';
+      document.getElementById('fcInputDesc').value = '';
+      document.getElementById('fcInputCareTips').value = '';
+      document.getElementById('fcExistingImageUrl').value = '';
+
+      // Reset image picking state
+      if (pendingUploads.fc && pendingUploads.fc.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.fc.blobUrl); } catch (_) { }
+      }
+      pendingUploads.fc = { file: null, blobUrl: null, isDeleted: false };
+
+      const fileInput = document.getElementById('fcFileInput');
+      if (fileInput) fileInput.value = '';
+
+      const previewBox = document.getElementById('fcImgPreviewBox');
+      if (previewBox) {
+        previewBox.style.display = 'none';
+        const imgEl = document.getElementById('fcImgPreview');
+        if (imgEl) imgEl.src = '';
+      }
+
+      const pickBtnText = document.getElementById('fcPickBtnText');
+      if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+
+      const statusEl = document.getElementById('fcUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = '';
+        statusEl.style.display = 'none';
+      }
+
+      const modal = document.getElementById('farmingCalendarModal');
+      if (modal) modal.classList.add('active');
+    }
+
+    function openEditFarmingCalendarModal(id) {
+      const item = farmingCalendarItems.find(x => x.id === id);
+      if (!item) {
+        showToast('ফসলের তথ্য পাওয়া যায়নি');
+        return;
+      }
+      document.getElementById('fcEditId').value = id;
+      document.getElementById('fcModalTitle').innerText = 'চাষ ক্যালেন্ডার তথ্য সম্পাদনা';
+      document.getElementById('fcInputCropName').value = item.cropName || '';
+      document.getElementById('fcSelectMonth').value = item.month || 'বৈশাখ';
+      document.getElementById('fcSelectSeason').value = item.season || 'রবি মৌসুম';
+      document.getElementById('fcSelectCategory').value = item.cropCategory || 'দানা জাতীয় ফসল';
+      document.getElementById('fcInputSowing').value = item.sowingTime || '';
+      document.getElementById('fcInputHarvesting').value = item.harvestingTime || '';
+      document.getElementById('fcInputDesc').value = item.description || '';
+      document.getElementById('fcInputCareTips').value = item.careTips || '';
+      document.getElementById('fcExistingImageUrl').value = item.imageUrl || '';
+
+      // Reset image picking state for this edit
+      if (pendingUploads.fc && pendingUploads.fc.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.fc.blobUrl); } catch (_) { }
+      }
+      pendingUploads.fc = { file: null, blobUrl: null, isDeleted: false };
+
+      const fileInput = document.getElementById('fcFileInput');
+      if (fileInput) fileInput.value = '';
+
+      const previewBox = document.getElementById('fcImgPreviewBox');
+      const imgEl = document.getElementById('fcImgPreview');
+      const pickBtnText = document.getElementById('fcPickBtnText');
+      const statusEl = document.getElementById('fcUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = '';
+        statusEl.style.display = 'none';
+      }
+
+      if (item.imageUrl) {
+        if (imgEl) imgEl.src = item.imageUrl;
+        if (previewBox) previewBox.style.display = 'block';
+        if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+      } else {
+        if (previewBox) previewBox.style.display = 'none';
+        if (imgEl) imgEl.src = '';
+        if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+      }
+
+      const modal = document.getElementById('farmingCalendarModal');
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeFarmingCalendarModal() {
+      const modal = document.getElementById('farmingCalendarModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    async function submitSaveFarmingCalendar() {
+      const cropName = (document.getElementById('fcInputCropName')?.value || '').trim();
+      const month = document.getElementById('fcSelectMonth')?.value || 'বৈশাখ';
+      const season = document.getElementById('fcSelectSeason')?.value || 'রবি মৌসুম';
+      const cropCategory = document.getElementById('fcSelectCategory')?.value || 'দানা জাতীয় ফসল';
+      const sowingTime = (document.getElementById('fcInputSowing')?.value || '').trim();
+      const harvestingTime = (document.getElementById('fcInputHarvesting')?.value || '').trim();
+      const description = (document.getElementById('fcInputDesc')?.value || '').trim();
+      const careTips = (document.getElementById('fcInputCareTips')?.value || '').trim();
+      const editId = (document.getElementById('fcEditId')?.value || '').trim();
+
+      // Step 1: Form Validation
+      if (!cropName) {
+        showToast('অনুগ্রহ করে ফসলের নাম লিখুন');
+        document.getElementById('fcInputCropName')?.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btnSaveFarmingCalendar');
+      if (btn) btn.disabled = true;
+
+      // Touch lock loading indicator
+      showAdminLoading(
+        editId ? 'তথ্য আপডেট হচ্ছে...' : 'নতুন ফসল সংরক্ষণ হচ্ছে...',
+        'অনুগ্রহ করে অপেক্ষা করুন...'
+      );
+
+      try {
+        let finalImageUrl = (document.getElementById('fcExistingImageUrl')?.value || '').trim();
+
+        // Step 2: Deferred Cloudflare R2 Upload on Submit with Client-side Compression
+        if (pendingUploads.fc && pendingUploads.fc.file) {
+          showAdminLoading(
+            'ছবি স্বয়ংক্রিয় অপ্টিমাইজ ও আপলোড হচ্ছে...',
+            'Cloudflare R2 স্টোরেজে নিরাপদ আপলোড চলছে...'
+          );
+          finalImageUrl = await uploadFileToR2Pipeline(pendingUploads.fc.file, 'farming_calendar', 'fcUploadStatus');
+
+          if (pendingUploads.fc.blobUrl) {
+            try { URL.revokeObjectURL(pendingUploads.fc.blobUrl); } catch (_) { }
+          }
+          pendingUploads.fc = { file: null, blobUrl: null, isDeleted: false };
+        } else if (pendingUploads.fc && pendingUploads.fc.isDeleted) {
+          finalImageUrl = '';
+        }
+
+        if (!finalImageUrl && !editId) {
+          finalImageUrl = 'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600';
+        }
+
+        const monthIndex = banglaMonthsList.indexOf(month) + 1;
+        const payload = {
+          cropName,
+          cropCategory,
+          month,
+          monthIndex: monthIndex > 0 ? monthIndex : 1,
+          season,
+          sowingTime,
+          harvestingTime,
+          description,
+          careTips,
+          imageUrl: finalImageUrl,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (editId) {
+          await db.collection('farming_calendar').doc(editId).set(payload, { merge: true });
+        } else {
+          payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection('farming_calendar').add(payload);
+        }
+
+        closeFarmingCalendarModal();
+        hideAdminLoading();
+        showAdminSuccess(
+          'সফল হয়েছে!',
+          editId ? 'ফসল সফলভাবে আপডেট করা হয়েছে।' : 'ফসল সফলভাবে যুক্ত করা হয়েছে।'
+        );
+      } catch (err) {
+        console.error('Save farming calendar error:', err);
+        hideAdminLoading();
+        showAdminError(
+          'ব্যর্থ হয়েছে!',
+          'তথ্য সংরক্ষণ করতে ত্রুটি হয়েছে: ' + (err.message || '')
+        );
+      } finally {
+        hideAdminLoading();
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function deleteFarmingCalendarItem(id) {
+      const item = farmingCalendarItems.find(x => x.id === id);
+      const name = item ? item.cropName : 'এই ফসলটি';
+
+      const confirmed = await showDeleteConfirmModal({
+        title: 'ফসলটি মুছে ফেলতে চান?',
+        subtitle: `"${name}" চাষ ক্যালেন্ডার থেকে মুছে ফেললে অ্যাপেও তা আর প্রদর্শিত হবে না।`,
+        itemName: name
+      });
+
+      if (!confirmed) return;
+
+      showAdminLoading('মুছে ফেলা হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন');
+      try {
+        await db.collection('farming_calendar').doc(id).delete();
+        showAdminSuccess('মুছে ফেলা হয়েছে!', `"${name}" সফলভাবে চাষ ক্যালেন্ডার থেকে মুছে ফেলা হয়েছে।`);
+      } catch (err) {
+        console.error('Delete farming calendar item error:', err);
+        showAdminError('মুছে ফেলতে ব্যর্থ!', err.message || 'ত্রুটি ঘটেছে');
+      }
+    }
+
+    function initFarmingCalendarLiveSync() {
+      if (!db) {
+        fcIsLoading = false;
+        renderFarmingCalendar();
+        return;
+      }
+      try {
+        db.collection('farming_calendar').onSnapshot(snapshot => {
+          farmingCalendarItems = [];
+          if (!snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              farmingCalendarItems.push({
+                id: doc.id,
+                cropName: d.cropName || d.name || '',
+                cropCategory: d.cropCategory || d.category || 'অন্যান্য',
+                month: d.month || 'বৈশাখ',
+                monthIndex: d.monthIndex !== undefined ? d.monthIndex : (banglaMonthsList.indexOf(d.month) + 1 || 1),
+                season: d.season || 'রবি মৌসুম',
+                sowingTime: d.sowingTime || d.sowing || '',
+                harvestingTime: d.harvestingTime || d.harvesting || '',
+                description: d.description || '',
+                careTips: d.careTips || d.care || '',
+                imageUrl: d.imageUrl || d.image || '',
+              });
+            });
+            farmingCalendarItems.sort((a, b) => (a.monthIndex || 99) - (b.monthIndex || 99));
+          }
+          fcIsLoading = false;
+          renderFarmingCalendar();
+        }, err => {
+          console.warn("Farming calendar stream error:", err);
+          fcIsLoading = false;
+          renderFarmingCalendar();
+        });
+      } catch (err) {
+        console.warn("Farming calendar stream init catch:", err);
+        fcIsLoading = false;
+        renderFarmingCalendar();
+      }
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       refreshCategoryDropdowns();
       initFirestoreListeners();
       initAdminFaqsLiveSync();
+      initFarmingCalendarLiveSync();
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
       renderNotifications();
@@ -9408,6 +10119,7 @@
       renderUsers();
       renderUserControlTable();
       renderKrishiMateDashboard();
+      renderFarmingCalendar();
       setupMarketFormPasteSanitizers();
       updatePolicyCounters();
       updatePolicyPreview();

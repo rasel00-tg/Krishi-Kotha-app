@@ -463,7 +463,114 @@ class AppUnifiedDialog {
     );
   }
 
-  // ================= 5. CONFIRMATION STATE (e.g. LOGOUT / DELETE) =================
+  // ================= 5. APP LOGO CUSTOM DIALOG (WITH OFFICIAL APP LOGO) =================
+  static Future<void> showLogoDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    Color primaryColor = const Color(0xFF2E7D32),
+    String buttonText = 'ঠিক আছে',
+    VoidCallback? onConfirm,
+    bool barrierDismissible = true,
+  }) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      useRootNavigator: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // অফিসিয়াল অ্যাপের লোগো ব্যাজ
+              Container(
+                width: 68,
+                height: 68,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor.withOpacity(0.25), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withOpacity(0.12),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/icons/pnglogo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.eco_rounded,
+                      color: primaryColor,
+                      size: 38,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  color: Color(0xFF455A64),
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (Navigator.of(ctx, rootNavigator: true).canPop()) {
+                      Navigator.of(ctx, rootNavigator: true).pop();
+                    }
+                    if (onConfirm != null) onConfirm();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    buttonText,
+                    style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================= 6. CONFIRMATION STATE (e.g. LOGOUT / DELETE) =================
   static Future<bool> showConfirmation(
     BuildContext context, {
     required String title,

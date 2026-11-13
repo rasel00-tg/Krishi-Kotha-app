@@ -16,11 +16,19 @@ import 'providers/support_provider.dart';
 import 'core/widgets/responsive_web_wrapper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'presentation/auth/phone_login_screen.dart';
 import 'presentation/navigation/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables securely from .env
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('Dotenv loading notice: $e');
+  }
 
   // Multi-platform Firebase initialization with DefaultFirebaseOptions
   try {

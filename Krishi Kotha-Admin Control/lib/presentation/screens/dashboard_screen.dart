@@ -5,11 +5,31 @@ import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
 import '../widgets/admin_stat_card.dart';
 import '../widgets/admin_delete_dialog.dart';
+import '../widgets/admin_loading_indicator.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final Function(int) onNavigate;
 
   const DashboardScreen({super.key, required this.onNavigate});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final Stream<List<AdminUserModel>> _usersStream;
+  late final Stream<List<AdminMarketPriceModel>> _marketPricesStream;
+  late final Stream<List<AdminCropModel>> _cropsStream;
+  late final Stream<List<AdminNotificationModel>> _notificationsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _usersStream = AdminFirestoreService.instance.getUsersStream();
+    _marketPricesStream = AdminFirestoreService.instance.getMarketPricesStream();
+    _cropsStream = AdminFirestoreService.instance.getCropsStream();
+    _notificationsStream = AdminFirestoreService.instance.getNotificationsStream();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +144,7 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             width: cardWidth,
             child: StreamBuilder<List<AdminUserModel>>(
-              stream: AdminFirestoreService.instance.getUsersStream(),
+              stream: _usersStream,
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return AdminStatCard(
@@ -143,7 +163,7 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             width: cardWidth,
             child: StreamBuilder<List<AdminMarketPriceModel>>(
-              stream: AdminFirestoreService.instance.getMarketPricesStream(),
+              stream: _marketPricesStream,
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return AdminStatCard(
@@ -162,7 +182,7 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             width: cardWidth,
             child: StreamBuilder<List<AdminCropModel>>(
-              stream: AdminFirestoreService.instance.getCropsStream(),
+              stream: _cropsStream,
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return AdminStatCard(
@@ -181,7 +201,7 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             width: cardWidth,
             child: StreamBuilder<List<AdminNotificationModel>>(
-              stream: AdminFirestoreService.instance.getNotificationsStream(),
+              stream: _notificationsStream,
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return AdminStatCard(
@@ -206,7 +226,7 @@ class DashboardScreen extends StatelessWidget {
       runSpacing: 12,
       children: [
         ElevatedButton.icon(
-          onPressed: () => onNavigate(1),
+          onPressed: () => widget.onNavigate(1),
           icon: const Icon(Icons.add_alert_rounded, size: 18),
           label: const Text('নতুন নোটিফিকেশন পাঠান'),
           style: ElevatedButton.styleFrom(
@@ -217,7 +237,7 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () => onNavigate(2),
+          onPressed: () => widget.onNavigate(2),
           icon: const Icon(Icons.price_change_rounded, size: 18),
           label: const Text('বাজার দর আপডেট করুন'),
           style: ElevatedButton.styleFrom(
@@ -228,7 +248,7 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () => onNavigate(3),
+          onPressed: () => widget.onNavigate(3),
           icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
           label: const Text('নতুন ফসল / রোগবালাই যুক্ত করুন'),
           style: ElevatedButton.styleFrom(
@@ -239,7 +259,7 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         OutlinedButton.icon(
-          onPressed: () => onNavigate(5),
+          onPressed: () => widget.onNavigate(5),
           icon: const Icon(Icons.contact_support_rounded, size: 18),
           label: const Text('কৃষক ও সহায়তা টিকিট দেখুন'),
           style: OutlinedButton.styleFrom(
@@ -332,27 +352,29 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () => onNavigate(1),
+                onPressed: () => widget.onNavigate(1),
                 child: const Text('সব দেখুন'),
               ),
             ],
           ),
           const Divider(color: AdminColors.divider),
           StreamBuilder<List<AdminNotificationModel>>(
-            stream: AdminFirestoreService.instance.getNotificationsStream(),
+            stream: _notificationsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ));
+                return const AdminLoadingIndicator(
+                  message: 'তথ্য লোডিং হচ্ছে.....',
+                  padding: 24,
+                );
               }
 
               final list = snapshot.data ?? [];
               if (list.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text('কোনো নোটিফিকেশন পাওয়া যায়নি।'),
+                  child: Center(
+                    child: Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
+                  ),
                 );
               }
 
@@ -426,27 +448,29 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () => onNavigate(2),
+                onPressed: () => widget.onNavigate(2),
                 child: const Text('সব আপডেট'),
               ),
             ],
           ),
           const Divider(color: AdminColors.divider),
           StreamBuilder<List<AdminMarketPriceModel>>(
-            stream: AdminFirestoreService.instance.getMarketPricesStream(),
+            stream: _marketPricesStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ));
+                return const AdminLoadingIndicator(
+                  message: 'তথ্য লোডিং হচ্ছে.....',
+                  padding: 24,
+                );
               }
 
               final list = snapshot.data ?? [];
               if (list.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text('কোনো বাজার দর তথ্য পাওয়া যায়নি।'),
+                  child: Center(
+                    child: Text('কোনো তথ্য পাওয়া যায়নি', style: TextStyle(color: AdminColors.textMuted, fontSize: 13)),
+                  ),
                 );
               }
 

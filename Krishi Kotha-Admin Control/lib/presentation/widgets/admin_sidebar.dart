@@ -17,11 +17,13 @@ class AdminSidebar extends StatefulWidget {
 
 class _AdminSidebarState extends State<AdminSidebar> {
   late bool _settingsExpanded;
+  late bool _homepageExpanded;
 
   @override
   void initState() {
     super.initState();
     _settingsExpanded = widget.selectedIndex == 8;
+    _homepageExpanded = widget.selectedIndex == 9;
   }
 
   @override
@@ -29,6 +31,9 @@ class _AdminSidebarState extends State<AdminSidebar> {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedIndex == 8 && !_settingsExpanded) {
       _settingsExpanded = true;
+    }
+    if (widget.selectedIndex == 9 && !_homepageExpanded) {
+      _homepageExpanded = true;
     }
   }
 
@@ -112,6 +117,15 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   label: 'ড্যাশবোর্ড',
                   subtitle: 'ওভারভিউ ও সারাংশ',
                 ),
+
+                const SizedBox(height: 4),
+
+                // Homepage Parent Menu Item with Sub-menu (Positioned directly below Dashboard)
+                _buildHomepageParentItem(),
+                if (_homepageExpanded) _buildHomepageSubItem(),
+
+                const SizedBox(height: 4),
+
                 _buildMenuItem(
                   index: 1,
                   icon: Icons.manage_accounts_rounded,
@@ -259,6 +273,140 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   Container(
                     width: 4,
                     height: 18,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomepageParentItem() {
+    final isHomepageActive = widget.selectedIndex == 9;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            setState(() {
+              _homepageExpanded = !_homepageExpanded;
+            });
+            if (!isHomepageActive) {
+              widget.onItemSelected(9);
+            }
+          },
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: isHomepageActive && !_homepageExpanded ? AdminColors.sidebarActive : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.home_work_rounded,
+                  color: isHomepageActive ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'হোমপেজ',
+                        style: TextStyle(
+                          color: isHomepageActive ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 14,
+                          fontWeight: isHomepageActive ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'হোমপেজ ফিচার কন্ট্রোল',
+                        style: TextStyle(
+                          color: AdminColors.sidebarTextMuted,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _homepageExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  color: AdminColors.sidebarTextMuted,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomepageSubItem() {
+    final isSelected = widget.selectedIndex == 9;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, top: 2, bottom: 4, right: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => widget.onItemSelected(9),
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? const Color(0x44FFFFFF) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_month_rounded,
+                  color: isSelected ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'চাষ ক্যালেন্ডার মনিটরিং',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        '১২ মাসের চাষাবাদ গাইডলাইন',
+                        style: TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    width: 4,
+                    height: 16,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(2),

@@ -70,3 +70,22 @@ void showSuccessPopup(
   );
 }
 
+/// অ্যাপের লোগোসহ কাস্টম পপআপ/ডায়ালগ (Custom Dialog with App Logo)
+void showAppLogoDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  Color primaryColor = const Color(0xFF2E7D32),
+  String buttonText = 'ঠিক আছে',
+  VoidCallback? onConfirm,
+}) {
+  AppUnifiedDialog.showLogoDialog(
+    context,
+    title: title,
+    message: message,
+    primaryColor: primaryColor,
+    buttonText: buttonText,
+    onConfirm: onConfirm,
+  );
+}
+

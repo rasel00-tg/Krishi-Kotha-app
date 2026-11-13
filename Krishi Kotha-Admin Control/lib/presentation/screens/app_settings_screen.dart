@@ -4,6 +4,7 @@ import '../../core/responsive/responsive_layout.dart';
 import '../../core/utils/admin_error_handler.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../widgets/admin_loading_indicator.dart';
 
 class AppSettingsScreen extends StatefulWidget {
   const AppSettingsScreen({super.key});
@@ -22,6 +23,14 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
   bool _isSaving = false;
   bool _isInitialized = false;
   int _activeSubTab = 0; // 0: এডিটর, 1: লাইভ প্রিভিউ
+
+  late final Stream<AdminPrivacyPolicyModel> _privacyPolicyStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _privacyPolicyStream = AdminFirestoreService.instance.getPrivacyPolicyStream();
+  }
 
   @override
   void dispose() {
@@ -144,8 +153,15 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> with SingleTicker
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
     return StreamBuilder<AdminPrivacyPolicyModel>(
-      stream: AdminFirestoreService.instance.getPrivacyPolicyStream(),
+      stream: _privacyPolicyStream,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Scaffold(
+            backgroundColor: AdminColors.background,
+            body: AdminLoadingIndicator(message: 'তথ্য লোডিং হচ্ছে.....'),
+          );
+        }
+
         if (snapshot.hasData && snapshot.data != null) {
           _populateForm(snapshot.data!);
         }
