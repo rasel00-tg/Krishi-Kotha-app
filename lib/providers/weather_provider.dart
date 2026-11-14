@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/utils/bangla_number_converter.dart';
 import '../core/widgets/app_warning_dialog.dart';
 import '../data/models/weather_info_model.dart';
@@ -49,7 +51,21 @@ class WeatherProvider extends ChangeNotifier {
   /// ম্যানুয়াল রিফ্রেশ মেথড (কাস্টম লোগো ডায়ালগ ও ১০ মিনিট থ্রটলিং প্রটেকশন সহ)
   Future<void> manualRefresh(BuildContext context) async {
     final now = DateTime.now();
-    final lastCall = _lastApiCallTime ?? WeatherService.lastApiCallTime ?? _weatherInfo?.fetchedAt;
+    DateTime? lastCall = _lastApiCallTime ?? WeatherService.lastApiCallTime ?? _weatherInfo?.fetchedAt;
+
+    if (lastCall == null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedJsonStr = prefs.getString('weather_cache_${_selectedDistrict.toLowerCase()}');
+        if (cachedJsonStr != null && cachedJsonStr.isNotEmpty) {
+          final cachedMap = jsonDecode(cachedJsonStr) as Map<String, dynamic>;
+          final timestamp = cachedMap['timestamp'] as int? ?? 0;
+          if (timestamp > 0) {
+            lastCall = DateTime.fromMillisecondsSinceEpoch(timestamp);
+          }
+        }
+      } catch (_) {}
+    }
 
     if (lastCall != null) {
       final diffMinutes = now.difference(lastCall).inMinutes;

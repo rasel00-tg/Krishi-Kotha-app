@@ -4,6 +4,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../data/services/firestore_service.dart';
 import 'crop_calendar_screen.dart';
+import 'income_expense_screen.dart';
 
 class AgriServiceDetailScreen extends StatefulWidget {
   final String serviceId;
@@ -418,6 +419,37 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const IncomeExpenseScreen()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0F2F1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF80CBC4)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.open_in_new_rounded, size: 16, color: Color(0xFF00695C)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'পূর্বের হিস্ট্রি ও পূর্ণাঙ্গ অ্যাকাউন্টিং পেজ খুলুন',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF00695C)),
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF00695C)),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               TextField(

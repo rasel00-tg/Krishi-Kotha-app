@@ -185,10 +185,14 @@ class WeatherService {
     return 'sunny';
   }
 
-  /// বাংলা বারের নাম রিটার্ন করে
-  static String _getBanglaDayName(DateTime date, int index) {
-    if (index == 0) return 'আজ';
-    if (index == 1) return 'আগামীকাল';
+  /// বাংলা বারের নাম রিটার্ন করে (ক্যালেন্ডার ডেট ডিফারেন্স ভিত্তিক নিখুঁত গণনা)
+  static String _getBanglaDayName(DateTime targetDate, DateTime nowLocal) {
+    final targetDay = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final todayDay = DateTime(nowLocal.year, nowLocal.month, nowLocal.day);
+    final diffDays = targetDay.difference(todayDay).inDays;
+
+    if (diffDays == 0) return 'আজ';
+    if (diffDays == 1) return 'আগামীকাল';
     const weekdays = [
       'সোমবার',
       'মঙ্গলবার',
@@ -198,7 +202,7 @@ class WeatherService {
       'শনিবার',
       'রবিবার',
     ];
-    return weekdays[(date.weekday - 1) % 7];
+    return weekdays[(targetDate.weekday - 1) % 7];
   }
 
   /// বাংলা মাসের সংক্ষিপ্ত নাম
@@ -284,30 +288,92 @@ class WeatherService {
             final forecastData = jsonDecode(forecastRes.body) as Map<String, dynamic>;
             final list = forecastData['list'] as List<dynamic>? ?? [];
 
-            // ডেটাগুলো বাংলাদেশ সময় (BST, UTC+6) অনুযায়ী তারিখভিত্তিক গ্রুপিং
+            final nowLocal = DateTime.now();
+            final String todayKey =
+                '${nowLocal.year}-${nowLocal.month.toString().padLeft(2, '0')}-${nowLocal.day.toString().padLeft(2, '0')}';
+
+            // ১. নিখুঁত টাইমজোন কনভার্শন (.toLocal() দিয়ে ইউজারের লোকাল টাইমে রূপান্তর)
             final Map<String, List<Map<String, dynamic>>> groupedByDay = {};
             final Map<String, DateTime> dateKeyToDateTime = {};
 
             for (final item in list) {
               final int dtSeconds = (item['dt'] as num?)?.toInt() ?? 0;
-              // UTC থেকে বাংলাদেশ টাইমজোন (UTC+6) এ নিখুঁত রূপান্তর
-              final bdDateTime = DateTime.fromMillisecondsSinceEpoch(
+              final localDateTime = DateTime.fromMillisecondsSinceEpoch(
                 dtSeconds * 1000,
                 isUtc: true,
-              ).add(const Duration(hours: 6));
+              ).toLocal();
 
-              final dateKey = '${bdDateTime.year}-${bdDateTime.month.toString().padLeft(2, '0')}-${bdDateTime.day.toString().padLeft(2, '0')}';
+              final dateKey =
+                  '${localDateTime.year}-${localDateTime.month.toString().padLeft(2, '0')}-${localDateTime.day.toString().padLeft(2, '0')}';
               groupedByDay.putIfAbsent(dateKey, () => []).add(item as Map<String, dynamic>);
-              dateKeyToDateTime.putIfAbsent(dateKey, () => bdDateTime);
+              dateKeyToDateTime.putIfAbsent(dateKey, () => localDateTime);
             }
 
-            final sortedDateKeys = groupedByDay.keys.toList()..sort();
+            // ২ ও ৩. "আজ" (Day 0) এর ডেটা প্রসেসিং (Current Weather API + ফোরকাস্টের আজকের ডেটা)
+            double todayMaxT = currentTemp;
+            double todayMinT = currentTemp;
+            double todayMaxPop = 0.0;
+            String todayCondMain = weatherMain;
+            String todayCondDesc = weatherDesc;
 
-            // ৫ দিনের ডেটা এক্সট্রাক্ট করা (Day 0 থেকে Day 4)
-            for (int i = 0; i < min(5, sortedDateKeys.length); i++) {
-              final dateKey = sortedDateKeys[i];
+            if (groupedByDay.containsKey(todayKey) && groupedByDay[todayKey]!.isNotEmpty) {
+              final todayItems = groupedByDay[todayKey]!;
+              for (final it in todayItems) {
+                final m = it['main'] as Map<String, dynamic>;
+                final tMax = (m['temp_max'] as num).toDouble();
+                final tMin = (m['temp_min'] as num).toDouble();
+                if (tMax > todayMaxT) todayMaxT = tMax;
+                if (tMin < todayMinT) todayMinT = tMin;
+                final pop = (it['pop'] as num?)?.toDouble() ?? 0.0;
+                if (pop > todayMaxPop) todayMaxPop = pop;
+              }
+              final midItem = todayItems[todayItems.length ~/ 2];
+              final wList = midItem['weather'] as List<dynamic>? ?? [];
+              if (wList.isNotEmpty) {
+                todayCondMain = wList[0]['main']?.toString() ?? weatherMain;
+                todayCondDesc = wList[0]['description']?.toString() ?? weatherDesc;
+              }
+            } else {
+              // লেট-নাইট এজ কেস: ফোরকাস্টে আজকের স্লট শেষ হয়ে গেলে Current Weather API (/weather) থেকে ডেটা নেওয়া
+              final m = main;
+              final tMax = (m['temp_max'] as num?)?.toDouble() ?? (currentTemp + 2.0);
+              final tMin = (m['temp_min'] as num?)?.toDouble() ?? (currentTemp - 4.0);
+              todayMaxT = max(tMax, currentTemp);
+              todayMinT = min(tMin, currentTemp);
+              if (list.isNotEmpty) {
+                final firstPop = (list[0]['pop'] as num?)?.toDouble() ?? 0.0;
+                todayMaxPop = firstPop;
+              }
+            }
+
+            rainProbability = (todayMaxPop * 100).round();
+
+            // "আজ" (Day 0) যোগ করা
+            final String todayDateFormatted =
+                '${BanglaNumberConverter.toBangla(nowLocal.day)} ${_getBanglaMonth(nowLocal.month)}';
+            fiveDayForecast.add(
+              DailyForecast(
+                dayNameBn: 'আজ',
+                dateBn: todayDateFormatted,
+                conditionBn: _translateCondition(todayCondMain, todayCondDesc),
+                tempMax: todayMaxT,
+                tempMin: todayMinT,
+                rainProbability: (todayMaxPop * 100).round(),
+                iconCode: _getIconCode(todayCondMain),
+              ),
+            );
+
+            // ভবিষ্যৎ দিনগুলো (Tomorrow, Day 2, Day 3, Day 4) সর্ট করে ক্রমান্বয়ে যোগ করা
+            final futureDateKeys = groupedByDay.keys
+                .where((k) => k.compareTo(todayKey) > 0)
+                .toList()
+              ..sort();
+
+            for (final dateKey in futureDateKeys) {
+              if (fiveDayForecast.length >= 5) break;
+
               final items = groupedByDay[dateKey]!;
-              final targetDate = dateKeyToDateTime[dateKey] ?? DateTime.now().add(Duration(days: i));
+              final targetDate = dateKeyToDateTime[dateKey] ?? nowLocal.add(Duration(days: fiveDayForecast.length));
 
               double maxT = -999.0;
               double minT = 999.0;
@@ -325,7 +391,6 @@ class WeatherService {
                 if (pop > maxPop) maxPop = pop;
               }
 
-              // দুপুরের রিডিং (বা মাঝামাঝি সময়) থেকে দিনের আবহাওয়ার অবস্থা নির্বাচন
               if (items.isNotEmpty) {
                 final midItem = items[items.length ~/ 2];
                 final wList = midItem['weather'] as List<dynamic>? ?? [];
@@ -335,14 +400,9 @@ class WeatherService {
                 }
               }
 
-              if (i == 0) {
-                rainProbability = (maxPop * 100).round();
-                if (maxT == -999.0) maxT = currentTemp + 2;
-                if (minT == 999.0) minT = currentTemp - 4;
-              }
-
-              final String dayName = _getBanglaDayName(targetDate, i);
-              final String dateFormatted = '${BanglaNumberConverter.toBangla(targetDate.day)} ${_getBanglaMonth(targetDate.month)}';
+              final String dayName = _getBanglaDayName(targetDate, nowLocal);
+              final String dateFormatted =
+                  '${BanglaNumberConverter.toBangla(targetDate.day)} ${_getBanglaMonth(targetDate.month)}';
 
               fiveDayForecast.add(
                 DailyForecast(
@@ -367,15 +427,18 @@ class WeatherService {
           while (fiveDayForecast.length < 5) {
             final idx = fiveDayForecast.length;
             final futureDate = baseNow.add(Duration(days: idx));
+            final dayName = _getBanglaDayName(futureDate, baseNow);
+            final String dateFormatted =
+                '${BanglaNumberConverter.toBangla(futureDate.day)} ${_getBanglaMonth(futureDate.month)}';
             fiveDayForecast.add(
               DailyForecast(
-                dayNameBn: _getBanglaDayName(futureDate, idx),
-                dateBn: '${BanglaNumberConverter.toBangla(futureDate.day)} ${_getBanglaMonth(futureDate.month)}',
-                conditionBn: idx % 2 == 0 ? 'রোদেলা' : 'আংশিক মেঘলা',
-                tempMax: currentTemp + (idx % 2 == 0 ? 2 : 1),
-                tempMin: currentTemp - (idx % 2 == 0 ? 4 : 5),
-                rainProbability: (rainProbability * (idx % 2 == 0 ? 0.8 : 1.1)).clamp(0, 100).round(),
-                iconCode: idx % 2 == 0 ? 'sunny' : 'partly_cloudy',
+                dayNameBn: dayName,
+                dateBn: dateFormatted,
+                conditionBn: 'পরিষ্কার আকাশ',
+                tempMax: currentTemp + (idx % 2 == 0 ? 1.0 : 2.0),
+                tempMin: currentTemp - (idx % 2 == 0 ? 3.0 : 4.0),
+                rainProbability: max(10, rainProbability - (idx * 3)),
+                iconCode: 'sunny',
               ),
             );
           }

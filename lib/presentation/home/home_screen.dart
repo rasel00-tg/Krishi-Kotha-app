@@ -39,59 +39,71 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // প্রধান স্ক্রোল ভিউ (SliverAppBar & FlexibleSpaceBar)
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // ৪. স্মুথ স্ক্রলিং ও ফেড-আউট ইফেক্ট (SliverAppBar & FlexibleSpaceBar)
-              SliverAppBar(
-                expandedHeight: 330.0,
-                collapsedHeight: 0,
-                toolbarHeight: 0,
-                pinned: false,
-                floating: false,
-                stretch: true,
-                elevation: 0,
-                backgroundColor: Colors.transparent,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.parallax,
-                  background: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // স্ক্রল পজিশনের সাথে অপাসিটি ডাইনামিক্যালি রিয়্যাক্ট করবে
-                      final double progress = ((constraints.maxHeight - 50.0) / (330.0 - 50.0)).clamp(0.0, 1.0);
-                      return Opacity(
-                        opacity: progress,
-                        child: SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              // ১. অ্যানিমেশন ও আবহাওয়া ডেটা (স্ক্রিনের টপ থেকে শুরু হয়ে আকাশের ব্যাকগ্রাউন্ড ব্লেন্ড হবে)
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  top: MediaQuery.of(context).padding.top + 8,
-                                ),
-                                child: const WeatherCardWidget(),
-                              ),
-
-                              // ১. সিমলেস ট্রান্সপারেন্ট টপবার (সরাসরি স্ট্যাটাস বারের সাথে মিশে ভাসমান থাকবে)
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                child: SafeArea(
+          // প্রধান স্ক্রোল ভিউ (SliverAppBar & FlexibleSpaceBar) - ৩. স্ক্রলবার সম্পূর্ণ হাইড (ScrollConfiguration)
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // ৪. স্মুথ স্ক্রলিং ও ফেড-আউট ইফেক্ট (SliverAppBar & FlexibleSpaceBar with Dynamic Opacity & Parallax)
+                SliverAppBar(
+                  expandedHeight: 350.0,
+                  collapsedHeight: 0,
+                  toolbarHeight: 0,
+                  pinned: false,
+                  floating: false,
+                  stretch: true,
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.parallax,
+                    background: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // স্ক্রল পজিশনের সাথে টপবার ও ওয়েদার কার্ড একসাথে ডাইনামিক্যালি ফেড-আউট হবে
+                        final double progress = ((constraints.maxHeight - 50.0) / (350.0 - 50.0)).clamp(0.0, 1.0);
+                        return Opacity(
+                          opacity: progress,
+                          child: SingleChildScrollView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // ১ ও ২. ডেডিকেটেড টপবার রো (লোগো, ডাইনামিক গ্রিটিং, নোটিফিকেশন আইকন)
+                                SafeArea(
                                   bottom: false,
-                                  child: _buildTopHeader(context),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    color: const Color(0xFFF8FAF7), // ওয়েদার সেকশন ও কার্ডের ব্যাকগ্রাউন্ড কালার
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        // বাম দিকে: অ্যাপের লোগো (PNG)
+                                        _buildAppLogo(),
+
+                                        // মাঝখানে: ডাইনামিক গ্রিটিং টেক্সট ("শুভ সকাল/অপরাহ্ণ/বিকেল/রাত")
+                                        _buildDynamicGreetingBadge(),
+
+                                        // ডান দিকে: নোটিফিকেশন আইকন (Notification Bell with unread badge)
+                                        _buildNotificationButton(context),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+
+                                const SizedBox(height: 2),
+
+                                // ৩. নিচের ওয়েদার অ্যানিমেশন ও কার্ড সেকশন (একই সাথে স্মুথলি ফেড-আউট হবে)
+                                const WeatherCardWidget(),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
 
             // ৫. নিচের সমস্ত ফিচার (SliverToBoxAdapter এ সুরক্ষিত)
             SliverToBoxAdapter(
@@ -243,9 +255,10 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 
   // ইথারিয়াল গ্লাস স্ফিয়ার ও ভাইব্রেন্ট অ্যাকসেন্ট অর্বস আর্কিটেকচার
@@ -451,102 +464,153 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// ট্রান্সপারেন্ট টপবার (সরাসরি বডিতে, আলাদা কোনো AppBar বা সাদা ব্যাকগ্রাউন্ড ছাড়া)
-  Widget _buildTopHeader(BuildContext context) {
+  /// হেডারের বাম পাশের অ্যাপের লোগো (PNG)
+  Widget _buildAppLogo() {
+    return Image.asset(
+      'assets/icons/pnglogo.png',
+      height: 48,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.08),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.eco_rounded, color: AppColors.primary, size: 28),
+      ),
+    );
+  }
+
+  /// হেডারের মাঝের ডাইনামিক গ্রিটিং টেক্সট ("শুভ সকাল/অপরাহ্ণ/বিকেল/রাত")
+  Widget _buildDynamicGreetingBadge() {
+    final hour = DateTime.now().hour;
+    String greeting;
+    IconData icon;
+    if (hour >= 6 && hour < 12) {
+      greeting = 'শুভ সকাল';
+      icon = Icons.wb_sunny_rounded;
+    } else if (hour >= 12 && hour < 16) {
+      greeting = 'শুভ অপরাহ্ণ';
+      icon = Icons.light_mode_rounded;
+    } else if (hour >= 16 && hour < 18) {
+      greeting = 'শুভ বিকেল';
+      icon = Icons.wb_twilight_rounded;
+    } else if (hour >= 18 && hour < 20) {
+      greeting = 'শুভ সন্ধ্যা';
+      icon = Icons.nights_stay_rounded;
+    } else {
+      greeting = 'শুভ রাত্রি';
+      icon = Icons.bedtime_rounded;
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: const BoxDecoration(
-        color: Colors.transparent, // সম্পূর্ণ ট্রান্সপারেন্ট
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFC8E6C9),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1B5E20).withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // হেডারের বাম পাশে অ্যাপের লোগো (রিসাইজ: height 48 এবং Transform.translate দিয়ে নিচে নামানো)
-          Transform.translate(
-            offset: const Offset(0, 6),
-            child: Image.asset(
-              'assets/icons/pnglogo.png',
-              height: 48,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.eco_rounded, color: AppColors.primary, size: 28),
-              ),
-            ),
+          Icon(
+            icon,
+            size: 14,
+            color: const Color(0xFF2E7D32),
           ),
-
-          // হেডারের ডান পাশে নোটিফিকেশন আইকন উইথ আনরিড কাউন্ট ব্যাজ (মানানসই অ্যালাইনমেন্ট)
-          Transform.translate(
-            offset: const Offset(0, 6),
-            child: StreamBuilder<List<NotificationModel>>(
-              stream: firestoreService.getNotificationsStream(),
-              builder: (context, snapshot) {
-                final notifications = snapshot.data ?? [];
-                final unreadCount = notifications.where((n) => !n.isSeen).length;
-
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => NotificationsScreen(
-                            firestoreService: firestoreService,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(
-                            unreadCount > 0
-                                ? Icons.notifications_rounded
-                                : Icons.notifications_none_rounded,
-                            size: 22,
-                            color: const Color(0xFF1E293B),
-                          ),
-                          if (unreadCount > 0)
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE53935),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 1.5),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+          const SizedBox(width: 5),
+          Text(
+            greeting,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1B5E20),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// হেডারের ডান পাশের নোটিফিকেশন আইকন উইথ আনরিড কাউন্ট ব্যাজ
+  Widget _buildNotificationButton(BuildContext context) {
+    return StreamBuilder<List<NotificationModel>>(
+      stream: firestoreService.getNotificationsStream(),
+      builder: (context, snapshot) {
+        final notifications = snapshot.data ?? [];
+        final unreadCount = notifications.where((n) => !n.isSeen).length;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => NotificationsScreen(
+                    firestoreService: firestoreService,
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    unreadCount > 0
+                        ? Icons.notifications_rounded
+                        : Icons.notifications_none_rounded,
+                    size: 22,
+                    color: const Color(0xFF1E293B),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE53935),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

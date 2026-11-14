@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/premium_loading_widget.dart';
+import 'crop_details_page.dart';
 
 class CropCalendarScreen extends StatefulWidget {
   final String? initialMonth;
@@ -64,27 +68,27 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        backgroundColor: const Color(0xFF1B5E20),
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 19),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 19),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Column(
+        title: Column(
           children: [
-            Text(
+            const Text(
               'ফসল চাষ ক্যালেন্ডার',
               style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 17,
+                color: Colors.white,
+                fontSize: 17.5,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'মাসভিত্তিক ফসল রোপণ ও পরিচর্যার সময়সূচি',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: Colors.white.withOpacity(0.85),
                 fontSize: 11,
                 fontWeight: FontWeight.normal,
               ),
@@ -96,19 +100,42 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ১. সার্চ ও হেডার সেকশন
+            // ১. কালারিং টপবার (Colored Top Bar with Month Filters & Search)
             Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1B5E20).withOpacity(0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
               child: Column(
                 children: [
-                  // সার্চ বার
+                  // সার্চ বার (পরিষ্কার সাদা কার্ড ও গ্রিন আইকন)
                   Container(
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F8F1),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE0EFE0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -132,70 +159,76 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
                       onChanged: (val) => setState(() => _searchQuery = val.trim()),
                     ),
                   ),
+
+                  const SizedBox(height: 12),
+
+                  // মাসভিত্তিক অনুভূমিক ফিল্টার চিপস (আকর্ষণীয় আইকন ও কালারিং স্টেট)
+                  SizedBox(
+                    height: 38,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _months.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final month = _months[index];
+                        final isSelected = _selectedMonth == month;
+
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            setState(() => _selectedMonth = month);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.white : Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? Colors.white : Colors.white.withOpacity(0.32),
+                                width: 1,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.15),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  month == 'সব মাস'
+                                      ? Icons.grid_view_rounded
+                                      : Icons.calendar_today_rounded,
+                                  size: 13,
+                                  color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  month,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
 
-            // ২. মাসভিত্তিক অনুভূমিক ফিল্টার চিপস
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.only(bottom: 12, top: 4),
-              child: SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _months.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final month = _months[index];
-                    final isSelected = _selectedMonth == month;
-
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () {
-                        setState(() => _selectedMonth = month);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF2E7D32) : const Color(0xFFF3F7F3),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected ? const Color(0xFF2E7D32) : const Color(0xFFD8E4D8),
-                            width: 1,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF2E7D32).withOpacity(0.25),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Center(
-                          child: Text(
-                            month,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                              color: isSelected ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            const Divider(height: 1, color: Color(0xFFE8EFE8)),
-
-            // ৩. নির্বাচিত মাসের অতিরিক্ত ব্যানার তথ্য (যদি কোনো নির্দিষ্ট মাস সিলেক্ট থাকে)
+            // ২. নির্বাচিত মাসের অতিরিক্ত ব্যানার তথ্য (যদি কোনো নির্দিষ্ট মাস সিলেক্ট থাকে)
             if (_selectedMonth != 'সব মাস' && _monthEnglishMap.containsKey(_selectedMonth))
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -249,23 +282,17 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance.collection('farming_calendar').snapshots(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if ((snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) ||
+                      (!snapshot.hasData && !snapshot.hasError)) {
                     return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(color: AppColors.primary),
-                          SizedBox(height: 12),
-                          Text(
-                            'চাষ ক্যালেন্ডার লোড হচ্ছে...',
-                            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                          ),
-                        ],
+                      child: PremiumLoadingWidget(
+                        topic: 'চাষ ক্যালেন্ডার',
+                        subtitle: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন',
                       ),
                     );
                   }
 
-                  if (snapshot.hasError) {
+                  if (snapshot.hasError && !snapshot.hasData) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -419,81 +446,91 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ইমেজ ও ব্যানার হেডার
-          Stack(
-            children: [
-              if (imageUrl.isNotEmpty)
-                Image.network(
-                  imageUrl,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    height: 100,
-                    width: double.infinity,
-                    color: const Color(0xFFE8F5E9),
-                    child: const Icon(Icons.eco_rounded, size: 40, color: Color(0xFF2E7D32)),
-                  ),
-                )
-              else
-                Container(
-                  height: 90,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.eco_rounded, size: 40, color: Colors.white24),
-                  ),
+          // ইমেজ ও ব্যানার হেডার (ক্লিকেবল ইমেজ -> ছবিতে ট্যাপ করলেই ডিটেইলস পেজ ওপেন হবে)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CropDetailsPage(cropData: item),
                 ),
+              );
+            },
+            child: SizedBox(
+              height: 160.0,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildCardImage(imageUrl, cropName),
 
-              // মাস ও মৌসুম ব্যাজ
-              Positioned(
-                top: 10,
-                left: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.65),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.calendar_month_rounded, color: Colors.amberAccent, size: 13),
-                      const SizedBox(width: 4),
-                      Text(
-                        month.isNotEmpty ? '$month মাস' : 'চলতি মাস',
-                        style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                  // মাস ও মৌসুম ব্যাজ (IgnorePointer যাতে স্পর্শ কোনোভাবেই আটকাতে না পারে)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.65),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.calendar_month_rounded, color: Colors.amberAccent, size: 13),
+                            const SizedBox(width: 4),
+                            Text(
+                              month.isNotEmpty ? '$month মাস' : 'চলতি মাস',
+                              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // ক্যাটাগরি ব্যাজ
-              if (category.isNotEmpty)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32).withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(20),
+                  // ক্যাটাগরি ব্যাজ (IgnorePointer)
+                  if (category.isNotEmpty)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32).withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            category,
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      category,
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+
+                  // সবার উপরে স্বচ্ছ ক্লিকেবল লেয়ার (কোনো লেয়ার বা উইজেট এর স্পর্শ আটকাতে পারবে না)
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CropDetailsPage(cropData: item),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
 
           Padding(
@@ -621,6 +658,101 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Cloudflare R2 সহ যেকোনো নেটওয়ার্ক ইমেজ নিরাপদে রেন্ডার করার নন-ব্লকিং হেল্পার
+  Widget _buildCardImage(String imageUrl, String cropName) {
+    const double imageHeight = 160.0;
+    final cleanUrl = imageUrl.trim();
+
+    return SizedBox(
+      height: imageHeight,
+      width: double.infinity,
+      child: cleanUrl.isEmpty
+          ? _buildImagePlaceholder(imageHeight, cropName)
+          : CachedNetworkImage(
+              imageUrl: cleanUrl,
+              height: imageHeight,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              memCacheHeight: 400,
+              fadeInDuration: const Duration(milliseconds: 200),
+              placeholder: (context, url) => Container(
+                color: const Color(0xFFF1F8F1),
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ),
+              errorWidget: (context, errorUrl, error) {
+                // কোনো ব্লকিং ছাড়া তাত্ক্ষণিক নিরাপদ প্লেসহোল্ডার
+                return _buildImagePlaceholder(imageHeight, cropName);
+              },
+            ),
+    );
+  }
+
+  /// ডিফল্ট আকর্ষণীয় ইমেজ প্লেসহোল্ডার (লেআউট অক্ষত রাখা নিশ্চিত করে)
+  Widget _buildImagePlaceholder(double height, String cropName) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2E7D32).withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.eco_rounded,
+                size: 28,
+                color: Color(0xFF2E7D32),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                cropName.isNotEmpty ? cropName : 'কৃষি কথা – ফসল ক্যালেন্ডার',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

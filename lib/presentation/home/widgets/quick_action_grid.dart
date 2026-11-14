@@ -3,9 +3,11 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/bangla_number_converter.dart';
+import '../../../core/widgets/app_unified_dialog.dart';
 import '../../../data/services/firestore_service.dart';
 import '../agri_service_detail_screen.dart';
 import '../crop_calendar_screen.dart';
+import '../income_expense_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -495,9 +497,11 @@ class QuickActionGrid extends StatelessWidget {
         color: const Color(0xFF00897B),
         bgColor: const Color(0xFFE0F2F1),
         onTap: () {
-          Navigator.push(
+          AppUnifiedDialog.showLogoDialog(
             context,
-            MaterialPageRoute(builder: (_) => const ExpertHelplineScreen()),
+            title: 'কৃষি বিশেষজ্ঞ',
+            message: 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
+            primaryColor: const Color(0xFF00897B),
           );
         },
       ),
@@ -588,14 +592,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.menu_book_outlined,
         color: const Color(0xFF00897B),
         bgColor: const Color(0xFFE0F2F1),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'ledger',
-          title: AppStrings.serviceFarmLedger,
-          icon: Icons.menu_book_outlined,
-          color: const Color(0xFF00897B),
-          bgColor: const Color(0xFFE0F2F1),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const IncomeExpensePage(),
+            ),
+          );
+        },
       ),
       // ৯. মাটির স্বাস্থ্য
       QuickActionItem(

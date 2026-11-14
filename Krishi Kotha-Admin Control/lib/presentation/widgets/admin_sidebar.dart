@@ -23,7 +23,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
   void initState() {
     super.initState();
     _settingsExpanded = widget.selectedIndex == 8;
-    _homepageExpanded = widget.selectedIndex == 9;
+    _homepageExpanded = widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11;
   }
 
   @override
@@ -32,7 +32,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
     if (widget.selectedIndex == 8 && !_settingsExpanded) {
       _settingsExpanded = true;
     }
-    if (widget.selectedIndex == 9 && !_homepageExpanded) {
+    if ((widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11) && !_homepageExpanded) {
       _homepageExpanded = true;
     }
   }
@@ -122,7 +122,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
 
                 // Homepage Parent Menu Item with Sub-menu (Positioned directly below Dashboard)
                 _buildHomepageParentItem(),
-                if (_homepageExpanded) _buildHomepageSubItem(),
+                if (_homepageExpanded) ...[
+                  _buildHomepageSubItem(),
+                  _buildAgriExpertSubItem(),
+                  _buildIncomeExpenseHistorySubItem(),
+                ],
 
                 const SizedBox(height: 4),
 
@@ -287,7 +291,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
   }
 
   Widget _buildHomepageParentItem() {
-    final isHomepageActive = widget.selectedIndex == 9;
+    final isHomepageActive = widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -395,6 +399,140 @@ class _AdminSidebarState extends State<AdminSidebar> {
                       ),
                       const Text(
                         '১২ মাসের চাষাবাদ গাইডলাইন',
+                        style: TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAgriExpertSubItem() {
+    final isSelected = widget.selectedIndex == 10;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, top: 2, bottom: 4, right: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => widget.onItemSelected(10),
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? const Color(0x44FFFFFF) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.support_agent_rounded,
+                  color: isSelected ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'কৃষি বিশেষজ্ঞ',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'বিশেষজ্ঞ পরামর্শ সহায়তা',
+                        style: TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIncomeExpenseHistorySubItem() {
+    final isSelected = widget.selectedIndex == 11;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, top: 2, bottom: 4, right: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => widget.onItemSelected(11),
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? const Color(0x44FFFFFF) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.receipt_long_rounded,
+                  color: isSelected ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'আয়-ব্যয় ও ডিলিট হিস্ট্রি',
                         style: TextStyle(
                           color: Color(0xB3FFFFFF),
                           fontSize: 9.5,

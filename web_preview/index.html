@@ -82,31 +82,24 @@
       position: relative;
     }
 
-    /* App Bar - Seamless Transparent Header matching Flutter App */
-    .app-bar {
-      background: transparent !important;
-      color: var(--text-primary);
-      padding: 10px 16px 2px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: none !important;
-      z-index: 20;
-      width: 100%;
-      box-sizing: border-box;
+    /* App Bar - Seamless Dedicated Top Bar matching Flutter App */
+    #mainAppBar {
+      display: none !important;
     }
 
-    .app-bar-inner {
-      width: 100%;
+    .dedicated-topbar-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 12px 16px 8px 16px;
+      background: var(--background);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .app-header-logo-wrap {
       display: flex;
       align-items: center;
-      transform: translateY(2px);
     }
 
     .app-header-logo-img {
@@ -120,7 +113,6 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      transform: translateY(2px);
     }
 
     .notification-circle-btn {
@@ -505,7 +497,7 @@
       font-size: 13px;
     }
 
-    /* Scrollable App Body */
+    /* Scrollable App Body - ৩. স্ক্রলবার সম্পূর্ণ হাইড (Hide Scrollbar) */
     .app-content {
       flex: 1;
       overflow-y: auto;
@@ -513,15 +505,18 @@
       padding-bottom: 90px;
       scroll-behavior: smooth;
       width: 100%;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
 
     .app-content::-webkit-scrollbar {
-      width: 6px;
+      display: none;
+      width: 0;
+      height: 0;
     }
 
     .app-content::-webkit-scrollbar-thumb {
-      background: #c8e6c9;
-      border-radius: 4px;
+      display: none;
     }
 
     /* Tabs Content Panes - 100% Full Width Edge-to-Edge */
@@ -611,8 +606,9 @@
 
     .weather-lottie-center {
       position: absolute;
-      width: 175px;
-      height: 175px;
+      top: -15px;
+      width: 190px;
+      height: 190px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -622,7 +618,7 @@
 
     .weather-dynamic-greeting-wrap {
       position: absolute;
-      top: 2px;
+      top: -8px;
       left: 0;
       right: 0;
       display: flex;
@@ -2242,6 +2238,25 @@
 
 <body>
 
+  <!-- Custom Full Screen Splash Screen with 2-Second Delay & Fade-Out Animation -->
+  <div id="appSplashScreen" style="position: fixed; inset: 0; z-index: 9999999; background: #ffffff; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
+    <img src="/assets/images/opening image.png" alt="Opening Splash" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='/assets/images/opening image/opening image.png'" />
+  </div>
+
+  <script>
+    (function() {
+      setTimeout(function() {
+        var splash = document.getElementById('appSplashScreen');
+        if (splash) {
+          splash.style.opacity = '0';
+          setTimeout(function() {
+            splash.style.display = 'none';
+          }, 600);
+        }
+      }, 2000);
+    })();
+  </script>
+
   <!-- Full Screen Responsive App Root (Edge-to-Edge) -->
   <div class="app-screen">
     <!-- Seamless Transparent App Bar Matching Flutter Header -->
@@ -2294,22 +2309,31 @@
             style="position: absolute; top: 520px; right: 25px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(232, 234, 246, 0.32) 0%, rgba(197, 202, 233, 0.14) 65%, transparent 80%); filter: blur(25px);">
           </div>
         </div>
-        <!-- Real-Time Weather Section Matching Flutter Layout (Lottie, Dynamic Greeting, No Dropdown Icon & 5-Day Forecast) -->
+        <!-- Real-Time Weather Section Matching Flutter Layout (Dedicated Top Bar Row + Weather Section) -->
         <div class="weather-sticky-wrap">
+          <!-- ১ ও ২. ডেডিকেটেড টপবার রো (Row with SpaceBetween: লোগো, ডাইনামিক গ্রিটিং, নোটিফিকেশন আইকন) -->
+          <div class="dedicated-topbar-row">
+            <div class="app-header-logo-wrap" title="কৃষি কথা – Krishi Kotha">
+              <img src="pnglogo.png" alt="কৃষি কথা লোগো" class="app-header-logo-img" onerror="this.src='pnglogo.png'" />
+            </div>
+            <div class="dynamic-greeting-pill" id="dynamicGreetingPill">
+              <i class="fa-solid fa-sun" id="greetingIcon" style="color: #2E7D32; font-size: 13px;"></i>
+              <span id="greetingText">শুভ সকাল</span>
+            </div>
+            <div class="app-bar-actions">
+              <button class="notification-circle-btn" onclick="openNotificationsPage()" title="বিজ্ঞপ্তি ও নোটিফিকেশন">
+                <i class="fa-solid fa-bell"></i>
+                <span class="bell-badge-dot" id="bellBadgeDot"></span>
+              </button>
+            </div>
+          </div>
+
           <div class="weather-modern-section">
-            <!-- Stack: Animation in center, Greeting at top, Weather Left, Metrics Right -->
+            <!-- Stack: Animation in center, Weather Left, Metrics Right -->
             <div class="weather-stack-container">
-              <!-- Central Lottie Animation -->
+              <!-- Central Lottie Animation (Clean & Centered) -->
               <div class="weather-lottie-center">
                 <lottie-player src="assets/animation/home animation.json" background="transparent" speed="1" style="width: 175px; height: 175px;" loop autoplay></lottie-player>
-              </div>
-
-              <!-- Dynamic Greeting Badge (Top Center) -->
-              <div class="weather-dynamic-greeting-wrap">
-                <div class="dynamic-greeting-pill" id="dynamicGreetingPill">
-                  <i class="fa-solid fa-sun" id="greetingIcon" style="color: #2E7D32; font-size: 13px;"></i>
-                  <span id="greetingText">শুভ সকাল</span>
-                </div>
               </div>
 
               <!-- Left Side: Location Chip, Degree, Condition -->
@@ -2442,7 +2466,7 @@
             <span>চাষ ক্যালেন্ডার</span>
           </div>
           <!-- ২. কৃষি বিশেষজ্ঞ -->
-          <div class="quick-card" onclick="openSupportContactPage()">
+          <div class="quick-card" onclick="showAppLogoDialog('কৃষি বিশেষজ্ঞ', 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।', 'ঠিক আছে', '#00897B')">
             <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
               <i class="fa-solid fa-user-doctor"></i>
             </div>
@@ -2484,7 +2508,7 @@
             <span>সার-বীজ ডিলার</span>
           </div>
           <!-- ৮. কৃষি আয়-ব্যয় -->
-          <div class="quick-card" onclick="openServiceModal('ledger')">
+          <div class="quick-card" onclick="openIncomeExpenseFullPage()">
             <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
               <i class="fa-solid fa-book-open"></i>
             </div>
@@ -3357,28 +3381,27 @@
     <!-- DEDICATED FULL SCREEN CROP CALENDAR PAGE MATCHING FLUTTER CROP_CALENDAR_SCREEN -->
     <div class="full-screen-page" id="cropCalendarPage"
       style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
-      <div class="page-topbar" style="background: #fff; border-bottom: 1px solid #E0EFE0; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-        <button class="topbar-back-btn" onclick="closeCropCalendarPage()" style="background: none; border: none; font-size: 18px; color: #1E281F; cursor: pointer; padding: 6px;">
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <div style="text-align: center; flex: 1;">
-          <h3 style="font-size: 16px; font-weight: 700; color: #1E281F; margin: 0;">ফসল চাষ ক্যালেন্ডার</h3>
-          <p style="font-size: 11px; color: #4A5B4C; margin: 2px 0 0 0;">মাসভিত্তিক ফসল রোপণ ও পরিচর্যার সময়সূচি</p>
+      <!-- Colored Header & Topbar matching Flutter App -->
+      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeCropCalendarPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসল চাষ ক্যালেন্ডার</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাসভিত্তিক ফসল রোপণ ও পরিচর্যার সময়সূচি</p>
+          </div>
+          <div style="width: 32px;"></div>
         </div>
-        <div style="width: 32px;"></div>
-      </div>
 
-      <!-- Search Bar -->
-      <div style="background: #fff; padding: 10px 16px 8px 16px;">
-        <div style="background: #F1F8F1; border: 1px solid #E0EFE0; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px;">
+        <!-- Search Bar -->
+        <div style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
           <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
           <input type="text" id="cropCalendarSearchInput" placeholder="ফসলের নাম বা মৌসুম খুঁজুন..." oninput="onCropCalendarSearch(this.value)" style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
         </div>
-      </div>
 
-      <!-- Horizontal Month Filter Chips -->
-      <div style="background: #fff; padding: 4px 0 12px 0; border-bottom: 1px solid #E8EFE8;">
-        <div class="month-chips-scroll" id="calendarMonthChips" style="display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none;">
+        <!-- Horizontal Month Filter Chips -->
+        <div class="month-chips-scroll" id="calendarMonthChips" style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
           <!-- Dynamically populated month chips -->
         </div>
       </div>
@@ -3399,6 +3422,180 @@
       <!-- Calendar Items List -->
       <div id="calendarCropsListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
         <!-- Dynamically rendered crop cards -->
+      </div>
+    </div>
+
+        <!-- DEDICATED FULL SCREEN CROP DETAILS PAGE MATCHING FLUTTER CROP_DETAILS_PAGE -->
+    <div class="full-screen-page" id="cropCalendarDetailPage"
+      style="background: #F7FAF7; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <div style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <button onclick="closeCropCalendarDetailPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 id="cropDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসলের নাম</h3>
+          <p id="cropDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;"></p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+      <div id="cropCalendarDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+        <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN INCOME-EXPENSE (FARM LEDGER) PAGE MATCHING FLUTTER INCOME_EXPENSE_SCREEN -->
+    <div class="full-screen-page" id="incomeExpensePage"
+      style="background: #F4F7F4; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- AppBar and Colored Topbar matching Flutter App -->
+      <div style="background: linear-gradient(180deg, #00897B 0%, #00695C 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(0, 77, 64, 0.22); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <!-- Top Navigation Row -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeIncomeExpenseFullPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">কৃষি খাতা (আয়-ব্যায় হিসাব)</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সহজ হিসাব ও লাভ-লোকসান ক্যালকুলেটর</p>
+          </div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- Segmented Tab Bar -->
+        <div style="display: flex; gap: 8px;">
+          <button type="button" id="tabBtnLedgerNew" onclick="switchIncomeExpenseTab(0)"
+            style="flex: 1; padding: 9px; border-radius: 12px; border: 1.2px solid #fff; background: #fff; color: #00695C; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+            <i class="fa-solid fa-calculator"></i>
+            <span>নতুন হিসাব</span>
+          </button>
+          <button type="button" id="tabBtnLedgerHist" onclick="switchIncomeExpenseTab(1)"
+            style="flex: 1; padding: 9px; border-radius: 12px; border: 1.2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.16); color: #fff; font-weight: 500; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>পূর্বের হিস্ট্রি</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Tab Content Container -->
+      <div style="flex: 1; overflow-y: auto; padding: 16px 16px 40px 16px;">
+        <!-- TAB 0: NEW CALCULATION VIEW -->
+        <div id="incomeExpenseNewView" style="display: block;">
+          <!-- Card: Title / Description -->
+          <div style="background: #fff; border: 1px solid #CFD8DC; border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <label style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+              <i class="fa-solid fa-pen-to-square" style="color: #00897B;"></i> হিসাবের নাম / বিবরণ
+            </label>
+            <input type="text" id="webLedgerTitle" class="form-input" value="" placeholder="যেমন: বোরো ধান চাষ, আলু আবাদ ইত্যাদি" style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC;">
+          </div>
+
+          <!-- Card: Income Breakdown -->
+          <div style="background: #fff; border: 1.2px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(46,125,50,0.05);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-coins"></i>
+              </div>
+              <div>
+                <div style="font-size: 14.5px; font-weight: 700; color: #1B5E20;">ফসলের আয়ের বিবরণ</div>
+                <div style="font-size: 11px; color: var(--text-muted);">ফসল ও বীজ বিক্রি থেকে প্রাপ্ত আয় (টাকায়)</div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">ফসল বিক্রয় থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ / চারা বিক্রয় থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerSeedIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">অন্যান্য উৎস থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerOtherIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Expense Breakdown -->
+          <div style="background: #fff; border: 1.2px solid #FFCDD2; border-radius: 16px; padding: 16px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(198,40,40,0.05);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFEBEE; color: #C62828; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-money-bill-wave"></i>
+              </div>
+              <div>
+                <div style="font-size: 14.5px; font-weight: 700; color: #B71C1C;">ফসলের ব্যয়ের বিবরণ</div>
+                <div style="font-size: 11px; color: var(--text-muted);">চাষাবাদ, সার, সেচ ও অন্যান্য সর্বমোট খরচ (টাকায়)</div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">জমি প্রস্তুত ও চাষ খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerTillage" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ / চারা ক্রয় খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerSeedBuy" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সার ও কীটনাশক খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerFertilizer" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সেচ বাবদ খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerIrrigation" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">শ্রমিক মজুরি খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerLabor" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+              <div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">পরিবহন ও অন্যান্য খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerTransport" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" onclick="calculateWebLedger()"
+              style="width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 12px; background: #00897B; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,137,123,0.3);">
+              <i class="fa-solid fa-calculator"></i>
+              <span>হিসাব বের করুন</span>
+            </button>
+            <button type="button" onclick="resetWebLedgerForm()"
+              style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 600; border-radius: 12px; background: transparent; border: 1.2px solid #B0BEC5; color: #546E7A; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>তথ্য মুছুন</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 1: HISTORY VIEW -->
+        <div id="incomeExpenseHistoryView" style="display: none;">
+          <div id="webLedgerHistoryList">
+            <!-- Dynamically populated or login required placeholder -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN INCOME-EXPENSE RESULT / MEMO PAGE MATCHING FLUTTER INCOME_EXPENSE_RESULT_PAGE -->
+    <div class="full-screen-page" id="incomeExpenseResultPage"
+      style="background: #F4F7F4; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <!-- AppBar -->
+      <div style="background: #00897B; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
+        <button onclick="closeIncomeExpenseResultPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">আয়-ব্যয় হিসাবের ফলাফল</h3>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <!-- Scrollable Result Body -->
+      <div id="incomeExpenseResultContent" style="flex: 1; overflow-y: auto; padding: 16px 16px 40px 16px;">
+        <!-- Dynamically rendered Invoice / Memo -->
       </div>
     </div>
 
@@ -6645,11 +6842,29 @@
       }
     }
 
-    // Auto-initialize system control listener
+    // Auto-initialize system control listener & Scroll-tied Opacity
+    function initWeatherScrollOpacity() {
+      const appContent = document.querySelector('.app-content');
+      const weatherWrap = document.querySelector('.weather-sticky-wrap');
+      if (appContent && weatherWrap) {
+        appContent.addEventListener('scroll', () => {
+          const st = appContent.scrollTop;
+          const progress = Math.max(0, Math.min(1, (220 - st) / 220));
+          weatherWrap.style.opacity = progress;
+        }, { passive: true });
+      }
+    }
+
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initUserAppSystemControlListener);
+      document.addEventListener('DOMContentLoaded', () => {
+        initUserAppSystemControlListener();
+        initWeatherScrollOpacity();
+      });
     } else {
-      setTimeout(initUserAppSystemControlListener, 200);
+      setTimeout(() => {
+        initUserAppSystemControlListener();
+        initWeatherScrollOpacity();
+      }, 200);
     }
 
     // 12 Services Data for Web Preview
@@ -7055,6 +7270,10 @@
     };
 
     function openServiceModal(type) {
+      if (type === 'ledger') {
+        openIncomeExpenseFullPage();
+        return;
+      }
       const data = servicesDetailData[type];
       if (!data) return;
       document.getElementById('serviceModalIcon').innerHTML = data.icon;
@@ -7063,37 +7282,113 @@
       const body = document.getElementById('serviceModalBody');
       if (data.isLedger) {
         body.innerHTML = `
-          <div style="background: ${data.bg}; padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.06);">
-            <p style="font-size: 13px; color: ${data.color}; font-weight: 600;">${data.subtitle}</p>
+          <!-- ১. কালারিং টপবার ও ট্যাব -->
+          <div style="background: linear-gradient(135deg, #00897B, #00695C); padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,77,64,0.2);">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" id="tabBtnLedgerNew" onclick="switchWebLedgerTab('new')"
+                style="flex: 1; padding: 9px; border-radius: 10px; border: 1px solid #fff; background: #fff; color: #00695C; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="fa-solid fa-calculator"></i>
+                <span>নতুন হিসাব</span>
+              </button>
+              <button type="button" id="tabBtnLedgerHist" onclick="switchWebLedgerTab('history')"
+                style="flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.18); color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>পূর্বের হিস্ট্রি</span>
+              </button>
+            </div>
           </div>
-          <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
-            <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">সহজ ডিজিটাল আয়-ব্যয় ক্যালকুলেটর</div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">ফসল বিক্রয় থেকে আয় (টাকা)</label>
-              <input type="number" id="webLedgerIncome" class="form-input" placeholder="যেমন: ৫০০০০" oninput="calculateWebLedger()">
+
+          <!-- ট্যাব ১: নতুন হিসাব বডি (ফুল স্ক্রলএবল) -->
+          <div id="webLedgerNewView" style="display: block;">
+            <div style="background: #fff; border: 1px solid #CFD8DC; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+              <label style="font-size: 12px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
+                <i class="fa-solid fa-pen-to-square" style="color: #00897B;"></i> হিসাবের নাম / বিবরণ
+              </label>
+              <input type="text" id="webLedgerTitle" class="form-input" value="বোরো ধান চাষের হিসাব" placeholder="যেমন: বোরো ধান চাষ, আলু আবাদ ইত্যাদি" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC;">
             </div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ ও চারার খরচ (টাকা)</label>
-              <input type="number" id="webLedgerSeed" class="form-input" placeholder="যেমন: ৫০০০" oninput="calculateWebLedger()">
-            </div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সার ও গোবরের খরচ (টাকা)</label>
-              <input type="number" id="webLedgerFertilizer" class="form-input" placeholder="যেমন: ৮০০০" oninput="calculateWebLedger()">
-            </div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সেচ ও শ্রমিকের খরচ (টাকা)</label>
-              <input type="number" id="webLedgerLabor" class="form-input" placeholder="যেমন: ১২০০০" oninput="calculateWebLedger()">
-            </div>
-            <div style="background: #F8FAF7; border-radius: 10px; padding: 12px; margin-top: 12px; border: 1px solid var(--border);">
-              <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
-                <span>মোট খরচ:</span>
-                <strong id="webLedgerTotalExpense" style="color: #D32F2F;">৳ ০</strong>
+
+            <!-- আয়ের খাত কার্ড -->
+            <div style="background: #fff; border: 1.2px solid #C8E6C9; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(46,125,50,0.05);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                  <i class="fa-solid fa-coins"></i>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 700; color: #1B5E20;">আয়ের খাত</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">ফসল ও বীজ বিক্রি থেকে প্রাপ্ত আয় (টাকায়)</div>
+                </div>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; border-top: 1px dashed var(--border); padding-top: 6px;">
-                <span>নিট লাভ / লোকসান:</span>
-                <strong id="webLedgerNetProfit" style="color: #2E7D32;">৳ ০</strong>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">ফসল বিক্রয় থেকে আয় (টাকা)</label>
+                  <input type="number" id="webLedgerIncome" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ বিক্রয় থেকে আয় (টাকা)</label>
+                  <input type="number" id="webLedgerSeedIncome" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">অন্যান্য কৃষি আয় (খড়, ডালপালা ইত্যাদি)</label>
+                  <input type="number" id="webLedgerOtherIncome" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
               </div>
             </div>
+
+            <!-- ব্যয়ের খাত কার্ড -->
+            <div style="background: #fff; border: 1.2px solid #FFCDD2; border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(198,40,40,0.05);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #FFEBEE; color: #C62828; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                  <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 700; color: #B71C1C;">ব্যয়ের খাত</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">চাষাবাদ, সার, বীজ ও শ্রমিকের খরচ (টাকায়)</div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">জমি চাষ ও প্রস্তুত খরচ (টাকা)</label>
+                  <input type="number" id="webLedgerTillage" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ ও চারা ক্রয় খরচ (টাকা)</label>
+                  <input type="number" id="webLedgerSeed" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সার ও কীটনাশক খরচ (টাকা)</label>
+                  <input type="number" id="webLedgerFertilizer" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সেচ ও জ্বালানি খরচ (টাকা)</label>
+                  <input type="number" id="webLedgerIrrigation" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">শ্রমিক ও নিড়ানির মজুরি (টাকা)</label>
+                  <input type="number" id="webLedgerLabor" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">যাতায়াত ও ফসল পরিবহন খরচ (টাকা)</label>
+                  <input type="number" id="webLedgerTransport" class="form-input" placeholder="০" style="width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; border-radius: 8px; border: 1px solid #E0E0E0;">
+                </div>
+              </div>
+            </div>
+
+            <!-- হিসাব বের করুন বাটন -->
+            <button type="button" class="btn btn-primary" onclick="showWebLedgerResultPage()"
+              style="width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 12px; background: #00897B; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,137,123,0.3);">
+              <i class="fa-solid fa-calculator"></i>
+              <span>হিসাব বের করুন</span>
+            </button>
+          </div>
+
+          <!-- রেজাল্ট পেজ (ইনভয়েস / মেমো স্টাইল) -->
+          <div id="webLedgerResultView" style="display: none;">
+            <div id="webLedgerInvoiceContainer"></div>
+          </div>
+
+          <!-- ট্যাব ২: পূর্বের হিস্ট্রি ভিউ -->
+          <div id="webLedgerHistoryView" style="display: none;">
+            <div id="webLedgerHistoryList"></div>
           </div>
         `;
       } else {
@@ -7121,21 +7416,575 @@
       openModal('serviceModal');
     }
 
-    function calculateWebLedger() {
-      const inc = parseFloat(document.getElementById('webLedgerIncome')?.value) || 0;
-      const seed = parseFloat(document.getElementById('webLedgerSeed')?.value) || 0;
-      const fert = parseFloat(document.getElementById('webLedgerFertilizer')?.value) || 0;
-      const lab = parseFloat(document.getElementById('webLedgerLabor')?.value) || 0;
-      const expense = seed + fert + lab;
-      const profit = inc - expense;
+    // ==================== WEB LEDGER (INCOME-EXPENSE) FULL-PAGE STATE & CONTROLLER ====================
+    let webLedgerCurrentResult = null;
+    let webLedgerSavedHistory = [];
+    try {
+      webLedgerSavedHistory = JSON.parse(localStorage.getItem('krishi_kotha_agricultural_accounts') || '[]');
+    } catch (_) {
+      webLedgerSavedHistory = [];
+    }
 
-      const expEl = document.getElementById('webLedgerTotalExpense');
-      const profEl = document.getElementById('webLedgerNetProfit');
-      if (expEl) expEl.innerText = '৳ ' + toBangla(expense.toFixed(0));
-      if (profEl) {
-        profEl.innerText = (profit >= 0 ? 'লাভ: ৳ ' : 'লোকসান: ৳ ') + toBangla(Math.abs(profit).toFixed(0));
-        profEl.style.color = profit >= 0 ? '#2E7D32' : '#D32F2F';
+    function isWebUserLoggedIn() {
+      if (typeof currentUser !== 'undefined' && currentUser && currentUser.uid && !currentUser.uid.startsWith('guest_')) {
+        return true;
       }
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const u = JSON.parse(cached);
+          if (u && u.uid && !u.uid.startsWith('guest_')) {
+            return true;
+          }
+        }
+      } catch (e) { }
+      if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        const fbUser = firebase.auth().currentUser;
+        if (fbUser && !fbUser.isAnonymous && (fbUser.phoneNumber || fbUser.email)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function openIncomeExpenseFullPage() {
+      const page = document.getElementById('incomeExpensePage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+      switchIncomeExpenseTab(0);
+    }
+
+    function closeIncomeExpenseFullPage() {
+      const page = document.getElementById('incomeExpensePage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+    }
+
+    function openIncomeExpenseResultPage() {
+      const page = document.getElementById('incomeExpenseResultPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+    }
+
+    function closeIncomeExpenseResultPage() {
+      const page = document.getElementById('incomeExpenseResultPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function switchIncomeExpenseTab(tabIndex) {
+      const btnNew = document.getElementById('tabBtnLedgerNew');
+      const btnHist = document.getElementById('tabBtnLedgerHist');
+      const viewNew = document.getElementById('incomeExpenseNewView');
+      const viewHist = document.getElementById('incomeExpenseHistoryView');
+
+      if (tabIndex === 1) {
+        if (!isWebUserLoggedIn()) {
+          showAppLogoDialog(
+            'লগইন প্রয়োজন',
+            'আপনার হিসাব সংরক্ষণ করতে একাউন্ট লগইন করুন',
+            'লগইন করুন',
+            '#00897B',
+            () => openAuthModal('login')
+          );
+          return;
+        }
+
+        if (btnNew) {
+          btnNew.style.background = 'rgba(255,255,255,0.16)';
+          btnNew.style.color = '#fff';
+          btnNew.style.border = '1.2px solid rgba(255,255,255,0.3)';
+          btnNew.style.fontWeight = '500';
+        }
+        if (btnHist) {
+          btnHist.style.background = '#fff';
+          btnHist.style.color = '#00695C';
+          btnHist.style.border = '1.2px solid #fff';
+          btnHist.style.fontWeight = '700';
+        }
+        if (viewNew) viewNew.style.display = 'none';
+        if (viewHist) viewHist.style.display = 'block';
+        renderWebLedgerHistory();
+      } else {
+        if (btnNew) {
+          btnNew.style.background = '#fff';
+          btnNew.style.color = '#00695C';
+          btnNew.style.border = '1.2px solid #fff';
+          btnNew.style.fontWeight = '700';
+        }
+        if (btnHist) {
+          btnHist.style.background = 'rgba(255,255,255,0.16)';
+          btnHist.style.color = '#fff';
+          btnHist.style.border = '1.2px solid rgba(255,255,255,0.3)';
+          btnHist.style.fontWeight = '500';
+        }
+        if (viewNew) viewNew.style.display = 'block';
+        if (viewHist) viewHist.style.display = 'none';
+      }
+    }
+
+    function switchWebLedgerTab(tab) {
+      switchIncomeExpenseTab(tab === 'history' || tab === 1 ? 1 : 0);
+    }
+
+    function getBanglaCurrentDateStr() {
+      const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+      const now = new Date();
+      const d = toBangla(now.getDate());
+      const m = months[now.getMonth()];
+      const y = toBangla(now.getFullYear());
+      return `${d} ${m} ${y}`;
+    }
+
+    function convertLiveLedgerInput(el) {
+      if (!el) return;
+      const banglaDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+      let val = el.value || '';
+      let res = '';
+      for (let i = 0; i < val.length; i++) {
+        const c = val[i];
+        if (banglaDigits[c]) {
+          res += banglaDigits[c];
+        } else if (/[০-৯.]/.test(c)) {
+          res += c;
+        }
+      }
+      if (val !== res) {
+        el.value = res;
+      }
+    }
+
+    function toEnglishLedgerDigits(str) {
+      if (!str) return '0';
+      const banglaToEnglish = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+      return str.toString().replace(/[০-৯]/g, m => banglaToEnglish[m] || m);
+    }
+
+    function calculateWebLedger() {
+      const titleInput = document.getElementById('webLedgerTitle');
+      const title = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : 'বোরো ধান চাষের হিসাব';
+
+      const parseVal = (id) => {
+        const el = document.getElementById(id);
+        if (!el || !el.value) return 0;
+        const englishStr = toEnglishLedgerDigits(el.value.trim());
+        const v = parseFloat(englishStr);
+        return isNaN(v) ? 0 : v;
+      };
+
+      const cropSales = parseVal('webLedgerIncome');
+      const seedSales = parseVal('webLedgerSeedIncome');
+      const otherIncome = parseVal('webLedgerOtherIncome');
+
+      const tillage = parseVal('webLedgerTillage');
+      const seedBuy = parseVal('webLedgerSeedBuy');
+      const fert = parseVal('webLedgerFertilizer');
+      const irrig = parseVal('webLedgerIrrigation');
+      const labor = parseVal('webLedgerLabor');
+      const transport = parseVal('webLedgerTransport');
+
+      const totalIncome = cropSales + seedSales + otherIncome;
+      const totalExpense = tillage + seedBuy + fert + irrig + labor + transport;
+
+      // ইনপুট ভ্যালিডেশন: সবগুলো খালি বা ০ হলে সতর্কবার্তা এবং নেভিগেশন ব্লক
+      if (totalIncome <= 0 && totalExpense <= 0) {
+        showAppLogoDialog('সতর্কতা', 'দয়া করে আয় বা ব্যয়ের কমপক্ষে একটি ফিল্ড পূরণ করুন।', 'বুঝেছি', '#E65100');
+        return;
+      }
+
+      const netProfitLoss = totalIncome - totalExpense;
+      const isProfit = netProfitLoss >= 0;
+
+      webLedgerCurrentResult = {
+        id: 'acc_' + Date.now(),
+        title: title,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
+        netProfitLoss: netProfitLoss,
+        isProfit: isProfit,
+        incomeDetails: { cropSales, seedSales, otherIncome },
+        expenseDetails: { tillage, seedBuy, fertilizerPesticide: fert, irrigation: irrig, labor, transport },
+        date: getBanglaCurrentDateStr(),
+        isSaved: false
+      };
+
+      renderWebLedgerResultMemo(webLedgerCurrentResult);
+      openIncomeExpenseResultPage();
+    }
+
+    function resetWebLedgerForm() {
+      const ids = ['webLedgerIncome', 'webLedgerSeedIncome', 'webLedgerOtherIncome', 'webLedgerTillage', 'webLedgerSeedBuy', 'webLedgerFertilizer', 'webLedgerIrrigation', 'webLedgerLabor', 'webLedgerTransport'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const t = document.getElementById('webLedgerTitle');
+      if (t) t.value = '';
+      showAppLogoDialog('তথ্য রিসেট', 'সকল ইনপুট ফিল্ড মুছে ফেলা হয়েছে।', 'ঠিক আছে', '#00897B');
+    }
+
+    function renderWebLedgerResultMemo(result) {
+      const container = document.getElementById('incomeExpenseResultContent');
+      if (!container) return;
+
+      const isZero = result.netProfitLoss === 0;
+      const isProfit = result.isProfit;
+      const totalIncome = result.totalIncome || 0;
+      const totalExpense = result.totalExpense || 0;
+      const netProfitLoss = result.netProfitLoss || 0;
+      const inc = result.incomeDetails || {};
+      const exp = result.expenseDetails || {};
+
+      container.innerHTML = `
+        <div style="background: #fff; border-radius: 18px; border: 1.2px solid #E0E0E0; overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,0.06);">
+          <!-- ইনভয়েস হেডার -->
+          <div style="background: #E0F2F1; padding: 16px 18px; border-bottom: 1px solid #B2DFDB;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 14.5px; font-weight: 800; color: #004D40;">কৃষি কথা – আয়-ব্যয় মেমো</div>
+                <div style="font-size: 13px; color: #00796B; font-weight: 700; margin-top: 2px;">${result.title}</div>
+              </div>
+              <span style="font-size: 11px; padding: 4px 10px; border-radius: 8px; background: #fff; color: ${result.isSaved ? '#2E7D32' : '#E65100'}; font-weight: 700; border: 1px solid ${result.isSaved ? '#A5D6A7' : '#FFE0B2'};">
+                ${result.isSaved ? 'সংরক্ষিত' : 'খসড়া হিসাব'}
+              </span>
+            </div>
+            <div style="font-size: 11.5px; color: #004D40; margin-top: 8px; display: flex; align-items: center; gap: 5px;">
+              <i class="fa-regular fa-calendar"></i> ${result.date}
+            </div>
+          </div>
+
+          <!-- নিট লাভ / ক্ষতি ব্যানার -->
+          <div style="padding: 16px;">
+            <div style="background: ${isZero ? '#ECEFF1' : isProfit ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #FFEBEE, #FFCDD2)'}; border-radius: 14px; border: 1.5px solid ${isZero ? '#B0BEC5' : isProfit ? '#81C784' : '#E57373'}; padding: 16px; text-align: center;">
+              <div style="font-size: 13.5px; font-weight: 700; color: ${isZero ? '#37474F' : isProfit ? '#1B5E20' : '#B71C1C'}; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px;">
+                <i class="fa-solid ${isZero ? 'fa-scale-balanced' : isProfit ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i>
+                <span>${isZero ? 'লাভ বা ক্ষতি ০ (সমান সমান)' : isProfit ? 'অভিনন্দন! আপনার নিট লাভ হয়েছে' : 'সতর্কতা: আপনার নিট ক্ষতি হয়েছে'}</span>
+              </div>
+              <div style="font-size: 26px; font-weight: 900; color: ${isZero ? '#263238' : isProfit ? '#1B5E20' : '#B71C1C'};">
+                ${isProfit ? '' : '- '}৳ ${toBangla(Math.abs(netProfitLoss).toFixed(0))}
+              </div>
+            </div>
+
+            <!-- মোট আয় ও মোট ব্যয় দুটি কার্ড -->
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+              <div style="flex: 1; background: #F1F8E9; border-radius: 12px; padding: 12px; border: 1px solid #C5E1A5;">
+                <div style="font-size: 11.5px; color: #2E7D32; font-weight: 700;">মোট আয়</div>
+                <div style="font-size: 17px; font-weight: 800; color: #1B5E20; margin-top: 3px;">৳ ${toBangla(totalIncome.toFixed(0))}</div>
+              </div>
+              <div style="flex: 1; background: #FFF3E0; border-radius: 12px; padding: 12px; border: 1px solid #FFCC80;">
+                <div style="font-size: 11.5px; color: #E65100; font-weight: 700;">মোট ব্যয়</div>
+                <div style="font-size: 17px; font-weight: 800; color: #BF360C; margin-top: 3px;">৳ ${toBangla(totalExpense.toFixed(0))}</div>
+              </div>
+            </div>
+
+            <!-- বিস্তারিত আয়ের ব্রেকডাউন -->
+            <div style="margin-top: 16px; border: 1px solid #E0E0E0; border-radius: 12px; padding: 12px;">
+              <div style="font-size: 13px; font-weight: 700; color: #1B5E20; border-bottom: 1px dashed #C8E6C9; padding-bottom: 6px; margin-bottom: 8px;">
+                <i class="fa-solid fa-coins"></i> আয়ের বিবরণসমূহ
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>ফসল বিক্রয়</span><strong style="color: #2E7D32;">৳ ${toBangla((inc.cropSales || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>বীজ / চারা বিক্রয়</span><strong style="color: #2E7D32;">৳ ${toBangla((inc.seedSales || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>অন্যান্য আয়</span><strong style="color: #2E7D32;">৳ ${toBangla((inc.otherIncome || 0).toFixed(0))}</strong>
+              </div>
+            </div>
+
+            <!-- বিস্তারিত ব্যয়ের ব্রেকডাউন -->
+            <div style="margin-top: 14px; border: 1px solid #E0E0E0; border-radius: 12px; padding: 12px;">
+              <div style="font-size: 13px; font-weight: 700; color: #C62828; border-bottom: 1px dashed #FFCDD2; padding-bottom: 6px; margin-bottom: 8px;">
+                <i class="fa-solid fa-money-bill-wave"></i> ব্যয়ের বিবরণসমূহ
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>জমি প্রস্তুত ও চাষ</span><strong style="color: #C62828;">৳ ${toBangla((exp.tillage || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>বীজ / চারা ক্রয়</span><strong style="color: #C62828;">৳ ${toBangla((exp.seedBuy || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>সার ও কীটনাশক</span><strong style="color: #C62828;">৳ ${toBangla((exp.fertilizerPesticide || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>সেচ খরচ</span><strong style="color: #C62828;">৳ ${toBangla((exp.irrigation || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>শ্রমিক মজুরি</span><strong style="color: #C62828;">৳ ${toBangla((exp.labor || 0).toFixed(0))}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); padding: 3px 0;">
+                <span>পরিবহন ও অন্যান্য</span><strong style="color: #C62828;">৳ ${toBangla((exp.transport || 0).toFixed(0))}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- অ্যাকশন বাটনসমূহ -->
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px;">
+          <button type="button" id="webLedgerSaveBtn" onclick="saveWebLedger()"
+            style="width: 100%; padding: 13px; font-size: 14.5px; font-weight: 700; border-radius: 12px; background: ${result.isSaved ? '#2E7D32' : '#00897B'}; color: #fff; border: none; cursor: ${result.isSaved ? 'default' : 'pointer'}; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,137,123,0.25);">
+            <i class="fa-solid ${result.isSaved ? 'fa-circle-check' : 'fa-bookmark'}"></i>
+            <span>${result.isSaved ? 'হিসাবটি সফলভাবে সংরক্ষিত হয়েছে' : 'হিসাবটি সেভ করুন'}</span>
+          </button>
+          <button type="button" onclick="closeIncomeExpenseResultPage()"
+            style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 600; border-radius: 12px; background: transparent; border: 1.2px solid #00897B; color: #00897B; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>ফিরে যান ও পুনরায় হিসাব করুন</span>
+          </button>
+        </div>
+      `;
+    }
+
+    async function saveWebLedger() {
+      if (!webLedgerCurrentResult || webLedgerCurrentResult.isSaved) return;
+
+      if (!isWebUserLoggedIn()) {
+        showAppLogoDialog(
+          'লগইন প্রয়োজন',
+          'আপনার হিসাব সংরক্ষণ করতে একাউন্ট লগইন করুন',
+          'লগইন করুন',
+          '#00897B',
+          () => openAuthModal('login')
+        );
+        return;
+      }
+
+      const btn = document.getElementById('webLedgerSaveBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>তথ্য লোডিং হচ্ছে...</span>`;
+      }
+
+      try {
+        let uid = 'anonymous_farmer';
+        let phone = '';
+        let name = 'কৃষক ভাই';
+
+        if (typeof currentUser !== 'undefined' && currentUser) {
+          uid = currentUser.uid || uid;
+          phone = currentUser.phone || phone;
+          name = currentUser.name || name;
+        } else {
+          try {
+            const cached = JSON.parse(localStorage.getItem('krishi_kotha_cached_user') || '{}');
+            if (cached.uid) uid = cached.uid;
+            if (cached.phone) phone = cached.phone;
+            if (cached.name) name = cached.name;
+          } catch (_) {}
+        }
+
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+          const fbU = firebase.auth().currentUser;
+          if (fbU.uid) uid = fbU.uid;
+          if (fbU.phoneNumber) phone = fbU.phoneNumber;
+        }
+
+        const payload = {
+          userId: uid,
+          uid: uid,
+          userPhone: phone,
+          userName: name,
+          title: (webLedgerCurrentResult.title && webLedgerCurrentResult.title.trim()) ? webLedgerCurrentResult.title.trim() : 'কৃষি আয়-ব্যয় হিসাব',
+          totalIncome: Number(webLedgerCurrentResult.totalIncome || 0),
+          totalExpense: Number(webLedgerCurrentResult.totalExpense || 0),
+          netProfitLoss: Number(webLedgerCurrentResult.netProfitLoss || 0),
+          isProfit: Boolean(webLedgerCurrentResult.isProfit),
+          isDeleted: false,
+          incomeDetails: webLedgerCurrentResult.incomeDetails || {},
+          expenseDetails: webLedgerCurrentResult.expenseDetails || {},
+          date: webLedgerCurrentResult.date || getBanglaCurrentDateStr(),
+          createdAt: (window.firebase && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+        };
+
+        // রিয়েল ফায়ারস্টোরে সেভ
+        if (window.firebase && firebase.firestore) {
+          const docRef = await firebase.firestore().collection('agricultural_accounts').add(payload);
+          payload.id = docRef.id;
+
+          if (uid && uid !== 'anonymous_farmer') {
+            try {
+              await firebase.firestore().collection('users').doc(uid).collection('agricultural_accounts').add(payload);
+            } catch (_) {}
+          }
+        }
+
+        webLedgerSavedHistory.unshift({ ...webLedgerCurrentResult, ...payload, isSaved: true });
+        localStorage.setItem('krishi_kotha_agricultural_accounts', JSON.stringify(webLedgerSavedHistory));
+        webLedgerCurrentResult.isSaved = true;
+
+        if (btn) {
+          btn.style.background = '#2E7D32';
+          btn.style.cursor = 'default';
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>হিসাবটি সফলভাবে সংরক্ষিত হয়েছে</span>`;
+        }
+
+        showAppLogoDialog('সফল হয়েছে!', 'আপনার হিসাব সফলভাবে সংরক্ষণ করা হয়েছে।', 'ঠিক আছে', '#00897B');
+      } catch (err) {
+        console.error('Firestore save error:', err);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-bookmark"></i> <span>হিসাবটি সেভ করুন</span>`;
+        }
+        showAppLogoDialog('ব্যর্থ হয়েছে!', 'দুঃখিত, হিসাব সংরক্ষণ করা যায়নি।', 'ঠিক আছে', '#D32F2F');
+      }
+    }
+
+    async function fetchWebLedgerHistoryFromFirestore() {
+      if (!isWebUserLoggedIn() || !window.firebase || !firebase.firestore) return;
+      try {
+        let uid = '';
+        let phone = '';
+        if (typeof currentUser !== 'undefined' && currentUser) {
+          uid = currentUser.uid || '';
+          phone = currentUser.phone || '';
+        }
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+          const fbU = firebase.auth().currentUser;
+          if (fbU.uid) uid = fbU.uid;
+          if (fbU.phoneNumber) phone = fbU.phoneNumber;
+        }
+
+        const snap = await firebase.firestore().collection('agricultural_accounts').get();
+        if (snap && snap.docs && snap.docs.length > 0) {
+          const list = [];
+          snap.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.isDeleted === true) return; // সফট-ডিলিট করা ডেটা ইউজারের কাছে আর দেখাবে না
+            const dUid = data.userId || data.uid || '';
+            const dPhone = data.userPhone || '';
+            if (!uid || dUid === uid || (phone && (dPhone === phone || dPhone.includes(phone) || phone.includes(dPhone)))) {
+              list.push({ id: doc.id, ...data, isSaved: true });
+            }
+          });
+          if (list.length > 0) {
+            list.sort((a, b) => {
+              const aD = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.date || 0);
+              const bD = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.date || 0);
+              return bD - aD;
+            });
+            webLedgerSavedHistory = list;
+            localStorage.setItem('krishi_kotha_agricultural_accounts', JSON.stringify(webLedgerSavedHistory));
+            renderWebLedgerHistory(false);
+          }
+        }
+      } catch (err) {
+        console.warn('History fetch error:', err);
+      }
+    }
+
+    function renderWebLedgerHistory(triggerFetch = true) {
+      if (triggerFetch) {
+        fetchWebLedgerHistoryFromFirestore();
+      }
+      const listEl = document.getElementById('webLedgerHistoryList');
+      if (!listEl) return;
+
+      if (!isWebUserLoggedIn()) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; background: #fff; border-radius: 16px; border: 1px dashed #CFD8DC;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: #E0F2F1; color: #00897B; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 14px;">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">লগইন প্রয়োজন</div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.4;">আপনার পূর্বের সংরক্ষিত হিসাব দেখতে অনুগ্রহ করে একাউন্ট লগইন করুন।</div>
+            <button type="button" onclick="showAppLogoDialog('লগইন প্রয়োজন', 'আপনার হিসাব সংরক্ষণ করতে একাউন্ট লগইন করুন', 'লগইন করুন', '#00897B', () => openAuthModal('login'))" style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 700; background: #00897B; color: #fff; border: none; cursor: pointer;">
+              লগইন করুন
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const activeHistory = (webLedgerSavedHistory || []).filter(item => item.isDeleted !== true);
+
+      if (!activeHistory || activeHistory.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; background: #fff; border-radius: 14px; border: 1px dashed #CFD8DC;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #E0F2F1; color: #00897B; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">এখনো কোনো সংরক্ষিত হিসাব নেই</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">আপনার আবাদ ও ফসলের হিসাব সংরক্ষণ করতে "নতুন হিসাব" ট্যাবে যান।</div>
+            <button type="button" class="btn btn-primary" onclick="switchIncomeExpenseTab(0)" style="padding: 8px 18px; border-radius: 8px; font-size: 13px; background: #00897B; border: none; cursor: pointer;">
+              নতুন হিসাব শুরু করুন
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = activeHistory.map((item, idx) => `
+        <div style="background: #fff; border-radius: 14px; border: 1px solid #E0E0E0; padding: 14px; margin-bottom: 10px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: transform 0.15s; position: relative;"
+          onclick='showWebLedgerResultPage(${JSON.stringify(item)})'>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; color: #00796B; font-weight: 600;"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 700; background: ${item.isProfit ? '#E8F5E9' : '#FFEBEE'}; color: ${item.isProfit ? '#2E7D32' : '#C62828'}; border: 1px solid ${item.isProfit ? '#A5D6A7' : '#EF9A9A'};">
+                <i class="fa-solid ${item.isProfit ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i> ${item.isProfit ? 'লাভ' : 'ক্ষতি'}
+              </span>
+              <button type="button" onclick="deleteWebLedgerItem('${item.id || ''}', event)" style="background: none; border: none; color: #EF5350; cursor: pointer; padding: 2px 6px; font-size: 13px; border-radius: 4px;" title="হিসাব মুছে ফেলুন">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${item.title}</div>
+          <div style="background: #F8FAF7; border-radius: 8px; padding: 8px 10px; display: flex; justify-content: space-between; font-size: 12.5px;">
+            <div>আয়: <strong style="color: #2E7D32;">৳ ${toBangla(item.totalIncome.toFixed(0))}</strong></div>
+            <div style="color: #9E9E9E;">|</div>
+            <div>ব্যয়: <strong style="color: #C62828;">৳ ${toBangla(item.totalExpense.toFixed(0))}</strong></div>
+            <div style="color: #9E9E9E;">|</div>
+            <div>নিট: <strong style="color: ${item.isProfit ? '#1B5E20' : '#B71C1C'};">${item.isProfit ? '' : '- '}৳ ${toBangla(Math.abs(item.netProfitLoss).toFixed(0))}</strong></div>
+          </div>
+          <div style="text-align: right; margin-top: 6px; font-size: 11.5px; color: #00897B; font-weight: 600;">
+            রসিদ দেখুন <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteWebLedgerItem(docId, event) {
+      if (event) event.stopPropagation();
+      if (!confirm('আপনি কি এই হিসাবটি আপনার তালিকা থেকে মুছে ফেলতে চান?')) return;
+      try {
+        if (window.firebase && firebase.firestore && docId) {
+          // সফট-ডিলিট: ডিরেক্ট delete() এর বদলে update({ isDeleted: true })
+          await firebase.firestore().collection('agricultural_accounts').doc(docId).update({ isDeleted: true });
+        }
+        webLedgerSavedHistory = (webLedgerSavedHistory || []).map(x => x.id === docId ? { ...x, isDeleted: true } : x);
+        localStorage.setItem('krishi_kotha_agricultural_accounts', JSON.stringify(webLedgerSavedHistory));
+        renderWebLedgerHistory(false);
+        showAppLogoDialog('সফল হয়েছে!', 'হিসাবটি মুছে ফেলা হয়েছে।', 'ঠিক আছে', '#00897B');
+      } catch (err) {
+        console.error('Delete error:', err);
+      }
+    }
+    }
+
+    function showWebLedgerResultPage(loadedData) {
+      if (!loadedData) return;
+      webLedgerCurrentResult = { ...loadedData, isSaved: true };
+      renderWebLedgerResultMemo(webLedgerCurrentResult);
+      openIncomeExpenseResultPage();
     }
 
     let webSelectedDiseaseFile = null;
@@ -11231,7 +12080,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
 
         if (foreData && foreData.list) {
-          render5DayForecastFromApi(foreData.list);
+          render5DayForecastFromApi(foreData.list, currData);
         } else {
           renderFallback5DayForecast(cleanDistrict);
         }
@@ -11243,25 +12092,67 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
-    function render5DayForecastFromApi(list) {
+    function render5DayForecastFromApi(list, currData) {
       const groups = {};
-      const dates = [];
+      const dateMap = {};
       list.forEach(item => {
-        const d = new Date((item.dt + 6 * 3600) * 1000);
-        const key = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+        const d = new Date(item.dt * 1000);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         if (!groups[key]) {
           groups[key] = [];
-          dates.push({ key, date: d });
+          dateMap[key] = d;
         }
         groups[key].push(item);
       });
 
-      const dayKeys = dates.slice(0, 5);
-      const container = document.getElementById('forecast5DayGrid');
-      if (!container) return;
+      const now = new Date();
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const daysToRender = [];
 
-      container.innerHTML = dayKeys.map((dk, idx) => {
-        const items = groups[dk.key];
+      // ১ ও ৩. "আজ" (Day 0) এর ডেটা প্রসেসিং (Current Weather API + ফোরকাস্টের আজকের ডেটা)
+      let todayMaxT = currData?.main?.temp || 26;
+      let todayMinT = currData?.main?.temp || 22;
+      let todayMaxPop = 0;
+      let todayCondCounts = {};
+
+      if (groups[todayKey] && groups[todayKey].length > 0) {
+        groups[todayKey].forEach(it => {
+          if (it.main.temp_max > todayMaxT) todayMaxT = it.main.temp_max;
+          if (it.main.temp_min < todayMinT) todayMinT = it.main.temp_min;
+          if (it.pop && it.pop > todayMaxPop) todayMaxPop = it.pop;
+          const c = translateConditionBn(it.weather[0]?.main, it.weather[0]?.description);
+          todayCondCounts[c] = (todayCondCounts[c] || 0) + 1;
+        });
+      } else {
+        const currTemp = currData?.main?.temp || 26;
+        todayMaxT = Math.max(currData?.main?.temp_max || (currTemp + 2), currTemp);
+        todayMinT = Math.min(currData?.main?.temp_min || (currTemp - 4), currTemp);
+        if (list.length > 0 && list[0].pop !== undefined) {
+          todayMaxPop = list[0].pop;
+        }
+      }
+
+      const todayBestCond = Object.keys(todayCondCounts).sort((a, b) => todayCondCounts[b] - todayCondCounts[a])[0]
+        || (currData?.weather?.[0] ? translateConditionBn(currData.weather[0].main, currData.weather[0].description) : 'পরিষ্কার আকাশ');
+
+      daysToRender.push({
+        title: 'আজ',
+        dateStr: toBangla(now.getDate()) + ' ' + bdMonths[now.getMonth()],
+        iconConfig: getWeatherIconClass(todayBestCond),
+        maxT: todayMaxT,
+        minT: todayMinT,
+        pop: todayMaxPop
+      });
+
+      // ভবিষ্যৎ দিনগুলো (Tomorrow, Day 2, Day 3, Day 4) সর্ট করে ক্যালেন্ডার তারিখ অনুযায়ী যোগ করা
+      const futureKeys = Object.keys(groups).filter(k => k > todayKey).sort();
+
+      for (let i = 0; i < futureKeys.length; i++) {
+        if (daysToRender.length >= 5) break;
+        const fk = futureKeys[i];
+        const items = groups[fk];
+        const targetDate = dateMap[fk];
+
         let maxT = -999, minT = 999, maxPop = 0;
         let condCounts = {};
 
@@ -11274,25 +12165,44 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         });
 
         const bestCond = Object.keys(condCounts).sort((a, b) => condCounts[b] - condCounts[a])[0] || 'পরিষ্কার আকাশ';
-        const iconConfig = getWeatherIconClass(bestCond);
 
-        let dayTitle = 'আজ';
-        if (idx === 1) dayTitle = 'কাল';
-        else if (idx > 1) {
-          const dayIdx = (dk.date.getUTCDay() + 6) % 7;
+        // ক্যালেন্ডার ডেট ডিফারেন্স ভিত্তিক নিখুঁত দিন গণনা
+        const targetZero = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+        const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffDays = Math.round((targetZero - todayZero) / (24 * 3600 * 1000));
+
+        let dayTitle = 'কাল';
+        if (diffDays === 1) {
+          dayTitle = 'কাল';
+        } else {
+          const dayIdx = (targetDate.getDay() + 6) % 7;
           dayTitle = bdWeekdays[dayIdx] || 'দিন';
         }
 
-        const dateStr = toBangla(dk.date.getUTCDate()) + ' ' + bdMonths[dk.date.getUTCMonth()];
-        const isLast = idx === dayKeys.length - 1;
+        const dateStr = toBangla(targetDate.getDate()) + ' ' + bdMonths[targetDate.getMonth()];
 
+        daysToRender.push({
+          title: dayTitle,
+          dateStr: dateStr,
+          iconConfig: getWeatherIconClass(bestCond),
+          maxT: maxT === -999 ? (currData?.main?.temp || 26) + 2 : maxT,
+          minT: minT === 999 ? (currData?.main?.temp || 26) - 4 : minT,
+          pop: maxPop
+        });
+      }
+
+      const container = document.getElementById('forecast5DayGrid');
+      if (!container) return;
+
+      container.innerHTML = daysToRender.map((d, idx) => {
+        const isLast = idx === daysToRender.length - 1;
         return `
           <div class="forecast-day-col">
-            <span class="forecast-day-name">${dayTitle}</span>
-            <span class="forecast-day-date">${dateStr}</span>
-            <i class="fa-solid ${iconConfig.icon} forecast-day-icon" style="color: ${iconConfig.color};"></i>
-            <span class="forecast-day-temp">${toBangla(Math.round(maxT))}° / ${toBangla(Math.round(minT))}°</span>
-            <span class="forecast-day-rain">বৃষ্টি ${toBangla(Math.round(maxPop * 100))}%</span>
+            <span class="forecast-day-name">${d.title}</span>
+            <span class="forecast-day-date">${d.dateStr}</span>
+            <i class="fa-solid ${d.iconConfig.icon} forecast-day-icon" style="color: ${d.iconConfig.color};"></i>
+            <span class="forecast-day-temp">${toBangla(Math.round(d.maxT))}° / ${toBangla(Math.round(d.minT))}°</span>
+            <span class="forecast-day-rain">বৃষ্টি ${toBangla(Math.round(d.pop * 100))}%</span>
           </div>
           ${!isLast ? '<div class="forecast-day-divider"></div>' : ''}
         `;
@@ -11349,8 +12259,74 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       renderFallback5DayForecast(cleanDistrict);
     }
 
-    function manualRefreshWeather() {
-      fetchLiveWeather(selectedDistrictName || 'ঢাকা');
+    let lastWeatherApiCallTime = null;
+    let appLogoDialogOnConfirm = null;
+
+    function showAppLogoDialog(title, message, btnText = 'ঠিক আছে', color = '#2E7D32', onConfirm = null) {
+      appLogoDialogOnConfirm = onConfirm;
+      const m = document.getElementById('warningDialogModal');
+      const t = document.getElementById('warningDialogTitle');
+      const msg = document.getElementById('warningDialogMessage');
+      const btn = document.getElementById('warningDialogBtn');
+      if (t) {
+        t.innerText = title;
+        t.style.color = color;
+      }
+      if (msg) msg.innerText = message;
+      if (btn) {
+        btn.innerText = btnText;
+        btn.style.background = color;
+      }
+      if (m) {
+        m.classList.add('active');
+        m.style.setProperty('display', 'flex', 'important');
+        m.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    async function manualRefreshWeather() {
+      const dist = selectedDistrictName || 'ঢাকা';
+      const now = new Date();
+      const cachedTimeStr = localStorage.getItem('krishi_weather_last_fetch_' + dist);
+      let lastCall = lastWeatherApiCallTime ? new Date(lastWeatherApiCallTime) : (cachedTimeStr ? new Date(cachedTimeStr) : null);
+
+      if (lastCall && !isNaN(lastCall.getTime())) {
+        const diffMinutes = Math.floor((now.getTime() - lastCall.getTime()) / (1000 * 60));
+        if (diffMinutes < 10) {
+          const minutesBn = diffMinutes <= 0 ? '১' : toBangla(diffMinutes);
+          showAppLogoDialog(
+            'আবহাওয়ার তথ্য আপডেট',
+            `আবহাওয়ার তথ্য ইতিমধ্যেই আপডেট করা আছে। ${minutesBn} মিনিট আগে সর্বশেষ আপডেট হয়েছে।`,
+            'বুঝেছি',
+            '#2E7D32'
+          );
+          return;
+        }
+      }
+
+      const refreshBtn = document.getElementById('weatherRefreshBtn');
+      if (refreshBtn) refreshBtn.classList.add('spinning');
+
+      try {
+        await fetchLiveWeather(dist);
+        lastWeatherApiCallTime = new Date().toISOString();
+        localStorage.setItem('krishi_weather_last_fetch_' + dist, lastWeatherApiCallTime);
+        showAppLogoDialog(
+          'সফল হয়েছে!',
+          'আবহাওয়ার তথ্য সফলভাবে আপডেট হয়েছে।',
+          'ঠিক আছে',
+          '#2E7D32'
+        );
+      } catch (e) {
+        showAppLogoDialog(
+          'ব্যর্থ হয়েছে',
+          'ইন্টারনেট সংযোগ নেই বা আবহাওয়ার তথ্য আপডেট করা যায়নি।',
+          'ঠিক আছে',
+          '#D32F2F'
+        );
+      } finally {
+        if (refreshBtn) refreshBtn.classList.remove('spinning');
+      }
     }
 
     // ================= FULL PAGE CROP CALENDAR CONTROLLER =================
@@ -11375,74 +12351,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     let selectedCalendarMonth = 'সব মাস';
     let calendarSearchQuery = '';
-    let defaultCalendarData = [
-      {
-        cropName: 'বোরো ধান (ব্রি ধান-২৮, ২৯, ৮৯)',
-        cropCategory: 'দানা জাতীয় ফসল',
-        season: 'রবি মৌসুম',
-        month: 'কার্তিক, অগ্রহায়ণ, পৌষ',
-        description: 'বাংলাদেশে সবচেয়ে বেশি ফলনশীল ধান। সঠিক সময়ে বীজতলা তৈরি ও চারা রোপণ অত্যন্ত গুরুত্বপূর্ণ।',
-        sowingTime: 'কার্তিক থেকে অগ্রহায়ণ (বীজ বপন)',
-        plantingTime: 'পৌষ থেকে মাঘ (চারা রোপণ)',
-        careInstructions: 'চারা রোপণের সময় লাইন টু লাইন ২০ সেমি ও গাছ থেকে গাছ ১৫ সেমি দূরত্ব রাখুন। পর্যাপ্ত সেচ নিশ্চিত করুন।',
-        fertilizerRecommendation: 'ইউরিয়া, টিএসপি, এমওপি এবং জিপসাম সার সঠিক অনুপাতে ৩ কিস্তিতে প্রয়োগ করুন।'
-      },
-      {
-        cropName: 'গম (বারি গম-৩৩, ৩৪)',
-        cropCategory: 'দানা জাতীয় ফসল',
-        season: 'রবি মৌসুম',
-        month: 'কার্তিক, অগ্রহায়ণ',
-        description: 'উচ্চ পুষ্টিসমৃদ্ধ খাদ্যশস্য। আগাম রবি মৌসুমে বপন করলে ব্লাস্ট রোগ থেকে রক্ষা পাওয়া যায়।',
-        sowingTime: 'মধ্য-কার্তিক থেকে অগ্রহায়ণের প্রথম সপ্তাহ',
-        plantingTime: 'সরাসরি জমিতে বীজ বপন',
-        careInstructions: 'বীজ বপনের পূর্বে ভিটাভেক্স-২০০ দিয়ে শোধন করুন। জমিতে রস নিশ্চিত করে প্রথম সেচ দিন।',
-        fertilizerRecommendation: 'জমি তৈরির শেষ চাষে সব টিএসপি, এমওপি ও অর্ধেক ইউরিয়া দিন।'
-      },
-      {
-        cropName: 'গোল আলু (ডায়মন্ড, কার্ডিনাল)',
-        cropCategory: 'কন্দ জাতীয় ফসল',
-        season: 'রবি মৌসুম',
-        month: 'কার্তিক, অগ্রহায়ণ',
-        description: 'উচ্চ ফলনশীল অর্থকরী ফসল। শীতের শুষ্ক আবহাওয়ায় সবচেয়ে ভালো জন্মে।',
-        sowingTime: 'মধ্য-কার্তিক থেকে অগ্রহায়ণ',
-        plantingTime: 'বীজ আলু কাটিং করে রোপণ',
-        careInstructions: 'মাটিতে যাতে পানি না জমে সেদিকে খেয়াল রাখুন। গাছ ১৫ সেমি বড় হলে গোড়ায় মাটি তুলে দিন।',
-        fertilizerRecommendation: 'গোবর সার বেশি প্রয়োগ করুন এবং পটাশ সার নিয়মিত মাত্রায় বজায় রাখুন।'
-      },
-      {
-        cropName: 'তোষা পাট (ও-৯৮৯৭, রবি-১)',
-        cropCategory: 'আঁশ জাতীয় ফসল',
-        season: 'খরিপ-১ মৌসুম',
-        month: 'চৈত্র, বৈশাখ',
-        description: 'সোনালী আঁশ হিসেবে পরিচিত। উষ্ণ ও আর্দ্র আবহাওয়ায় খুব দ্রুত বাড়ে।',
-        sowingTime: 'মধ্য-চৈত্র থেকে বৈশাখ',
-        plantingTime: 'সরাসরি সারিবদ্ধ বপন',
-        careInstructions: 'গাছ ঘন হলে ১৫-২০ দিন পর চারা পাতলা করে দিন এবং নিড়ানি দিয়ে আগাছা দমন করুন।',
-        fertilizerRecommendation: 'ইউরিয়া দুই কিস্তিতে দিন: অর্ধেক শেষ চাষে ও বাকি অর্ধেক বপনের ৪০-৪৫ দিন পর।'
-      },
-      {
-        cropName: 'গ্রীষ্মকালীন ভুট্টা (হাইব্রিড)',
-        cropCategory: 'দানা ও পশুখাদ্য',
-        season: 'খরিপ-১ মৌসুম',
-        month: 'ফাল্গুন, চৈত্র, বৈশাখ',
-        description: 'উচ্চ ফলনশীল বহুমুখী খাদ্য ও পশুখাদ্য শস্য।',
-        sowingTime: 'ফাল্গুন থেকে চৈত্র',
-        plantingTime: 'সারি করে বপন',
-        careInstructions: 'ফল আর্মিওয়ার্ম পোকা নজরদারিতে রাখুন এবং অনুমোদিত জৈব বা ফেরোমোন ফাঁদ ব্যবহার করুন।',
-        fertilizerRecommendation: 'দস্তা ও বোরন সার প্রয়োগ করলে ভুট্টার মোচায় দানার পুষ্টতা বাড়ে।'
-      },
-      {
-        cropName: 'রোপা আমন ধান (ব্রি ধান-৪৯, ৭১, ৭৫)',
-        cropCategory: 'দানা জাতীয় ফসল',
-        season: 'খরিপ-২ মৌসুম',
-        month: 'আষাঢ়, শ্রাবণ, ভাদ্র',
-        description: 'বর্ষাকালীন প্রধান খাদ্যশস্য। বৃষ্টির পানির উপর নির্ভরশীল প্রধান ফসল।',
-        sowingTime: 'আষাঢ়ের মাঝামাঝি (বীজতলা)',
-        plantingTime: 'শ্রাবণ মাসের মধ্যে চারা রোপণ',
-        careInstructions: 'রোপণের পর জমিতে ২-৩ ইঞ্চি পানি রাখুন। মাজরা পোকা দমনে আলোক ফাঁদ ব্যবহার করুন।',
-        fertilizerRecommendation: 'ইউরিয়া সার সমান তিন কিস্তিতে প্রয়োগ করতে হবে।'
-      }
-    ];
+    let defaultCalendarData = [];
+    let currentCalendarCrops = [];
+    let isCalendarDataLoading = true;
 
     function openCropCalendarPage() {
       const page = document.getElementById('cropCalendarPage');
@@ -11474,20 +12385,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!container) return;
       container.innerHTML = calendarMonths.map(m => {
         const isSel = selectedCalendarMonth === m;
+        const icon = m === 'সব মাস' ? 'fa-table-cells-large' : 'fa-calendar-day';
         return `
           <button type="button" onclick="selectCalendarMonth('${m}')" style="
-            background: ${isSel ? '#2E7D32' : '#F3F7F3'};
-            color: ${isSel ? '#fff' : '#1E281F'};
-            border: 1px solid ${isSel ? '#2E7D32' : '#D8E4D8'};
+            background: ${isSel ? '#ffffff' : 'rgba(255,255,255,0.18)'};
+            color: ${isSel ? '#1B5E20' : '#ffffff'};
+            border: 1px solid ${isSel ? '#ffffff' : 'rgba(255,255,255,0.32)'};
             border-radius: 20px;
-            padding: 7px 15px;
+            padding: 7px 14px;
             font-size: 12.5px;
-            font-weight: ${isSel ? '700' : '600'};
+            font-weight: ${isSel ? '700' : '500'};
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.2s ease;
-            box-shadow: ${isSel ? '0 2px 6px rgba(46,125,50,0.25)' : 'none'};
-          ">${m}</button>
+            box-shadow: ${isSel ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'};
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+          "><i class="fa-solid ${icon}" style="font-size: 11px;"></i>${m}</button>
         `;
       }).join('');
     }
@@ -11527,6 +12442,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const container = document.getElementById('calendarCropsListContainer');
       if (!container) return;
 
+      if (isCalendarDataLoading) {
+        container.innerHTML = getPremiumLoaderHtml('চাষ ক্যালেন্ডার', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        return;
+      }
+
+      currentCalendarCrops = filtered;
+
       if (filtered.length === 0) {
         container.innerHTML = `
           <div style="text-align: center; padding: 40px 16px; color: #758577;">
@@ -11538,56 +12460,204 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      container.innerHTML = filtered.map(item => `
-        <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <div>
-              <h4 style="font-size: 15.5px; font-weight: 800; color: #1B5E20; margin: 0;">${item.cropName}</h4>
-              <span style="font-size: 11px; color: #64748B; font-weight: 600;">${item.cropCategory} • ${item.season}</span>
+      container.innerHTML = filtered.map((item, idx) => {
+        const imgUrl = (item.imageUrl || '').trim();
+        const sowing = item.sowingTime || '';
+        const harvesting = item.harvestingTime || item.plantingTime || '';
+        const care = item.careTips || item.careInstructions || '';
+
+        const imgBlock = imgUrl 
+          ? `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openCropCalendarDetailsByIndex(${idx})">
+               <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" 
+                 onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15);\'><i class=\'fa-solid fa-seedling\' style=\'font-size: 22px; color: #2E7D32;\'></i></div><span style=\'font-size: 11px; font-weight: 700; color: #1B5E20;\'>কৃষি কথা – চাষ ক্যালেন্ডার</span></div>';" />
+               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-calendar-day" style="color: #FFD54F; margin-right: 4px;"></i>${item.month || 'চলতি মাস'} মাস
+               </span>
+               ${item.cropCategory ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;">${item.cropCategory}</span>` : ''}
+             </div>`
+          : `<div style="height: 120px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openCropCalendarDetailsByIndex(${idx})">
+               <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15); pointer-events: none;">
+                 <i class="fa-solid fa-seedling" style="font-size: 22px; color: #2E7D32;"></i>
+               </div>
+               <span style="font-size: 11px; font-weight: 700; color: #1B5E20; pointer-events: none;">${item.cropName || 'কৃষি কথা'}</span>
+               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-calendar-day" style="color: #FFD54F; margin-right: 4px;"></i>${item.month || 'চলতি মাস'} মাস
+               </span>
+             </div>`;
+
+        return `
+          <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+            ${imgBlock}
+            <div style="padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="font-size: 16px; font-weight: 800; color: #1E281F; margin: 0; cursor: pointer;" onclick="openCropCalendarDetailsByIndex(${idx})">${item.cropName}</h4>
+                ${item.season ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px;">${item.season}</span>` : ''}
+              </div>
+
+              ${item.description ? `<p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 10px;">${item.description}</p>` : ''}
+
+              <div style="background: #F9FAF9; border: 1px solid #E8EFE8; border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+                ${sowing ? `<div style="display: flex; align-items: center; font-size: 12px; margin-bottom: 6px;"><i class="fa-solid fa-seedling" style="color: #2E7D32; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">বপন/রোপণ:</strong> <span style="color: #4A5B4C;">${sowing}</span></div>` : ''}
+                ${harvesting ? `<div style="display: flex; align-items: center; font-size: 12px;"><i class="fa-solid fa-wheat-awn" style="color: #E65100; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">ফসল সংগ্রহ:</strong> <span style="color: #4A5B4C;">${harvesting}</span></div>` : ''}
+              </div>
+
+              ${care ? `<div style="background: #F1F8F1; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; color: #1B5E20;"><i class="fa-regular fa-lightbulb" style="color: #2E7D32; margin-right: 5px;"></i><strong>পরিচর্যা টিপস:</strong> ${care}</div>` : ''}
+
             </div>
-            <span style="background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px;">
-              ${item.month}
-            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCropCalendarDetailsByIndex(idx) {
+      const item = (typeof currentCalendarCrops !== 'undefined' && currentCalendarCrops && currentCalendarCrops[idx]) || (defaultCalendarData || [])[idx];
+      if (!item) return;
+      openCropCalendarDetailsWithItem(item);
+    }
+
+    function openCropCalendarDetailsById(idOrName) {
+      const item = (defaultCalendarData || []).find(it => (it.id === idOrName || it.cropName === idOrName));
+      if (!item) return;
+      openCropCalendarDetailsWithItem(item);
+    }
+
+    function openCropCalendarDetailsWithItem(item) {
+      const page = document.getElementById('cropCalendarDetailPage');
+      const hName = document.getElementById('cropDetailHeaderName');
+      const hSub = document.getElementById('cropDetailHeaderSubtitle');
+      const content = document.getElementById('cropCalendarDetailContent');
+      if (!page || !content) return;
+
+      const cropName = item.cropName || 'ফসলের নাম';
+      const month = item.month || '';
+      const category = item.cropCategory || '';
+      const season = item.season || '';
+      const sowing = item.sowingTime || '';
+      const harvesting = item.harvestingTime || item.plantingTime || '';
+      const desc = item.description || 'এই ফসলের চাষ সংক্রান্ত বিস্তারিত তথ্য শীঘ্রই হালনাগাদ করা হবে।';
+      const care = item.careTips || item.careInstructions || '';
+      const fertilizer = item.fertilizerRecommendation || '';
+      const imgUrl = (item.imageUrl || '').trim();
+
+      if (hName) hName.innerText = cropName;
+      if (hSub) hSub.innerText = [month ? month + ' মাস' : '', category].filter(Boolean).join(' • ');
+
+      const imgBlock = imgUrl 
+        ? `<div style="height: 230px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
+             <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\'><i class=\'fa-solid fa-seedling\' style=\'font-size: 26px; color: #2E7D32;\'></i></div><span style=\'font-size: 13px; font-weight: 700; color: #1B5E20;\'>${cropName}</span></div>';" />
+             ${month ? `<span style="position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);"><i class="fa-solid fa-calendar-day" style="color: #FFD54F; margin-right: 5px;"></i>${month} মাস</span>` : ''}
+             ${category ? `<span style="position: absolute; top: 14px; right: 14px; background: rgba(46,125,50,0.92); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">${category}</span>` : ''}
+           </div>`
+        : `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+             <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);">
+               <i class="fa-solid fa-seedling" style="font-size: 26px; color: #2E7D32;"></i>
+             </div>
+             <span style="font-size: 13px; font-weight: 700; color: #1B5E20;">${cropName}</span>
+           </div>`;
+
+      content.innerHTML = `
+        ${imgBlock}
+        <div style="padding: 18px 16px 36px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2 style="font-size: 22px; font-weight: 800; color: #1E281F; margin: 0;">${cropName}</h2>
+            ${season ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-sun" style="font-size: 11px;"></i>${season}</span>` : ''}
           </div>
 
-          <p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 12px;">${item.description}</p>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 10px;">
-              <div style="font-size: 10.5px; color: #64748B; font-weight: 600;"><i class="fa-solid fa-clock" style="color: #0288D1; margin-right: 4px;"></i>বপন সময়</div>
-              <div style="font-size: 12px; font-weight: 700; color: #1E281F; margin-top: 2px;">${item.sowingTime}</div>
+          ${(sowing || harvesting) ? `
+            <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 14px; padding: 14px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              ${sowing ? `
+                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: ${harvesting ? '10px' : '0'};">
+                  <div style="background: #E8F5E9; color: #2E7D32; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-seedling"></i></div>
+                  <div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">বপন/রোপণ সময়সূচি</div>
+                    <div style="font-size: 13px; color: #4A5B4C; margin-top: 2px;">${sowing}</div>
+                  </div>
+                </div>` : ''}
+              ${(sowing && harvesting) ? `<div style="height: 1px; background: #E8EFE8; margin: 10px 0;"></div>` : ''}
+              ${harvesting ? `
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <div style="background: #FFF3E0; color: #E65100; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-wheat-awn"></i></div>
+                  <div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">ফসল সংগ্রহ / কর্তন</div>
+                    <div style="font-size: 13px; color: #4A5B4C; margin-top: 2px;">${harvesting}</div>
+                  </div>
+                </div>` : ''}
             </div>
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 10px;">
-              <div style="font-size: 10.5px; color: #64748B; font-weight: 600;"><i class="fa-solid fa-plant-wilt" style="color: #00897B; margin-right: 4px;"></i>রোপণ পদ্ধতি</div>
-              <div style="font-size: 12px; font-weight: 700; color: #1E281F; margin-top: 2px;">${item.plantingTime}</div>
+          ` : ''}
+
+          <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <div style="background: #E8F5E9; color: #2E7D32; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;"><i class="fa-solid fa-book-open"></i></div>
+              <h4 style="font-size: 16px; font-weight: 800; color: #1B5E20; margin: 0;">চাষের বিস্তারিত বিবরণ</h4>
+            </div>
+            <div style="height: 1px; background: #E8EFE8; margin-bottom: 12px;"></div>
+            <div style="font-size: 14px; line-height: 1.68; color: #1E281F; white-space: pre-line; letter-spacing: 0.1px;">
+              ${desc}
             </div>
           </div>
 
-          <div style="background: #F1F8E9; border-left: 3px solid #2E7D32; border-radius: 0 8px 8px 0; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; line-height: 1.4; color: #1E281F;">
-            <strong style="color: #1B5E20;">পরিচর্যা:</strong> ${item.careInstructions}
-          </div>
-          <div style="background: #E3F2FD; border-left: 3px solid #1565C0; border-radius: 0 8px 8px 0; padding: 8px 10px; font-size: 12px; line-height: 1.4; color: #1E281F;">
-            <strong style="color: #1565C0;">সার প্রয়োগ:</strong> ${item.fertilizerRecommendation}
-          </div>
+          ${care ? `
+            <div style="background: #F1F8F1; border: 1px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #1B5E20; font-size: 14.5px; font-weight: 700;">
+                <i class="fa-regular fa-lightbulb" style="color: #2E7D32; font-size: 15px;"></i>
+                <span>পরিচর্যা ও রোগবালাই প্রতিরোধ টিপস</span>
+              </div>
+              <div style="font-size: 13.5px; line-height: 1.6; color: #1B5E20; white-space: pre-line;">${care}</div>
+            </div>
+          ` : ''}
+
+          ${fertilizer ? `
+            <div style="background: #E3F2FD; border: 1px solid #BBDEFB; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #0D47A1; font-size: 14.5px; font-weight: 700;">
+                <i class="fa-solid fa-flask" style="color: #1565C0; font-size: 15px;"></i>
+                <span>সার প্রয়োগ সংক্রান্ত নির্দেশনা</span>
+              </div>
+              <div style="font-size: 13.5px; line-height: 1.6; color: #0D47A1; white-space: pre-line;">${fertilizer}</div>
+            </div>
+          ` : ''}
         </div>
-      `).join('');
+      `;
+
+      page.classList.add('active');
+      page.style.display = 'flex';
+      page.style.pointerEvents = 'auto';
+    }
+
+    function closeCropCalendarDetailPage() {
+      const page = document.getElementById('cropCalendarDetailPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
     }
 
     function initFirestoreCalendarSync() {
       if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
         db.collection('farming_calendar').onSnapshot(snapshot => {
+          isCalendarDataLoading = false;
           if (snapshot && !snapshot.empty) {
             const list = [];
             snapshot.forEach(doc => {
               const d = doc.data();
               list.push({ ...d, id: doc.id });
             });
-            if (list.length > 0) {
-              defaultCalendarData = list;
-              renderCalendarCrops();
-            }
+            defaultCalendarData = list;
           }
-        }, err => console.warn('Calendar sync note:', err));
+          renderCalendarCrops();
+        }, err => {
+          console.warn('Calendar sync note:', err);
+          isCalendarDataLoading = false;
+          renderCalendarCrops();
+        });
+      } else {
+        setTimeout(() => {
+          if (isCalendarDataLoading) {
+            isCalendarDataLoading = false;
+            renderCalendarCrops();
+          }
+        }, 800);
       }
     }
 
@@ -11808,6 +12878,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         m.style.setProperty('pointer-events', 'none', 'important');
       }
       document.body.style.overflow = '';
+      if (typeof appLogoDialogOnConfirm === 'function') {
+        const cb = appLogoDialogOnConfirm;
+        appLogoDialogOnConfirm = null;
+        cb();
+      }
     }
 
     let successDialogTimer = null;

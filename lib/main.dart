@@ -19,6 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'presentation/auth/phone_login_screen.dart';
 import 'presentation/navigation/main_navigation_screen.dart';
+import 'presentation/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -97,7 +98,9 @@ class KrishiKothaApp extends StatelessWidget {
         builder: (context, child) => ResponsiveWebWrapper(
           child: child ?? const SizedBox.shrink(),
         ),
-        home: const AppRootGate(),
+        home: const SplashScreen(
+          nextScreen: AppRootGate(),
+        ),
       ),
     );
   }

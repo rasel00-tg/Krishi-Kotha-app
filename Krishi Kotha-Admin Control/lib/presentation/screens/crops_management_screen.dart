@@ -1,8 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/constants/admin_colors.dart';
 import '../../core/utils/admin_error_handler.dart';
+import '../../core/utils/admin_loading_controller.dart';
+import '../../core/utils/platform_file_picker/platform_file_picker.dart';
+import '../../core/utils/image_compressor/image_compressor.dart';
 import '../../data/models/admin_models.dart';
 import '../../data/services/admin_firestore_service.dart';
+import '../../data/services/r2_storage_service.dart';
 import '../widgets/admin_delete_dialog.dart';
 import '../widgets/admin_loading_indicator.dart';
 
@@ -821,6 +826,12 @@ class _CropEditorDialogState extends State<_CropEditorDialog> {
   late TextEditingController _sowingCtrl;
   late TextEditingController _imageCtrl;
   bool _saving = false;
+  bool _isCompressing = false;
+
+  Uint8List? selectedCropImageBytes;
+  String? selectedCropImageName;
+  int selectedCropImageSize = 0;
+  bool isCropImageRemoved = false;
 
   @override
   void initState() {
@@ -845,11 +856,72 @@ class _CropEditorDialogState extends State<_CropEditorDialog> {
     super.dispose();
   }
 
+  /// ১. লোকাল স্টেট ও প্রিভিউ (Fix Premature Upload):
+  /// ইমেজ পিকার ফাংশনে সরাসরি Cloudflare R2 কল হবে না।
+  /// ২. ওয়েব/মোবাইল সাপোর্টেড অটো কম্প্রেশন:
+  /// ইমেজ কোয়ালিটি ৭০-৮০% এবং ম্যাক্স উইডথ ৮০০px করে সাইজ কমিয়ে selectedCropImageBytes-এ স্টোর করা হয়।
+  Future<void> _pickImage() async {
+    final picked = await pickLocalImageFile();
+    if (picked != null) {
+      setState(() => _isCompressing = true);
+      try {
+        final compressed = await compressImageBytes(
+          picked.bytes,
+          maxWidth: 800,
+          quality: 75,
+        );
+        if (mounted) {
+          setState(() {
+            selectedCropImageBytes = compressed;
+            selectedCropImageName = picked.name;
+            selectedCropImageSize = compressed.lengthInBytes;
+            isCropImageRemoved = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            selectedCropImageBytes = picked.bytes;
+            selectedCropImageName = picked.name;
+            selectedCropImageSize = picked.bytes.lengthInBytes;
+            isCropImageRemoved = false;
+          });
+        }
+      } finally {
+        if (mounted) setState(() => _isCompressing = false);
+      }
+    }
+  }
+
+  /// ৩. ফাইনাল সাবমিট লজিক (Upload strictly on Final Form Submit):
+  /// সাবমিট ক্লিক -> গ্লোবাল স্ক্রিন ব্লকিং পপআপ -> R2 আপলোড -> Firestore সেভ -> লোডিং ক্লোজ -> সাকসেস ফিডব্যাক।
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
+    // গ্লোবাল স্ক্রিন-ব্লকিং লোডিং পপআপ চালু
+    showGlobalAdminLoading(message: 'তথ্য লোডিং হচ্ছে...', timeout: const Duration(seconds: 30));
+
     try {
+      String finalImageUrl = _imageCtrl.text.trim();
+      if (isCropImageRemoved) {
+        finalImageUrl = '';
+      }
+
+      // ফর্মের ফাইনাল সাবমিটের সময় Cloudflare R2-তে আপলোড হবে
+      if (selectedCropImageBytes != null) {
+        final cleanExt = (selectedCropImageName?.split('.').last ?? 'jpg').toLowerCase();
+        final uniqueFileName = 'crop_${DateTime.now().millisecondsSinceEpoch}_${(selectedCropImageName ?? 'crop').replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_')}.$cleanExt';
+
+        final uploadedUrl = await R2StorageService.uploadImageBytes(
+          bytes: selectedCropImageBytes!,
+          fileName: uniqueFileName,
+          contentType: cleanExt == 'png' ? 'image/png' : 'image/jpeg',
+        );
+        finalImageUrl = uploadedUrl;
+      }
+
+      // প্রাপ্ত URL ও অন্যান্য তথ্য একসাথে Firestore-এ সেভ
       await AdminFirestoreService.instance.saveCrop(
         id: widget.existingCrop?.id,
         nameBn: _nameCtrl.text.trim(),
@@ -857,16 +929,22 @@ class _CropEditorDialogState extends State<_CropEditorDialog> {
         season: _seasonCtrl.text.trim(),
         soilType: _soilCtrl.text.trim(),
         sowingTime: _sowingCtrl.text.trim(),
-        imageUrl: _imageCtrl.text.trim(),
+        imageUrl: finalImageUrl,
       );
+
+      safeDismissAdminLoading();
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ফসল সফলভাবে সংরক্ষণ করা হয়েছে! মূল অ্যাপে সাথে সাথে সিঙ্ক হয়েছে।'), backgroundColor: AdminColors.primary),
+          const SnackBar(
+            content: Text('ফসল সফলভাবে সংরক্ষণ করা হয়েছে! মূল অ্যাপে সাথে সাথে সিঙ্ক হয়েছে।'),
+            backgroundColor: AdminColors.primary,
+          ),
         );
       }
     } catch (e) {
+      safeDismissAdminLoading();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -877,12 +955,15 @@ class _CropEditorDialogState extends State<_CropEditorDialog> {
         );
       }
     } finally {
+      safeDismissAdminLoading();
       if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasActiveImage = selectedCropImageBytes != null || (_imageCtrl.text.isNotEmpty && !isCropImageRemoved);
+
     return AlertDialog(
       title: Text(widget.existingCrop != null ? 'ফসল সম্পাদনা করুন' : 'নতুন ফসল যোগ করুন'),
       content: SizedBox(
@@ -944,79 +1025,146 @@ class _CropEditorDialogState extends State<_CropEditorDialog> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                if (_imageCtrl.text.isNotEmpty) ...[
+
+                // ফসলের ছবি হেডার
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'ফসলের ছবি',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AdminColors.textPrimary),
+                    ),
+                    Text(
+                      'Cloudflare R2 স্টোরেজ',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AdminColors.primaryDark),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // ছবি আপলোড বাটন ও স্ট্যাটাস
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AdminColors.primaryDark,
+                        side: const BorderSide(color: AdminColors.primary, width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: const Color(0xFFF4FBF4),
+                      ),
+                      icon: _isCompressing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AdminColors.primary),
+                            )
+                          : const Icon(Icons.file_upload_outlined, size: 18),
+                      label: Text(
+                        hasActiveImage ? 'ছবি পরিবর্তন করুন' : 'ছবি নির্বাচন করুন',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                      onPressed: (_saving || _isCompressing) ? null : _pickImage,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _isCompressing
+                            ? 'ছবি অপ্টিমাইজ ও কম্প্রেস হচ্ছে...'
+                            : selectedCropImageBytes != null
+                                ? 'ছবি নির্বাচিত (${(selectedCropImageSize / 1024).toStringAsFixed(1)} KB — অপ্টিমাইজড)\nসেভ বাটনে চাপলে R2-তে আপলোড হবে'
+                                : (_imageCtrl.text.isNotEmpty && !isCropImageRemoved)
+                                    ? 'বর্তমান ছবি সংযুক্ত রয়েছে'
+                                    : 'ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: selectedCropImageBytes != null
+                              ? const Color(0xFF2E7D32)
+                              : AdminColors.textMuted,
+                          fontWeight: selectedCropImageBytes != null
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          height: 1.25,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // লোকাল ইমেজ প্রিভিউ বক্স (Image.memory)
+                if (hasActiveImage) ...[
+                  const SizedBox(height: 12),
                   Stack(
                     alignment: Alignment.topRight,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          _imageCtrl.text,
-                          height: 120,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      Container(
+                        width: double.infinity,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                          color: Colors.grey.shade50,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: selectedCropImageBytes != null
+                              ? Image.memory(
+                                  selectedCropImageBytes!,
+                                  width: double.infinity,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  _imageCtrl.text,
+                                  width: double.infinity,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Text('ছবি প্রিভিউ করা সম্ভব হচ্ছে না', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                                  ),
+                                ),
                         ),
                       ),
-                      IconButton(
-                        icon: const CircleAvatar(
-                          radius: 12,
-                          backgroundColor: AdminColors.alertCritical,
-                          child: Icon(Icons.close, size: 14, color: Colors.white),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: InkWell(
+                          onTap: _saving ? null : () {
+                            setState(() {
+                              selectedCropImageBytes = null;
+                              selectedCropImageName = null;
+                              selectedCropImageSize = 0;
+                              isCropImageRemoved = true;
+                              _imageCtrl.clear();
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD32F2F),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                              ],
+                            ),
+                            child: const Icon(Icons.close_rounded, size: 16, color: Colors.white),
+                          ),
                         ),
-                        onPressed: () => setState(() => _imageCtrl.clear()),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
                 ],
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(46),
-                    side: BorderSide(color: AdminColors.primary.withOpacity(0.5)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  icon: const Icon(Icons.cloud_upload_outlined, color: AdminColors.primary),
-                  label: Text(
-                    _imageCtrl.text.isEmpty ? 'ছবি আপলোড করুন' : 'ছবি পরিবর্তন করুন',
-                    style: const TextStyle(color: AdminColors.primary, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () async {
-                    final url = await showDialog<String>(
-                      context: context,
-                      builder: (ctx) {
-                        final tempCtrl = TextEditingController(text: _imageCtrl.text);
-                        return AlertDialog(
-                          title: const Text('ছবির লিংক নির্বাচন'),
-                          content: TextField(
-                            controller: tempCtrl,
-                            decoration: const InputDecoration(
-                              hintText: 'ইমেজ লিংক লিখুন বা পেস্ট করুন',
-                            ),
-                          ),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, tempCtrl.text.trim()),
-                              child: const Text('নিশ্চিত করুন'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    if (url != null) setState(() => _imageCtrl.text = url);
-                  },
-                ),
               ],
             ),
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল')),
+        TextButton(onPressed: _saving ? null : () => Navigator.pop(context), child: const Text('বাতিল')),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
-          onPressed: _saving ? null : _save,
+          onPressed: (_saving || _isCompressing) ? null : _save,
           child: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন', style: const TextStyle(color: Colors.white)),
         ),
       ],

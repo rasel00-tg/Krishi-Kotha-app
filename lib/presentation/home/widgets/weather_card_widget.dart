@@ -187,9 +187,10 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
             height: 195,
             width: double.infinity,
             child: Stack(
+              clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                // সেন্টারে Lottie অ্যানিমেশন
+                // সেন্টারে Lottie অ্যানিমেশন (পরিষ্কার সেন্টার্ড, কোনো ওভারল্যাপিং ছাড়াই)
                 SizedBox(
                   width: 175,
                   height: 175,
@@ -201,15 +202,16 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
                   ),
                 ),
 
-                // সময়-ভিত্তিক ডাইনামিক গ্রিটিং (Time-based Dynamic Greeting)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: _buildDynamicGreetingBadge(),
+                // ৩. কন্ডিশনাল রেইন ওভারলে অ্যানিমেশন লেয়ার (Conditional Rain Falling Effect)
+                if (weather.rainProbability > 0 ||
+                    weather.conditionBn.contains('বৃষ্টি') ||
+                    weather.conditionBn.contains('ঝড়') ||
+                    weather.conditionBn.toLowerCase().contains('rain'))
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: _buildRainFallingOverlay(),
+                    ),
                   ),
-                ),
 
                 // বাম পাশে: বর্তমান তাপমাত্রা (Degree), লোকেশন ও অবস্থা
                 Positioned(
@@ -260,35 +262,56 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
                           ),
                           const SizedBox(width: 5),
 
-                          // ম্যানুয়াল রিফ্রেশ বাটন (১০ মিনিট থ্রটলিং প্রটেকশন ও লোগো ডায়ালগ সহ)
+                          // ১. ম্যানুয়াল রিফ্রেশ বাটন (কালারফুল, বড় সাইজ ও প্রিমিয়াম শ্যাডো সহ)
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: weatherProvider.isLoading
                                   ? null
                                   : () => weatherProvider.manualRefresh(context),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                               child: Container(
-                                padding: const EdgeInsets.all(5),
+                                width: 34,
+                                height: 34,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F8E9),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF2E7D32),
+                                      Color(0xFF43A047),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.45),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF2E7D32).withOpacity(0.32),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                child: weatherProvider.isLoading
-                                    ? const SizedBox(
-                                        width: 13,
-                                        height: 13,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 1.5,
-                                          color: AppColors.primary,
+                                child: Center(
+                                  child: weatherProvider.isLoading
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.refresh_rounded,
+                                          color: Colors.white,
+                                          size: 22,
                                         ),
-                                      )
-                                    : const Icon(
-                                        Icons.refresh_rounded,
-                                        color: AppColors.primary,
-                                        size: 13,
-                                      ),
+                                ),
                               ),
                             ),
                           ),
@@ -323,15 +346,11 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
                       ),
                       const SizedBox(height: 3),
 
-                      // আবহাওয়ার অবস্থা
+                      // আবহাওয়ার অবস্থা (অ্যানিমেটেড আইকন সহ)
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            _getWeatherIcon(weather.conditionBn),
-                            color: const Color(0xFFF59E0B),
-                            size: 14,
-                          ),
+                          _buildAnimatedWeatherIcon(weather.conditionBn, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             weather.conditionBn,
@@ -438,11 +457,7 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
                                   ),
                                 ),
                               const SizedBox(height: 2),
-                              Icon(
-                                _getWeatherIcon(f.conditionBn),
-                                color: const Color(0xFFF59E0B),
-                                size: 15,
-                              ),
+                              _buildAnimatedWeatherIcon(f.conditionBn, size: 20),
                               const SizedBox(height: 2),
                               Text(
                                 '${BanglaNumberConverter.toBangla(f.tempMax.toStringAsFixed(0))}° / ${BanglaNumberConverter.toBangla(f.tempMin.toStringAsFixed(0))}°',
@@ -627,4 +642,158 @@ class _WeatherCardWidgetState extends State<WeatherCardWidget> {
       return Icons.bedtime_rounded;
     }
   }
+
+  /// কন্ডিশন অনুযায়ী লটি অ্যানিমেশন অ্যাসেট পাথ (sun.json, cloud.json, rain.json)
+  String _getWeatherLottieAsset(String condition) {
+    final lower = condition.toLowerCase();
+    if (lower.contains('rain') || lower.contains('বৃষ্টি') || lower.contains('ঝড়') || lower.contains('তুফান')) {
+      return 'assets/animation/rain.json';
+    }
+    if (lower.contains('cloud') || lower.contains('মেঘলা') || lower.contains('কুয়াশা')) {
+      return 'assets/animation/cloud.json';
+    }
+    return 'assets/animation/sun.json';
+  }
+
+  /// কন্ডিশন অনুযায়ী আইকন কালার
+  Color _getWeatherIconColor(String condition) {
+    final lower = condition.toLowerCase();
+    if (lower.contains('rain') || lower.contains('বৃষ্টি')) {
+      return const Color(0xFF0288D1);
+    }
+    if (lower.contains('cloud') || lower.contains('মেঘলা')) {
+      return const Color(0xFF78909C);
+    }
+    if (lower.contains('thunder') || lower.contains('ঝড়')) {
+      return const Color(0xFF5E35B1);
+    }
+    return const Color(0xFFF59E0B);
+  }
+
+  /// ২. ওয়েদার পূর্বাভাসে অ্যানিমেটেড আইকন উইজেট (Lottie with fallback)
+  Widget _buildAnimatedWeatherIcon(String condition, {double size = 20, Color? fallbackColor}) {
+    final lottiePath = _getWeatherLottieAsset(condition);
+    final iconData = _getWeatherIcon(condition);
+    final color = fallbackColor ?? _getWeatherIconColor(condition);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Lottie.asset(
+        lottiePath,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        repeat: true,
+        errorBuilder: (context, error, stackTrace) => Icon(
+          iconData,
+          color: color,
+          size: size * 0.85,
+        ),
+      ),
+    );
+  }
+
+  /// ৩. রেইন ওভারলে অ্যানিমেশন লেয়ার (Conditional Rain Falling Effect)
+  Widget _buildRainFallingOverlay() {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Lottie.asset(
+            'assets/animation/rain_overlay.json',
+            fit: BoxFit.cover,
+            repeat: true,
+            errorBuilder: (context, error, stackTrace) {
+              return Lottie.asset(
+                'assets/animation/rain.json',
+                fit: BoxFit.cover,
+                repeat: true,
+                errorBuilder: (context, error2, stackTrace2) {
+                  return const _RainFallingParticlesWidget();
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// ফ্লাটার নেটিভ রেইন পার্টিকেল ইফেক্ট উইজেট (স্মুথ ফলব্যাক অ্যানিমেশন)
+class _RainFallingParticlesWidget extends StatefulWidget {
+  const _RainFallingParticlesWidget();
+
+  @override
+  State<_RainFallingParticlesWidget> createState() => _RainFallingParticlesWidgetState();
+}
+
+class _RainFallingParticlesWidgetState extends State<_RainFallingParticlesWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          size: Size.infinite,
+          painter: _RainParticlesPainter(_controller.value),
+        );
+      },
+    );
+  }
+}
+
+class _RainParticlesPainter extends CustomPainter {
+  final double animationValue;
+  static final List<({double x, double speed, double length, double opacity})> _drops = List.generate(
+    28,
+    (i) => (
+      x: (i * 0.037 + 0.02) % 1.0,
+      speed: 0.8 + ((i * 7) % 10) * 0.05,
+      length: 12.0 + ((i * 3) % 8),
+      opacity: 0.35 + ((i * 5) % 6) * 0.08,
+    ),
+  );
+
+  _RainParticlesPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.3;
+
+    for (final drop in _drops) {
+      final yProgress = (animationValue * drop.speed + drop.x) % 1.0;
+      final startY = yProgress * size.height;
+      final startX = drop.x * size.width + (startY * 0.15);
+      final endY = startY + drop.length;
+      final endX = startX + (drop.length * 0.15);
+
+      paint.color = const Color(0xFF64B5F6).withOpacity(drop.opacity);
+      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RainParticlesPainter oldDelegate) =>
+      oldDelegate.animationValue != animationValue;
 }

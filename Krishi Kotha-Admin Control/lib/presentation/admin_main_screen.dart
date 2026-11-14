@@ -13,6 +13,8 @@ import 'screens/krishimate_ai_reporting_screen.dart';
 import 'screens/user_management_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/farming_calendar_management_screen.dart';
+import 'screens/expert_helpline_management_screen.dart';
+import 'screens/admin_income_expense_history_page.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -37,6 +39,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     'KrishiMate AI রোগ শনাক্তকরণ ড্যাশবোর্ড',
     'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)',
     'হোমপেজ – ফসল ক্যালেন্ডার মনিটরিং',
+    'হোমপেজ – কৃষি বিশেষজ্ঞ (Coming Soon)',
+    'হোমপেজ – কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
   ];
 
   @override
@@ -53,6 +57,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       const KrishiMateAiReportingScreen(),
       const AppSettingsScreen(),
       const FarmingCalendarManagementScreen(),
+      const ExpertHelplineManagementScreen(),
+      const AdminIncomeExpenseHistoryPage(),
     ];
   }
 
