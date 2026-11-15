@@ -10,6 +10,7 @@ class NotificationModel {
   final bool isSeen;
   final String type; // 'weather', 'crop', 'market', 'general'
   final String imageUrl;
+  final String actionUrl;
 
   const NotificationModel({
     required this.id,
@@ -19,6 +20,7 @@ class NotificationModel {
     this.isSeen = false,
     this.type = 'general',
     this.imageUrl = '',
+    this.actionUrl = '',
   });
 
   factory NotificationModel.fromFirestore(DocumentSnapshot doc) {
@@ -34,6 +36,7 @@ class NotificationModel {
         isSeen: false,
         type: 'general',
         imageUrl: '',
+        actionUrl: '',
       );
     }
   }
@@ -67,6 +70,8 @@ class NotificationModel {
     final rawType = data['type']?.toString();
     final rawImg = data['imageUrl'] ?? data['image_url'] ?? data['image'];
     final imageUrl = (rawImg != null && rawImg.toString().trim().isNotEmpty) ? rawImg.toString().trim() : '';
+    final rawAction = data['actionUrl'] ?? data['action_url'] ?? data['actionLink'] ?? data['action_link'] ?? data['link'] ?? data['url'];
+    final actionUrl = (rawAction != null && rawAction.toString().trim().isNotEmpty) ? rawAction.toString().trim() : '';
 
     return NotificationModel(
       id: (data['id'] ?? id).toString(),
@@ -78,6 +83,7 @@ class NotificationModel {
       isSeen: data['isSeen'] == true || data['is_seen'] == true,
       type: (rawType != null && rawType.trim().isNotEmpty) ? rawType.trim() : 'সাধারণ',
       imageUrl: imageUrl,
+      actionUrl: actionUrl,
     );
   }
 
@@ -92,6 +98,8 @@ class NotificationModel {
       'type': type,
       'imageUrl': imageUrl,
       'image_url': imageUrl,
+      'actionUrl': actionUrl,
+      'action_url': actionUrl,
     };
   }
 
@@ -103,6 +111,7 @@ class NotificationModel {
     bool? isSeen,
     String? type,
     String? imageUrl,
+    String? actionUrl,
   }) {
     return NotificationModel(
       id: id ?? this.id,
@@ -112,6 +121,7 @@ class NotificationModel {
       isSeen: isSeen ?? this.isSeen,
       type: type ?? this.type,
       imageUrl: imageUrl ?? this.imageUrl,
+      actionUrl: actionUrl ?? this.actionUrl,
     );
   }
 

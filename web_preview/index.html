@@ -17407,6 +17407,35 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    function getNotifCategoryLabel(type) {
+      const t = (type || '').toLowerCase();
+      if (t.includes('weather') || t.includes('সতর্কতা') || t.includes('আবহাওয়া')) {
+        return 'আবহাওয়া বার্তা';
+      } else if (t.includes('crop') || t.includes('ফসল') || t.includes('বালাই')) {
+        return 'ফসল ও রোগবালাই';
+      } else if (t.includes('market') || t.includes('বাজার') || t.includes('দর')) {
+        return 'বাজার দর আপডেট';
+      }
+      return 'সাধারণ বিজ্ঞপ্তি';
+    }
+
+    function formatExactDateTimeWithBar(rawTime) {
+      if (!rawTime) return '১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM';
+      const d = new Date(rawTime);
+      if (isNaN(d.getTime())) return '১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM';
+      const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+      const day = toBengaliDigits(d.getDate());
+      const month = months[d.getMonth()];
+      const year = toBengaliDigits(d.getFullYear());
+      let hours = d.getHours();
+      const minutes = toBengaliDigits(String(d.getMinutes()).padStart(2, '0'));
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const hoursBn = toBengaliDigits(String(hours).padStart(2, '0'));
+      return `${day} ${month} ${year} | ${hoursBn}:${minutes} ${ampm}`;
+    }
+
     function renderNotifications() {
       const container = document.getElementById('notificationsList');
       if (!container) return;
@@ -17418,27 +17447,51 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           </div>`;
         return;
       }
-      container.innerHTML = notificationsList.map(n => `
-        <div class="notif-item ${n.isSeen ? 'seen' : 'unseen'}" onclick="markNotificationSeen('${n.id}')">
-          <div class="notif-icon-wrap" style="background: ${n.isSeen ? '#F1F3F4' : n.bgColor}; color: ${n.color};">
-            <i class="fa-solid ${n.icon}"></i>
-          </div>
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-              <div style="display: flex; align-items: center;">
-                <span class="notif-title" style="font-size: 14.5px;">${n.title}</span>
-                <span class="notif-dot"></span>
+      container.innerHTML = notificationsList.map(n => {
+        const catLabel = getNotifCategoryLabel(n.type);
+        const cardBg = n.isSeen ? '#FFFFFF' : '#F7FCF7';
+        return `
+        <div class="notif-item ${n.isSeen ? 'seen' : 'unseen'}" onclick="showNotificationDetailModal('${n.id}')"
+             style="background: ${cardBg}; border-bottom: 1px solid #EEEEEE; padding: 14px 16px; margin: 0; display: flex; gap: 14px; align-items: flex-start; cursor: pointer; transition: background 0.2s ease;">
+          
+          <!-- Left Square Thumbnail -->
+          <div style="width: 68px; height: 68px; min-width: 68px; border-radius: 12px; background: ${n.color}15; border: 0.8px solid ${n.color}30; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            ${n.imageUrl ? `
+              <img src="${n.imageUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="thumbnail" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: ${n.color}; font-size: 26px;">
+                <i class="fa-solid ${n.icon}"></i>
               </div>
+            ` : `
+              <div style="color: ${n.color}; font-size: 26px;">
+                <i class="fa-solid ${n.icon}"></i>
+              </div>
+            `}
+          </div>
+
+          <!-- Right Details -->
+          <div style="flex: 1; min-width: 0;">
+            <!-- Top: Bold Colorful Headline -->
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;">
+              <h4 style="font-size: 15px; font-weight: 700; color: ${n.color}; margin: 0; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                ${n.title}
+              </h4>
+              ${!n.isSeen ? `<span style="width: 8px; height: 8px; min-width: 8px; border-radius: 50%; background: #D32F2F; margin-top: 4px;"></span>` : ''}
             </div>
-            <p class="notif-desc" style="font-size: 12.5px; line-height: 1.4; margin-bottom: 5px;">${n.message}</p>
-            ${n.imageUrl ? `<div style="margin: 8px 0; border-radius: 8px; overflow: hidden; max-height: 180px;"><img src="${n.imageUrl}" style="width: 100%; height: auto; max-height: 180px; object-fit: cover; display: block;" alt="notification image" onerror="this.style.display='none';"></div>` : ''}
-            <div style="font-size: 11px; color: ${n.isSeen ? 'var(--text-muted)' : 'var(--primary)'}; font-weight: ${n.isSeen ? '400' : '600'}; display: flex; align-items: center; gap: 4px;">
-              <i class="fa-regular fa-clock" style="font-size: 10px;"></i>
+
+            <!-- Middle: Short Description (Light Grey, 2 Lines) -->
+            <p style="font-size: 13px; line-height: 1.35; color: #757575; margin: 5px 0 6px 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+              ${n.message}
+            </p>
+
+            <!-- Bottom: Timestamp -->
+            <div style="font-size: 11.5px; color: #757575; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+              <i class="fa-regular fa-clock" style="font-size: 11px;"></i>
               <span>${n.time}</span>
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function openNotificationsPage() {
@@ -17478,6 +17531,96 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       if (db) {
         db.collection('notifications').doc(id).update({ isSeen: true }).catch(e => console.warn('Seen sync:', e));
+      }
+    }
+
+    function showNotificationDetailModal(id) {
+      markNotificationSeen(id);
+      const item = notificationsList.find(n => n.id === id);
+      if (!item) return;
+      const catLabel = getNotifCategoryLabel(item.type);
+      const formattedDate = formatExactDateTimeWithBar(item.rawTime);
+
+      const existing = document.getElementById('notifDetailModal');
+      if (existing) existing.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay active';
+      modal.id = 'notifDetailModal';
+      modal.style.alignItems = 'center';
+      modal.style.padding = '16px';
+      modal.onclick = function (e) {
+        if (e.target === modal) modal.remove();
+      };
+      modal.innerHTML = `
+        <div style="background: #fff; width: 100%; max-width: 480px; margin: 0 auto; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,0.25); animation: popIn 0.2s ease-out; position: relative; max-height: 90vh; display: flex; flex-direction: column;">
+          
+          <!-- Close Button -->
+          <button onclick="document.getElementById('notifDetailModal').remove()" style="position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.5); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <!-- Scrollable Body -->
+          <div style="overflow-y: auto; flex: 1;">
+            <!-- ১. একেবারে উপরে স্ক্রিনের প্রস্থ অনুযায়ী বড় করে নোটিফিকেশনের ব্যানার ছবিটি -->
+            ${item.imageUrl ? `
+              <div style="width: 100%; height: 220px; overflow: hidden; background: #f0f0f0;">
+                <img src="${item.imageUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="ব্যানার ছবি" onerror="this.parentElement.style.display='none';">
+              </div>
+            ` : `
+              <div style="width: 100%; height: 160px; background: linear-gradient(135deg, ${item.color}CC, ${item.color}); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 8px;">
+                  <i class="fa-solid ${item.icon}"></i>
+                </div>
+                <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">${catLabel}</span>
+              </div>
+            `}
+
+            <div style="padding: 18px 20px;">
+              <!-- Category Badge -->
+              <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; background: ${item.color}15; border: 1px solid ${item.color}30; color: ${item.color}; font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+                <i class="fa-solid ${item.icon}" style="font-size: 11px;"></i>
+                <span>${catLabel}</span>
+              </div>
+
+              <!-- ২. ছবির নিচে বড় ও বোল্ড ফন্টে নোটিফিকেশনের হেডলাইন -->
+              <h3 style="font-size: 20px; font-weight: 700; color: ${item.color}; margin: 0 0 10px 0; line-height: 1.35;">
+                ${item.title}
+              </h3>
+
+              <!-- ৩. হেডলাইনের নিচে সম্পূর্ণ তারিখ ও সময় -->
+              <div style="font-size: 13px; color: #616161; font-weight: 500; display: flex; align-items: center; gap: 6px; margin-bottom: 14px;">
+                <i class="fa-regular fa-calendar-days" style="color: #757575;"></i>
+                <span>${formattedDate}</span>
+              </div>
+
+              <div style="height: 1px; background: #EEEEEE; margin-bottom: 14px;"></div>
+
+              <!-- ৪. সম্পূর্ণ বিস্তারিত লেখা (Full Description) -->
+              <p style="font-size: 15px; line-height: 1.65; color: #212121; margin: 0; white-space: pre-line;">
+                ${item.message}
+              </p>
+            </div>
+          </div>
+
+          <!-- ৫. পেজের নিচের দিকে একটি বড় কালারফুল অ্যাকশন বাটন (রেড কালার) -->
+          <div style="padding: 12px 18px; border-top: 1px solid #EEEEEE; background: #fff;">
+            <button onclick="handleNotificationAction('${item.actionUrl || ''}')" 
+                    style="width: 100%; height: 50px; background: #D32F2F; color: #fff; border: none; border-radius: 12px; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 3px 10px rgba(211,47,47,0.3);">
+              <i class="fa-solid ${item.actionUrl ? 'fa-arrow-up-right-from-square' : 'fa-circle-info'}"></i>
+              <span>${item.actionUrl ? 'লিংকে যান' : 'বিস্তারিত দেখুন'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function handleNotificationAction(url) {
+      if (url && url.trim().length > 0) {
+        window.open(url.trim(), '_blank');
+      } else {
+        alert('এই বিজ্ঞপ্তির সকল বিস্তারিত তথ্য এখানে দেওয়া হয়েছে।');
       }
     }
 
@@ -18426,6 +18569,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 rawTime: rawTime,
                 isSeen: f.isSeen?.booleanValue === true,
                 type: (f.type?.stringValue || 'general').trim(),
+                imageUrl: (f.imageUrl?.stringValue || f.image_url?.stringValue || f.image?.stringValue || '').trim(),
+                actionUrl: (f.actionUrl?.stringValue || f.action_url?.stringValue || f.actionLink?.stringValue || f.action_link?.stringValue || f.link?.stringValue || f.url?.stringValue || '').trim(),
                 icon: icon,
                 color: color,
                 bgColor: bgColor
@@ -18529,6 +18674,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               isSeen: d.isSeen === true || d.is_seen === true,
               type: (d.type || 'general').trim(),
               imageUrl: (d.imageUrl || d.image_url || d.image || '').trim(),
+              actionUrl: (d.actionUrl || d.action_url || d.actionLink || d.action_link || d.link || d.url || '').trim(),
               icon: icon,
               color: color,
               bgColor: bgColor
