@@ -769,38 +769,17 @@ class _FarmingCalendarManagementScreenState extends State<FarmingCalendarManagem
                 ),
                 const SizedBox(height: 12),
 
-                // মাসভিত্তিক চিপস
-                SizedBox(
-                  height: 32,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _months.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
-                    itemBuilder: (context, idx) {
-                      final m = _months[idx];
-                      final isSel = _selectedMonth == m;
-                      return ChoiceChip(
-                        label: Text(
-                          m,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            color: isSel ? Colors.white : AdminColors.textPrimary,
-                          ),
-                        ),
-                        selected: isSel,
-                        selectedColor: AdminColors.primary,
-                        backgroundColor: const Color(0xFFF1F8E9),
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedMonth = m;
-                            _initCalendarStream();
-                          });
-                        },
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                // মাসভিত্তিক ফিল্টার বাটনসমূহ (অনুভূমিক স্ক্রলেবল SingleChildScrollView + Row + InkWell)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: _months.map((m) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: _buildMonthFilterPill(m),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
@@ -878,6 +857,47 @@ class _FarmingCalendarManagementScreenState extends State<FarmingCalendarManagem
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMonthFilterPill(String month) {
+    final isSelected = _selectedMonth == month;
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        setState(() {
+          _selectedMonth = month;
+          _initCalendarStream();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AdminColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AdminColors.primary : AdminColors.border,
+            width: 1.2,
+          ),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x182E7D32),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          month,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : AdminColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

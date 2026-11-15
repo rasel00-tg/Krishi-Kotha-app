@@ -15,6 +15,7 @@ import 'screens/app_settings_screen.dart';
 import 'screens/farming_calendar_management_screen.dart';
 import 'screens/expert_helpline_management_screen.dart';
 import 'screens/admin_income_expense_history_page.dart';
+import 'screens/seed_monitoring_screen.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -41,6 +42,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     'হোমপেজ – ফসল ক্যালেন্ডার মনিটরিং',
     'হোমপেজ – কৃষি বিশেষজ্ঞ (Coming Soon)',
     'হোমপেজ – কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
+    'হোমপেজ – বীজের তথ্য মনিটরিং',
   ];
 
   @override
@@ -59,12 +61,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       const FarmingCalendarManagementScreen(),
       const ExpertHelplineManagementScreen(),
       const AdminIncomeExpenseHistoryPage(),
+      const SeedMonitoringScreen(),
     ];
   }
 
   void _onNavigate(int index) {
     if (_selectedIndex == index) return;
-    showGlobalAdminLoading(message: 'তথ্য লোডিং হচ্ছে...', timeout: const Duration(milliseconds: 600));
     setState(() => _selectedIndex = index);
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.of(context).pop();
@@ -75,122 +77,45 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   Widget build(BuildContext context) {
     final isMobile = ResponsiveLayout.isMobile(context);
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: AdminLoadingController.instance.isLoading,
-      builder: (context, isLoading, _) {
-        return Stack(
-          children: [
-            Scaffold(
-              key: _scaffoldKey,
-              backgroundColor: AdminColors.background,
-              drawer: isMobile
-                  ? Drawer(
-                      child: AdminSidebar(
-                        selectedIndex: _selectedIndex,
-                        onItemSelected: _onNavigate,
-                      ),
-                    )
-                  : null,
-              body: Row(
-                children: [
-                  // Desktop & Tablet Sidebar
-                  if (!isMobile)
-                    AdminSidebar(
-                      selectedIndex: _selectedIndex,
-                      onItemSelected: _onNavigate,
-                    ),
-
-                  // Main View Body
-                  Expanded(
-                    child: Column(
-                      children: [
-                        AdminHeader(
-                          title: _titles[_selectedIndex],
-                          onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                        ),
-                        Expanded(
-                          child: IndexedStack(
-                            index: _selectedIndex,
-                            children: _screens,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: AdminColors.background,
+      drawer: isMobile
+          ? Drawer(
+              child: AdminSidebar(
+                selectedIndex: _selectedIndex,
+                onItemSelected: _onNavigate,
               ),
+            )
+          : null,
+      body: Row(
+        children: [
+          // Desktop & Tablet Sidebar
+          if (!isMobile)
+            AdminSidebar(
+              selectedIndex: _selectedIndex,
+              onItemSelected: _onNavigate,
             ),
 
-            // Global Non-Dismissible Screen-Blocking Overlay
-            if (isLoading)
-              Positioned.fill(
-                child: AbsorbPointer(
-                  absorbing: true,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      ModalBarrier(
-                        color: Colors.black.withOpacity(0.48),
-                        dismissible: false,
-                      ),
-                      ValueListenableBuilder<String>(
-                        valueListenable: AdminLoadingController.instance.loadingMessage,
-                        builder: (context, message, _) {
-                          return Center(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(18),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.22),
-                                      blurRadius: 25,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
-                                  border: Border.all(
-                                    color: AdminColors.primary.withOpacity(0.2),
-                                    width: 1.2,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(
-                                      width: 44,
-                                      height: 44,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 3.5,
-                                        valueColor: AlwaysStoppedAnimation<Color>(AdminColors.primary),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      message,
-                                      style: const TextStyle(
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: AdminColors.textPrimary,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+          // Main View Body
+          Expanded(
+            child: Column(
+              children: [
+                AdminHeader(
+                  title: _titles[_selectedIndex],
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: _screens,
                   ),
                 ),
-              ),
-          ],
-        );
-      },
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

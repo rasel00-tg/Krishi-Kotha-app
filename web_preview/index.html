@@ -2480,7 +2480,7 @@
             <span>কৃষি রিমাইন্ডার</span>
           </div>
           <!-- ৪. বীজের তথ্য -->
-          <div class="quick-card" onclick="openServiceModal('seed_bank')">
+          <div class="quick-card" onclick="openSeedInformationFullPage()">
             <div class="quick-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
               <i class="fa-solid fa-seedling"></i>
             </div>
@@ -3596,6 +3596,75 @@
       <!-- Scrollable Result Body -->
       <div id="incomeExpenseResultContent" style="flex: 1; overflow-y: auto; padding: 16px 16px 40px 16px;">
         <!-- Dynamically rendered Invoice / Memo -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN SEED INFORMATION PAGE (বীজের তথ্যভান্ডার) MATCHING CROP CALENDAR -->
+    <div class="full-screen-page" id="seedInformationPage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeSeedInformationFullPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">বীজের তথ্যভান্ডার</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">উন্নত ও প্রত্যয়িত জাতের বীজ নির্দেশিকা</p>
+          </div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- Search Bar (Clean White Card with Green Search Icon) -->
+        <div style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
+          <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
+          <input type="text" id="webSeedSearchInput" oninput="onWebSeedSearchChange()" placeholder="বীজের নাম বা জাত খুঁজুন..."
+            style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;">
+          <button id="webSeedSearchClear" onclick="clearWebSeedSearch()" style="display: none; background: none; border: none; color: #999; cursor: pointer; padding: 4px;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Horizontal Category Filter Chips -->
+        <div class="month-chips-scroll" id="webSeedCategoryPills" style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+          <!-- Dynamically populated category chips -->
+        </div>
+      </div>
+
+      <!-- Category Banner (if selected) -->
+      <div id="seedCategoryBanner" style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fa-solid fa-seedling"></i>
+          </div>
+          <div>
+            <h4 id="seedBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;"></h4>
+            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">উন্নত গুণমান ও উচ্চ ফলনশীল জাতের নির্দেশিকা নিচে প্রদর্শিত হচ্ছে</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Firestore Stream List Container -->
+      <div id="seedInformationContent" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <!-- Dynamically rendered Seed cards / Premium loading widget -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN SEED DETAILS PAGE MATCHING FLUTTER SEED_DETAILS_PAGE -->
+    <div class="full-screen-page" id="seedInformationDetailPage"
+      style="background: #F7FAF7; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <div style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <button onclick="closeSeedInformationDetailPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 id="seedDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">বীজের নাম</h3>
+          <p id="seedDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;"></p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+      <div id="seedInformationDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+        <!-- Dynamically rendered detailed body matching SeedDetailsPage -->
       </div>
     </div>
 
@@ -7037,30 +7106,7 @@
         color: '#2E7D32',
         bg: '#E8F5E9',
         subtitle: 'উন্নত জাতের বীজ ও তার বৈশিষ্ট্য পরিচিতি',
-        sections: [
-          {
-            title: 'উন্নত ও প্রত্যায়িত জাতের বীজ তালিকা',
-            items: [
-              'উফশী ও হাইব্রিড ধান: ব্রি ধান-২৮, ব্রি ধান-২৯, ব্রি ধান-৮৯, ব্রি ধান-৯২ ও বিনা ধান-২৫।',
-              'গম ও ভুট্টা: বারি গম-৩৩ (ব্লাস্ট প্রতিরোধী), হাইব্রিড ভুট্টা ডন-১১১ ও পায়োনিয়ার জাত।',
-              'আলু ও মসলা: ডায়মন্ড, কার্ডিনাল, বারি পেঁয়াজ-১, তাহেরপুরী জাত ও বারি আদা-২।'
-            ]
-          },
-          {
-            title: 'বীজ শোধন ও অঙ্কুরোদগম পরীক্ষা',
-            items: [
-              'বীজ শোধন: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন বা প্রোভেক্স মিশিয়ে ছায়ায় শুকিয়ে নিন।',
-              'অঙ্কুরোদগম পরীক্ষা: ১০০টি বীজ ভেজা কাপড়ে রেখে ৩ দিন পর গুনে শতকরা হার বের করুন (ন্যূনতম ৮০% হওয়া আবশ্যক)।'
-            ]
-          },
-          {
-            title: 'বীজ সংরক্ষণ ও ড্রাম ব্যবস্থাপনার নিয়ম',
-            items: [
-              'বীজ রোদে ভালোভাবে শুকিয়ে আর্দ্রতা ১০-১২ শতাংশের নিচে নামিয়ে আনুন।',
-              'বায়ুরোধী প্লাস্টিক ড্রাম বা মটকায় শুকনো নিমপাতা বা ছাই দিয়ে বীজ পূর্ণ করে মুখ শক্ত করে বাঁধুন।'
-            ]
-          }
-        ]
+        sections: []
       },
       agri_office: {
         title: 'কৃষি অফিস খুঁজুন ও সহায়তা',
@@ -7270,6 +7316,10 @@
     };
 
     function openServiceModal(type) {
+      if (type === 'seed_bank') {
+        openSeedInformationFullPage();
+        return;
+      }
       if (type === 'ledger') {
         openIncomeExpenseFullPage();
         return;
@@ -7978,13 +8028,367 @@
         console.error('Delete error:', err);
       }
     }
-    }
 
     function showWebLedgerResultPage(loadedData) {
       if (!loadedData) return;
       webLedgerCurrentResult = { ...loadedData, isSaved: true };
       renderWebLedgerResultMemo(webLedgerCurrentResult);
       openIncomeExpenseResultPage();
+    }
+
+    // ==================== SEED INFORMATION REAL FIRESTORE STREAM & UI ====================
+    let webSeedData = [];
+    let webSeedCategories = ['সব বীজ', 'ধান', 'গম ও ভুট্টা', 'সবজি', 'মসলা', 'ডাল ও তৈলবীজ', 'ফলমূল', 'অন্যান্য'];
+    let webSeedSelectedCat = 'সব বীজ';
+    let webSeedSearchQuery = '';
+    let webSeedLoading = true;
+    let webSeedListenerAttached = false;
+    let currentFilteredWebSeeds = [];
+
+    function openSeedInformationFullPage() {
+      const page = document.getElementById('seedInformationPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      renderWebSeedCategories();
+      initWebSeedInformationLiveSync();
+    }
+
+    function closeSeedInformationFullPage() {
+      const page = document.getElementById('seedInformationPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+    }
+
+    function renderWebSeedCategories() {
+      const container = document.getElementById('webSeedCategoryPills');
+      if (!container) return;
+      container.innerHTML = webSeedCategories.map(cat => {
+        const isSel = webSeedSelectedCat === cat;
+        return `
+          <div onclick="selectWebSeedCategory('${cat}')"
+            style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: ${isSel ? '700' : '500'}; white-space: nowrap; cursor: pointer; transition: all 0.2s; background: ${isSel ? '#fff' : 'rgba(255,255,255,0.18)'}; color: ${isSel ? '#1B5E20' : '#fff'}; border: 1px solid ${isSel ? '#fff' : 'rgba(255,255,255,0.32)'}; box-shadow: ${isSel ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'};">
+            <i class="fa-solid ${cat === 'সব বীজ' ? 'fa-border-all' : 'fa-seedling'}" style="font-size: 11px;"></i>
+            <span>${cat}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Toggle category banner
+      const banner = document.getElementById('seedCategoryBanner');
+      const bTitle = document.getElementById('seedBannerCategoryTitle');
+      if (banner && bTitle) {
+        if (webSeedSelectedCat !== 'সব বীজ') {
+          bTitle.innerText = `${webSeedSelectedCat} ক্যাটাগরির বীজসমূহ`;
+          banner.style.display = 'block';
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+    }
+
+    function selectWebSeedCategory(cat) {
+      webSeedSelectedCat = cat;
+      renderWebSeedCategories();
+      renderWebSeedList();
+    }
+
+    function onWebSeedSearchChange() {
+      const input = document.getElementById('webSeedSearchInput');
+      const clearBtn = document.getElementById('webSeedSearchClear');
+      if (!input) return;
+      webSeedSearchQuery = input.value.trim().toLowerCase();
+      if (clearBtn) clearBtn.style.display = webSeedSearchQuery ? 'block' : 'none';
+      renderWebSeedList();
+    }
+
+    function clearWebSeedSearch() {
+      const input = document.getElementById('webSeedSearchInput');
+      const clearBtn = document.getElementById('webSeedSearchClear');
+      if (input) input.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      webSeedSearchQuery = '';
+      renderWebSeedList();
+    }
+
+    function initWebSeedInformationLiveSync() {
+      if (webSeedListenerAttached) {
+        renderWebSeedList();
+        return;
+      }
+      webSeedLoading = true;
+      renderWebSeedList();
+
+      try {
+        if (window.firebase && firebase.firestore) {
+          webSeedListenerAttached = true;
+          firebase.firestore().collection('seed_information').onSnapshot((snapshot) => {
+            webSeedLoading = false;
+            webSeedData = [];
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              d.id = doc.id;
+              webSeedData.push(d);
+            });
+            localStorage.setItem('krishi_kotha_seed_information', JSON.stringify(webSeedData));
+            renderWebSeedList();
+          }, (err) => {
+            console.warn('Seed live sync snapshot error:', err);
+            webSeedLoading = false;
+            loadCachedWebSeeds();
+          });
+        } else {
+          loadCachedWebSeeds();
+        }
+      } catch (e) {
+        console.warn('Firestore seed sync error:', e);
+        loadCachedWebSeeds();
+      }
+    }
+
+    function loadCachedWebSeeds() {
+      webSeedLoading = false;
+      const cached = localStorage.getItem('krishi_kotha_seed_information');
+      if (cached) {
+        try { webSeedData = JSON.parse(cached); } catch(_) { webSeedData = []; }
+      } else {
+        webSeedData = [];
+      }
+      renderWebSeedList();
+    }
+
+    function renderWebSeedList() {
+      const container = document.getElementById('seedInformationContent');
+      if (!container) return;
+
+      if (webSeedLoading) {
+        // চাষ ক্যালেন্ডারের হুবহু প্রিমিয়াম লোডার
+        container.innerHTML = getPremiumLoaderHtml('বীজের তথ্য', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        return;
+      }
+
+      const filtered = (webSeedData || []).filter(item => {
+        const name = (item.seedName || '').toLowerCase();
+        const cat = (item.category || '');
+        const sowing = (item.sowingTime || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+
+        if (webSeedSelectedCat !== 'সব বীজ' && !cat.includes(webSeedSelectedCat) && !webSeedSelectedCat.includes(cat)) {
+          return false;
+        }
+        if (webSeedSearchQuery && !name.includes(webSeedSearchQuery) && !cat.toLowerCase().includes(webSeedSearchQuery) && !sowing.includes(webSeedSearchQuery) && !desc.includes(webSeedSearchQuery)) {
+          return false;
+        }
+        return true;
+      });
+
+      currentFilteredWebSeeds = filtered;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; color: #758577;">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: #F1F8F1; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+              <i class="fa-solid fa-seedling" style="font-size: 36px; color: #2E7D32;"></i>
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">
+              ${webSeedSelectedCat === 'সব বীজ' ? 'কোনো বীজের তথ্য পাওয়া যায়নি' : `${webSeedSelectedCat} ক্যাটাগরিতে কোনো বীজ নেই`}
+            </h4>
+            <p style="font-size: 12px; margin-top: 4px; max-width: 300px; margin: 0 auto; line-height: 1.4; color: #758577;">
+              এডমিন প্যানেল থেকে তথ্য যুক্ত করা হলে এখানে প্রদর্শিত হবে।
+            </p>
+            ${webSeedSelectedCat !== 'সব বীজ' ? `
+              <div style="margin-top: 16px;">
+                <button type="button" onclick="selectWebSeedCategory('সব বীজ')"
+                  style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 10px; border: 1.2px solid #2E7D32; background: #fff; color: #2E7D32; font-size: 12.5px; font-weight: 700; cursor: pointer;">
+                  <i class="fa-solid fa-rotate-right" style="font-size: 12px;"></i> সব বীজ দেখুন
+                </button>
+              </div>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((seed, idx) => {
+        const name = seed.seedName || 'বীজের নাম';
+        const cat = seed.category || '';
+        const sowing = seed.sowingTime || '';
+        const harvest = seed.harvestingTime || seed.plantingTime || '';
+        const desc = seed.description || '';
+        const treatment = seed.treatment || '';
+        const preservation = seed.preservation || '';
+        const imgUrl = (seed.imageUrl || '').trim();
+
+        const imgBlock = imgUrl
+          ? `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openSeedInformationDetailByIndex(${idx})">
+               <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;"
+                 onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\\'><div style=\\'width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15);\\'><i class=\\'fa-solid fa-seedling\\' style=\\'font-size: 22px; color: #2E7D32;\\'></i></div><span style=\\'font-size: 11px; font-weight: 700; color: #1B5E20;\\'>কৃষি কথা – বীজের তথ্য</span></div>';" />
+               ${cat ? `<span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-seedling" style="color: #FFD54F; margin-right: 4px;"></i>${cat}
+               </span>` : ''}
+               ${sowing ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;">বপন: ${sowing}</span>` : ''}
+             </div>`
+          : `<div style="height: 120px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openSeedInformationDetailByIndex(${idx})">
+               <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15); pointer-events: none;">
+                 <i class="fa-solid fa-seedling" style="font-size: 22px; color: #2E7D32;"></i>
+               </div>
+               <span style="font-size: 11px; font-weight: 700; color: #1B5E20; pointer-events: none;">${name}</span>
+               ${cat ? `<span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-seedling" style="color: #FFD54F; margin-right: 4px;"></i>${cat}
+               </span>` : ''}
+             </div>`;
+
+        return `
+          <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+            ${imgBlock}
+            <div style="padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="font-size: 16px; font-weight: 800; color: #1E281F; margin: 0; cursor: pointer;" onclick="openSeedInformationDetailByIndex(${idx})">${name}</h4>
+                ${cat ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px;">${cat}</span>` : ''}
+              </div>
+
+              ${desc ? `<p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${desc}</p>` : ''}
+
+              <div style="background: #F9FAF9; border: 1px solid #E8EFE8; border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+                ${sowing ? `<div style="display: flex; align-items: center; font-size: 12px; margin-bottom: ${harvest ? '6px' : '0'};"><i class="fa-solid fa-seedling" style="color: #2E7D32; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">বপন/রোপণ:</strong> <span style="color: #4A5B4C;">${sowing}</span></div>` : ''}
+                ${harvest ? `<div style="display: flex; align-items: center; font-size: 12px;"><i class="fa-solid fa-clock" style="color: #E65100; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">জীবনকাল/সংগ্রহ:</strong> <span style="color: #4A5B4C;">${harvest}</span></div>` : ''}
+              </div>
+
+              ${(treatment || preservation) ? `
+                <div style="background: #F1F8F1; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; color: #1B5E20; margin-bottom: 10px;">
+                  <i class="fa-regular fa-lightbulb" style="color: #2E7D32; margin-right: 5px;"></i>
+                  <strong>${treatment ? 'শোধন পরামর্শ' : 'সংরক্ষণ পদ্ধতি'}:</strong> ${treatment || preservation}
+                </div>` : ''}
+
+              <div onclick="openSeedInformationDetailByIndex(${idx})"
+                style="background: #E8F5E9; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #1B5E20; cursor: pointer; transition: background 0.2s;"
+                onmouseover="this.style.background='#C8E6C9'" onmouseout="this.style.background='#E8F5E9'">
+                <span>সম্পূর্ণ নির্দেশিকা ও বিস্তারিত দেখুন</span>
+                <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openSeedInformationDetailByIndex(idx) {
+      const seed = (currentFilteredWebSeeds && currentFilteredWebSeeds[idx]) || (webSeedData || [])[idx];
+      if (!seed) return;
+      openSeedInformationDetailWithItem(seed);
+    }
+
+    function openSeedInformationDetailWithItem(seed) {
+      const page = document.getElementById('seedInformationDetailPage');
+      const hName = document.getElementById('seedDetailHeaderName');
+      const hSub = document.getElementById('seedDetailHeaderSubtitle');
+      const content = document.getElementById('seedInformationDetailContent');
+      if (!page || !content) return;
+
+      const seedName = seed.seedName || 'বীজের বিস্তারিত';
+      const category = seed.category || '';
+      const sowing = seed.sowingTime || '';
+      const harvesting = seed.harvestingTime || seed.plantingTime || '';
+      const desc = seed.description || 'এই জাতের বীজ সংক্রান্ত বিস্তারিত তথ্য শীঘ্রই হালনাগাদ করা হবে।';
+      const treatment = seed.treatment || '';
+      const preservation = seed.preservation || '';
+      const imgUrl = (seed.imageUrl || '').trim();
+
+      if (hName) hName.innerText = seedName;
+      if (hSub) hSub.innerText = [category, sowing ? 'বপন: ' + sowing : ''].filter(Boolean).join(' • ');
+
+      const imgBlock = imgUrl
+        ? `<div style="height: 230px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
+             <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;"
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\\'><div style=\\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\\'><i class=\\'fa-solid fa-seedling\\' style=\\'font-size: 26px; color: #2E7D32;\\'></i></div><span style=\\'font-size: 13px; font-weight: 700; color: #1B5E20;\\'>${seedName}</span></div>';" />
+             ${category ? `<span style="position: absolute; top: 14px; left: 14px; background: rgba(46,125,50,0.92); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">${category}</span>` : ''}
+             ${sowing ? `<span style="position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.65); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);"><i class="fa-solid fa-calendar-day" style="color: #FFD54F; margin-right: 5px;"></i>বপন: ${sowing}</span>` : ''}
+           </div>`
+        : `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+             <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);">
+               <i class="fa-solid fa-seedling" style="font-size: 26px; color: #2E7D32;"></i>
+             </div>
+             <span style="font-size: 13px; font-weight: 700; color: #1B5E20;">${seedName}</span>
+           </div>`;
+
+      content.innerHTML = `
+        ${imgBlock}
+        <div style="padding: 18px 16px 36px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2 style="font-size: 22px; font-weight: 800; color: #1E281F; margin: 0;">${seedName}</h2>
+            ${category ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-seedling" style="font-size: 11px;"></i>${category}</span>` : ''}
+          </div>
+
+          ${(sowing || harvesting) ? `
+            <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 14px; padding: 14px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              ${sowing ? `
+                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: ${harvesting ? '10px' : '0'};">
+                  <div style="background: #E8F5E9; color: #2E7D32; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-seedling"></i></div>
+                  <div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">বপন বা রোপণ সময়সূচি</div>
+                    <div style="font-size: 13px; color: #4A5B4C; margin-top: 2px;">${sowing}</div>
+                  </div>
+                </div>` : ''}
+              ${(sowing && harvesting) ? `<div style="height: 1px; background: #E8EFE8; margin: 10px 0;"></div>` : ''}
+              ${harvesting ? `
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <div style="background: #FFF3E0; color: #E65100; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-clock"></i></div>
+                  <div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">জীবনকাল বা ফসল তোলার সময়</div>
+                    <div style="font-size: 13px; color: #4A5B4C; margin-top: 2px;">${harvesting}</div>
+                  </div>
+                </div>` : ''}
+            </div>` : ''}
+
+          <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 14px; padding: 16px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <div style="background: #E8F5E9; color: #2E7D32; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;"><i class="fa-solid fa-circle-info"></i></div>
+              <h3 style="font-size: 15px; font-weight: 800; color: #1E281F; margin: 0;">জাতের বৈশিষ্ট্য ও বিবরণ</h3>
+            </div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: #4A5B4C; margin: 0; word-break: break-word; white-space: pre-line;">${desc}</p>
+          </div>
+
+          ${treatment ? `
+            <div style="background: #E3F2FD; border: 1px solid rgba(21,101,192,0.25); border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <div style="background: #BBDEFB; color: #1565C0; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;"><i class="fa-solid fa-circle-check"></i></div>
+                <h3 style="font-size: 15px; font-weight: 800; color: #1565C0; margin: 0;">বীজ শোধন ও অঙ্কুরোদগম নির্দেশিকা</h3>
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #0D47A1; margin: 0; word-break: break-word; white-space: pre-line;">${treatment}</p>
+            </div>` : ''}
+
+          ${preservation ? `
+            <div style="background: #EFEBE9; border: 1px solid rgba(109,76,65,0.25); border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <div style="background: #D7CCC8; color: #6D4C41; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;"><i class="fa-solid fa-box-archive"></i></div>
+                <h3 style="font-size: 15px; font-weight: 800; color: #6D4C41; margin: 0;">বীজ সংরক্ষণ ও আর্দ্রতা ব্যবস্থাপনা</h3>
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #3E2723; margin: 0; word-break: break-word; white-space: pre-line;">${preservation}</p>
+            </div>` : ''}
+        </div>
+      `;
+
+      page.classList.add('active');
+      page.style.display = 'flex';
+      page.style.pointerEvents = 'auto';
+    }
+
+    function closeSeedInformationDetailPage() {
+      const page = document.getElementById('seedInformationDetailPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
     }
 
     let webSelectedDiseaseFile = null;
@@ -9367,6 +9771,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const bDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯', '.': '.' };
       return String(val).replace(/[0-9.]/g, d => bDigits[d] || d);
     }
+    const toBn = toBangla;
 
     // Global tab helper for named/indexed switching
     function setTab(nameOrIndex) {
@@ -14632,16 +15037,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             <form id="updateLoginIdForm" onsubmit="event.preventDefault(); submitLoginIdUpdateRequest();" style="display: flex; flex-direction: column; gap: 16px;">
               <div>
                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                  <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> নতুন মোবাইল নম্বর
+                  <i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 4px;"></i> নতুন মোবাইল নম্বর *
                 </label>
-                <input type="tel" id="newReqPhone" class="edit-profile-input" placeholder="01XXXXXXXXX (পরিবর্তন না চাইলে খালি রাখুন)" style="font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;" />
+                <input type="tel" id="newReqPhone" class="edit-profile-input" placeholder="01XXXXXXXXX" style="font-family: 'Roboto', Arial, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 1.5px;" />
               </div>
 
               <div>
                 <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                  <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> নতুন ইমেইল এড্রেস
+                  <i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 4px;"></i> নতুন ইমেইল এড্রেস *
                 </label>
-                <input type="email" id="newReqEmail" class="edit-profile-input" placeholder="example@email.com (পরিবর্তন না চাইলে খালি রাখুন)" style="font-family: 'Roboto', Arial, sans-serif;" />
+                <input type="email" id="newReqEmail" class="edit-profile-input" placeholder="example@email.com" style="font-family: 'Roboto', Arial, sans-serif;" />
               </div>
 
               <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #1E40AF; line-height: 1.4;">
@@ -14699,29 +15104,31 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const newPhone = phoneEl ? phoneEl.value.trim() : '';
       const newEmail = emailEl ? emailEl.value.trim().toLowerCase() : '';
 
+      // ১. Empty Field Validation (খালি ডেটা চেক):
+      if (!newPhone || !newEmail) {
+        showWarningDialog("দয়া করে ইমেইল এবং ফোন নাম্বার উভয়ই প্রদান করুন।", "সতর্কবার্তা");
+        return;
+      }
+
       const cleanCurrentPhone = (currentPhone || '').trim();
       const cleanCurrentEmail = (currentEmail || '').trim().toLowerCase();
 
-      // প্রথম ধাপ - কড়া লোকাল ভ্যালিডেশন (Must Change Both Data):
-      // ১. মোবাইল নম্বর চেক: বর্তমান নম্বর দিলে সাথে সাথে ব্লক
-      if (cleanCurrentPhone && (isSameBdPhone(newPhone, cleanCurrentPhone) || newPhone === cleanCurrentPhone)) {
-        showToast('আপনি আপনার বর্তমান মোবাইল নম্বরটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি নম্বর দিন।');
+      // ২. Current Data Check (বর্তমান ডেটা চেক):
+      const isSameAsCurrentPhone = cleanCurrentPhone && (isSameBdPhone(newPhone, cleanCurrentPhone) || newPhone === cleanCurrentPhone);
+      const isSameAsCurrentEmail = cleanCurrentEmail && (newEmail === cleanCurrentEmail);
+
+      if (isSameAsCurrentPhone || isSameAsCurrentEmail) {
+        showWarningDialog("আপনি বর্তমান প্রোফাইলে ব্যবহৃত তথ্য দিয়েছেন। অনুগ্রহ করে নতুন তথ্য দিন।", "সতর্কবার্তা");
         return;
       }
 
-      // ২. ইমেইল চেক: বর্তমান ইমেইল দিলে সাথে সাথে ব্লক
-      if (cleanCurrentEmail && newEmail === cleanCurrentEmail) {
-        showToast('আপনি আপনার বর্তমান ইমেইলটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি ইমেইল দিন।');
+      if (!/^01[3-9]\d{8}$/.test(newPhone)) {
+        showWarningDialog("অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশি মোবাইল নম্বর লিখুন (যেমন: 017xxxxxxxx)", "সতর্কবার্তা");
         return;
       }
 
-      if (newPhone && !/^01[3-9]\d{8}$/.test(newPhone)) {
-        showToast('অনুগ্রহ করে সঠিক ১১ ডিজিটের বাংলাদেশি মোবাইল নম্বর লিখুন (যেমন: 017xxxxxxxx)');
-        return;
-      }
-
-      if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-        showToast('অনুগ্রহ করে সঠিক ফরম্যাটের ইমেইল এড্রেস লিখুন।');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        showWarningDialog("অনুগ্রহ করে সঠিক ফরম্যাটের ইমেইল এড্রেস লিখুন।", "সতর্কবার্তা");
         return;
       }
 
@@ -14741,12 +15148,20 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           .get();
         if (!snapPending.empty) {
           closeModal('loginIdUpdateLoadingModal');
-          showToast('আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।');
+          showWarningDialog('আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।', 'সতর্কবার্তা');
           return;
         }
 
-        // দ্বিতীয় ধাপ - ফায়ারবেস ডুয়াল ইউনিক চেকিং (Global DB Check):
-        // Phone Query:
+        // ৩. Firebase Unique Check (আলাদা আলাদা ইউনিক চেক):
+        // ৩.১ ইমেইল চেক: ইনপুট দেওয়া নতুন ইমেইলটি অন্য কোনো ইউজারের অ্যাকাউন্টে ব্যবহৃত হচ্ছে কি না
+        const snapEmail = await db.collection('users').where('email', '==', newEmail).limit(1).get();
+        if (!snapEmail.empty && snapEmail.docs[0].id !== activeUid) {
+          closeModal('loginIdUpdateLoadingModal');
+          showWarningDialog("এই ইমেইলটি ইতিমধ্যে ব্যবহৃত হচ্ছে।", "সতর্কবার্তা");
+          return;
+        }
+
+        // ৩.২ ফোন নম্বর চেক: ইনপুট দেওয়া নতুন ফোন নাম্বারটি অন্য কারো আছে কি না
         let isPhoneTaken = false;
         const variants = [newPhone];
         if (newPhone.startsWith('01')) {
@@ -14756,12 +15171,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         for (const variant of variants) {
           const snapPhone = await db.collection('users').where('phone', '==', variant).limit(1).get();
-          if (!snapPhone.empty) {
+          if (!snapPhone.empty && snapPhone.docs[0].id !== activeUid) {
             isPhoneTaken = true;
             break;
           }
           const snapPhone2 = await db.collection('users').where('phoneNumber', '==', variant).limit(1).get();
-          if (!snapPhone2.empty) {
+          if (!snapPhone2.empty && snapPhone2.docs[0].id !== activeUid) {
             isPhoneTaken = true;
             break;
           }
@@ -14769,25 +15184,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         if (isPhoneTaken) {
           closeModal('loginIdUpdateLoadingModal');
-          showToast('এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।');
-          const conflictEl = document.getElementById('loginIdConflictMsg');
-          if (conflictEl) conflictEl.innerText = 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।';
-          openModal('loginIdConflictModal');
+          showWarningDialog("এই ফোন নাম্বারটি ইতিমধ্যে ব্যবহৃত হচ্ছে।", "সতর্কবার্তা");
           return;
         }
 
-        // Email Query:
-        const snapEmail = await db.collection('users').where('email', '==', newEmail).limit(1).get();
-        if (!snapEmail.empty) {
-          closeModal('loginIdUpdateLoadingModal');
-          showToast('এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।');
-          const conflictEl = document.getElementById('loginIdConflictMsg');
-          if (conflictEl) conflictEl.innerText = 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।';
-          openModal('loginIdConflictModal');
-          return;
-        }
-
-        // স্টেপ ৪: "AND" লজিকের চূড়ান্ত প্রয়োগ - সমস্ত ভ্যালিডেশন সফল হলে তবেই ফায়ারস্টোরে সেভ
+        // ৪. সাকসেস সাবমিট: সমস্ত ভ্যালিডেশন সফল হলে তবেই ফায়ারস্টোরে সেভ
         await db.collection('login_update_requests').add({
           userId: activeUid,
           userName: userName,
@@ -14806,7 +15207,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       } catch (err) {
         console.error('Login ID update request error:', err);
-        showToast('আবেদন জমা দিতে সমস্যা হয়েছে: ' + (err.message || 'অনুগ্রহ করে পুনরায় চেষ্টা করুন।'));
+        closeModal('loginIdUpdateLoadingModal');
+        showWarningDialog('আবেদন জমা দিতে সমস্যা হয়েছে: ' + (err.message || 'অনুগ্রহ করে পুনরায় চেষ্টা করুন।'), 'ত্রুটি');
       } finally {
         closeModal('loginIdUpdateLoadingModal');
       }

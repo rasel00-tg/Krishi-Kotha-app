@@ -998,4 +998,98 @@ class AdminFirestoreService {
 
     await db.collection('farming_calendar').doc(id).delete();
   }
+
+  // ==================== 10. SEED INFORMATION (বীজের তথ্য মনিটরিং) ====================
+  Stream<List<Map<String, dynamic>>> getSeedInformationStream({String? category}) {
+    final db = _db;
+    if (db == null) return const Stream.empty();
+
+    Query<Map<String, dynamic>> query = db.collection('seed_information');
+    if (category != null && category.isNotEmpty && category != 'সব') {
+      query = query.where('category', isEqualTo: category);
+    }
+
+    return query.snapshots(includeMetadataChanges: false).map((snapshot) {
+      final list = snapshot.docs.map((doc) {
+        final d = Map<String, dynamic>.from(doc.data());
+        d['id'] = doc.id;
+        return d;
+      }).toList();
+
+      list.sort((a, b) {
+        final nameA = (a['seedName'] ?? '').toString();
+        final nameB = (b['seedName'] ?? '').toString();
+        return nameA.compareTo(nameB);
+      });
+
+      return list;
+    });
+  }
+
+  /// সার্ভার-ফার্স্ট ফেচিং ও ক্যাশ বাইপাস (Force Server Fetch)
+  Future<List<Map<String, dynamic>>> getSeedInformationServer({String? category}) async {
+    final db = _db;
+    if (db == null) return [];
+
+    Query<Map<String, dynamic>> query = db.collection('seed_information');
+    if (category != null && category.isNotEmpty && category != 'সব') {
+      query = query.where('category', isEqualTo: category);
+    }
+
+    try {
+      final snapshot = await query.get(const GetOptions(source: Source.server));
+      final list = snapshot.docs.map((doc) {
+        final d = Map<String, dynamic>.from(doc.data());
+        d['id'] = doc.id;
+        return d;
+      }).toList();
+
+      list.sort((a, b) {
+        final nameA = (a['seedName'] ?? '').toString();
+        final nameB = (b['seedName'] ?? '').toString();
+        return nameA.compareTo(nameB);
+      });
+
+      return list;
+    } catch (e) {
+      debugPrint('Seed server fetch error, falling back: $e');
+      final snapshot = await query.get();
+      final list = snapshot.docs.map((doc) {
+        final d = Map<String, dynamic>.from(doc.data());
+        d['id'] = doc.id;
+        return d;
+      }).toList();
+      return list;
+    }
+  }
+
+  Future<void> addSeedInformation(Map<String, dynamic> data) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    final docId = data['id']?.toString().isNotEmpty == true
+        ? data['id'].toString()
+        : 'seed_${DateTime.now().millisecondsSinceEpoch}';
+
+    data['id'] = docId;
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+
+    await db.collection('seed_information').doc(docId).set(data);
+  }
+
+  Future<void> updateSeedInformation(String id, Map<String, dynamic> data) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await db.collection('seed_information').doc(id).set(data, SetOptions(merge: true));
+  }
+
+  Future<void> deleteSeedInformation(String id) async {
+    final db = _db;
+    if (db == null) throw Exception('ডেটাবেজ সংযুক্ত নেই।');
+
+    await db.collection('seed_information').doc(id).delete();
+  }
 }

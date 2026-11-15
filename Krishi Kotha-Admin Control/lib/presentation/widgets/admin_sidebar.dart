@@ -23,7 +23,10 @@ class _AdminSidebarState extends State<AdminSidebar> {
   void initState() {
     super.initState();
     _settingsExpanded = widget.selectedIndex == 8;
-    _homepageExpanded = widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11;
+    _homepageExpanded = widget.selectedIndex == 9 ||
+        widget.selectedIndex == 10 ||
+        widget.selectedIndex == 11 ||
+        widget.selectedIndex == 12;
   }
 
   @override
@@ -32,7 +35,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
     if (widget.selectedIndex == 8 && !_settingsExpanded) {
       _settingsExpanded = true;
     }
-    if ((widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11) && !_homepageExpanded) {
+    if ((widget.selectedIndex == 9 ||
+            widget.selectedIndex == 10 ||
+            widget.selectedIndex == 11 ||
+            widget.selectedIndex == 12) &&
+        !_homepageExpanded) {
       _homepageExpanded = true;
     }
   }
@@ -126,6 +133,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   _buildHomepageSubItem(),
                   _buildAgriExpertSubItem(),
                   _buildIncomeExpenseHistorySubItem(),
+                  _buildSeedMonitoringSubItem(),
                 ],
 
                 const SizedBox(height: 4),
@@ -291,7 +299,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
   }
 
   Widget _buildHomepageParentItem() {
-    final isHomepageActive = widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11;
+    final isHomepageActive = widget.selectedIndex == 9 || widget.selectedIndex == 10 || widget.selectedIndex == 11 || widget.selectedIndex == 12;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -533,6 +541,73 @@ class _AdminSidebarState extends State<AdminSidebar> {
                       ),
                       const Text(
                         'আয়-ব্যয় ও ডিলিট হিস্ট্রি',
+                        style: TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSeedMonitoringSubItem() {
+    final isSelected = widget.selectedIndex == 12;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, top: 2, bottom: 4, right: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => widget.onItemSelected(12),
+          hoverColor: AdminColors.sidebarHover,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AdminColors.sidebarActive : const Color(0x18FFFFFF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? const Color(0x44FFFFFF) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.spa_rounded,
+                  color: isSelected ? Colors.white : AdminColors.sidebarTextMuted,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'বীজের তথ্য মনিটরিং',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : AdminColors.sidebarText,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      const Text(
+                        'বীজের জাত ও রোপণ গাইডলাইন',
                         style: TextStyle(
                           color: Color(0xB3FFFFFF),
                           fontSize: 9.5,

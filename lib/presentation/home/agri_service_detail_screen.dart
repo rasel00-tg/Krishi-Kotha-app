@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
@@ -890,41 +891,96 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
     );
   }
 
-  // 13. SEED BANK
+  // 13. SEED BANK (Real Firestore StreamBuilder - No hardcoded demo data)
   Widget _buildSeedBankContent() {
-    return Column(
-      children: [
-        _buildInfoCard(
-          title: 'উন্নত ও প্রত্যায়িত জাতের বীজ পরিচিতি',
-          icon: Icons.spa_rounded,
-          color: const Color(0xFF2E7D32),
-          items: const [
-            'উফশী ও হাইব্রিড ধান: ব্রি ধান-২৮, ব্রি ধান-২৯, ব্রি ধান-৮৯, ব্রি ধান-৯২ ও বিনা ধান-২৫।',
-            'গম ও ভুট্টা: বারি গম-৩৩ (ব্লাস্ট প্রতিরোধী), হাইব্রিড ভুট্টা ডন-১১১ ও পায়োনিয়ার জাত।',
-            'আলু ও মসলা: ডায়মন্ড, কার্ডিনাল, বারি পেঁয়াজ-১, তাহেরপুরী জাত ও বারি আদা-২।',
-          ],
-        ),
-        const SizedBox(height: 12),
-        _buildInfoCard(
-          title: 'বীজ শোধন ও অঙ্কুরোদগম পরীক্ষা',
-          icon: Icons.verified_rounded,
-          color: const Color(0xFF1565C0),
-          items: const [
-            'বীজ শোধন: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন বা প্রোভেক্স মিশিয়ে ছায়ায় শুকিয়ে নিন।',
-            'অঙ্কুরোদগম পরীক্ষা: ১০০টি বীজ ভেজা কাপড়ে রেখে ৩ দিন পর গুনে শতকরা হার বের করুন (ন্যূনতম ৮০% হওয়া আবশ্যক)।',
-          ],
-        ),
-        const SizedBox(height: 12),
-        _buildInfoCard(
-          title: 'বীজ সংরক্ষণ ও ড্রাম ব্যবস্থাপনার নিয়ম',
-          icon: Icons.inventory_2_rounded,
-          color: const Color(0xFF6D4C41),
-          items: const [
-            'বীজ রোদে ভালোভাবে শুকিয়ে আর্দ্রতা ১০-১২ শতাংশের নিচে নামিয়ে আনুন।',
-            'বায়ুরোধী প্লাস্টিক ড্রাম বা মটকায় শুকনো নিমপাতা বা ছাই দিয়ে বীজ পূর্ণ করে মুখ শক্ত করে বাঁধুন।',
-          ],
-        ),
-      ],
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('seed_information').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF81C784).withOpacity(0.4), width: 1.5),
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Image.asset(
+                      'assets/icons/pnglogo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.spa_rounded, color: Color(0xFF2E7D32), size: 24),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF2E7D32)),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text('তথ্য লোডিং হচ্ছে...', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
+                ],
+              ),
+            ),
+          );
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE0E8E1)),
+            ),
+            child: const Center(
+              child: Text(
+                'কোনো বীজের তথ্য পাওয়া যায়নি।\nএডমিন প্যানেল থেকে নতুন বীজের তথ্য যোগ করা হলে এখানে প্রদর্শিত হবে।',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+            ),
+          );
+        }
+        return Column(
+          children: docs.map((doc) {
+            final data = doc.data();
+            final name = data['seedName'] ?? 'বীজের জাত';
+            final desc = data['description'] ?? '';
+            final sowing = data['sowingTime'] ?? '';
+            final treat = data['treatment'] ?? '';
+            final items = <String>[
+              if (sowing.toString().isNotEmpty) 'বপনের সময়: $sowing',
+              if (desc.toString().isNotEmpty) 'বৈশিষ্ট্য: $desc',
+              if (treat.toString().isNotEmpty) 'শোধন: $treat',
+            ];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildInfoCard(
+                title: name.toString(),
+                icon: Icons.spa_rounded,
+                color: const Color(0xFF2E7D32),
+                items: items.isNotEmpty ? items : ['বিস্তারিত তথ্য সংরক্ষিত রয়েছে।'],
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 

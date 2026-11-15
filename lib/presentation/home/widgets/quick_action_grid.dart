@@ -8,6 +8,7 @@ import '../../../data/services/firestore_service.dart';
 import '../agri_service_detail_screen.dart';
 import '../crop_calendar_screen.dart';
 import '../income_expense_screen.dart';
+import '../seed_information_page.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -528,14 +529,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.spa_rounded,
         color: const Color(0xFF2E7D32),
         bgColor: const Color(0xFFE8F5E9),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'seed_bank',
-          title: 'বীজের তথ্য',
-          icon: Icons.spa_rounded,
-          color: const Color(0xFF2E7D32),
-          bgColor: const Color(0xFFE8F5E9),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const SeedInformationPage(),
+            ),
+          );
+        },
       ),
       // ৫. কৃষি অফিস
       QuickActionItem(

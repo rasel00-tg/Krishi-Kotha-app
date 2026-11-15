@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_unified_dialog.dart';
+import '../../core/widgets/app_warning_dialog.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../providers/auth_provider.dart';
@@ -193,25 +194,51 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
     required String currentPhone,
     required String currentEmail,
   }) async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_isSubmitting) return;
-
     final cleanNewPhone = _newPhoneController.text.trim();
     final cleanNewEmail = _newEmailController.text.trim().toLowerCase();
-    final cleanCurrentPhone = currentPhone.trim();
-    final cleanCurrentEmail = currentEmail.trim().toLowerCase();
 
-    // প্রথম ধাপ - কড়া লোকাল ভ্যালিডেশন (Must Change Both Data):
-    // ১.১ মোবাইল নম্বর চেক: বর্তমান নম্বর দিলে সাথে সাথে ব্লক
-    if (cleanCurrentPhone.isNotEmpty &&
-        (_isSamePhone(cleanNewPhone, cleanCurrentPhone) || cleanNewPhone == cleanCurrentPhone)) {
-      _showWarningSnackBar('আপনি আপনার বর্তমান মোবাইল নম্বরটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি নম্বর দিন।');
+    // ১. Empty Field Validation (খালি ডেটা চেক):
+    // সাবমিট বাটনে ক্লিক করার সাথে সাথে চেক করো ইমেইল এবং ফোন নাম্বারের টেক্সটফিল্ড দুটি সম্পূর্ণ খালি কি না।
+    // যদি কোনো একটি ফিল্ড খালি থাকে, তবে সাবমিট ব্লক করে দাও এবং অ্যাপের গ্লোবাল পপআপের মাধ্যমে মেসেজ দেখাও:
+    // "দয়া করে ইমেইল এবং ফোন নাম্বার উভয়ই প্রদান করুন।"
+    if (cleanNewPhone.isEmpty || cleanNewEmail.isEmpty) {
+      showAppWarningDialog(
+        context,
+        title: 'সতর্কবার্তা',
+        message: 'দয়া করে ইমেইল এবং ফোন নাম্বার উভয়ই প্রদান করুন।',
+      );
       return;
     }
 
-    // ১.২ ইমেইল চেক: বর্তমান ইমেইল দিলে সাথে সাথে ব্লক
-    if (cleanCurrentEmail.isNotEmpty && cleanNewEmail == cleanCurrentEmail) {
-      _showWarningSnackBar('আপনি আপনার বর্তমান ইমেইলটি দিয়েছেন। অনুগ্রহ করে সম্পূর্ণ নতুন একটি ইমেইল দিন।');
+    // ফিল্ডের ফরম্যাট ভ্যালিডেশন (সঠিক ফরম্যাট নিশ্চিতকরণ)
+    if (!_formKey.currentState!.validate()) return;
+    if (_isSubmitting) return;
+
+    final cleanCurrentPhone = currentPhone.trim();
+    final cleanCurrentEmail = currentEmail.trim().toLowerCase();
+
+    // ২. Current Data Check (বর্তমান ডেটা চেক - লোকাল ও ফায়ারবেস Auth থেকে):
+    // ইউজারের বর্তমান প্রোফাইলে যে ইমেইল এবং ফোন নাম্বার সেভ করা আছে, তার সাথে ইনপুট করা নতুন ডেটা মিলিয়ে দেখো।
+    // যদি ইউজার তার বর্তমান ইমেইল বা বর্তমান ফোন নাম্বারই আবার ইনপুট হিসেবে দেয়, তবে সাথে সাথে সাবমিট ব্লক করে
+    // পপআপে হুবহু এই মেসেজটি দেখাও: "আপনি বর্তমান প্রোফাইলে ব্যবহৃত তথ্য দিয়েছেন। অনুগ্রহ করে নতুন তথ্য দিন।"
+    final fbUser = FirebaseAuth.instance.currentUser;
+    final fbPhone = (fbUser?.phoneNumber ?? '').trim();
+    final fbEmail = (fbUser?.email ?? '').trim().toLowerCase();
+
+    final isSameAsCurrentPhone = (cleanCurrentPhone.isNotEmpty &&
+            (_isSamePhone(cleanNewPhone, cleanCurrentPhone) || cleanNewPhone == cleanCurrentPhone)) ||
+        (fbPhone.isNotEmpty &&
+            (_isSamePhone(cleanNewPhone, fbPhone) || cleanNewPhone == fbPhone));
+
+    final isSameAsCurrentEmail = (cleanCurrentEmail.isNotEmpty && cleanNewEmail == cleanCurrentEmail) ||
+        (fbEmail.isNotEmpty && cleanNewEmail == fbEmail);
+
+    if (isSameAsCurrentPhone || isSameAsCurrentEmail) {
+      showAppWarningDialog(
+        context,
+        title: 'সতর্কবার্তা',
+        message: 'আপনি বর্তমান প্রোফাইলে ব্যবহৃত তথ্য দিয়েছেন। অনুগ্রহ করে নতুন তথ্য দিন।',
+      );
       return;
     }
 
@@ -220,17 +247,38 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
 
     final loadingCtrl = AppUnifiedDialog.showLoading(
       context,
-      message: 'তথ্য যাচাই ও রিকোয়েস্ট পাঠানো হচ্ছে....',
+      message: 'তথ্য যাচাই করা হচ্ছে...',
       barrierDismissible: false,
     );
 
     bool isSuccess = false;
-    String? errorMessage;
+    String? warningPopupMessage;
+    String? errorPopupMessage;
 
     try {
       final firestore = FirebaseFirestore.instance;
 
-      // ০. সার্ভার সাইড ডাবল-চেক: যদি ইতিমধ্যেই কোনো পেন্ডিং রিকোয়েস্ট থাকে তবে ব্লক করা
+      // ২.১ ফায়ারস্টোর ডেটাবেসে ইউজারের বর্তমান প্রোফাইল ডেটার সাথেও মিলিয়ে দেখা (অতিরিক্ত সতর্কতা)
+      if (activeUid.isNotEmpty && activeUid != 'guest_user') {
+        try {
+          final userDoc = await firestore.collection('users').doc(activeUid).get();
+          if (userDoc.exists) {
+            final uData = userDoc.data() ?? {};
+            final dbPhone = (uData['phone'] ?? uData['phoneNumber'] ?? '').toString().trim();
+            final dbEmail = (uData['email'] ?? '').toString().trim().toLowerCase();
+
+            if ((dbPhone.isNotEmpty && (_isSamePhone(cleanNewPhone, dbPhone) || cleanNewPhone == dbPhone)) ||
+                (dbEmail.isNotEmpty && cleanNewEmail == dbEmail)) {
+              warningPopupMessage = 'আপনি বর্তমান প্রোফাইলে ব্যবহৃত তথ্য দিয়েছেন। অনুগ্রহ করে নতুন তথ্য দিন।';
+              return;
+            }
+          }
+        } catch (e) {
+          debugPrint('Notice checking user doc in firestore: $e');
+        }
+      }
+
+      // ০. সার্ভার সাইড চেক: যদি ইতিমধ্যেই কোনো পেন্ডিং রিকোয়েস্ট থাকে তবে ব্লক করা
       final existingPending = await firestore
           .collection('login_update_requests')
           .where('userId', isEqualTo: activeUid)
@@ -239,11 +287,24 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
           .get();
 
       if (existingPending.docs.isNotEmpty) {
-        throw 'আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।';
+        warningPopupMessage = 'আপনার একটি রিকোয়েস্ট বর্তমানে অপেক্ষমাণ (Pending) রয়েছে। এটি অনুমোদন বা বাতিল না হওয়া পর্যন্ত আপনি নতুন কোনো রিকোয়েস্ট করতে পারবেন না।';
+        return;
       }
 
-      // দ্বিতীয় ধাপ - ফায়ারবেস ডুয়াল ইউনিক চেকিং (Global DB Check):
-      // Phone Query: নম্বরটিকে চেক করো। যদি ডেটাবেজে থাকে তবে রিজেক্ট:
+      // ৩. Firebase Unique Check (আলাদা আলাদা ইউনিক চেক):
+      // ৩.১ ইমেইল চেক: ইনপুট দেওয়া নতুন ইমেইলটি অন্য কোনো ইউজারের অ্যাকাউন্টে ব্যবহৃত হচ্ছে কি না
+      final emailQuery = await firestore
+          .collection('users')
+          .where('email', isEqualTo: cleanNewEmail)
+          .limit(1)
+          .get();
+
+      if (emailQuery.docs.isNotEmpty && emailQuery.docs.first.id != activeUid) {
+        warningPopupMessage = 'এই ইমেইলটি ইতিমধ্যে ব্যবহৃত হচ্ছে।';
+        return;
+      }
+
+      // ৩.২ ফোন নম্বর চেক: ইনপুট দেওয়া নতুন ফোন নাম্বারটি অন্য কারো আছে কি না
       bool isPhoneTaken = false;
       final phoneVariants = <String>{
         cleanNewPhone,
@@ -257,7 +318,7 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
             .where('phone', isEqualTo: variant)
             .limit(1)
             .get();
-        if (q1.docs.isNotEmpty) {
+        if (q1.docs.isNotEmpty && q1.docs.first.id != activeUid) {
           isPhoneTaken = true;
           break;
         }
@@ -267,28 +328,18 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
             .where('phoneNumber', isEqualTo: variant)
             .limit(1)
             .get();
-        if (q2.docs.isNotEmpty) {
+        if (q2.docs.isNotEmpty && q2.docs.first.id != activeUid) {
           isPhoneTaken = true;
           break;
         }
       }
 
       if (isPhoneTaken) {
-        throw 'এই মোবাইল নম্বরটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে সম্পূর্ণ নতুন ও ইউনিক নম্বর দিন।';
+        warningPopupMessage = 'এই ফোন নাম্বারটি ইতিমধ্যে ব্যবহৃত হচ্ছে।';
+        return;
       }
 
-      // Email Query: ইমেইলটিকে চেক করো। যদি ডেটাবেজে থাকে তবে রিজেক্ট:
-      final emailQuery = await firestore
-          .collection('users')
-          .where('email', isEqualTo: cleanNewEmail)
-          .limit(1)
-          .get();
-
-      if (emailQuery.docs.isNotEmpty) {
-        throw 'এই ইমেইলটি ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে। দয়া করে নতুন ইমেইল দিন।';
-      }
-
-      // চতুর্থ ধাপ - চূড়ান্ত সাবমিশন (Final Execution):
+      // ৪. সাকসেস সাবমিট: সমস্ত ভ্যালিডেশন সফলভাবে পাস করার পরেই রিকোয়েস্টটি ফায়ারবেসে সাবমিট করা
       final requestId = 'req_${DateTime.now().millisecondsSinceEpoch}';
       final requestData = {
         'requestId': requestId,
@@ -313,16 +364,9 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
     } catch (e) {
       debugPrint('Error submitting login ID update request: $e');
       if (e is String) {
-        errorMessage = e;
+        errorPopupMessage = e;
       } else {
-        final errStr = e.toString().replaceAll('Exception:', '').trim();
-        if (errStr.contains('ইতিমধ্যে অন্য একটি একাউন্টে ব্যবহৃত হচ্ছে') ||
-            errStr.contains('অপেক্ষমাণ (Pending)') ||
-            errStr.contains('কোনো পরিবর্তন শনাক্ত হয়নি')) {
-          errorMessage = errStr;
-        } else {
-          errorMessage = 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।';
-        }
+        errorPopupMessage = 'একটি অনাকাঙ্ক্ষিত ত্রুটি ঘটেছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন।';
       }
     } finally {
       // টাচ লক প্রতিরোধে লোডিং ডায়ালগ নিরাপদভাবে ডিসমিস করা
@@ -333,46 +377,27 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
       }
     }
 
-    if (isSuccess && mounted) {
-      // লোডিং ডায়ালগ সম্পূর্ণ ডিসমিস হওয়ার পর pending.json অ্যানিমেশনসহ ডায়ালগ ওপেন করা
-      // যাতে কোনো অবস্থাতেই লোডিং ক্লিনিংয়ের কারণে সাকসেস পপআপ বন্ধ না হয়ে যায়
+    if (!mounted) return;
+
+    if (warningPopupMessage != null) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      showAppWarningDialog(
+        context,
+        title: 'সতর্কবার্তা',
+        message: warningPopupMessage,
+      );
+    } else if (isSuccess) {
       await Future.delayed(const Duration(milliseconds: 150));
       if (!mounted) return;
       await _showPendingSuccessDialog(context);
-    } else if (errorMessage != null && mounted) {
-      await Future.delayed(const Duration(milliseconds: 150));
+    } else if (errorPopupMessage != null) {
+      await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  errorMessage,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFFC62828),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-      await AppUnifiedDialog.showError(
+      showAppWarningDialog(
         context,
-        title: 'অনুরোধ ব্যর্থ হয়েছে',
-        message: errorMessage,
-        buttonText: 'আবার চেষ্টা করুন',
+        title: 'ত্রুটি',
+        message: errorPopupMessage,
       );
     }
   }
