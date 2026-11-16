@@ -175,26 +175,96 @@
     }
 
     .menu-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      margin-bottom: 6px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 5px;
       display: flex;
       align-items: center;
       gap: 12px;
       cursor: pointer;
       color: #DCE7DC;
-      transition: background 0.2s, color 0.2s;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border: 1px solid transparent;
+      user-select: none;
     }
 
     .menu-item:hover {
       background-color: var(--sidebar-hover);
       color: #fff;
+      transform: translateX(3px) scale(1.015);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
     }
 
     .menu-item.active {
-      background-color: var(--sidebar-active);
-      color: #fff;
-      font-weight: 600;
+      background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%) !important;
+      color: #fff !important;
+      font-weight: 700;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 4px 14px rgba(46, 125, 50, 0.42) !important;
+    }
+
+    .menu-item.active::after {
+      content: '';
+      position: absolute;
+      right: 10px;
+      width: 4px;
+      height: 18px;
+      background: #FFFFFF;
+      border-radius: 2px;
+    }
+
+    .menu-icon-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.22s ease;
+    }
+
+    .menu-item.active .menu-icon-badge {
+      background: rgba(255, 255, 255, 0.22) !important;
+      color: #FFFFFF !important;
+    }
+
+    .menu-item.active .menu-icon-badge svg {
+      stroke: #FFFFFF !important;
+    }
+
+    .submenu-container {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease, margin 0.28s ease;
+      padding-left: 12px;
+      margin: 0;
+      border-left: 2px solid rgba(76, 175, 80, 0.3);
+      margin-left: 18px;
+    }
+
+    .submenu-container.open {
+      max-height: 350px;
+      opacity: 1;
+      margin: 4px 0 8px 18px;
+    }
+
+    .submenu-item {
+      padding: 9px 12px;
+      font-size: 13px;
+      border-radius: 10px;
+      margin-bottom: 3px;
+      position: relative;
+    }
+
+    .submenu-item.active {
+      background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%) !important;
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 3px 10px rgba(46, 125, 50, 0.35) !important;
     }
 
     .menu-item i {
@@ -972,162 +1042,254 @@
     </div>
 
     <ul class="menu">
+      <!-- ০. ড্যাশবোর্ড -->
       <li class="menu-item active" onclick="switchTab('dashboard')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="7" height="9" x="3" y="3" rx="1.5" />
-          <rect width="7" height="5" x="14" y="3" rx="1.5" />
-          <rect width="7" height="9" x="14" y="12" rx="1.5" />
-          <rect width="7" height="5" x="3" y="16" rx="1.5" />
-        </svg>
-        <span>ড্যাশবোর্ড</span>
+        <div class="menu-icon-badge" style="background: rgba(76, 175, 80, 0.16); color: #4CAF50;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="9" x="3" y="3" rx="1.5" />
+            <rect width="7" height="5" x="14" y="3" rx="1.5" />
+            <rect width="7" height="9" x="14" y="12" rx="1.5" />
+            <rect width="7" height="5" x="3" y="16" rx="1.5" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">ড্যাশবোর্ড</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">ওভারভিউ ও সারাংশ</div>
+        </div>
       </li>
-      <!-- হোমপেজ মেইন মেনু ও ফসল ক্যালেন্ডার সাব-মেনু (ড্যাশবোর্ডের ঠিক নিচে) -->
+
+      <!-- হোমপেজ মেইন মেনু ও সাব-মেনু (স্মুথ স্লাইড-ডাউন এনিমেশন) -->
       <li class="menu-item" id="menuHomepageParent" onclick="toggleHomepageSubmenu(event)">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-        <span style="flex: 1;">হোমপেজ</span>
+        <div class="menu-icon-badge" style="background: rgba(46, 125, 50, 0.18); color: #2E7D32;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">হোমপেজ</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">হোমপেজ ফিচার কন্ট্রোল</div>
+        </div>
         <i class="fa-solid fa-chevron-down" id="homepageCaret"
-          style="font-size: 11px; margin-left: 6px; transition: transform 0.2s;"></i>
+          style="font-size: 11px; margin-left: 6px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.75;"></i>
       </li>
-      <div id="homepageSubmenu" style="display: none; padding-left: 18px; margin: 2px 0 6px 0;">
-        <li class="menu-item submenu-item" id="submenuItemCropCalendar" onclick="switchTab('farming-calendar')"
-          style="padding: 10px 14px; font-size: 13px; border-radius: 8px;">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-            <line x1="16" x2="16" y1="2" y2="6" />
-            <line x1="8" x2="8" y1="2" y2="6" />
-            <line x1="3" x2="21" y1="10" y2="10" />
-          </svg>
-          <span>ফসল ক্যালেন্ডার মনিটরিং</span>
+
+      <!-- ২. Sub-menu Slide-down Animated Container -->
+      <div id="homepageSubmenu" class="submenu-container">
+        <li class="menu-item submenu-item" id="submenuItemCropCalendar" onclick="switchTab('farming-calendar')">
+          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(38, 166, 154, 0.16); color: #26A69A; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+              <line x1="16" x2="16" y1="2" y2="6" />
+              <line x1="8" x2="8" y1="2" y2="6" />
+              <line x1="3" x2="21" y1="10" y2="10" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">চাষ ক্যালেন্ডার মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">১২ মাসের চাষাবাদ গাইডলাইন</div>
+          </div>
         </li>
-        <li class="menu-item submenu-item" id="submenuItemAgriExpert" onclick="switchTab('agri-expert')"
-          style="padding: 10px 14px; font-size: 13px; border-radius: 8px; margin-top: 2px;">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-            <path
-              d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-          </svg>
-          <span>কৃষি বিশেষজ্ঞ</span>
+        <li class="menu-item submenu-item" id="submenuItemAgriExpert" onclick="switchTab('agri-expert')">
+          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(66, 165, 245, 0.16); color: #42A5F5; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+              <path
+                d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">কৃষি বিশেষজ্ঞ</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">বিশেষজ্ঞ পরামর্শ সহায়তা</div>
+          </div>
         </li>
         <li class="menu-item submenu-item" id="submenuItemIncomeExpenseHistory"
-          onclick="switchTab('income-expense-history')"
-          style="padding: 10px 14px; font-size: 13px; border-radius: 8px; margin-top: 2px;">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
-            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
-            <path d="M12 6v2m0 8v2" />
-          </svg>
-          <span>কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল</span>
+          onclick="switchTab('income-expense-history')">
+          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(255, 167, 38, 0.16); color: #FFA726; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+              <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+              <path d="M12 6v2m0 8v2" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">আয়-ব্যয় ও ডিলিট হিস্ট্রি</div>
+          </div>
         </li>
-        <li class="menu-item submenu-item" id="submenuItemSeedMonitoring" onclick="switchTab('seed-monitoring')"
-          style="padding: 10px 14px; font-size: 13px; border-radius: 8px; margin-top: 2px;">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path
-              d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
-          </svg>
-          <span>বীজের তথ্য মনিটরিং</span>
+        <li class="menu-item submenu-item" id="submenuItemSeedMonitoring" onclick="switchTab('seed-monitoring')">
+          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(102, 187, 106, 0.16); color: #66BB6A; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">বীজের তথ্য মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">বীজের জাত ও রোপণ গাইডলাইন</div>
+          </div>
         </li>
       </div>
+
+      <!-- ১. ইউজার কন্ট্রোল -->
       <li class="menu-item" id="menuItemUserControl" onclick="switchTab('user-control')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-        <span>ইউজার কন্ট্রোল</span>
-      </li>
-      <li class="menu-item" onclick="switchTab('notifications')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        </svg>
-        <span>নোটিফিকেশন কন্ট্রোল</span>
-      </li>
-      <li class="menu-item" onclick="switchTab('market')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-          <path d="M3 6h18" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-        <span>বাজার দর আপডেট</span>
-      </li>
-      <li class="menu-item" onclick="switchTab('crops')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 20h10" />
-          <path d="M10 20c0-4 1.5-7.5 4-10" />
-          <path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z" />
-          <path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z" />
-        </svg>
-        <span>ফসলের তথ্য (Crops)</span>
-      </li>
-      <li class="menu-item" onclick="switchTab('pests')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="8" height="14" x="8" y="6" rx="4" />
-          <path d="m19 7-3 2" />
-          <path d="m5 7 3 2" />
-          <path d="m19 19-3-2" />
-          <path d="m5 19 3-2" />
-          <path d="M20 13h-4" />
-          <path d="M4 13h4" />
-          <path d="m10 4 1 2" />
-          <path d="m14 4-1 2" />
-        </svg>
-        <span>রোগবালাই ও দমন</span>
-      </li>
-      <li class="menu-item" id="menuItemSupport" onclick="switchTab('support')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path
-            d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />
-          <path d="M21 16v2a3 3 0 0 1-3 3h-5" />
-        </svg>
-        <span>সাপোর্ট ও যোগাযোগ</span>
-      </li>
-      <li class="menu-item" onclick="switchTab('krishimate-ai')">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="18" height="12" x="3" y="6" rx="2" />
-          <path d="M9 11h.01" />
-          <path d="M15 11h.01" />
-          <path d="M11 15h2" />
-          <path d="M12 2v4" />
-          <circle cx="12" cy="2" r="1" />
-        </svg>
-        <span>KrishiMate AI</span>
-      </li>
-      <li class="menu-item" id="menuSettingsParent" onclick="toggleSettingsSubmenu(event)">
-        <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path
-            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-          <circle cx="12" cy="12" r="3" />
-        </svg>
-        <span style="flex: 1;">অ্যাপস সেটিংস</span>
-        <i class="fa-solid fa-chevron-down" id="settingsCaret"
-          style="font-size: 11px; margin-left: 6px; transition: transform 0.2s;"></i>
-      </li>
-      <div id="settingsSubmenu" style="display: none; padding-left: 18px; margin: 2px 0 6px 0;">
-        <li class="menu-item submenu-item" id="submenuItemPrivacy" onclick="switchTab('settings-privacy')"
-          style="padding: 10px 14px; font-size: 13px; border-radius: 8px;">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+        <div class="menu-icon-badge" style="background: rgba(66, 165, 245, 0.16); color: #42A5F5;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
-          <span>গোপনীয় নীতি</span>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">ইউজার কন্ট্রোল</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">ব্যবহারকারী একাউন্ট ও স্ট্যাটাস</div>
+        </div>
+      </li>
+
+      <!-- ২. নোটিফিকেশন কন্ট্রোল -->
+      <li class="menu-item" onclick="switchTab('notifications')">
+        <div class="menu-icon-badge" style="background: rgba(255, 112, 67, 0.16); color: #FF7043;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">নোটিফিকেশন কন্ট্রোল</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">লাইভ পুশ ও সতর্কতা</div>
+        </div>
+      </li>
+
+      <!-- ৩. বাজার দর আপডেট -->
+      <li class="menu-item" onclick="switchTab('market')">
+        <div class="menu-icon-badge" style="background: rgba(255, 167, 38, 0.16); color: #FFA726;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">বাজার দর আপডেট</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">পণ্যের মূল্য ইনপুট ও ট্রেন্ড</div>
+        </div>
+      </li>
+
+      <!-- ৪. ফসলের তথ্য -->
+      <li class="menu-item" onclick="switchTab('crops')">
+        <div class="menu-icon-badge" style="background: rgba(102, 187, 106, 0.16); color: #66BB6A;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 20h10" />
+            <path d="M10 20c0-4 1.5-7.5 4-10" />
+            <path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z" />
+            <path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">ফসলের তথ্য (Crops)</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">ফসল ব্যবস্থাপনা নির্দেশিকা</div>
+        </div>
+      </li>
+
+      <!-- ৫. রোগবালাই ও দমন -->
+      <li class="menu-item" onclick="switchTab('pests')">
+        <div class="menu-icon-badge" style="background: rgba(239, 83, 80, 0.16); color: #EF5350;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="8" height="14" x="8" y="6" rx="4" />
+            <path d="m19 7-3 2" />
+            <path d="m5 7 3 2" />
+            <path d="m19 19-3-2" />
+            <path d="m5 19 3-2" />
+            <path d="M20 13h-4" />
+            <path d="M4 13h4" />
+            <path d="m10 4 1 2" />
+            <path d="m14 4-1 2" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">রোগবালাই ও দমন</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">বালাই নির্দেশিকা (Pests)</div>
+        </div>
+      </li>
+
+      <!-- ৬. সাপোর্ট ও যোগাযোগ -->
+      <li class="menu-item" id="menuItemSupport" onclick="switchTab('support')">
+        <div class="menu-icon-badge" style="background: rgba(171, 71, 188, 0.16); color: #AB47BC;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />
+            <path d="M21 16v2a3 3 0 0 1-3 3h-5" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">সাপোর্ট ও যোগাযোগ</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">কন্টাক্ট সেটিংস ও টিকিট</div>
+        </div>
+      </li>
+
+      <!-- ৭. KrishiMate AI -->
+      <li class="menu-item" onclick="switchTab('krishimate-ai')">
+        <div class="menu-icon-badge" style="background: rgba(38, 198, 218, 0.16); color: #26C6DA;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="12" x="3" y="6" rx="2" />
+            <path d="M9 11h.01" />
+            <path d="M15 11h.01" />
+            <path d="M11 15h2" />
+            <path d="M12 2v4" />
+            <circle cx="12" cy="2" r="1" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">KrishiMate AI</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">এআই প্রেসক্রিপশন ও হিস্ট্রি</div>
+        </div>
+      </li>
+
+      <!-- অ্যাপস সেটিংস মেইন মেনু ও সাব-মেনু -->
+      <li class="menu-item" id="menuSettingsParent" onclick="toggleSettingsSubmenu(event)">
+        <div class="menu-icon-badge" style="background: rgba(126, 87, 194, 0.16); color: #7E57C2;">
+          <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13.5px; font-weight: 600;">অ্যাপস সেটিংস</div>
+          <div style="font-size: 10px; opacity: 0.75; line-height: 1.2;">কনফিগারেশন ও পলিসি</div>
+        </div>
+        <i class="fa-solid fa-chevron-down" id="settingsCaret"
+          style="font-size: 11px; margin-left: 6px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.75;"></i>
+      </li>
+
+      <!-- Settings Sub-menu Animated Container -->
+      <div id="settingsSubmenu" class="submenu-container">
+        <li class="menu-item submenu-item" id="submenuItemPrivacy" onclick="switchTab('settings-privacy')">
+          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(41, 182, 246, 0.16); color: #29B6F6; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">গোপনীয় নীতি</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">Privacy Policy এডিটর</div>
+          </div>
         </li>
       </div>
     </ul>
@@ -1155,151 +1317,162 @@
 
       <!-- ================= TAB 1: DASHBOARD ================= -->
       <div id="tab-dashboard" class="tab-content active">
-        <div class="banner">
-          <div>
-            <h2>স্বাগতম! কৃষি কথা অ্যাডমিন কন্ট্রোল সেন্টারে</h2>
-            <p>এখান থেকে মোবাইল অ্যাপের নোটিফিকেশন, বাজার দর ও ফসল ডাটা রিয়েল-টাইমে আপডেট করা যাবে।</p>
-          </div>
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.85;">
-            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-            <circle cx="12" cy="12" r="2" />
-            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
-          </svg>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-header">
-              <span>নিবন্ধিত কৃষক</span>
-              <div class="stat-icon" style="background: var(--primary-container); color: var(--primary);">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
+        <!-- ১. Topbar with Scroll Fade Effect -->
+        <div id="dashboardWelcomeBanner" class="banner" style="background: linear-gradient(135deg, #162D1A 0%, #1B5E20 50%, #2E7D32 100%); border-radius: 18px; padding: 22px 28px; box-shadow: 0 8px 24px rgba(27,94,32,0.22); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.2s ease, transform 0.2s ease;">
+          <div style="flex: 1;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.25);">
+              <span style="width: 7px; height: 7px; border-radius: 50%; background: #69F0AE; display: inline-block;"></span>
+              লাইভ সিস্টেম কানেক্টেড
             </div>
-            <div class="stat-value" id="stat-farmers">০</div>
-            <div class="stat-sub"><span
-                style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); margin-right: 4px;"></span>
-              ৬৪ জেলা সিঙ্ক</div>
+            <h2 style="color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.3px;">কৃষি কথা এডমিন ড্যাশবোর্ডে স্বাগতম</h2>
+            <p style="color: rgba(255,255,255,0.9); font-size: 13.5px; margin: 0; line-height: 1.4;">কৃষি কথা ডিজিটাল কৃষি প্ল্যাটফর্মের সামগ্রিক কার্যক্রম, কৃষক একাউন্ট মনিটরিং ও রিয়েল-টাইম তথ্য নিয়ন্ত্রণ কেন্দ্র।</p>
           </div>
-
-          <div class="stat-card">
-            <div class="stat-header">
-              <span>সক্রিয় বাজার দর পণ্য</span>
-              <div class="stat-icon" style="background: var(--secondary-container); color: var(--secondary);">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                  <path d="M3 6h18" />
-                  <path d="M16 10a4 4 0 0 1-8 0" />
-                </svg>
-              </div>
-            </div>
-            <div class="stat-value" id="stat-market">০</div>
-            <div class="stat-sub"><span
-                style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--secondary); margin-right: 4px;"></span>
-              পাইকারি ও খুচরা দর</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-header">
-              <span>নথিভুক্ত ফসল ক্যাটালগ</span>
-              <div class="stat-icon" style="background: #FFF3E0; color: #E65100;">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 20h10" />
-                  <path d="M10 20c0-4 1.5-7.5 4-10" />
-                  <path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z" />
-                  <path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z" />
-                </svg>
-              </div>
-            </div>
-            <div class="stat-value" id="stat-crops">০</div>
-            <div class="stat-sub"><span
-                style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #E65100; margin-right: 4px;"></span>
-              রোগবালাই ও জাত</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-header">
-              <span>প্রচারিত নোটিফিকেশন</span>
-              <div class="stat-icon" style="background: var(--alert-critical-bg); color: var(--alert-critical);">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                </svg>
-              </div>
-            </div>
-            <div class="stat-value" id="stat-notifs">০</div>
-            <div class="stat-sub"><span
-                style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--alert-critical); margin-right: 4px;"></span>
-              পুশ অ্যালার্ট সচল</div>
+          <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px;">
+            <i class="fa-solid fa-shapes"></i>
           </div>
         </div>
 
-        <h3 style="margin-bottom: 12px; font-size: 16px;">দ্রুত অ্যাকশন (Quick Actions)</h3>
-        <div class="quick-actions">
-          <button class="btn btn-primary" onclick="switchTab('notifications')"><svg class="app-icon" viewBox="0 0 24 24"
-              width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path d="M5 12h14" />
-              <path d="M12 5v14" />
-            </svg> নতুন নোটিফিকেশন পাঠান</button>
-          <button class="btn btn-secondary" onclick="openMarketModal()"><svg class="app-icon" viewBox="0 0 24 24"
-              width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
-              <circle cx="7" cy="7" r=".5" fill="currentColor" />
-            </svg> বাজার দর আপডেট করুন</button>
-          <button class="btn btn-outline" onclick="openCropModal()"><svg class="app-icon" viewBox="0 0 24 24" width="14"
-              height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path d="M7 20h10" />
-              <path d="M10 20c0-4 1.5-7.5 4-10" />
-              <path d="M14 10c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z" />
-              <path d="M14 10c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6Z" />
-            </svg> নতুন ফসল যোগ করুন</button>
-          <button class="btn btn-outline" onclick="switchTab('support')"><svg class="app-icon" viewBox="0 0 24 24"
-              width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />
-              <path d="M21 16v2a3 3 0 0 1-3 3h-5" />
-            </svg> সাপোর্ট ও টিকিট</button>
-          <button class="btn btn-primary" style="background: #1B5E20; border-color: #1B5E20;"
-            onclick="seedInitialDatabase()"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" x2="12" y1="3" y2="15" />
-            </svg> ডেটাবেজ সিড করুন (Seed Database)</button>
+        <!-- ২. Merged Single View: Vibrant Summary Cards with District Filter -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <!-- Card 1: একটিভ একাউন্ট (Royal Indigo / Blue Gradient) with District Filter -->
+          <div style="background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(99, 102, 241, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-circle-check" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+              <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">একটিভ একাউন্ট</span>
+              <div style="background: rgba(255,255,255,0.22); border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); padding: 2px 6px;">
+                <select id="dashboardDistrictFilter" onchange="filterDashboardDistrict(this.value)" style="background: transparent; color: #fff; border: none; font-size: 11.5px; font-weight: 700; outline: none; cursor: pointer; font-family: inherit;">
+                  <option value="all" style="color: #333;">সকল জেলা</option>
+                </select>
+              </div>
+            </div>
+            <div id="dashboardActiveAccountsCount" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ জন</div>
+            <div id="dashboardActiveSubtitle" style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+              <i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> সারাদেশে সক্রিয়
+            </div>
+          </div>
+
+          <!-- Card 2: মোট নিবন্ধিত কৃষক (Mint / Emerald Green Gradient) -->
+          <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(16, 185, 129, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-users" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+              <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">নিবন্ধিত কৃষক</span>
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+                <i class="fa-solid fa-users"></i>
+              </div>
+            </div>
+            <div id="stat-farmers" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ জন</div>
+            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+              সারাদেশে মোট কৃষক ডাটাবেজ
+            </div>
+          </div>
+
+          <!-- Card 3: সক্রিয় বাজার দর পণ্য (Amber / Bright Orange Gradient) -->
+          <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(245, 158, 11, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-store" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+              <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">বাজার দর পণ্য</span>
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+                <i class="fa-solid fa-store"></i>
+              </div>
+            </div>
+            <div id="stat-market" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ টি</div>
+            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+              বিভিন্ন হাট ও বাজারের লাইভ দর
+            </div>
+          </div>
+
+          <!-- Card 4: নথিভুক্ত ফসল ও জাত (Deep Purple / Violet Gradient) -->
+          <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(139, 92, 246, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-seedling" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+              <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">ফসলের জাত ও গাইড</span>
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+                <i class="fa-solid fa-seedling"></i>
+              </div>
+            </div>
+            <div id="stat-crops" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ টি</div>
+            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+              নথিভুক্ত ফসল ও রোগবালাই
+            </div>
+          </div>
         </div>
 
+        <!-- ৩ & ৪. Middle Section: Monthly Growth Chart & Support & Communication Card -->
+        <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; margin-bottom: 24px;">
+          <!-- Animated Circular / Doughnut Chart with Tooltips -->
+          <div class="panel-card" style="padding: 22px; border-radius: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+                  ব্যবহারকারী একাউন্ট বিশ্লেষণ (Circular Chart)
+                </h3>
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--text-muted);">সক্রিয়তা, নতুন নিবন্ধন ও একাউন্ট স্ট্যাটাসের সুবিন্যস্ত পাই/ডোনাট চার্ট</p>
+              </div>
+              <div id="dashboardGrowthBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9;">
+                <i class="fa-solid fa-verified-user"></i> লাইভ সিঙ্ক
+              </div>
+            </div>
+            <div id="dashboardGrowthChartContainer" style="min-height: 200px; position: relative;">
+              <!-- Dynamic Doughnut Chart SVG -->
+            </div>
+          </div>
+
+          <!-- Support & Communication Card -->
+          <div class="panel-card" style="padding: 22px; border-radius: 18px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1.5px solid #0D9488;" onclick="switchTab('support')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(13,148,136,0.28);">
+                  <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                  <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ</h3>
+                  <span style="font-size: 11.5px; color: var(--text-muted);">Support & Communication</span>
+                </div>
+              </div>
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: #E0F2F1; color: #0D9488; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+              <div style="background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 12px; padding: 10px 12px;">
+                <div style="font-size: 11px; color: #E65100; font-weight: 600;">অপেক্ষমান টিকিট</div>
+                <div id="dashboardPendingTicketsCount" style="font-size: 20px; font-weight: 800; color: #E65100; margin-top: 2px;">০ টি</div>
+              </div>
+              <div style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; padding: 10px 12px;">
+                <div style="font-size: 11px; color: #2E7D32; font-weight: 600;">সমাধানকৃত বার্তা</div>
+                <div id="dashboardAnsweredTicketsCount" style="font-size: 20px; font-weight: 800; color: #2E7D32; margin-top: 2px;">০ টি</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #0D9488; font-weight: 600;">
+              <i class="fa-solid fa-hand-pointer"></i>
+              <span>ক্লিক করে সরাসরি কৃষক সহায়তা ইনবক্সে যান</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- গোছানো টেবিল লেআউট (Neat Table Layout) -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-          <div class="panel-card">
-            <div class="panel-header">
-              <h3>সাম্প্রতিক নোটিফিকেশন</h3>
-              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;"
-                onclick="switchTab('notifications')">সব দেখুন</button>
+          <div class="panel-card" style="border-radius: 16px; padding: 0; overflow: hidden;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-bell" style="color: #D32F2F;"></i>
+                সাম্প্রতিক নোটিফিকেশন (রিয়েল-টাইম)
+              </h3>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('notifications')">সব দেখুন</button>
             </div>
-            <div id="dashboardNotifList"></div>
+            <div id="dashboardNotifList" style="padding: 6px 0;"></div>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-header">
-              <h3>লাইভ বাজার দর আপডেট</h3>
-              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;"
-                onclick="switchTab('market')">সব আপডেট</button>
+          <div class="panel-card" style="border-radius: 16px; padding: 0; overflow: hidden;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-store" style="color: #F59E0B;"></i>
+                লাইভ বাজার দর তালিকা (রিয়েল-টাইম)
+              </h3>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('market')">সব আপডেট</button>
             </div>
-            <div id="dashboardMarketList"></div>
+            <div id="dashboardMarketList" style="padding: 6px 0;"></div>
           </div>
         </div>
       </div>
@@ -2469,7 +2642,8 @@
             <div
               style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span
-                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সংরক্ষিত হিসাব</span>
+                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সংরক্ষিত
+                হিসাব</span>
               <div
                 style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
                 <i class="fa-solid fa-boxes-stacked"></i>
@@ -2488,7 +2662,8 @@
             <div
               style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span
-                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সর্বমোট কৃষক আয়</span>
+                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সর্বমোট
+                কৃষক আয়</span>
               <div
                 style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
                 <i class="fa-solid fa-arrow-trend-up"></i>
@@ -2507,7 +2682,8 @@
             <div
               style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span
-                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সর্বমোট কৃষক ব্যয়</span>
+                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">সর্বমোট
+                কৃষক ব্যয়</span>
               <div
                 style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
                 <i class="fa-solid fa-arrow-trend-down"></i>
@@ -2526,7 +2702,8 @@
             <div
               style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span
-                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">ডিলিট হিসাব</span>
+                style="font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 0.2px;">ডিলিট
+                হিসাব</span>
               <div
                 style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px; backdrop-filter: blur(4px);">
                 <i class="fa-solid fa-trash-can"></i>
@@ -2598,11 +2775,7 @@
             <p>উন্নত ও প্রত্যয়িত জাতের বীজ পরিচিতি, বীজ শোধন, অঙ্কুরোদগম ও সংরক্ষণ নির্দেশিকা কেন্দ্রীয় ব্যবস্থাপনা।
               এখান থেকে নতুন বীজ যোগ, সংশোধন ও অপসারণ করা যাবে।</p>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <button type="button" class="btn" onclick="initAdminSeedMonitoringLiveSync(true)"
-              style="background: rgba(255,255,255,0.22); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 9px 15px; border-radius: 10px; cursor: pointer; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.12);">
-              <i class="fa-solid fa-arrows-rotate"></i> সার্ভার ফেচ ও লাইভ সিঙ্ক
-            </button>
+          <div>
             <button class="btn btn-primary" onclick="openAddSeedModal()"
               style="background: #fff; color: #1B5E20; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
               <i class="fa-solid fa-plus"></i> নতুন বীজ যোগ করুন
@@ -4650,13 +4823,14 @@
       const sub = document.getElementById('homepageSubmenu');
       const caret = document.getElementById('homepageCaret');
       if (!sub) return;
-      const isClosed = sub.style.display === 'none' || !sub.style.display;
-      if (isClosed) {
-        sub.style.display = 'block';
+      sub.style.display = '';
+      const isOpen = sub.classList.contains('open');
+      if (!isOpen) {
+        sub.classList.add('open');
         if (caret) caret.style.transform = 'rotate(180deg)';
         switchTab('farming-calendar');
       } else {
-        sub.style.display = 'none';
+        sub.classList.remove('open');
         if (caret) caret.style.transform = 'rotate(0deg)';
       }
     }
@@ -4666,13 +4840,14 @@
       const sub = document.getElementById('settingsSubmenu');
       const caret = document.getElementById('settingsCaret');
       if (!sub) return;
-      const isClosed = sub.style.display === 'none' || !sub.style.display;
-      if (isClosed) {
-        sub.style.display = 'block';
+      sub.style.display = '';
+      const isOpen = sub.classList.contains('open');
+      if (!isOpen) {
+        sub.classList.add('open');
         if (caret) caret.style.transform = 'rotate(180deg)';
         switchTab('settings-privacy');
       } else {
-        sub.style.display = 'none';
+        sub.classList.remove('open');
         if (caret) caret.style.transform = 'rotate(0deg)';
       }
     }
@@ -4709,6 +4884,7 @@
         if (tabKey === 'dashboard') {
           renderNotifications();
           renderMarketList();
+          if (typeof renderDashboardEnhanced === 'function') renderDashboardEnhanced();
         } else if (tabKey === 'notifications') {
           renderNotifications();
         } else if (tabKey === 'market') {
@@ -4746,7 +4922,7 @@
         } else if (tabKey === 'farming-calendar') {
           const sub = document.getElementById('homepageSubmenu');
           const caret = document.getElementById('homepageCaret');
-          if (sub) sub.style.display = 'block';
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
           if (caret) caret.style.transform = 'rotate(180deg)';
           const subItem = document.getElementById('submenuItemCropCalendar');
           if (subItem) subItem.classList.add('active');
@@ -4756,7 +4932,7 @@
         } else if (tabKey === 'agri-expert') {
           const sub = document.getElementById('homepageSubmenu');
           const caret = document.getElementById('homepageCaret');
-          if (sub) sub.style.display = 'block';
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
           if (caret) caret.style.transform = 'rotate(180deg)';
           const subItem = document.getElementById('submenuItemAgriExpert');
           if (subItem) subItem.classList.add('active');
@@ -4765,7 +4941,7 @@
         } else if (tabKey === 'income-expense-history') {
           const sub = document.getElementById('homepageSubmenu');
           const caret = document.getElementById('homepageCaret');
-          if (sub) sub.style.display = 'block';
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
           if (caret) caret.style.transform = 'rotate(180deg)';
           const subItem = document.getElementById('submenuItemIncomeExpenseHistory');
           if (subItem) subItem.classList.add('active');
@@ -4779,7 +4955,7 @@
         } else if (tabKey === 'seed-monitoring') {
           const sub = document.getElementById('homepageSubmenu');
           const caret = document.getElementById('homepageCaret');
-          if (sub) sub.style.display = 'block';
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
           if (caret) caret.style.transform = 'rotate(180deg)';
           const subItem = document.getElementById('submenuItemSeedMonitoring');
           if (subItem) subItem.classList.add('active');
@@ -4793,7 +4969,7 @@
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
-          if (sub) sub.style.display = 'block';
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
           if (caret) caret.style.transform = 'rotate(180deg)';
           const subItem = document.getElementById('submenuItemPrivacy');
           if (subItem) subItem.classList.add('active');
@@ -7491,12 +7667,245 @@
       }
     }
 
+    // ==================== DASHBOARD ENHANCED (Vibrant Cards, District Filter, Circular Chart) ====================
+    let dashboardSelectedDistrict = 'all';
+
+    function filterDashboardDistrict(val) {
+      dashboardSelectedDistrict = val;
+      renderDashboardEnhanced();
+    }
+
+    function isUserInDistrict(u, dist) {
+      if (!dist || dist === 'all' || dist === 'সকল জেলা') return true;
+      const clean = s => (s || '')
+        .replace(/জেলা/g, '')
+        .replace(/বিভাগ/g, '')
+        .replace(/\s+/g, '')
+        .replace(/য়/g, 'য়')
+        .replace(/ড়/g, 'ড়')
+        .toLowerCase()
+        .trim();
+      const target = clean(dist);
+      const uDist = clean(u.rawDistrict || u.district || '');
+      const uUpazila = clean(u.upazila || '');
+      return uDist.includes(target) || target.includes(uDist) || uUpazila.includes(target);
+    }
+
+    function renderDashboardEnhanced() {
+      // 1. District dropdown population with expanded 64 districts
+      const distSelect = document.getElementById('dashboardDistrictFilter');
+      if (distSelect) {
+        const bdDistricts = [
+          'ঢাকা', 'গাজীপুর', 'নারায়ণগঞ্জ', 'নরসিংদী', 'মানিকগঞ্জ', 'মুন্সীগঞ্জ', 'টাঙ্গাইল', 'কিশোরগঞ্জ', 'ফরিদপুর', 'মাদারীপুর', 'শরীয়তপুর', 'গোপালগঞ্জ', 'রাজবাড়ী',
+          'চট্টগ্রাম', 'কক্সবাজার', 'কুমিল্লা', 'ব্রাহ্মণবাড়িয়া', 'চাঁদপুর', 'ফেনী', 'নোয়াখালী', 'লক্ষ্মীপুর', 'রাঙ্গামাটি', 'খাগড়াছড়ি', 'বান্দরবান',
+          'রাজশাহী', 'বগুড়া', 'পাবনা', 'সিরাজগঞ্জ', 'নাটোর', 'নওগাঁ', 'চাঁপাইনবাবগঞ্জ', 'জয়পুরহাট',
+          'খুলনা', 'যশোর', 'সাতক্ষীরা', 'বাগেরহাট', 'ঝিনাইদহ', 'কুষ্টিয়া', 'মাগুরা', 'মেহেরপুর', 'নড়াইল', 'চুয়াডাঙ্গা',
+          'বরিশাল', 'পটুয়াখালী', 'ভোলা', 'পিরোজপুর', 'বরগুনা', 'ঝালকাঠি',
+          'সিলেট', 'মৌলভীবাজার', 'হবিগঞ্জ', 'সুনামগঞ্জ',
+          'রংপুর', 'দিনাজপুর', 'কুড়িগ্রাম', 'গাইবান্ধা', 'নীলফামারী', 'পঞ্চগড়', 'ঠাকুরগাঁও', 'লালমনিরহাট',
+          'ময়মনসিংহ', 'জামালপুর', 'নেত্রকোণা', 'শেরপুর'
+        ];
+        const currentVal = dashboardSelectedDistrict;
+        const districtsSet = new Set(bdDistricts);
+        if (Array.isArray(users)) {
+          users.forEach(u => {
+            const d = (u.rawDistrict || u.district || '').split(',').pop().trim();
+            if (d && d !== 'অনুল্লিখিত') districtsSet.add(d);
+          });
+        }
+        if (distSelect.options.length <= 1) {
+          distSelect.innerHTML = '<option value="all" style="color: #333;">সকল জেলা</option>' +
+            Array.from(districtsSet).map(d => `<option value="${d}" style="color: #333;" ${currentVal === d ? 'selected' : ''}>${d}</option>`).join('');
+        }
+      }
+
+      // 2. Active Accounts
+      const totalUsers = users ? users.length : 0;
+      const filteredUsers = (dashboardSelectedDistrict === 'all' || dashboardSelectedDistrict === 'সকল জেলা')
+        ? (users || [])
+        : (users || []).filter(u => isUserInDistrict(u, dashboardSelectedDistrict));
+
+      const activeUsers = filteredUsers.filter(u => u.status === 'active' || !u.status);
+      const activeCount = activeUsers.length;
+      const totalFiltered = filteredUsers.length;
+      const activePercent = totalFiltered > 0 ? Math.round((activeCount / totalFiltered) * 100) : 0;
+
+      const activeEl = document.getElementById('dashboardActiveAccountsCount');
+      if (activeEl) activeEl.innerText = toBangla(activeCount) + ' জন';
+
+      const subEl = document.getElementById('dashboardActiveSubtitle');
+      if (subEl) {
+        if (dashboardSelectedDistrict === 'all' || dashboardSelectedDistrict === 'সকল জেলা') {
+          subEl.innerHTML = `<i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> সারাদেশে সক্রিয় (${toBangla(activePercent)}%)`;
+        } else {
+          subEl.innerHTML = `<i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> ${dashboardSelectedDistrict} জেলায় (${toBangla(activePercent)}%) <span onclick="filterDashboardDistrict('all')" style="cursor: pointer; text-decoration: underline; margin-left: 6px; font-weight: 700;">রিসেট</span>`;
+        }
+      }
+
+      // 3. Registered Farmers
+      const farmersEl = document.getElementById('stat-farmers');
+      if (farmersEl) farmersEl.innerText = toBangla(totalUsers) + ' জন';
+
+      // 4. Market Commodities
+      const marketEl = document.getElementById('stat-market');
+      if (marketEl) marketEl.innerText = toBangla(marketPrices ? marketPrices.length : 0) + ' টি';
+
+      // 5. Crops
+      const cropsEl = document.getElementById('stat-crops');
+      if (cropsEl) cropsEl.innerText = toBangla(crops ? crops.length : 0) + ' টি';
+
+      // 6. Support & Communication Card
+      const pendingTickets = (tickets || []).filter(t => t.status === 'pending');
+      const answeredTickets = (tickets || []).filter(t => t.status === 'answered');
+      const pendingEl = document.getElementById('dashboardPendingTicketsCount');
+      if (pendingEl) pendingEl.innerText = toBangla(pendingTickets.length) + ' টি';
+      const ansEl = document.getElementById('dashboardAnsweredTicketsCount');
+      if (ansEl) ansEl.innerText = toBangla(answeredTickets.length) + ' / ' + toBangla((tickets || []).length);
+
+      // 7. Render Animated Circular Doughnut Chart with Tooltips
+      renderDashboardGrowthChart();
+    }
+
+    function renderDashboardGrowthChart() {
+      const container = document.getElementById('dashboardGrowthChartContainer');
+      if (!container) return;
+
+      const totalUsers = users ? users.length : 0;
+      const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
+
+      const activeCount = (users || []).filter(u => u.status === 'active' || !u.status).length;
+      const newUsersCount = (users || []).filter(u => {
+        if (!u.createdAt) return false;
+        const cd = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+        return cd >= thirtyDaysAgo;
+      }).length;
+      const blockedCount = (users || []).filter(u => u.status === 'temporary_blocked').length;
+      const suspendedCount = (users || []).filter(u => u.status === 'permanently_suspended').length;
+
+      const rawSlices = [
+        { label: 'সক্রিয় একাউন্ট', count: activeCount, color: '#2E7D32', grad1: '#1B5E20', grad2: '#4CAF50' },
+        { label: 'নতুন নিবন্ধন (৩০ দিন)', count: newUsersCount, color: '#1976D2', grad1: '#0D47A1', grad2: '#42A5F5' },
+        { label: 'সাময়িক স্থগিত', count: blockedCount, color: '#E65100', grad1: '#BF360C', grad2: '#FF9800' },
+        { label: 'স্থায়ী স্থগিত', count: suspendedCount, color: '#C62828', grad1: '#B71C1C', grad2: '#EF5350' }
+      ];
+
+      const slices = rawSlices.filter(s => s.count > 0);
+      if (slices.length === 0) {
+        slices.push({ label: 'মোট ব্যবহারকারী', count: Math.max(totalUsers, 1), color: '#2E7D32', grad1: '#1B5E20', grad2: '#4CAF50' });
+      }
+
+      const totalSliceCount = slices.reduce((acc, s) => acc + s.count, 0);
+      const size = 190;
+      const center = size / 2;
+      const radius = 68;
+      const strokeWidth = 24;
+      const circumference = 2 * Math.PI * radius;
+
+      let accumulatedPercent = 0;
+      let circleSegments = '';
+
+      slices.forEach((slice, idx) => {
+        const percent = totalSliceCount > 0 ? (slice.count / totalSliceCount) : 0;
+        const dashArray = `${percent * circumference} ${circumference}`;
+        const dashOffset = -(accumulatedPercent * circumference);
+        accumulatedPercent += percent;
+
+        circleSegments += `
+          <circle cx="${center}" cy="${center}" r="${radius}" fill="none"
+            stroke="${slice.color}" stroke-width="${strokeWidth}"
+            stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}"
+            transform="rotate(-90 ${center} ${center})"
+            style="transition: stroke-width 0.22s ease, opacity 0.22s ease; cursor: pointer;"
+            onmouseover="showChartTooltip(event, '${slice.label}', ${slice.count}, ${percent * 100}, '${slice.color}')"
+            onmouseout="hideChartTooltip()" />
+        `;
+      });
+
+      const legendHtml = slices.map(s => {
+        const pct = totalSliceCount > 0 ? ((s.count / totalSliceCount) * 100).toFixed(1) : '0.0';
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; margin-bottom: 5px; border-radius: 10px; background: #FAFAFA; border: 1px solid #ECEFF1; transition: background 0.18s ease;"
+               onmouseover="this.style.background='rgba(46,125,50,0.06)'" onmouseout="this.style.background='#FAFAFA'">
+            <div style="display: flex; align-items: center; gap: 9px;">
+              <span style="width: 11px; height: 11px; border-radius: 50%; background: ${s.color}; display: inline-block; box-shadow: 0 1px 4px rgba(0,0,0,0.2);"></span>
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${s.label}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${toBangla(s.count)} জন</span>
+              <span style="font-size: 11px; font-weight: 700; color: ${s.color}; background: rgba(0,0,0,0.04); padding: 2px 7px; border-radius: 6px;">${toBangla(pct)}%</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap; padding: 10px 0;">
+          <div style="position: relative; width: ${size}px; height: ${size}px; flex-shrink: 0;">
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+              ${circleSegments}
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center;">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">সর্বমোট</span>
+              <span style="font-size: 24px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">${toBangla(totalUsers)}</span>
+              <span style="font-size: 10.5px; color: var(--text-muted);">কৃষক একাউন্ট</span>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 220px;">
+            ${legendHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // Interactive Floating Tooltip for Circular Chart
+    window.showChartTooltip = function(e, label, count, percent, color) {
+      let tt = document.getElementById('dashboardChartTooltip');
+      if (!tt) {
+        tt = document.createElement('div');
+        tt.id = 'dashboardChartTooltip';
+        tt.style.cssText = 'position: fixed; z-index: 99999; pointer-events: none; background: #1E293B; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); display: none; transition: opacity 0.15s ease; border-left: 4px solid #4CAF50;';
+        document.body.appendChild(tt);
+      }
+      tt.style.borderLeftColor = color;
+      tt.innerHTML = `<div style="font-weight: 700; color: ${color}; margin-bottom: 2px;">● ${label}</div><div style="color: #E2E8F0; font-weight: 600;">সংখ্যা: ${toBangla(count)} জন (${toBangla(percent.toFixed(1))}%)</div>`;
+      tt.style.left = (e.clientX + 14) + 'px';
+      tt.style.top = (e.clientY - 35) + 'px';
+      tt.style.display = 'block';
+      tt.style.opacity = '1';
+    };
+
+    window.hideChartTooltip = function() {
+      const tt = document.getElementById('dashboardChartTooltip');
+      if (tt) {
+        tt.style.opacity = '0';
+        tt.style.display = 'none';
+      }
+    };
+
+    // Scroll Fade Effect for Topbar Banner
+    document.addEventListener('DOMContentLoaded', () => {
+      const contentArea = document.querySelector('.content-area');
+      if (contentArea) {
+        contentArea.addEventListener('scroll', () => {
+          const banner = document.getElementById('dashboardWelcomeBanner');
+          if (!banner) return;
+          const scrollY = contentArea.scrollTop;
+          const opacity = Math.max(0, Math.min(1, 1 - (scrollY / 120)));
+          banner.style.opacity = opacity;
+          banner.style.transform = `translateY(-${Math.min(20, scrollY * 0.15)}px)`;
+          banner.style.display = opacity <= 0.02 ? 'none' : 'flex';
+        });
+      }
+    });
+
     // ==================== USERS & TICKETS ====================
     function renderUsers() {
       const uList = document.getElementById('usersList');
       const tList = document.getElementById('ticketsList');
       document.getElementById('stat-farmers').innerText = users.length;
       document.getElementById('usersCountBadge').innerText = 'মোট: ' + users.length + ' জন';
+
+      renderDashboardEnhanced();
 
       if (uList) {
         if (users.length === 0) {
@@ -8919,12 +9328,12 @@
                 </div>
                 <div>
                   ${isPwdLocked
-          ? `<span style="background: #FFEBEE; color: #C62828; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #FFCDD2;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i>লকড (${toBnDigits(pwdLockMinutes)} মি. বাকি)</span>`
-          : `<span style="background: #E8F5E9; color: #2E7D32; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #C8E6C9;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>লক নেই (স্বাভাবিক)</span>`
-        }
+            ? `<span style="background: #FFEBEE; color: #C62828; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #FFCDD2;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i>লকড (${toBnDigits(pwdLockMinutes)} মি. বাকি)</span>`
+            : `<span style="background: #E8F5E9; color: #2E7D32; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #C8E6C9;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>লক নেই (স্বাভাবিক)</span>`
+          }
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
         <!-- 3. Account Actions Bar (Activate, Temp Block, Suspend, Reset Lock) -->
         <div class="panel-card" style="padding: 20px 24px; border-radius: 16px; margin-bottom: 20px;">
@@ -10979,6 +11388,10 @@
     let adminSeedSearchQuery = '';
     let adminSeedFirstLoadDone = false;
 
+    // ৩. Dynamic Category Management: ডিফল্ট ও ফায়ারস্টোর ক্যাটাগরি তালিকা
+    const defaultSeedCategories = ['ধান', 'গম ও ভুট্টা', 'সবজি', 'মসলা', 'ডাল ও তৈলবীজ', 'ফলমূল', 'অন্যান্য'];
+    let adminSeedCategories = []; // { id: string|null, name: string }
+
     async function initAdminSeedMonitoringLiveSync(forceServer = false, isInitial = false) {
       if (!window.firebase || !firebase.firestore) return;
 
@@ -10987,6 +11400,45 @@
         showAdminLoading('বীজের তথ্য লোড হচ্ছে...', 'সার্ভার থেকে লাইভ বীজের তথ্য ফেচ করা হচ্ছে...');
       }
 
+      // ১. Dynamic Category Real-time Sync from Firestore
+      try {
+        firebase.firestore().collection('seed_categories').onSnapshot((catSnap) => {
+          const list = [];
+          const seen = new Set();
+          if (catSnap && !catSnap.empty) {
+            catSnap.forEach(doc => {
+              const d = doc.data() || {};
+              const name = (d.name || '').trim();
+              if (name && !seen.has(name)) {
+                seen.add(name);
+                list.push({ id: doc.id, name: name });
+              }
+            });
+          }
+          defaultSeedCategories.forEach(def => {
+            if (!seen.has(def)) {
+              seen.add(def);
+              list.push({ id: null, name: def });
+            }
+          });
+          adminSeedCategories = list;
+          renderAdminSeedCategoryDropdowns();
+        }, (catErr) => {
+          console.warn('Firestore seed_categories snapshot error:', catErr);
+          if (adminSeedCategories.length === 0) {
+            adminSeedCategories = defaultSeedCategories.map(c => ({ id: null, name: c }));
+            renderAdminSeedCategoryDropdowns();
+          }
+        });
+      } catch (catErr) {
+        console.warn('Seed categories sync error:', catErr);
+        if (adminSeedCategories.length === 0) {
+          adminSeedCategories = defaultSeedCategories.map(c => ({ id: null, name: c }));
+          renderAdminSeedCategoryDropdowns();
+        }
+      }
+
+      // ২. Seed Information Real-time Sync
       try {
         firebase.firestore().collection('seed_information').onSnapshot((snapshot) => {
           const list = [];
@@ -11020,6 +11472,128 @@
           hideAdminLoading();
         }
       }
+    }
+
+    function renderAdminSeedCategoryDropdowns() {
+      const selectModal = document.getElementById('adminSeedSelectCategory');
+      const selectFilter = document.getElementById('adminSeedCategoryFilter');
+
+      if (selectModal) {
+        const curVal = selectModal.value;
+        let html = '<option value="" disabled' + (!curVal ? ' selected' : '') + '>ক্যাটাগরি নির্বাচন করুন</option>';
+        adminSeedCategories.forEach(c => {
+          const isSelected = curVal === c.name;
+          const badge = c.id ? ' (কাস্টম)' : '';
+          html += `<option value="${c.name}" data-cat-id="${c.id || ''}" ${isSelected ? 'selected' : ''}>${c.name}${badge}</option>`;
+        });
+        selectModal.innerHTML = html;
+        onAdminSeedCategorySelectChange();
+      }
+
+      if (selectFilter) {
+        const curFilter = adminSeedCategoryFilter || 'সব';
+        let html = `<option value="সব" ${curFilter === 'সব' ? 'selected' : ''}>সব ক্যাটাগরি</option>`;
+        adminSeedCategories.forEach(c => {
+          html += `<option value="${c.name}" ${curFilter === c.name ? 'selected' : ''}>${c.name}</option>`;
+        });
+        selectFilter.innerHTML = html;
+      }
+    }
+
+    function onAdminSeedCategorySelectChange() {
+      const sel = document.getElementById('adminSeedSelectCategory');
+      const delBtn = document.getElementById('adminSeedCatDeleteBtn');
+      if (!sel || !delBtn) return;
+      const opt = sel.options[sel.selectedIndex];
+      const catId = opt ? opt.getAttribute('data-cat-id') : null;
+      if (catId) {
+        delBtn.style.display = 'inline-block';
+      } else {
+        delBtn.style.display = 'none';
+      }
+    }
+
+    // ৩. Dynamic Category Management: নতুন ক্যাটাগরি পপআপ ও সেভ
+    function openAddSeedCategoryModal() {
+      const inp = document.getElementById('adminNewSeedCategoryInput');
+      if (inp) inp.value = '';
+      const m = document.getElementById('adminAddSeedCategoryModal');
+      if (m) m.style.display = 'flex';
+      setTimeout(() => { if (inp) inp.focus(); }, 120);
+    }
+
+    function closeAddSeedCategoryModal() {
+      const m = document.getElementById('adminAddSeedCategoryModal');
+      if (m) m.style.display = 'none';
+    }
+
+    async function submitNewSeedCategory() {
+      const inp = document.getElementById('adminNewSeedCategoryInput');
+      const name = inp ? inp.value.trim() : '';
+      if (!name) {
+        showAdminError('নাম আবশ্যক!', 'দয়া করে একটি বৈধ ক্যাটাগরির নাম লিখুন।');
+        return;
+      }
+
+      showAdminLoading('ক্যাটাগরি যুক্ত হচ্ছে...', 'ক্লাউড ডেটাবেসে নতুন ক্যাটাগরি সংরক্ষণ চলছে...');
+      try {
+        const docRef = await firebase.firestore().collection('seed_categories').add({
+          name: name,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        hideAdminLoading();
+        closeAddSeedCategoryModal();
+
+        if (!adminSeedCategories.some(c => c.name === name)) {
+          adminSeedCategories.unshift({ id: docRef.id, name: name });
+        }
+        renderAdminSeedCategoryDropdowns();
+
+        const sel = document.getElementById('adminSeedSelectCategory');
+        if (sel) {
+          sel.value = name;
+          onAdminSeedCategorySelectChange();
+        }
+
+        // ৬. Global Custom Popup Integration
+        showAdminSuccess('সফল হয়েছে!', `"${name}" ক্যাটাগরি সফলভাবে ডাটাবেসে যুক্ত হয়েছে!`);
+      } catch (err) {
+        hideAdminLoading();
+        showAdminError('যুক্ত করতে ব্যর্থ!', err.message || err);
+      }
+    }
+
+    // ৩. Dynamic Category Management: ক্যাটাগরি ডিলিট
+    function confirmDeleteSelectedCategory() {
+      const sel = document.getElementById('adminSeedSelectCategory');
+      if (!sel) return;
+      const opt = sel.options[sel.selectedIndex];
+      const catId = opt ? opt.getAttribute('data-cat-id') : null;
+      const catName = sel.value;
+      if (!catId) return;
+
+      // ৬. Global Custom Popup Confirmation
+      showAdminConfirm(
+        'ক্যাটাগরি মুছে ফেলা',
+        `আপনি কি নিশ্চিত যে "${catName}" ক্যাটাগরি ডাটাবেস থেকে মুছে ফেলতে চান?`,
+        async () => {
+          showAdminLoading('ক্যাটাগরি মুছে ফেলা হচ্ছে...');
+          try {
+            await firebase.firestore().collection('seed_categories').doc(catId).delete();
+            adminSeedCategories = adminSeedCategories.filter(c => c.id !== catId);
+            renderAdminSeedCategoryDropdowns();
+            if (sel) sel.value = '';
+            onAdminSeedCategorySelectChange();
+            hideAdminLoading();
+            showAdminSuccess('সফল হয়েছে!', `"${catName}" ক্যাটাগরি সফলভাবে মুছে ফেলা হয়েছে!`);
+          } catch (err) {
+            hideAdminLoading();
+            showAdminError('মুছতে সমস্যা হয়েছে!', err.message || err);
+          }
+        },
+        'মুছে ফেলুন',
+        true
+      );
     }
 
     function renderAdminSeedTable() {
@@ -11057,12 +11631,12 @@
 
       if (filtered.length === 0) {
         tbody.innerHTML = `
-      <tr >
-      <td colspan="6" style="text-align: center; padding: 40px; color: #78909C;">
-        <i class="fa-solid fa-seedling" style="font-size: 32px; color: #B0BEC5; margin-bottom: 8px; display: block;"></i>
-        কোনো বীজের তথ্য পাওয়া যায়নি
-      </td>
-          </tr>
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #78909C;">
+          <i class="fa-solid fa-seedling" style="font-size: 32px; color: #B0BEC5; margin-bottom: 8px; display: block;"></i>
+          কোনো বীজের তথ্য পাওয়া যায়নি
+        </td>
+      </tr>
       `;
         return;
       }
@@ -11075,42 +11649,42 @@
         const desc = item.description || 'কোনো অতিরিক্ত বিবরণ নেই।';
 
         return `
-      <tr style = "border-bottom: 1px solid #EEEEEE; transition: background 0.15s;" >
-            <td style="padding: 10px 14px;">
-              <div style="width: 48px; height: 48px; border-radius: 8px; background: #E8F5E9; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                ${img ? `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<i class=\\'fa-solid fa-seedling\\' style=\\'color:#2E7D32; font-size:20px;\\'></i>';">` : `<i class="fa-solid fa-seedling" style="color: #2E7D32; font-size: 20px;"></i>`}
-              </div>
-            </td>
-            <td style="padding: 10px 14px;">
-              <div style="font-weight: 700; color: #1B5E20; font-size: 13.5px;">${name}</div>
-              ${item.harvestingTime ? `<div style="font-size: 11px; color: #546E7A;">জীবনকাল: ${item.harvestingTime}</div>` : ''}
-            </td>
-            <td style="padding: 10px 14px;">
-              <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">${cat}</span>
-            </td>
-            <td style="padding: 10px 14px; color: #D84315; font-weight: 600; font-size: 12px;">
-              <i class="fa-regular fa-calendar-days" style="margin-right: 4px; color: #E65100;"></i>${sowing}
-            </td>
-            <td style="padding: 10px 14px; max-width: 220px;">
-              <div style="font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc}</div>
-            </td>
-            <td style="padding: 10px 14px; text-align: center;">
-              <div style="display: inline-flex; gap: 6px;">
-                <button type="button" class="action-btn" title="বিস্তারিত মেমো" onclick="openAdminSeedMemo('${item.id}')"
-                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #C8E6C9; background: #E8F5E9; color: #2E7D32; cursor: pointer;">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-                <button type="button" class="action-btn" title="সম্পাদনা করুন" onclick="openEditSeedModal('${item.id}')"
-                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #BBDEFB; background: #E3F2FD; color: #1565C0; cursor: pointer;">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button type="button" class="action-btn" title="মুছে ফেলুন" onclick="deleteAdminSeed('${item.id}', '${name}')"
-                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #FFCDD2; background: #FFEBEE; color: #D32F2F; cursor: pointer;">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+      <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.15s;">
+        <td style="padding: 10px 14px;">
+          <div style="width: 48px; height: 48px; border-radius: 8px; background: #E8F5E9; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            ${img ? `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<i class=\\'fa-solid fa-seedling\\' style=\\'color:#2E7D32; font-size:20px;\\'></i>';">` : `<i class="fa-solid fa-seedling" style="color: #2E7D32; font-size: 20px;"></i>`}
+          </div>
+        </td>
+        <td style="padding: 10px 14px;">
+          <div style="font-weight: 700; color: #1B5E20; font-size: 13.5px;">${name}</div>
+          ${item.harvestingTime ? `<div style="font-size: 11px; color: #546E7A;">জীবনকাল: ${item.harvestingTime}</div>` : ''}
+        </td>
+        <td style="padding: 10px 14px;">
+          <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">${cat}</span>
+        </td>
+        <td style="padding: 10px 14px; color: #D84315; font-weight: 600; font-size: 12px;">
+          <i class="fa-regular fa-calendar-days" style="margin-right: 4px; color: #E65100;"></i>${sowing}
+        </td>
+        <td style="padding: 10px 14px; max-width: 220px;">
+          <div style="font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${desc}</div>
+        </td>
+        <td style="padding: 10px 14px; text-align: center;">
+          <div style="display: inline-flex; gap: 6px;">
+            <button type="button" class="action-btn" title="বিস্তারিত মেমো" onclick="openAdminSeedMemo('${item.id}')"
+              style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #C8E6C9; background: #E8F5E9; color: #2E7D32; cursor: pointer;">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button type="button" class="action-btn" title="সম্পাদনা করুন" onclick="openEditSeedModal('${item.id}')"
+              style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #BBDEFB; background: #E3F2FD; color: #1565C0; cursor: pointer;">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button type="button" class="action-btn" title="মুছে ফেলুন" onclick="deleteAdminSeed('${item.id}', '${name}')"
+              style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #FFCDD2; background: #FFEBEE; color: #D32F2F; cursor: pointer;">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
       `;
       }).join('');
     }
@@ -11127,12 +11701,17 @@
       renderAdminSeedTable();
     }
 
+    // ২. Form Reset State: নতুন বীজ যোগ করার সময় ১০০% খালি ফিল্ড
     function openAddSeedModal() {
       document.getElementById('adminSeedEditId').value = '';
       document.getElementById('adminSeedExistingImageUrl').value = '';
       document.getElementById('adminSeedModalTitle').innerText = 'নতুন বীজ যোগ করুন';
       document.getElementById('adminSeedInputName').value = '';
-      document.getElementById('adminSeedSelectCategory').value = 'ধান';
+
+      const catSel = document.getElementById('adminSeedSelectCategory');
+      if (catSel) catSel.value = ''; // ১০০% ক্লিয়ার, প্লেসহোল্ডার সিলেক্টেড
+      onAdminSeedCategorySelectChange();
+
       document.getElementById('adminSeedInputSowing').value = '';
       document.getElementById('adminSeedInputHarvest').value = '';
       document.getElementById('adminSeedInputDesc').value = '';
@@ -11168,7 +11747,13 @@
       document.getElementById('adminSeedExistingImageUrl').value = seed.imageUrl || '';
       document.getElementById('adminSeedModalTitle').innerText = 'বীজের তথ্য সম্পাদনা করুন';
       document.getElementById('adminSeedInputName').value = seed.seedName || '';
-      document.getElementById('adminSeedSelectCategory').value = seed.category || 'ধান';
+
+      const catSel = document.getElementById('adminSeedSelectCategory');
+      if (catSel) {
+        catSel.value = seed.category || '';
+        onAdminSeedCategorySelectChange();
+      }
+
       document.getElementById('adminSeedInputSowing').value = seed.sowingTime || '';
       document.getElementById('adminSeedInputHarvest').value = seed.harvestingTime || '';
       document.getElementById('adminSeedInputDesc').value = seed.description || '';
@@ -11237,7 +11822,7 @@
         if (pImg) pImg.src = localBlobUrl;
 
         if (statusEl) {
-          statusEl.innerHTML = `<span style = "color:#2E7D32; font-weight:700;" > ছবি নির্বাচিত(${optKB} KB — অপ্টিমাইজড)</span> <br>সংরক্ষণ বাটনে চাপলে R2-তে আপলোড হবে`;
+          statusEl.innerHTML = `<span style="color:#2E7D32; font-weight:700;">ছবি নির্বাচিত (${optKB} KB — অপ্টিমাইজড)</span><br>সংরক্ষণ বাটনে চাপলে R2-তে আপলোড হবে`;
         }
 
         const btnText = document.getElementById('adminSeedPickBtnText');
@@ -11290,6 +11875,13 @@
         const preservation = document.getElementById('adminSeedInputPreserve').value.trim();
         let finalImageUrl = document.getElementById('adminSeedExistingImageUrl').value.trim();
 
+        if (!category) {
+          hideAdminLoading();
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = origText; }
+          showAdminError('ক্যাটাগরি আবশ্যক!', 'দয়া করে ড্রপডাউন থেকে একটি ক্যাটাগরি নির্বাচন করুন।');
+          return;
+        }
+
         if (pendingUploads.seed && pendingUploads.seed.isDeleted) {
           finalImageUrl = '';
         }
@@ -11325,11 +11917,16 @@
 
         hideAdminLoading();
         closeAdminSeedModal();
-        showToast(id ? 'বীজের তথ্য সফলভাবে আপডেট হয়েছে!' : 'নতুন বীজ সফলভাবে যুক্ত হয়েছে!');
+        // ৬. Global Custom Popup Integration
+        showAdminSuccess(
+          'সফল হয়েছে!',
+          id ? 'বীজের তথ্য সফলভাবে আপডেট হয়েছে!' : 'নতুন বীজ সফলভাবে যুক্ত হয়েছে!'
+        );
       } catch (err) {
         console.error('Save seed error:', err);
         hideAdminLoading();
-        showToast('সংরক্ষণ করতে ব্যর্থ: ' + (err.message || err));
+        // ৬. Global Custom Popup Integration
+        showAdminError('সংরক্ষণ করতে ব্যর্থ!', err.message || err);
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -11338,18 +11935,25 @@
       }
     }
 
-    async function deleteAdminSeed(id, name) {
-      if (!confirm(`আপনি কি নিশ্চিত যে "${name}" তথ্যটি স্থায়ীভাবে মুছে ফেলতে চান?`)) return;
-
-      showAdminLoading('বীজের তথ্য মুছে ফেলা হচ্ছে...');
-      try {
-        await firebase.firestore().collection('seed_information').doc(id).delete();
-        hideAdminLoading();
-        showToast('বীজের তথ্য মুছে ফেলা হয়েছে!');
-      } catch (err) {
-        hideAdminLoading();
-        showToast('মুছতে সমস্যা হয়েছে: ' + (err.message || err));
-      }
+    // ৬. Global Custom Popup Integration: মুছে ফেলার অ্যাকশন
+    function deleteAdminSeed(id, name) {
+      showAdminConfirm(
+        'বীজের তথ্য ডিলিট',
+        `আপনি কি নিশ্চিত যে "${name}" তথ্যটি স্থায়ীভাবে মুছে ফেলতে চান? এটি ইউজারদের অ্যাপ থেকেও মুছে যাবে।`,
+        async () => {
+          showAdminLoading('বীজের তথ্য মুছে ফেলা হচ্ছে...');
+          try {
+            await firebase.firestore().collection('seed_information').doc(id).delete();
+            hideAdminLoading();
+            showAdminSuccess('সফল হয়েছে!', 'বীজের তথ্য সফলভাবে মুছে ফেলা হয়েছে!');
+          } catch (err) {
+            hideAdminLoading();
+            showAdminError('মুছতে সমস্যা হয়েছে!', err.message || err);
+          }
+        },
+        'মুছে ফেলুন',
+        true
+      );
     }
 
     function openAdminSeedMemo(id) {
@@ -11472,42 +12076,57 @@
   <div class="modal-overlay" id="adminSeedModal"
     style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
     <div
-      style="background: #fff; border-radius: 16px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+      style="background: #fff; border-radius: 16px; width: 840px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
       <div
-        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ECEFF1; padding-bottom: 12px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ECEFF1; padding-bottom: 14px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
           <div
-            style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            style="width: 42px; height: 42px; border-radius: 12px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 20px;">
             <i class="fa-solid fa-seedling"></i>
           </div>
           <div>
-            <h3 id="adminSeedModalTitle" style="font-size: 16px; font-weight: 700; color: #263238; margin: 0;">নতুন বীজ
+            <h3 id="adminSeedModalTitle" style="font-size: 17px; font-weight: 700; color: #263238; margin: 0;">নতুন বীজ
               যোগ করুন</h3>
-            <span style="font-size: 12px; color: #78909C;">বীজের বিস্তারিত ও নির্দেশিকা ইনপুট</span>
+            <span style="font-size: 12px; color: #78909C;">বীজের বিস্তারিত পরিচিতি, জাতের বৈশিষ্ট্য ও সংরক্ষণ নির্দেশিকা
+              ইনপুট</span>
           </div>
         </div>
         <button type="button" onclick="closeAdminSeedModal()"
-          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+          style="background: none; border: none; font-size: 22px; color: #90A4AE; cursor: pointer; padding: 4px;">✕</button>
       </div>
 
       <form onsubmit="saveAdminSeedForm(event)">
         <input type="hidden" id="adminSeedEditId">
         <input type="hidden" id="adminSeedExistingImageUrl">
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 5px;">বীজের
-            নাম / জাতের নাম *</label>
-          <input type="text" id="adminSeedInputName" required placeholder="উদা: ব্রি ধান-২৮, বারি গম-৩৩ ইত্যাদি"
-            style="width: 100%; height: 38px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <!-- Row 1: নাম এবং ক্যাটাগরি (Grid) -->
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div>
             <label
-              style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 5px;">ক্যাটাগরি
-              *</label>
-            <select id="adminSeedSelectCategory" required
-              style="width: 100%; height: 38px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 10px; font-size: 13px; outline: none; background: #fff; box-sizing: border-box;">
+              style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 6px;">বীজের
+              নাম / জাতের নাম *</label>
+            <input type="text" id="adminSeedInputName" required placeholder="উদা: ব্রি ধান-২৮, বারি গম-৩৩ ইত্যাদি"
+              style="width: 100%; height: 40px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 12.5px; font-weight: 700; color: #37474F; margin: 0;">ক্যাটাগরি *</label>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" onclick="openAddSeedCategoryModal()"
+                  style="background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-plus" style="font-size: 10px;"></i> নতুন যোগ করুন
+                </button>
+                <button type="button" id="adminSeedCatDeleteBtn" onclick="confirmDeleteSelectedCategory()"
+                  style="display: none; background: #FFEBEE; color: #D32F2F; border: 1px solid #FFCDD2; padding: 3px 6px; border-radius: 6px; font-size: 11px; cursor: pointer;"
+                  title="নির্বাচিত কাস্টম ক্যাটাগরি মুছুন">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+            <select id="adminSeedSelectCategory" required onchange="onAdminSeedCategorySelectChange()"
+              style="width: 100%; height: 40px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 10px; font-size: 13px; outline: none; background: #fff; box-sizing: border-box;">
+              <option value="" disabled selected>ক্যাটাগরি নির্বাচন করুন</option>
               <option value="ধান">ধান</option>
               <option value="গম ও ভুট্টা">গম ও ভুট্টা</option>
               <option value="সবজি">সবজি</option>
@@ -11517,50 +12136,85 @@
               <option value="অন্যান্য">অন্যান্য</option>
             </select>
           </div>
+        </div>
+
+        <!-- Row 2: বপন/রোপণের সময় (Editable Month with Suggestions) এবং জীবনকাল/ফলন -->
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div>
             <label
-              style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 5px;">বপন/রোপণের
-              সময় *</label>
-            <input type="text" id="adminSeedInputSowing" required placeholder="উদা: অগ্রহায়ণ - পৌষ"
-              style="width: 100%; height: 38px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
+              style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 6px;">বপন/রোপণের
+              সময় * (১২ বাংলা মাস বা কাস্টম)</label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="text" id="adminSeedInputSowing" required list="adminBanglaMonthsList"
+                placeholder="উদা: অগ্রহায়ণ - পৌষ (বাছাই বা টাইপ করুন)"
+                style="width: 100%; height: 40px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 36px 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
+              <span style="position: absolute; right: 12px; color: #2E7D32; pointer-events: none; font-size: 14px;">
+                <i class="fa-solid fa-calendar-days"></i>
+              </span>
+            </div>
+            <!-- ১২ বাংলা মাসের ডেটালিস্ট -->
+            <datalist id="adminBanglaMonthsList">
+              <option value="বৈশাখ"></option>
+              <option value="জ্যৈষ্ঠ"></option>
+              <option value="আষাঢ়"></option>
+              <option value="শ্রাবণ"></option>
+              <option value="ভাদ্র"></option>
+              <option value="আশ্বিন"></option>
+              <option value="কার্তিক"></option>
+              <option value="অগ্রহায়ণ"></option>
+              <option value="পৌষ"></option>
+              <option value="মাঘ"></option>
+              <option value="ফাল্গুন"></option>
+              <option value="চৈত্র"></option>
+              <option value="কার্তিক - অগ্রহায়ণ"></option>
+              <option value="অগ্রহায়ণ - পৌষ"></option>
+              <option value="পৌষ - মাঘ"></option>
+              <option value="মাঘ - ফাল্গুন"></option>
+              <option value="বৈশাখ - জ্যৈষ্ঠ"></option>
+              <option value="আষাঢ় - শ্রাবণ"></option>
+            </datalist>
+          </div>
+
+          <div>
+            <label
+              style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 6px;">জীবনকাল /
+              ফলন (ঐচ্ছিক)</label>
+            <input type="text" id="adminSeedInputHarvest" placeholder="উদা: জীবনকাল ১৪০-১৪৫ দিন, ফলন ৫-৬ টন/হেক্টর"
+              style="width: 100%; height: 40px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
           </div>
         </div>
 
-        <div style="margin-bottom: 14px;">
-          <label
-            style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 5px;">জীবনকাল /
-            ফলন (ঐচ্ছিক)</label>
-          <input type="text" id="adminSeedInputHarvest" placeholder="উদা: জীবনকাল ১৪০-১৪৫ দিন, ফলন ৫-৬ টন/হেক্টর"
-            style="width: 100%; height: 38px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
-        </div>
-
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 5px;">জাতের
+        <!-- Row 3: জাতের বৈশিষ্ট্য ও বিবরণ -->
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 12.5px; font-weight: 700; color: #37474F; margin-bottom: 6px;">জাতের
             বৈশিষ্ট্য ও বিবরণ</label>
           <textarea id="adminSeedInputDesc" rows="2"
-            placeholder="জাতের মূল বৈশিষ্ট্য, মাটির উপযোগীতা ও রোগ প্রতিরোধ ক্ষমতা..."
+            placeholder="জাতের মূল বৈশিষ্ট্য, মাটির উপযোগীতা ও রোগ বালাই প্রতিরোধ ক্ষমতা..."
             style="width: 100%; border: 1px solid #CFD8DC; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
         </div>
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12.5px; font-weight: 700; color: #1565C0; margin-bottom: 5px;">বীজ
-            শোধন ও অঙ্কুরোদগম নির্দেশিকা</label>
-          <textarea id="adminSeedInputTreatment" rows="2"
-            placeholder="উদা: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন মিশিয়ে ছায়ায় শুকিয়ে নিন..."
-            style="width: 100%; border: 1px solid #BBDEFB; background: #F8FBFE; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+        <!-- Row 4: বীজ শোধন ও সংরক্ষণ নির্দেশিকা (Grid 2-column) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 700; color: #1565C0; margin-bottom: 6px;">বীজ
+              শোধন ও অঙ্কুরোদগম নির্দেশিকা</label>
+            <textarea id="adminSeedInputTreatment" rows="2"
+              placeholder="উদা: প্রতি কেজি বীজে ২-২.৫ গ্রাম অটোস্টিন মিশিয়ে ছায়ায় শুকিয়ে নিন..."
+              style="width: 100%; border: 1px solid #BBDEFB; background: #F8FBFE; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 700; color: #6D4C41; margin-bottom: 6px;">বীজ
+              সংরক্ষণ ও ড্রাম ব্যবস্থাপনা</label>
+            <textarea id="adminSeedInputPreserve" rows="2"
+              placeholder="উদা: আর্দ্রতা ১০-১২% এর নিচে নামিয়ে বায়ুরোধী প্লাস্টিক পাত্রে সংরক্ষণ করুন..."
+              style="width: 100%; border: 1px solid #D7CCC8; background: #FAF8F7; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
         </div>
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12.5px; font-weight: 700; color: #6D4C41; margin-bottom: 5px;">বীজ
-            সংরক্ষণ ও ড্রাম ব্যবস্থাপনা</label>
-          <textarea id="adminSeedInputPreserve" rows="2"
-            placeholder="উদা: আর্দ্রতা ১০-১২% এর নিচে নামিয়ে বায়ুরোধী প্লাস্টিক পাত্রে সংরক্ষণ করুন..."
-            style="width: 100%; border: 1px solid #D7CCC8; background: #FAF8F7; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
-        </div>
-
-        <!-- Image Picker Section: Preview Only on selection, Deferred R2 upload strictly on form submit -->
+        <!-- Row 5: Image Picker Section: Preview Only on selection, Deferred R2 upload strictly on form submit -->
         <div
-          style="border: 1px solid #E0E0E0; border-radius: 10px; padding: 12px; margin-bottom: 16px; background: #FAFAFA;">
+          style="border: 1px solid #E0E0E0; border-radius: 12px; padding: 14px; margin-bottom: 20px; background: #FAFAFA;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <label style="font-size: 12.5px; font-weight: 700; color: #37474F;">বীজের ছবি</label>
             <span style="font-size: 11px; font-weight: 600; color: #2E7D32;">Cloudflare R2 স্টোরেজ</span>
@@ -11591,15 +12245,48 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <div
+          style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid #ECEFF1; padding-top: 16px;">
           <button type="button" class="btn btn-outline" onclick="closeAdminSeedModal()"
-            style="padding: 9px 18px; border-radius: 8px; font-size: 13px;">বাতিল</button>
+            style="padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;">বাতিল</button>
           <button type="submit" id="adminSeedSubmitBtn" class="btn btn-primary"
-            style="padding: 9px 22px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer; font-weight: 700; color: #fff;">
+            style="padding: 9px 26px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer; font-weight: 700; color: #fff; box-shadow: 0 2px 6px rgba(46,125,50,0.3);">
             সংরক্ষণ করুন
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD SEED CATEGORY DYNAMICALLY TO FIRESTORE -->
+  <div class="modal-overlay" id="adminAddSeedCategoryModal"
+    style="display: none; z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; border-radius: 14px; width: 420px; max-width: 90vw; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #ECEFF1; padding-bottom: 10px;">
+        <h4
+          style="margin: 0; font-size: 15px; font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-layer-group"></i> নতুন ক্যাটাগরি যোগ করুন
+        </h4>
+        <button type="button" onclick="closeAddSeedCategoryModal()"
+          style="background: none; border: none; font-size: 18px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label
+          style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">ক্যাটাগরির
+          নাম *</label>
+        <input type="text" id="adminNewSeedCategoryInput" placeholder="উদা: তৈলবীজ, ঔষধি, ডাল ইত্যাদি"
+          style="width: 100%; height: 38px; border: 1px solid #CFD8DC; border-radius: 8px; padding: 0 12px; font-size: 13px; outline: none; box-sizing: border-box;">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="closeAddSeedCategoryModal()"
+          style="padding: 7px 16px; font-size: 12.5px; border-radius: 6px;">বাতিল</button>
+        <button type="button" class="btn btn-primary" onclick="submitNewSeedCategory()"
+          style="padding: 7px 20px; font-size: 12.5px; border-radius: 6px; background: #2E7D32; color: #fff; border: none; font-weight: 700; cursor: pointer;">
+          যোগ করুন
+        </button>
+      </div>
     </div>
   </div>
 
