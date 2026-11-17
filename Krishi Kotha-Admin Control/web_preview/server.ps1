@@ -2,6 +2,9 @@ param (
     [int]$Port = 5000
 )
 
+# Ensure TLS 1.2 / TLS 1.3 is enabled for secure Cloudflare R2 HTTPS communication
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls13
+
 $prefix = "http://localhost:$Port/"
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add($prefix)
@@ -235,6 +238,8 @@ while ($listener.IsListening) {
                 $cType = $request.ContentType
                 if ([string]::IsNullOrWhiteSpace($cType)) {
                     $cType = "image/jpeg"
+                } else {
+                    $cType = $cType.Split(';')[0].Trim()
                 }
 
                 # Read body bytes

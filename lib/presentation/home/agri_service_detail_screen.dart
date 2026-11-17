@@ -6,6 +6,7 @@ import '../../core/utils/bangla_number_converter.dart';
 import '../../data/services/firestore_service.dart';
 import 'crop_calendar_screen.dart';
 import 'income_expense_screen.dart';
+import 'irrigation_tracker_screen.dart';
 
 class AgriServiceDetailScreen extends StatefulWidget {
   final String serviceId;
@@ -296,6 +297,81 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
   Widget _buildIrrigationContent() {
     return Column(
       children: [
+        // ইন্টারেক্টিভ স্মার্ট সেচ ট্র্যাকার বাটন
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0288D1).withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'ব্যক্তিগত সেচ ট্র্যাকার ও এআই পরামর্শ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'আপনার ৩টি পর্যন্ত ফসল যুক্ত করে প্রতি ঘণ্টার আবহাওয়া অনুযায়ী রিয়েল-টাইম সেচ নোটিফিকেশন ও গাইডেন্স পান।',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12.5,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const IrrigationTrackerScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.water_drop_rounded, size: 18),
+                  label: const Text(
+                    'সেচ ট্র্যাকার খুলুন',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF01579B),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         _buildInfoCard(
           title: 'মাটির বর্তমান অবস্থা ও আবহাওয়া পূর্বাভাস',
           icon: Icons.water_drop,

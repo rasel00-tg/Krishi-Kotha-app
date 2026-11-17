@@ -9,6 +9,7 @@ import '../agri_service_detail_screen.dart';
 import '../crop_calendar_screen.dart';
 import '../income_expense_screen.dart';
 import '../seed_information_page.dart';
+import '../irrigation_tracker_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -561,14 +562,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.water_drop_outlined,
         color: const Color(0xFF0288D1),
         bgColor: const Color(0xFFE1F5FE),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'irrigation',
-          title: AppStrings.serviceSmartIrrigation,
-          icon: Icons.water_drop_outlined,
-          color: const Color(0xFF0288D1),
-          bgColor: const Color(0xFFE1F5FE),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const IrrigationTrackerScreen(),
+            ),
+          );
+        },
       ),
       // ৭. সার-বীজ ডিলার
       QuickActionItem(

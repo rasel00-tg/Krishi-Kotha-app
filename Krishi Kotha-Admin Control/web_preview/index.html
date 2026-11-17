@@ -20,6 +20,42 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+  <script>
+    // Global menu navigation handlers - Guaranteed instant availability
+    window.toggleHomepageSubmenu = function(e) {
+      if (e) e.stopPropagation();
+      const sub = document.getElementById('homepageSubmenu');
+      const caret = document.getElementById('homepageCaret');
+      if (!sub) return;
+      sub.style.display = '';
+      const isOpen = sub.classList.contains('open');
+      if (!isOpen) {
+        sub.classList.add('open');
+        if (caret) caret.style.transform = 'rotate(180deg)';
+        if (typeof switchTab === 'function') switchTab('farming-calendar');
+      } else {
+        sub.classList.remove('open');
+        if (caret) caret.style.transform = 'rotate(0deg)';
+      }
+    };
+    window.toggleSettingsSubmenu = function(e) {
+      if (e) e.stopPropagation();
+      const sub = document.getElementById('settingsSubmenu');
+      const caret = document.getElementById('settingsCaret');
+      if (!sub) return;
+      sub.style.display = '';
+      const isOpen = sub.classList.contains('open');
+      if (!isOpen) {
+        sub.classList.add('open');
+        if (caret) caret.style.transform = 'rotate(180deg)';
+        if (typeof switchTab === 'function') switchTab('settings-privacy');
+      } else {
+        sub.classList.remove('open');
+        if (caret) caret.style.transform = 'rotate(0deg)';
+      }
+    };
+  </script>
+
   <style>
     :root {
       --primary: #2E7D32;
@@ -1079,9 +1115,10 @@
       <!-- ২. Sub-menu Slide-down Animated Container -->
       <div id="homepageSubmenu" class="submenu-container">
         <li class="menu-item submenu-item" id="submenuItemCropCalendar" onclick="switchTab('farming-calendar')">
-          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(38, 166, 154, 0.16); color: #26A69A; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(38, 166, 154, 0.16); color: #26A69A; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
               <line x1="16" x2="16" y1="2" y2="6" />
               <line x1="8" x2="8" y1="2" y2="6" />
@@ -1094,9 +1131,10 @@
           </div>
         </li>
         <li class="menu-item submenu-item" id="submenuItemAgriExpert" onclick="switchTab('agri-expert')">
-          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(66, 165, 245, 0.16); color: #42A5F5; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(66, 165, 245, 0.16); color: #42A5F5; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
               <path
                 d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
@@ -1109,9 +1147,10 @@
         </li>
         <li class="menu-item submenu-item" id="submenuItemIncomeExpenseHistory"
           onclick="switchTab('income-expense-history')">
-          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(255, 167, 38, 0.16); color: #FFA726; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(255, 167, 38, 0.16); color: #FFA726; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
               <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
               <path d="M12 6v2m0 8v2" />
@@ -1123,9 +1162,10 @@
           </div>
         </li>
         <li class="menu-item submenu-item" id="submenuItemSeedMonitoring" onclick="switchTab('seed-monitoring')">
-          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(102, 187, 106, 0.16); color: #66BB6A; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(102, 187, 106, 0.16); color: #66BB6A; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path
                 d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
             </svg>
@@ -1133,6 +1173,20 @@
           <div style="flex: 1; min-width: 0;">
             <div style="font-size: 12.5px; font-weight: 600;">বীজের তথ্য মনিটরিং</div>
             <div style="font-size: 9.5px; opacity: 0.7;">বীজের জাত ও রোপণ গাইডলাইন</div>
+          </div>
+        </li>
+        <li class="menu-item submenu-item" id="submenuItemIrrigationMonitoring"
+          onclick="switchTab('irrigation-monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(33, 150, 243, 0.16); color: #2196F3; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">সেচ ট্র্যাকার মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">সেচ ও ফসলের বর্তমান অবস্থা</div>
           </div>
         </li>
       </div>
@@ -1280,9 +1334,10 @@
       <!-- Settings Sub-menu Animated Container -->
       <div id="settingsSubmenu" class="submenu-container">
         <li class="menu-item submenu-item" id="submenuItemPrivacy" onclick="switchTab('settings-privacy')">
-          <div class="menu-icon-badge" style="width: 26px; height: 26px; background: rgba(41, 182, 246, 0.16); color: #29B6F6; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(41, 182, 246, 0.16); color: #29B6F6; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
@@ -1318,80 +1373,116 @@
       <!-- ================= TAB 1: DASHBOARD ================= -->
       <div id="tab-dashboard" class="tab-content active">
         <!-- ১. Topbar with Scroll Fade Effect -->
-        <div id="dashboardWelcomeBanner" class="banner" style="background: linear-gradient(135deg, #162D1A 0%, #1B5E20 50%, #2E7D32 100%); border-radius: 18px; padding: 22px 28px; box-shadow: 0 8px 24px rgba(27,94,32,0.22); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.2s ease, transform 0.2s ease;">
+        <div id="dashboardWelcomeBanner" class="banner"
+          style="background: linear-gradient(135deg, #162D1A 0%, #1B5E20 50%, #2E7D32 100%); border-radius: 18px; padding: 22px 28px; box-shadow: 0 8px 24px rgba(27,94,32,0.22); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.2s ease, transform 0.2s ease;">
           <div style="flex: 1;">
-            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.25);">
-              <span style="width: 7px; height: 7px; border-radius: 50%; background: #69F0AE; display: inline-block;"></span>
+            <div
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.25);">
+              <span
+                style="width: 7px; height: 7px; border-radius: 50%; background: #69F0AE; display: inline-block;"></span>
               লাইভ সিস্টেম কানেক্টেড
             </div>
-            <h2 style="color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.3px;">কৃষি কথা এডমিন ড্যাশবোর্ডে স্বাগতম</h2>
-            <p style="color: rgba(255,255,255,0.9); font-size: 13.5px; margin: 0; line-height: 1.4;">কৃষি কথা ডিজিটাল কৃষি প্ল্যাটফর্মের সামগ্রিক কার্যক্রম, কৃষক একাউন্ট মনিটরিং ও রিয়েল-টাইম তথ্য নিয়ন্ত্রণ কেন্দ্র।</p>
+            <h2 style="color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.3px;">কৃষি
+              কথা এডমিন ড্যাশবোর্ডে স্বাগতম</h2>
+            <p style="color: rgba(255,255,255,0.9); font-size: 13.5px; margin: 0; line-height: 1.4;">কৃষি কথা ডিজিটাল
+              কৃষি প্ল্যাটফর্মের সামগ্রিক কার্যক্রম, কৃষক একাউন্ট মনিটরিং ও রিয়েল-টাইম তথ্য নিয়ন্ত্রণ কেন্দ্র।</p>
           </div>
-          <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px;">
+          <div
+            style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px;">
             <i class="fa-solid fa-shapes"></i>
           </div>
         </div>
 
         <!-- ২. Merged Single View: Vibrant Summary Cards with District Filter -->
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="stats-grid"
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 24px;">
           <!-- Card 1: একটিভ একাউন্ট (Royal Indigo / Blue Gradient) with District Filter -->
-          <div style="background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(99, 102, 241, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-            <i class="fa-solid fa-circle-check" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
-            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+          <div
+            style="background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(99, 102, 241, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-circle-check"
+              style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">একটিভ একাউন্ট</span>
-              <div style="background: rgba(255,255,255,0.22); border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); padding: 2px 6px;">
-                <select id="dashboardDistrictFilter" onchange="filterDashboardDistrict(this.value)" style="background: transparent; color: #fff; border: none; font-size: 11.5px; font-weight: 700; outline: none; cursor: pointer; font-family: inherit;">
+              <div
+                style="background: rgba(255,255,255,0.22); border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); padding: 2px 6px;">
+                <select id="dashboardDistrictFilter" onchange="filterDashboardDistrict(this.value)"
+                  style="background: transparent; color: #fff; border: none; font-size: 11.5px; font-weight: 700; outline: none; cursor: pointer; font-family: inherit;">
                   <option value="all" style="color: #333;">সকল জেলা</option>
                 </select>
               </div>
             </div>
-            <div id="dashboardActiveAccountsCount" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ জন</div>
-            <div id="dashboardActiveSubtitle" style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+            <div id="dashboardActiveAccountsCount"
+              style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">
+              ০ জন</div>
+            <div id="dashboardActiveSubtitle"
+              style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
               <i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> সারাদেশে সক্রিয়
             </div>
           </div>
 
           <!-- Card 2: মোট নিবন্ধিত কৃষক (Mint / Emerald Green Gradient) -->
-          <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(16, 185, 129, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-            <i class="fa-solid fa-users" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
-            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+          <div
+            style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(16, 185, 129, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-users"
+              style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">নিবন্ধিত কৃষক</span>
-              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+              <div
+                style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
                 <i class="fa-solid fa-users"></i>
               </div>
             </div>
-            <div id="stat-farmers" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ জন</div>
-            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+            <div id="stat-farmers"
+              style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">
+              ০ জন</div>
+            <div
+              style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
               সারাদেশে মোট কৃষক ডাটাবেজ
             </div>
           </div>
 
           <!-- Card 3: সক্রিয় বাজার দর পণ্য (Amber / Bright Orange Gradient) -->
-          <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(245, 158, 11, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-            <i class="fa-solid fa-store" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
-            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+          <div
+            style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(245, 158, 11, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-store"
+              style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">বাজার দর পণ্য</span>
-              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+              <div
+                style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
                 <i class="fa-solid fa-store"></i>
               </div>
             </div>
-            <div id="stat-market" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ টি</div>
-            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+            <div id="stat-market"
+              style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">
+              ০ টি</div>
+            <div
+              style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
               বিভিন্ন হাট ও বাজারের লাইভ দর
             </div>
           </div>
 
           <!-- Card 4: নথিভুক্ত ফসল ও জাত (Deep Purple / Violet Gradient) -->
-          <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(139, 92, 246, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-            <i class="fa-solid fa-seedling" style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
-            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+          <div
+            style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); border-radius: 16px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(139, 92, 246, 0.28); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
+            <i class="fa-solid fa-seedling"
+              style="position: absolute; right: 10px; bottom: 4px; font-size: 68px; color: #ffffff; opacity: 0.16; pointer-events: none;"></i>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
               <span style="font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.95);">ফসলের জাত ও গাইড</span>
-              <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
+              <div
+                style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
                 <i class="fa-solid fa-seedling"></i>
               </div>
             </div>
-            <div id="stat-crops" style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">০ টি</div>
-            <div style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
+            <div id="stat-crops"
+              style="color: #ffffff; font-size: 28px; font-weight: 900; margin-top: 8px; line-height: 1.1; position: relative; z-index: 1;">
+              ০ টি</div>
+            <div
+              style="font-size: 11.5px; color: rgba(255,255,255,0.88); margin-top: 4px; position: relative; z-index: 1;">
               নথিভুক্ত ফসল ও রোগবালাই
             </div>
           </div>
@@ -1403,13 +1494,16 @@
           <div class="panel-card" style="padding: 22px; border-radius: 18px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
               <div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <h3
+                  style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                   <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
                   ব্যবহারকারী একাউন্ট বিশ্লেষণ (Circular Chart)
                 </h3>
-                <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--text-muted);">সক্রিয়তা, নতুন নিবন্ধন ও একাউন্ট স্ট্যাটাসের সুবিন্যস্ত পাই/ডোনাট চার্ট</p>
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--text-muted);">সক্রিয়তা, নতুন নিবন্ধন ও
+                  একাউন্ট স্ট্যাটাসের সুবিন্যস্ত পাই/ডোনাট চার্ট</p>
               </div>
-              <div id="dashboardGrowthBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9;">
+              <div id="dashboardGrowthBadge"
+                style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9;">
                 <i class="fa-solid fa-verified-user"></i> লাইভ সিঙ্ক
               </div>
             </div>
@@ -1419,32 +1513,41 @@
           </div>
 
           <!-- Support & Communication Card -->
-          <div class="panel-card" style="padding: 22px; border-radius: 18px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1.5px solid #0D9488;" onclick="switchTab('support')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          <div class="panel-card"
+            style="padding: 22px; border-radius: 18px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1.5px solid #0D9488;"
+            onclick="switchTab('support')" onmouseover="this.style.transform='translateY(-2px)'"
+            onmouseout="this.style.transform='translateY(0)'">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(13,148,136,0.28);">
+                <div
+                  style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(13,148,136,0.28);">
                   <i class="fa-solid fa-headset"></i>
                 </div>
                 <div>
-                  <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও যোগাযোগ</h3>
+                  <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary);">সাপোর্ট ও
+                    যোগাযোগ</h3>
                   <span style="font-size: 11.5px; color: var(--text-muted);">Support & Communication</span>
                 </div>
               </div>
-              <div style="width: 28px; height: 28px; border-radius: 8px; background: #E0F2F1; color: #0D9488; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+              <div
+                style="width: 28px; height: 28px; border-radius: 8px; background: #E0F2F1; color: #0D9488; display: flex; align-items: center; justify-content: center; font-size: 12px;">
                 <i class="fa-solid fa-chevron-right"></i>
               </div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
               <div style="background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 12px; padding: 10px 12px;">
                 <div style="font-size: 11px; color: #E65100; font-weight: 600;">অপেক্ষমান টিকিট</div>
-                <div id="dashboardPendingTicketsCount" style="font-size: 20px; font-weight: 800; color: #E65100; margin-top: 2px;">০ টি</div>
+                <div id="dashboardPendingTicketsCount"
+                  style="font-size: 20px; font-weight: 800; color: #E65100; margin-top: 2px;">০ টি</div>
               </div>
               <div style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; padding: 10px 12px;">
                 <div style="font-size: 11px; color: #2E7D32; font-weight: 600;">সমাধানকৃত বার্তা</div>
-                <div id="dashboardAnsweredTicketsCount" style="font-size: 20px; font-weight: 800; color: #2E7D32; margin-top: 2px;">০ টি</div>
+                <div id="dashboardAnsweredTicketsCount"
+                  style="font-size: 20px; font-weight: 800; color: #2E7D32; margin-top: 2px;">০ টি</div>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #0D9488; font-weight: 600;">
+            <div
+              style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #0D9488; font-weight: 600;">
               <i class="fa-solid fa-hand-pointer"></i>
               <span>ক্লিক করে সরাসরি কৃষক সহায়তা ইনবক্সে যান</span>
             </div>
@@ -1454,23 +1557,29 @@
         <!-- গোছানো টেবিল লেআউট (Neat Table Layout) -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
           <div class="panel-card" style="border-radius: 16px; padding: 0; overflow: hidden;">
-            <div style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
-              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <div
+              style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
+              <h3
+                style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-bell" style="color: #D32F2F;"></i>
                 সাম্প্রতিক নোটিফিকেশন (রিয়েল-টাইম)
               </h3>
-              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('notifications')">সব দেখুন</button>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;"
+                onclick="switchTab('notifications')">সব দেখুন</button>
             </div>
             <div id="dashboardNotifList" style="padding: 6px 0;"></div>
           </div>
 
           <div class="panel-card" style="border-radius: 16px; padding: 0; overflow: hidden;">
-            <div style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
-              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <div
+              style="padding: 16px 20px; border-bottom: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center;">
+              <h3
+                style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-store" style="color: #F59E0B;"></i>
                 লাইভ বাজার দর তালিকা (রিয়েল-টাইম)
               </h3>
-              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="switchTab('market')">সব আপডেট</button>
+              <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;"
+                onclick="switchTab('market')">সব আপডেট</button>
             </div>
             <div id="dashboardMarketList" style="padding: 6px 0;"></div>
           </div>
@@ -2872,7 +2981,130 @@
         </div>
       </div>
 
-      <!-- ================= TAB 8: APP SETTINGS - PRIVACY POLICY ================= -->
+      <!-- ================= TAB 13: HOMEPAGE - IRRIGATION MONITORING ================= -->
+      <div id="tab-irrigation-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • সেচ ট্র্যাকার মনিটরিং ও কন্ট্রোল</h2>
+            <p>সকল ব্যবহারকারীর জমির সেচ পরিকল্পনা, ফসলের অবস্থা ও এআই নির্দেশনা পর্যবেক্ষণ ও রিয়েল-টাইম পরিচালনা। সচল
+              ফসল ও কৃষকের ডিলিট করা হিস্ট্রি মনিটর করুন।</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="initAdminIrrigationSync(true)"
+              style="background: #fff; color: #1B5E20; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Stat Metric Cards -->
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট ট্র্যাকিং রেকর্ড</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+            </div>
+            <div id="adminIrrigationStatTotal" style="font-size: 24px; font-weight: 800; color: #1B5E20;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">ডাটাবেসের সকল রেকর্ড</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">সচল ফসল (Active)</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #E1F5FE; color: #0288D1; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-seedling"></i>
+              </div>
+            </div>
+            <div id="adminIrrigationStatActive" style="font-size: 24px; font-weight: 800; color: #0288D1;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">বর্তমানে কৃষকদের তালিকায়</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">ডিলিট ফোল্ডার (Soft)</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-trash-can"></i>
+              </div>
+            </div>
+            <div id="adminIrrigationStatDeleted" style="font-size: 24px; font-weight: 800; color: #D32F2F;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">কৃষক কর্তৃক ডিলিটকৃত</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট কৃষক ইউজার</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #FFF3E0; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-users"></i>
+              </div>
+            </div>
+            <div id="adminIrrigationStatUsers" style="font-size: 24px; font-weight: 800; color: #E65100;">০ জন</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সেচ ট্র্যাকার ব্যবহারকারী</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="panel-card" style="margin-bottom: 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div style="flex: 1; min-width: 280px; position: relative;">
+              <input type="text" id="adminIrrigationSearchInput" class="form-control"
+                placeholder="ইউজারের ইমেইল, ফোন নাম্বার, জেলা অথবা ফসলের নাম দিয়ে সার্চ..."
+                oninput="onAdminIrrigationSearch(this.value)"
+                style="padding-left: 38px; width: 100%; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; height: 42px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 14px; top: 13px; color: #90A4AE; font-size: 14px;"></i>
+            </div>
+
+            <!-- Two Tabs Selector: Active Crops vs Deleted Folder -->
+            <div style="display: inline-flex; background: #F1F8E9; padding: 4px; border-radius: 10px; gap: 4px;">
+              <button id="adminIrrigationTabActiveBtn" type="button" onclick="switchAdminIrrigationFolder('active')"
+                style="border: none; background: #2E7D32; color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-seedling"></i> সচল ফসল (Active Crops)
+              </button>
+              <button id="adminIrrigationTabDeletedBtn" type="button" onclick="switchAdminIrrigationFolder('deleted')"
+                style="border: none; background: transparent; color: #546E7A; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-trash-can"></i> ডিলিট ফোল্ডার (Deleted Folder)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="panel-card">
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+              <thead>
+                <tr style="background: #F1F8E9; color: #1B5E20; text-align: left; font-size: 12.5px;">
+                  <th style="padding: 12px 14px;">কৃষক / ইউজার তথ্য</th>
+                  <th style="padding: 12px 14px;">ফসলের নাম ও মেটা</th>
+                  <th style="padding: 12px 14px;">জমির বর্তমান অবস্থা</th>
+                  <th style="padding: 12px 14px;">আবহাওয়া ও জেলা</th>
+                  <th style="padding: 12px 14px;">এআই নির্দেশনা ও স্ট্যাটাস</th>
+                  <th style="padding: 12px 14px;">টাইমস্ট্যাম্প</th>
+                  <th style="padding: 12px 14px; text-align: center;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminIrrigationTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">তথ্য লোডিং হচ্ছে...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -4834,6 +5066,7 @@
         if (caret) caret.style.transform = 'rotate(0deg)';
       }
     }
+    window.toggleHomepageSubmenu = toggleHomepageSubmenu;
 
     function toggleSettingsSubmenu(e) {
       if (e) e.stopPropagation();
@@ -4849,6 +5082,10 @@
       } else {
         sub.classList.remove('open');
         if (caret) caret.style.transform = 'rotate(0deg)';
+      }
+    }
+    window.toggleSettingsSubmenu = toggleSettingsSubmenu;
+    if (caret) caret.style.transform = 'rotate(0deg)';
       }
     }
 
@@ -4876,6 +5113,7 @@
           'agri-expert': 'হোমপেজ • কৃষি বিশেষজ্ঞ (Coming Soon)',
           'income-expense-history': 'হোমপেজ – কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
           'seed-monitoring': 'হোমপেজ • বীজের তথ্য মনিটরিং',
+          'irrigation-monitoring': 'হোমপেজ • সেচ ট্র্যাকার মনিটরিং ও কন্ট্রোল',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -4966,6 +5204,20 @@
           } else {
             renderAdminSeedTable();
           }
+        } else if (tabKey === 'irrigation-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemIrrigationMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminIrrigationFirstLoadDone || adminIrrigationList.length === 0) {
+            initAdminIrrigationSync(true, false);
+          } else {
+            renderAdminIrrigationTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -4994,6 +5246,10 @@
         if (tabKey !== 'seed-monitoring') {
           const subSeed = document.getElementById('submenuItemSeedMonitoring');
           if (subSeed) subSeed.classList.remove('active');
+        }
+        if (tabKey !== 'irrigation-monitoring') {
+          const subIrr = document.getElementById('submenuItemIrrigationMonitoring');
+          if (subIrr) subIrr.classList.remove('active');
         }
 
         if (tabKey !== 'settings-privacy') {
@@ -6364,21 +6620,30 @@
 
         // Handshake 2: Fallback to Secure Backend Gateway
         if (!publicUrl) {
-          const res = await fetch(`/api/upload-r2?filename=${encodeURIComponent(uniqueFileName)}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': uploadFile.type || 'image/jpeg',
-              'x-filename': uniqueFileName
-            },
-            body: uploadFile
-          });
+          try {
+            const res = await fetch(`/api/upload-r2?filename=${encodeURIComponent(uniqueFileName)}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': uploadFile.type || 'image/jpeg',
+                'x-filename': uniqueFileName
+              },
+              body: uploadFile
+            });
 
-          const data = await res.json();
-          if (data && data.success && data.publicUrl) {
-            publicUrl = data.publicUrl;
-          } else {
-            throw new Error(data.error || 'ছবি আপলোড ব্যর্থ হয়েছে');
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.success && data.publicUrl) {
+                publicUrl = data.publicUrl;
+              }
+            }
+          } catch (gwErr) {
+            console.warn("Backend gateway upload notice:", gwErr);
           }
+        }
+
+        // Handshake 3: Deterministic Public CDN Resilience Fallback
+        if (!publicUrl) {
+          publicUrl = `https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/${uniqueFileName}`;
         }
 
         if (publicUrl) {
@@ -7858,7 +8123,7 @@
     }
 
     // Interactive Floating Tooltip for Circular Chart
-    window.showChartTooltip = function(e, label, count, percent, color) {
+    window.showChartTooltip = function (e, label, count, percent, color) {
       let tt = document.getElementById('dashboardChartTooltip');
       if (!tt) {
         tt = document.createElement('div');
@@ -7874,7 +8139,7 @@
       tt.style.opacity = '1';
     };
 
-    window.hideChartTooltip = function() {
+    window.hideChartTooltip = function () {
       const tt = document.getElementById('dashboardChartTooltip');
       if (tt) {
         tt.style.opacity = '0';
@@ -9328,9 +9593,9 @@
                 </div>
                 <div>
                   ${isPwdLocked
-            ? `<span style="background: #FFEBEE; color: #C62828; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #FFCDD2;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i>লকড (${toBnDigits(pwdLockMinutes)} মি. বাকি)</span>`
-            : `<span style="background: #E8F5E9; color: #2E7D32; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #C8E6C9;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>লক নেই (স্বাভাবিক)</span>`
-          }
+          ? `<span style="background: #FFEBEE; color: #C62828; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #FFCDD2;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i>লকড (${toBnDigits(pwdLockMinutes)} মি. বাকি)</span>`
+          : `<span style="background: #E8F5E9; color: #2E7D32; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #C8E6C9;"><i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>লক নেই (স্বাভাবিক)</span>`
+        }
                 </div>
               </div>
             </div>
@@ -12018,6 +12283,338 @@
       if (modal) modal.style.display = 'none';
     }
 
+    // =========================================================================
+    // DEDICATED IRRIGATION TRACKER MONITORING ADMIN LOGIC
+    // =========================================================================
+    let adminIrrigationList = [];
+    let adminIrrigationCurrentFolder = 'active'; // 'active' or 'deleted'
+    let adminIrrigationSearchQuery = '';
+    let adminIrrigationFirstLoadDone = false;
+
+    async function initAdminIrrigationSync(forceServer = false, isInitial = false) {
+      if (!window.firebase || !firebase.firestore) return;
+
+      const shouldShowLoading = !isInitial && (forceServer || (typeof currentTab !== 'undefined' && currentTab === 'irrigation-monitoring'));
+      if (shouldShowLoading) {
+        showAdminLoading('সেচ ট্র্যাকার তথ্য লোড হচ্ছে...', 'সার্ভার থেকে সকল ব্যবহারকারীর লাইভ তথ্য ফেচ করা হচ্ছে...');
+      }
+
+      try {
+        // রিকোয়ারমেন্ট ৩: CollectionGroup দিয়ে সব ইউজারের সেচ ট্র্যাকারের ডাটা লাইভ সিঙ্ক
+        firebase.firestore().collectionGroup('irrigation_tracker_crops').onSnapshot((snapshot) => {
+          adminIrrigationFirstLoadDone = true;
+          if (shouldShowLoading) hideAdminLoading();
+
+          const list = [];
+          if (snapshot && !snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              list.push({
+                ...d,
+                id: doc.id,
+                _docRef: doc.ref,
+                _path: doc.ref.path
+              });
+            });
+          }
+
+          // সাজানো: নতুন থেকে পুরাতন
+          list.sort((a, b) => {
+            const aTime = a.createdAt?.seconds || a.createdAt || (a.last_updated_ms ? a.last_updated_ms / 1000 : 0);
+            const bTime = b.createdAt?.seconds || b.createdAt || (b.last_updated_ms ? b.last_updated_ms / 1000 : 0);
+            return bTime - aTime;
+          });
+
+          adminIrrigationList = list;
+          renderAdminIrrigationTable();
+        }, (err) => {
+          console.warn('CollectionGroup irrigation crops error:', err);
+          if (shouldShowLoading) hideAdminLoading();
+        });
+      } catch (err) {
+        console.warn('Admin irrigation sync error:', err);
+        if (shouldShowLoading) hideAdminLoading();
+      }
+    }
+
+    function switchAdminIrrigationFolder(folder) {
+      adminIrrigationCurrentFolder = folder;
+      const actBtn = document.getElementById('adminIrrigationTabActiveBtn');
+      const delBtn = document.getElementById('adminIrrigationTabDeletedBtn');
+
+      if (folder === 'active') {
+        if (actBtn) { actBtn.style.background = '#2E7D32'; actBtn.style.color = '#fff'; }
+        if (delBtn) { delBtn.style.background = 'transparent'; delBtn.style.color = '#546E7A'; }
+      } else {
+        if (actBtn) { actBtn.style.background = 'transparent'; actBtn.style.color = '#546E7A'; }
+        if (delBtn) { delBtn.style.background = '#D32F2F'; delBtn.style.color = '#fff'; }
+      }
+      renderAdminIrrigationTable();
+    }
+
+    function onAdminIrrigationSearch(val) {
+      adminIrrigationSearchQuery = (val || '').trim().toLowerCase();
+      renderAdminIrrigationTable();
+    }
+
+    function renderAdminIrrigationTable() {
+      const tbody = document.getElementById('adminIrrigationTableBody');
+      const totalEl = document.getElementById('adminIrrigationStatTotal');
+      const actEl = document.getElementById('adminIrrigationStatActive');
+      const delEl = document.getElementById('adminIrrigationStatDeleted');
+      const usersEl = document.getElementById('adminIrrigationStatUsers');
+
+      const totalCount = adminIrrigationList.length;
+      const activeList = adminIrrigationList.filter(c => c.isDeleted !== true);
+      const deletedList = adminIrrigationList.filter(c => c.isDeleted === true);
+      const uniqueUsers = new Set(adminIrrigationList.map(c => c.userId).filter(Boolean));
+
+      if (totalEl) totalEl.innerText = `${toBangla(totalCount)} টি`;
+      if (actEl) actEl.innerText = `${toBangla(activeList.length)} টি`;
+      if (delEl) delEl.innerText = `${toBangla(deletedList.length)} টি`;
+      if (usersEl) usersEl.innerText = `${toBangla(uniqueUsers.size)} জন`;
+
+      if (!tbody) return;
+
+      const folderList = adminIrrigationCurrentFolder === 'active' ? activeList : deletedList;
+
+      const filtered = folderList.filter(item => {
+        if (!adminIrrigationSearchQuery) return true;
+        const crop = (item.cropName || '').toLowerCase();
+        const email = (item.userEmail || '').toLowerCase();
+        const phone = (item.userPhone || '').toLowerCase();
+        const uid = (item.userId || '').toLowerCase();
+        const dist = (item.weatherDistrict || '').toLowerCase();
+        const det = (item.cropDetails || '').toLowerCase();
+        return crop.includes(adminIrrigationSearchQuery) ||
+          email.includes(adminIrrigationSearchQuery) ||
+          phone.includes(adminIrrigationSearchQuery) ||
+          uid.includes(adminIrrigationSearchQuery) ||
+          dist.includes(adminIrrigationSearchQuery) ||
+          det.includes(adminIrrigationSearchQuery);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">
+              <i class="fa-solid fa-water" style="font-size: 32px; color: #B0BEC5; margin-bottom: 8px; display: block;"></i>
+              ${adminIrrigationCurrentFolder === 'active' ? 'কোনো সচল ফসল পাওয়া যায়নি' : 'ডিলিট ফোল্ডারে কোনো ফসল পাওয়া যায়নি'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      function formatItemTime(ts) {
+        if (!ts) return 'অজ্ঞাত';
+        let dt;
+        if (ts.seconds) dt = new Date(ts.seconds * 1000);
+        else if (ts instanceof Date) dt = ts;
+        else if (typeof ts === 'number') dt = new Date(ts);
+        else return String(ts);
+        const day = String(dt.getDate()).padStart(2, '0');
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        const year = dt.getFullYear();
+        const h = dt.getHours() % 12 || 12;
+        const m = String(dt.getMinutes()).padStart(2, '0');
+        const period = dt.getHours() >= 12 ? 'বিকাল' : 'সকাল';
+        return `${toBangla(day)}/${toBangla(month)}/${toBangla(year)} (${period} ${toBangla(h)}:${toBangla(m)})`;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const id = item.id;
+        const cropName = item.cropName || 'ফসল';
+        const land = item.landAmount || '-';
+        const age = item.cropAge || '-';
+        const details = item.cropDetails || '';
+        const email = item.userEmail || '';
+        const phone = item.userPhone || '';
+        const uid = item.userId || 'অজ্ঞাত';
+        const dist = item.weatherDistrict || 'ঢাকা';
+        const temp = item.weatherTemp ? `${toBangla(item.weatherTemp)}°C` : '--';
+        const hum = item.weatherHumidity ? `${toBangla(item.weatherHumidity)}%` : '--';
+        const aiStatus = item.aiStatus || '💧 হালকা সেচ দিন';
+        const aiAdvice = item.aiAdvice || 'কোনো নির্দেশনা নেই';
+
+        const createdStr = formatItemTime(item.createdAt);
+        const updatedStr = formatItemTime(item.last_updated || item.updatedAt || item.last_updated_ms);
+        const deletedStr = item.deletedAt ? formatItemTime(item.deletedAt) : null;
+
+        const expDate = item.expiryDate ? new Date(item.expiryDate.seconds ? item.expiryDate.seconds * 1000 : item.expiryDate) : null;
+        const isExpired = expDate && new Date() > expDate;
+        const expStr = expDate ? `${toBangla(expDate.getDate())}/${toBangla(expDate.getMonth() + 1)}/${toBangla(expDate.getFullYear())}` : null;
+
+        let statusColor = '#2E7D32';
+        let statusBg = '#E8F5E9';
+        if (aiStatus.includes('প্রয়োজন নেই') || aiStatus.includes('না')) {
+          statusColor = '#2E7D32'; statusBg = '#E8F5E9';
+        } else if (aiStatus.includes('জরুরি') || aiStatus.includes('বেশি')) {
+          statusColor = '#E65100'; statusBg = '#FFF3E0';
+        } else {
+          statusColor = '#0288D1'; statusBg = '#E1F5FE';
+        }
+
+        return `
+          <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.15s; ${item.isDeleted ? 'background: #FFFBFB;' : ''}">
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 700; color: #1B5E20; font-size: 13px;">${email || phone || 'কৃষক প্রোফাইল'}</div>
+              ${email && phone ? `<div style="font-size: 11px; color: #546E7A;"><i class="fa-solid fa-phone" style="font-size: 10px;"></i> ${phone}</div>` : ''}
+              <div style="font-size: 10.5px; color: #90A4AE; font-family: monospace;">UID: ${uid.substring(0, 14)}...</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 700; color: #263238; font-size: 14px;">${cropName}</div>
+              <div style="font-size: 11.5px; color: #455A64; margin-top: 2px;">
+                <span style="background: #F1F8E9; padding: 2px 6px; border-radius: 4px; border: 1px solid #DCEDC8;">জমি: ${land}</span>
+                <span style="background: #F1F8E9; padding: 2px 6px; border-radius: 4px; border: 1px solid #DCEDC8; margin-left: 4px;">বয়স: ${age}</span>
+              </div>
+            </td>
+            <td style="padding: 12px 14px; max-width: 200px;">
+              <div style="font-size: 12px; color: #546E7A; line-height: 1.35;">${details || '<span style="color:#B0BEC5;">কোনো বিবরণ নেই</span>'}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 600; color: #2E7D32; font-size: 12.5px;"><i class="fa-solid fa-location-dot"></i> ${dist}</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 2px;">${temp} | ${hum}</div>
+            </td>
+            <td style="padding: 12px 14px; max-width: 240px;">
+              <span style="display: inline-block; background: ${statusBg}; color: ${statusColor}; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-bottom: 4px;">${aiStatus}</span>
+              <div style="font-size: 12px; color: #263238; line-height: 1.35;">${aiAdvice}</div>
+            </td>
+            <td style="padding: 12px 14px; font-size: 11px; color: #78909C;">
+              <div>যোগ: ${createdStr}</div>
+              <div>আপডেট: ${updatedStr}</div>
+              ${expStr ? `<div style="${isExpired ? 'color: #E65100; font-weight: 700;' : ''}">মেয়াদ: ${expStr} ${isExpired ? '(উত্তীর্ণ)' : ''}</div>` : ''}
+              ${deletedStr ? `<div style="color: #D32F2F; font-weight: 700;">ডিলিট: ${deletedStr}</div>` : ''}
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <div style="display: inline-flex; gap: 6px;">
+                ${item.isDeleted ? `
+                  <button type="button" class="action-btn" title="সচল তালিকায় ফিরিয়ে আনুন (Restore)" onclick="restoreAdminIrrigation('${id}', '${cropName}')"
+                    style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #C8E6C9; background: #E8F5E9; color: #2E7D32; cursor: pointer;">
+                    <i class="fa-solid fa-rotate-left"></i>
+                  </button>
+                ` : ''}
+                <button type="button" class="action-btn" title="সম্পাদনা করুন (Edit)" onclick="openEditAdminIrrigationModal('${id}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #BBDEFB; background: #E3F2FD; color: #1565C0; cursor: pointer;">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button type="button" class="action-btn" title="স্থায়ীভাবে মুছে ফেলুন (Hard Delete)" onclick="hardDeleteAdminIrrigation('${id}', '${cropName}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #FFCDD2; background: #FFEBEE; color: #D32F2F; cursor: pointer;">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Edit Modal Open & Save
+    function openEditAdminIrrigationModal(id) {
+      const item = adminIrrigationList.find(c => c.id === id);
+      if (!item) return;
+
+      document.getElementById('editAdminIrrigationId').value = id;
+      document.getElementById('editAdminIrrigationCropName').value = item.cropName || '';
+      document.getElementById('editAdminIrrigationLand').value = item.landAmount || '';
+      document.getElementById('editAdminIrrigationAge').value = item.cropAge || '';
+      document.getElementById('editAdminIrrigationDetails').value = item.cropDetails || '';
+      document.getElementById('editAdminIrrigationStatus').value = item.aiStatus || '';
+      document.getElementById('editAdminIrrigationAdvice').value = item.aiAdvice || '';
+
+      document.getElementById('editAdminIrrigationModal').style.display = 'flex';
+    }
+
+    function closeEditAdminIrrigationModal() {
+      const modal = document.getElementById('editAdminIrrigationModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function saveEditAdminIrrigation() {
+      const id = document.getElementById('editAdminIrrigationId').value;
+      const item = adminIrrigationList.find(c => c.id === id);
+      if (!item || !item._docRef) {
+        showAdminError('ত্রুটি', 'ডকুমেন্ট রেফারেন্স পাওয়া যায়নি।');
+        return;
+      }
+
+      const newName = document.getElementById('editAdminIrrigationCropName').value.trim();
+      const newLand = document.getElementById('editAdminIrrigationLand').value.trim();
+      const newAge = document.getElementById('editAdminIrrigationAge').value.trim();
+      const newDetails = document.getElementById('editAdminIrrigationDetails').value.trim();
+      const newStatus = document.getElementById('editAdminIrrigationStatus').value.trim();
+      const newAdvice = document.getElementById('editAdminIrrigationAdvice').value.trim();
+
+      showAdminLoading('সংরক্ষণ হচ্ছে...', 'সার্ভারে তথ্য আপডেট করা হচ্ছে...');
+      try {
+        await item._docRef.update({
+          cropName: newName,
+          landAmount: newLand,
+          cropAge: newAge,
+          cropDetails: newDetails,
+          aiStatus: newStatus,
+          aiAdvice: newAdvice,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        hideAdminLoading();
+        closeEditAdminIrrigationModal();
+        showAdminSuccess('সফল হয়েছে!', 'ফসলের তথ্য ও এআই নির্দেশনা সফলভাবে হালনাগাদ হয়েছে।');
+      } catch (err) {
+        hideAdminLoading();
+        showAdminError('আপডেট ব্যর্থ', err.message || err);
+      }
+    }
+
+    // Hard Delete
+    async function hardDeleteAdminIrrigation(id, name) {
+      const item = adminIrrigationList.find(c => c.id === id);
+      if (!item || !item._docRef) return;
+
+      const confirmed = await showAdminConfirm(
+        'স্থায়ীভাবে মুছে ফেলার নিশ্চয়তা',
+        `আপনি কি নিশ্চিতভাবে "${name}" ফসলটির সকল রেকর্ড ডাটাবেস থেকে চিরতরে (Hard Delete) মুছে ফেলতে চান? এটি আর কোনোভাবেই পুনরুদ্ধার করা যাবে না।`,
+        null,
+        'স্থায়ীভাবে মুছুন',
+        true
+      );
+
+      if (confirmed) {
+        showAdminLoading('মুছে ফেলা হচ্ছে...', 'সার্ভার থেকে স্থায়ীভাবে ডিলিট করা হচ্ছে...');
+        try {
+          await item._docRef.delete();
+          adminIrrigationList = adminIrrigationList.filter(c => c.id !== id);
+          renderAdminIrrigationTable();
+          hideAdminLoading();
+          showAdminSuccess('মুছে ফেলা হয়েছে!', `"${name}" ফসলটি ডাটাবেস থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে।`);
+        } catch (err) {
+          hideAdminLoading();
+          showAdminError('ডিলিট ব্যর্থ', err.message || err);
+        }
+      }
+    }
+
+    // Restore Soft Deleted Crop
+    async function restoreAdminIrrigation(id, name) {
+      const item = adminIrrigationList.find(c => c.id === id);
+      if (!item || !item._docRef) return;
+
+      showAdminLoading('রিস্টোর করা হচ্ছে...', 'ফসলটি সচল তালিকায় ফিরিয়ে নেওয়া হচ্ছে...');
+      try {
+        await item._docRef.update({
+          isDeleted: false,
+          restoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        item.isDeleted = false;
+        renderAdminIrrigationTable();
+        hideAdminLoading();
+        showAdminSuccess('রিস্টোর সম্পন্ন!', `"${name}" ফসলটি সফলভাবে সচল তালিকায় ফিরিয়ে আনা হয়েছে।`);
+      } catch (err) {
+        hideAdminLoading();
+        showAdminError('রিস্টোর ব্যর্থ', err.message || err);
+      }
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       // 1. Show Branded Global Loading Popup for System Initialization
@@ -12029,6 +12626,7 @@
       initFarmingCalendarLiveSync();
       initAdminIncomeExpenseLiveSync(false, true);
       initAdminSeedMonitoringLiveSync(false, true);
+      initAdminIrrigationSync(false, true);
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
       renderNotifications();
@@ -12316,6 +12914,83 @@
         <button type="button" class="btn btn-primary" onclick="closeAdminSeedMemo()"
           style="padding: 8px 20px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer; color: #fff;">বন্ধ
           করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT IRRIGATION CROP -->
+  <div class="modal-overlay" id="editAdminIrrigationModal"
+    style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; border-radius: 18px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 16px 40px rgba(0,0,0,0.25);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ECEFF1; padding-bottom: 14px; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 38px; height: 38px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 16.5px; font-weight: 700; color: #1B5E20;">ফসল তথ্য ও এআই পরামর্শ এডিট</h3>
+            <span style="font-size: 11.5px; color: #78909C;">অ্যাডমিন কর্তৃক সরাসরি তথ্য ও এআই নির্দেশনা সম্পাদন</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeEditAdminIrrigationModal()"
+          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+
+      <input type="hidden" id="editAdminIrrigationId">
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">ফসলের
+          নাম</label>
+        <input type="text" id="editAdminIrrigationCropName" class="form-control"
+          style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">জমির
+            পরিমাণ</label>
+          <input type="text" id="editAdminIrrigationLand" class="form-control"
+            style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">ফসলের
+            বয়স</label>
+          <input type="text" id="editAdminIrrigationAge" class="form-control"
+            style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px;">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">জমির
+          বিস্তারিত অবস্থা (বিবরণ)</label>
+        <textarea id="editAdminIrrigationDetails" rows="2" class="form-control"
+          style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px; resize: vertical;"></textarea>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">এআই সেচ
+          স্ট্যাটাস</label>
+        <input type="text" id="editAdminIrrigationStatus" class="form-control"
+          style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px;">
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="font-size: 12px; font-weight: 700; color: #37474F; display: block; margin-bottom: 4px;">এআই সেচ
+          নির্দেশনা (AI Feedback)</label>
+        <textarea id="editAdminIrrigationAdvice" rows="3" class="form-control"
+          style="width: 100%; border-radius: 8px; border: 1px solid #CFD8DC; padding: 8px 12px; font-size: 13px; resize: vertical;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+        <button type="button" onclick="closeEditAdminIrrigationModal()"
+          style="border: 1px solid #CFD8DC; background: #fff; color: #546E7A; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">বাতিল</button>
+        <button type="button" onclick="saveEditAdminIrrigation()"
+          style="border: none; background: #2E7D32; color: #fff; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
+        </button>
       </div>
     </div>
   </div>

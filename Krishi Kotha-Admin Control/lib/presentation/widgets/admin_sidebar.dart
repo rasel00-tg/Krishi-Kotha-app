@@ -32,7 +32,8 @@ class _AdminSidebarState extends State<AdminSidebar> with TickerProviderStateMix
     _homepageExpanded = widget.selectedIndex == 9 ||
         widget.selectedIndex == 10 ||
         widget.selectedIndex == 11 ||
-        widget.selectedIndex == 12;
+        widget.selectedIndex == 12 ||
+        widget.selectedIndex == 13;
 
     _homepageAnimController = AnimationController(
       vsync: this,
@@ -67,7 +68,8 @@ class _AdminSidebarState extends State<AdminSidebar> with TickerProviderStateMix
     if ((widget.selectedIndex == 9 ||
             widget.selectedIndex == 10 ||
             widget.selectedIndex == 11 ||
-            widget.selectedIndex == 12) &&
+            widget.selectedIndex == 12 ||
+            widget.selectedIndex == 13) &&
         !_homepageExpanded) {
       _homepageExpanded = true;
       _homepageAnimController.forward();
@@ -93,7 +95,8 @@ class _AdminSidebarState extends State<AdminSidebar> with TickerProviderStateMix
     final isHomepageActive = widget.selectedIndex == 9 ||
         widget.selectedIndex == 10 ||
         widget.selectedIndex == 11 ||
-        widget.selectedIndex == 12;
+        widget.selectedIndex == 12 ||
+        widget.selectedIndex == 13;
     if (!isHomepageActive) {
       widget.onItemSelected(9);
     }
@@ -118,7 +121,8 @@ class _AdminSidebarState extends State<AdminSidebar> with TickerProviderStateMix
     final isHomepageActive = widget.selectedIndex == 9 ||
         widget.selectedIndex == 10 ||
         widget.selectedIndex == 11 ||
-        widget.selectedIndex == 12;
+        widget.selectedIndex == 12 ||
+        widget.selectedIndex == 13;
     final isSettingsActive = widget.selectedIndex == 8;
 
     return Container(
@@ -293,6 +297,15 @@ class _AdminSidebarState extends State<AdminSidebar> with TickerProviderStateMix
                             subtitle: 'বীজের জাত ও রোপণ গাইডলাইন',
                             isSelected: widget.selectedIndex == 12,
                             onTap: () => widget.onItemSelected(12),
+                          ),
+                          _SidebarSubMenuItem(
+                            index: 13,
+                            icon: Icons.water_drop_rounded,
+                            iconColor: const Color(0xFF29B6F6), // Sky Blue / Water
+                            label: 'সেচ ট্র্যাকার মনিটরিং',
+                            subtitle: 'সেচ ও ফসলের বর্তমান অবস্থা',
+                            isSelected: widget.selectedIndex == 13,
+                            onTap: () => widget.onItemSelected(13),
                           ),
                         ],
                       ),

@@ -2493,8 +2493,8 @@
             </div>
             <span>কৃষি অফিস</span>
           </div>
-          <!-- ৬. সেচ ট্র্যাকার -->
-          <div class="quick-card" onclick="openServiceModal('irrigation')">
+          <!-- ৬. সেচ ট্র্যাকার (ডেডিকেটেড ফুল পেইজ) -->
+          <div class="quick-card" onclick="openIrrigationTrackerPage()">
             <div class="quick-icon-wrap" style="background: #E1F5FE; color: #0288D1;">
               <i class="fa-solid fa-droplet"></i>
             </div>
@@ -3440,6 +3440,211 @@
       </div>
       <div id="cropCalendarDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN IRRIGATION TRACKER PAGE MATCHING FLUTTER IRRIGATION_TRACKER_SCREEN -->
+    <div class="full-screen-page" id="irrigationTrackerPage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <button class="topbar-back-btn" onclick="closeIrrigationTrackerPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">সেচ ট্র্যাকার</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">স্মার্ট সেচ ও ফসলের বর্তমান অবস্থা</p>
+          </div>
+          <button onclick="refreshAllIrrigationCrops(true)" id="irrigationSyncBtn" style="background: none; border: none; font-size: 16px; color: #fff; cursor: pointer; padding: 6px;" title="ঘণ্টাভিত্তিক ডেটা রিফ্রেশ">
+            <i class="fa-solid fa-rotate" id="irrigationSyncIcon"></i>
+          </button>
+        </div>
+
+        <!-- Dynamic Location & Live Weather Banner inside Header -->
+        <div style="background: rgba(255,255,255,0.12); border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); padding: 10px 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                <i class="fa-solid fa-cloud-sun-rain" style="color: #2E7D32; font-size: 20px;"></i>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #FFD54F;"></i>
+                  <span id="irrigationDistrictName" style="font-size: 14px; font-weight: 700; color: #fff;">ঢাকা</span>
+                </div>
+                <div id="irrigationWeatherCond" style="font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 1px;">পরিষ্কার আকাশ</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; text-align: right;">
+              <div>
+                <div id="irrigationWeatherTemp" style="font-size: 16px; font-weight: 800; color: #fff;">২৮°C</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.8);">তাপমাত্রা</div>
+              </div>
+              <div>
+                <div id="irrigationWeatherRain" style="font-size: 16px; font-weight: 800; color: #FFD54F;">২০%</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.8);">বৃষ্টির শঙ্কা</div>
+              </div>
+              <div>
+                <div id="irrigationWeatherHumid" style="font-size: 16px; font-weight: 800; color: #81D4FA;">৬৫%</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.8);">আর্দ্রতা</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Row (List Title + Add Button) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px 16px; flex-shrink: 0;">
+        <div>
+          <h4 style="font-size: 15.5px; font-weight: 700; color: #1E281F; margin: 0;">আমার তালিকাভুক্ত ফসল</h4>
+          <span id="irrigationCropQuotaText" style="font-size: 11.5px; font-weight: 600; color: #2E7D32;">আরও ৩টি ফসল যুক্ত করতে পারবেন</span>
+        </div>
+        <button id="irrigationAddCropBtn" onclick="openAddIrrigationCropModal()" style="background: #2E7D32; color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.2); transition: all 0.2s;">
+          <i class="fa-solid fa-plus"></i>
+          <span>ফসল যোগ</span>
+        </button>
+      </div>
+
+      <!-- Crops List Container -->
+      <div id="irrigationCropsListContainer" style="flex: 1; overflow-y: auto; padding: 6px 16px 40px 16px;">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ADD CROP BOTTOM SHEET / MODAL FOR IRRIGATION TRACKER -->
+    <div id="addIrrigationCropModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100030; display: none; align-items: flex-end; justify-content: center;">
+      <div style="background: #fff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 18px 24px 18px; max-height: 90vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.18);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #ECEFF1; padding-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+              <i class="fa-solid fa-seedling"></i>
+            </div>
+            <h3 style="font-size: 16.5px; font-weight: 700; color: #1B5E20; margin: 0;">নতুন ফসল যোগ করুন</h3>
+          </div>
+          <button onclick="closeAddIrrigationCropModal()" style="background: none; border: none; font-size: 18px; color: #78909C; cursor: pointer; padding: 4px;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="addIrrigationCropForm" onsubmit="event.preventDefault(); submitNewIrrigationCrop();">
+          <!-- ১. ফসলের নাম -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের নাম *</label>
+            <div style="position: relative;">
+              <i class="fa-solid fa-leaf" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+              <input type="text" id="irrigationCropNameInput" placeholder="ফসলের নাম লিখুন (যেমন: ধান, গম, আলু)..." required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+            </div>
+          </div>
+
+          <!-- ২. জমির পরিমাণ + ড্রপডাউন (শতক, শতাংশ, বিঘা, একর) -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">জমির পরিমাণ *</label>
+            <div style="display: flex; gap: 8px;">
+              <div style="position: relative; flex: 1;">
+                <i class="fa-solid fa-ruler-combined" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+                <input type="number" step="any" id="irrigationLandAmountInput" placeholder="পরিমাণ লিখুন (যেমন: ১০)" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+              </div>
+              <select id="irrigationLandUnitSelect" style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
+                <option value="শতক">শতক</option>
+                <option value="শতাংশ">শতাংশ</option>
+                <option value="বিঘা">বিঘা</option>
+                <option value="একর">একর</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ৩. ফসলের বয়স + ড্রপডাউন (দিন, মাস, বছর) -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের বয়স *</label>
+            <div style="display: flex; gap: 8px;">
+              <div style="position: relative; flex: 1;">
+                <i class="fa-solid fa-hourglass-half" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+                <input type="number" id="irrigationCropAgeInput" placeholder="বয়স লিখুন (যেমন: ২৫)" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+              </div>
+              <select id="irrigationCropAgeUnitSelect" style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
+                <option value="দিন">দিন</option>
+                <option value="মাস">মাস</option>
+                <option value="বছর">বছর</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ৪. কত দিনের জন্য ট্র্যাকিং করবেন? (মেয়াদ শেষ হওয়ার তারিখ) -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">
+              কত দিনের জন্য ট্র্যাকিং করবেন? (মেয়াদ শেষ হওয়ার তারিখ) *
+            </label>
+            <div style="position: relative;">
+              <i class="fa-solid fa-calendar-days" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+              <input type="date" id="irrigationCropExpiryDateInput" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+            </div>
+          </div>
+
+          <!-- ৫. ফসলের বিস্তারিত (Crop Details) - সর্বোচ্চ ১০০ অক্ষর -->
+          <div style="margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 13px; font-weight: 700; color: #263238;">ফসলের বিস্তারিত (সর্বোচ্চ ১০০ অক্ষর) *</label>
+              <span id="irrigationDetailsCharCount" style="font-size: 11px; font-weight: 600; color: #2E7D32;">০/১০০ অক্ষর</span>
+            </div>
+            <textarea id="irrigationCropDetailsInput" maxlength="100" rows="2" placeholder="মাটির অবস্থা বা বিস্তারিত তথ্য লিখুন (সর্বোচ্চ ১০০ অক্ষর)..." required oninput="updateIrrigationCharCount(this)" style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit; resize: none;"></textarea>
+          </div>
+
+          <!-- সেভ বাটন -->
+          <button type="submit" id="irrigationSubmitBtn" style="width: 100%; padding: 13px; background: #2E7D32; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
+            ফসল সংরক্ষণ করুন
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- GLOBAL BLOCKING LOADING POPUP FOR IRRIGATION TRACKER -->
+    <div id="irrigationGlobalLoading" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100060; display: none; align-items: center; justify-content: center;">
+      <div style="background: #fff; border-radius: 18px; padding: 26px 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div style="width: 44px; height: 44px; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; margin: 0 auto 18px auto; animation: spin 0.8s linear infinite;"></div>
+        <div style="font-size: 15px; font-weight: 700; color: #1E281F; font-family: 'Hind Siliguri', sans-serif;">
+          আপনার ফসল তথ্য যাচাই করা হচ্ছে....
+        </div>
+      </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION POPUP FOR IRRIGATION TRACKER -->
+    <div id="irrigationDeleteConfirmModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100040; display: none; align-items: center; justify-content: center;">
+      <div style="background: #fff; border-radius: 18px; padding: 22px 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 14px auto;">
+          <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <h4 style="font-size: 16px; font-weight: 700; color: #1E281F; margin: 0 0 8px 0;">ফসল মুছে ফেলার নিশ্চয়তা</h4>
+        <p id="irrigationDeleteCropMsg" style="font-size: 13px; color: #546E7A; line-height: 1.5; margin: 0 0 18px 0;">
+          আপনি কি নিশ্চিতভাবে এই ফসলটি সেচ ট্র্যাকার থেকে মুছে ফেলতে চান? এটি ডিলিট করলে আপনি নতুন ফসল যুক্ত করার স্পেস পাবেন।
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <!-- বাতিল বাটন: শুধুমাত্র ডায়ালগ বন্ধ করবে, কোনো ডেটা ডিলিট হবে না -->
+          <button type="button" onclick="closeIrrigationDeleteModal()" style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; font-weight: 700; font-size: 13.5px; cursor: pointer;">
+            বাতিল
+          </button>
+          <!-- নিশ্চিত বাটন -->
+          <button type="button" onclick="executeDeleteIrrigationCrop()" style="flex: 1; padding: 10px; border-radius: 10px; border: none; background: #D32F2F; color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer;">
+            হ্যাঁ, ডিলিট করুন
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM GLOBAL ALERT POPUP (NO NATIVE BROWSER ALERTS) -->
+    <div id="irrigationCustomAlertModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100070; display: none; align-items: center; justify-content: center;">
+      <div style="background: #fff; border-radius: 20px; padding: 24px 22px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.22);">
+        <div id="irrigationAlertIconWrap" style="width: 56px; height: 56px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
+          <i id="irrigationAlertIcon" class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <h4 id="irrigationAlertTitle" style="font-size: 17px; font-weight: 700; color: #1E281F; margin: 0 0 8px 0;">ইনপুট ত্রুটি</h4>
+        <p id="irrigationAlertMsg" style="font-size: 13.5px; color: #546E7A; line-height: 1.5; margin: 0 0 20px 0;">
+          আপনার দেওয়া ইনপুটটি সঠিক নয়। অনুগ্রহ করে একটি সঠিক ও প্রচলিত কৃষি ফসলের নাম লিখুন।
+        </p>
+        <button type="button" id="irrigationAlertBtn" onclick="closeIrrigationCustomAlert()" style="width: 100%; padding: 11px; border-radius: 12px; border: none; background: #2E7D32; color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(46,125,50,0.2);">
+          ঠিক আছে
+        </button>
       </div>
     </div>
 
@@ -7316,6 +7521,10 @@
     };
 
     function openServiceModal(type) {
+      if (type === 'irrigation') {
+        openIrrigationTrackerPage();
+        return;
+      }
       if (type === 'seed_bank') {
         openSeedInformationFullPage();
         return;
@@ -13064,6 +13273,856 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         }, 800);
       }
+    }
+
+    // =========================================================================
+    // DEDICATED IRRIGATION TRACKER LOGIC (MATCHING FLUTTER SCREEN)
+    // =========================================================================
+    let irrigationCrops = [];
+    let irrigationPendingDeleteId = null;
+    let irrigationHourlyTimer = null;
+    let irrigationSyncingCropIds = new Set();
+
+    // কাস্টম গ্লোবাল পপআপ ফাংশন (ডিফল্ট ব্রাউজার অ্যালার্ট সম্পূর্ণ নিষিদ্ধ)
+    function showIrrigationCustomAlert(title, message, type = 'error', btnText = 'ঠিক আছে') {
+      const modal = document.getElementById('irrigationCustomAlertModal');
+      const iconWrap = document.getElementById('irrigationAlertIconWrap');
+      const icon = document.getElementById('irrigationAlertIcon');
+      const titleEl = document.getElementById('irrigationAlertTitle');
+      const msgEl = document.getElementById('irrigationAlertMsg');
+      const btn = document.getElementById('irrigationAlertBtn');
+
+      if (!modal) return;
+
+      if (titleEl) titleEl.innerText = title;
+      if (msgEl) msgEl.innerText = message;
+      if (btn) btn.innerText = btnText;
+
+      if (type === 'success') {
+        if (iconWrap) { iconWrap.style.background = '#E8F5E9'; iconWrap.style.color = '#2E7D32'; }
+        if (icon) icon.className = 'fa-solid fa-circle-check';
+        if (titleEl) titleEl.style.color = '#1B5E20';
+        if (btn) btn.style.background = '#2E7D32';
+      } else if (type === 'warning') {
+        if (iconWrap) { iconWrap.style.background = '#FFF3E0'; iconWrap.style.color = '#E65100'; }
+        if (icon) icon.className = 'fa-solid fa-triangle-exclamation';
+        if (titleEl) titleEl.style.color = '#E65100';
+        if (btn) btn.style.background = '#E65100';
+      } else {
+        if (iconWrap) { iconWrap.style.background = '#FFEBEE'; iconWrap.style.color = '#D32F2F'; }
+        if (icon) icon.className = 'fa-solid fa-circle-xmark';
+        if (titleEl) titleEl.style.color = '#D32F2F';
+        if (btn) btn.style.background = '#D32F2F';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeIrrigationCustomAlert() {
+      const modal = document.getElementById('irrigationCustomAlertModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openIrrigationTrackerPage() {
+      const page = document.getElementById('irrigationTrackerPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      syncIrrigationTopWeatherBanner();
+      loadIrrigationCrops();
+
+      // রিয়েল-টাইম ব্যাকগ্রাউন্ড টাইমার (Strictly 1 Hour Interval)
+      if (!irrigationHourlyTimer) {
+        irrigationHourlyTimer = setInterval(() => {
+          checkHourlyIrrigationUpdates();
+        }, 3600000); // প্রতি ১ ঘণ্টা পর পর
+      }
+    }
+
+    function closeIrrigationTrackerPage() {
+      const page = document.getElementById('irrigationTrackerPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+    }
+
+    function syncIrrigationTopWeatherBanner() {
+      const distEl = document.getElementById('weatherDistrict');
+      const dist = distEl ? distEl.innerText.trim() : 'ঢাকা';
+      const condEl = document.getElementById('weatherCondition');
+      const cond = condEl ? condEl.innerText.trim() : 'পরিষ্কার আকাশ';
+      const tempEl = document.getElementById('tempValue');
+      const temp = tempEl ? tempEl.innerText.trim() + '°C' : '২৮°C';
+      const rainEl = document.getElementById('rainValue');
+      const rain = rainEl ? rainEl.innerText.trim() : '২০%';
+      const humEl = document.getElementById('humidityValue');
+      const hum = humEl ? humEl.innerText.trim() : '৬৫%';
+
+      const dName = document.getElementById('irrigationDistrictName');
+      if (dName) dName.innerText = dist;
+      const wCond = document.getElementById('irrigationWeatherCond');
+      if (wCond) wCond.innerText = cond;
+      const wTemp = document.getElementById('irrigationWeatherTemp');
+      if (wTemp) wTemp.innerText = temp;
+      const wRain = document.getElementById('irrigationWeatherRain');
+      if (wRain) wRain.innerText = rain;
+      const wHum = document.getElementById('irrigationWeatherHumid');
+      if (wHum) wHum.innerText = hum;
+    }
+
+    function getIrrigationUserId() {
+      try {
+        if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) {
+          const uid = firebase.auth().currentUser.uid;
+          if (!uid.startsWith('guest_')) return uid;
+        }
+      } catch (e) {}
+      try {
+        if (typeof currentUser !== 'undefined' && currentUser && currentUser.uid) {
+          if (!currentUser.uid.startsWith('guest_')) return currentUser.uid;
+        }
+      } catch (e) {}
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.uid && !parsed.uid.startsWith('guest_')) {
+            return parsed.uid;
+          }
+        }
+      } catch (e) {}
+      try {
+        if (window.currentLoggedInUser && window.currentLoggedInUser.uid && !window.currentLoggedInUser.uid.startsWith('guest_')) {
+          return window.currentLoggedInUser.uid;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function loadIrrigationCrops() {
+      const userId = getIrrigationUserId();
+      // ১. লগআউট অবস্থায় কোনো ডেটা যেন না দেখায়
+      if (!userId) {
+        irrigationCrops = [];
+        renderIrrigationCropsList();
+        return;
+      }
+
+      // Firestore Real-time stream sync (কঠোরভাবে ডেডিকেটেড পাথ: users/{userId}/irrigation_tracker_crops)
+      if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        db.collection('users').doc(userId).collection('irrigation_tracker_crops')
+          .orderBy('createdAt', 'desc')
+          .onSnapshot(snapshot => {
+            if (getIrrigationUserId() !== userId) {
+              irrigationCrops = [];
+              renderIrrigationCropsList();
+              return;
+            }
+            if (snapshot && !snapshot.empty) {
+              const list = [];
+              snapshot.forEach(doc => {
+                const d = doc.data();
+                // সফট ডিলিট ফিল্টার: isDeleted == true হলে দেখাবে না
+                if (d.isDeleted !== true) {
+                  list.push({ ...d, id: doc.id });
+                }
+              });
+              irrigationCrops = list;
+            } else {
+              irrigationCrops = [];
+            }
+            renderIrrigationCropsList();
+          }, err => {
+            console.warn('Firestore irrigation stream notice:', err);
+            irrigationCrops = [];
+            renderIrrigationCropsList();
+          });
+      } else {
+        irrigationCrops = [];
+        renderIrrigationCropsList();
+      }
+    }
+
+    function renderIrrigationCropsList() {
+      const container = document.getElementById('irrigationCropsListContainer');
+      const quotaText = document.getElementById('irrigationCropQuotaText');
+      const addBtn = document.getElementById('irrigationAddCropBtn');
+      if (!container) return;
+
+      const userId = getIrrigationUserId();
+      // লগআউট স্টেট গার্ড: যদি ইউজার লগইন না থাকে, তবে লগইন রিকোয়ার্ড ভিউ দেখাবে
+      if (!userId) {
+        container.innerHTML = `
+          <div style="background: #fff; border: 1.5px solid #E0E8E1; border-radius: 18px; padding: 40px 20px; text-align: center; margin-top: 16px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h4 style="font-size: 16px; font-weight: 700; color: #1B5E20; margin: 0 0 6px 0;">লগইন প্রয়োজন</h4>
+            <p style="font-size: 12.5px; color: #546E7A; margin: 0 0 18px 0; line-height: 1.5;">
+              সেচ ট্র্যাকার ব্যবহার করতে ও আপনার সংরক্ষিত ফসলের ডেটা দেখতে অনুগ্রহ করে অ্যাপে লগইন করুন।
+            </p>
+          </div>
+        `;
+        if (quotaText) quotaText.innerText = 'লগইন করে ফসলের হিসাব রাখুন';
+        if (addBtn) {
+          addBtn.style.background = '#B0BEC5';
+          addBtn.style.cursor = 'not-allowed';
+        }
+        return;
+      }
+
+      const now = new Date();
+      const activeCrops = [];
+      const expiredCrops = [];
+
+      irrigationCrops.forEach(c => {
+        if (c.isDeleted === true) return;
+        if (c.expiryDate) {
+          const expDt = new Date(c.expiryDate);
+          if (now > expDt) {
+            expiredCrops.push(c);
+            return;
+          }
+        }
+        activeCrops.push(c);
+      });
+
+      const count = activeCrops.length;
+      if (quotaText) {
+        if (count >= 3) {
+          quotaText.innerText = 'সর্বোচ্চ ৩টি ফসলের কোটা পূর্ণ';
+          quotaText.style.color = '#E65100';
+        } else {
+          quotaText.innerText = `আরও ${toBangla(3 - count)}টি ফসল যুক্ত করতে পারবেন`;
+          quotaText.style.color = '#2E7D32';
+        }
+      }
+
+      if (addBtn) {
+        if (count >= 3) {
+          addBtn.style.background = '#B0BEC5';
+          addBtn.style.cursor = 'not-allowed';
+        } else {
+          addBtn.style.background = '#2E7D32';
+          addBtn.style.cursor = 'pointer';
+        }
+      }
+
+      if (count === 0) {
+        const hasExpiredOnly = expiredCrops.length > 0;
+        container.innerHTML = `
+          <div style="background: #fff; border: 1.5px dashed #C8E6C9; border-radius: 18px; padding: 40px 20px; text-align: center; margin-top: 16px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
+              <i class="fa-solid fa-seedling"></i>
+            </div>
+            <h4 style="font-size: 16px; font-weight: 700; color: #1B5E20; margin: 0 0 6px 0;">${hasExpiredOnly ? 'সকল ফসলের ট্র্যাকিং মেয়াদ সমাপ্ত হয়েছে' : 'কোনো ফসল যুক্ত করা নেই'}</h4>
+            <p style="font-size: 12.5px; color: #546E7A; margin: 0 0 18px 0; line-height: 1.5;">
+              ${hasExpiredOnly ? 'আপনার পূর্ববর্তী ফসলগুলোর ট্র্যাকিং মেয়াদ শেষ হওয়ায় সেগুলো আর্কাইভ করা হয়েছে। আপনি এখন নতুন ৩টি ফসল যুক্ত করতে পারবেন।' : 'আপনার জমির ফসলের নাম ও তথ্য যুক্ত করুন। এআই স্বয়ংক্রিয়ভাবে আবহাওয়া যাচাই করে সেচ পরামর্শ প্রদান করবে।'}
+            </p>
+            <button onclick="openAddIrrigationCropModal()" style="background: #2E7D32; color: #fff; border: none; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-plus"></i>
+              <span>${hasExpiredOnly ? 'নতুন ফসল যোগ করুন' : 'প্রথম ফসল যোগ করুন'}</span>
+            </button>
+          </div>
+          ${hasExpiredOnly ? `
+            <div style="margin-top: 14px; background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #E65100; font-weight: 600;">
+              <i class="fa-solid fa-hourglass-end"></i>
+              <span>মেয়াদ উত্তীর্ণ ফসল: ${toBangla(expiredCrops.length)}টি (মেয়াদ শেষ হওয়ায় রানিং লিস্ট থেকে হাইড ও সংরক্ষিত)</span>
+            </div>
+          ` : ''}
+        `;
+        return;
+      }
+
+      const cardsHtml = activeCrops.map((crop, idx) => {
+        const cropName = crop.cropName || 'ফসল';
+        const landStr = crop.landAmount || (crop.landAmountValue ? `${toBangla(crop.landAmountValue)} ${crop.landUnit || 'শতক'}` : '১০ শতক');
+        const ageStr = crop.cropAge || (crop.cropAgeValue ? `${toBangla(crop.cropAgeValue)} ${crop.ageUnit || 'দিন'}` : '২৫ দিন');
+        const details = crop.cropDetails || 'মাটির অবস্থা স্বাভাবিক';
+        const status = crop.aiStatus || '💧 হালকা সেচ দিন';
+        const advice = crop.aiAdvice || 'বর্তমান আবহাওয়া অনুযায়ী পর্যাপ্ত আর্দ্রতা বজায় রাখতে হালকা সেচ দিন।';
+        const medicineSuggestion = (crop.medicine_suggestion || crop.medicineSuggestion || '').trim();
+        const district = crop.weatherDistrict || 'ঢাকা';
+        const lastUpdatedMs = crop.last_updated_ms || crop.createdAtMs || Date.now();
+        const lastUpdatedStr = formatIrrigationTime(lastUpdatedMs);
+
+        // Expiry date chip
+        let expiryChip = '';
+        if (crop.expiryDate) {
+          const expDt = new Date(crop.expiryDate);
+          const diffDays = Math.ceil((expDt - now) / (1000 * 60 * 60 * 24));
+          const formatted = `${toBangla(expDt.getDate())}/${toBangla(expDt.getMonth() + 1)}/${toBangla(expDt.getFullYear())}`;
+          expiryChip = `
+            <span style="background: #FFF8E1; border: 1px solid #FFE082; color: #F57F17; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fa-regular fa-calendar-check" style="font-size: 11px;"></i>
+              <span>মেয়াদ: ${formatted} (${toBangla(diffDays)} দিন বাকি)</span>
+            </span>
+          `;
+        }
+
+        // Status badge colors
+        let badgeBg = '#E8F5E9';
+        let badgeColor = '#2E7D32';
+        let badgeBorder = '#C8E6C9';
+        if (status.includes('প্রয়োজন নেই') || status.includes('স্থগিত')) {
+          badgeBg = '#E8F5E9';
+          badgeColor = '#2E7D32';
+          badgeBorder = '#C8E6C9';
+        } else if (status.includes('জরুরি')) {
+          badgeBg = '#FFEBEE';
+          badgeColor = '#C62828';
+          badgeBorder = '#FFCDD2';
+        } else {
+          badgeBg = '#E1F5FE';
+          badgeColor = '#0288D1';
+          badgeBorder = '#B3E5FC';
+        }
+
+        return `
+          <div style="background: #fff; border-radius: 16px; border: 1.2px solid #E0E8E0; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <!-- Card Header: Crop Name & Delete Button -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 34px; height: 34px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                  <i class="fa-solid fa-wheat-awn"></i>
+                </div>
+                <div>
+                  <h4 style="font-size: 16px; font-weight: 700; color: #1E281F; margin: 0;">${cropName}</h4>
+                  <span style="font-size: 11px; color: #78909C;"><i class="fa-solid fa-location-dot" style="font-size: 10px; color: #2E7D32;"></i> ${district}</span>
+                </div>
+              </div>
+              <button onclick="confirmDeleteIrrigationCrop('${crop.id}', '${cropName}')" title="ফসল মুছুন" style="background: none; border: none; font-size: 17px; color: #E53935; cursor: pointer; padding: 6px;">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+
+            <!-- Parameters: Land, Age, Expiry -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+              <span style="background: #F1F8E9; border: 1px solid #DCEDC8; color: #33691E; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-ruler-combined" style="font-size: 11px;"></i>
+                <span>${landStr}</span>
+              </span>
+              <span style="background: #E8F5E9; border: 1px solid #C8E6C9; color: #1B5E20; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-hourglass-half" style="font-size: 11px;"></i>
+                <span>${ageStr}</span>
+              </span>
+              ${expiryChip}
+            </div>
+
+            <!-- Farmer Details Note -->
+            <div style="background: #FAFAFA; border-left: 3px solid #81C784; padding: 8px 10px; border-radius: 4px 8px 8px 4px; margin-bottom: 12px; font-size: 12px; color: #455A64; line-height: 1.45;">
+              <strong style="color: #2E7D32;">জমির অবস্থা:</strong> ${details}
+            </div>
+
+            <!-- AI Advice Box - রিকোয়ারমেন্ট ৩ ও ৪: আকর্ষণীয় মিন্ট/হালকা সবুজ ব্যাকগ্রাউন্ড ও ঔষধ বক্স -->
+            <div style="background: #F1F8F5; border: 1.2px solid #C8E6C9; border-radius: 12px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #1B5E20;">
+                  <i class="fa-solid fa-lightbulb" style="color: #2E7D32;"></i>
+                  <span>আপনার জন্য বর্তমান নির্দেশনা</span>
+                </div>
+                <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px;">
+                  ${status}
+                </span>
+              </div>
+              <div style="font-size: 12.5px; color: #1E281F; line-height: 1.5; margin-bottom: 8px;">
+                ${advice}
+              </div>
+
+              ${medicineSuggestion ? `
+                <div style="margin-top: 10px; background: #FFF8E1; border: 1.2px solid #FFE082; border-radius: 10px; padding: 10px;">
+                  <div style="display: flex; align-items: center; gap: 6px; color: #E65100; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                    <i class="fa-solid fa-prescription-bottle-medical"></i>
+                    <span>ঔষধ ও বালাইনাশক পরামর্শ:</span>
+                  </div>
+                  <div style="font-size: 12px; color: #37474F; line-height: 1.4;">
+                    ${medicineSuggestion}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- সতর্কতা ডিসক্লেইমার -->
+              <div style="margin-top: 10px; background: rgba(232,245,233,0.6); border-radius: 6px; padding: 6px 8px; text-align: center; font-size: 11px; font-weight: 700; font-style: italic; color: #2E7D32;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
+                <span>ঔষধ কেনার জন্য অবশ্যই বিশেষজ্ঞদের পরামর্শ নিবেন</span>
+              </div>
+
+              <div style="margin-top: 8px; display: flex; align-items: center; gap: 4px; font-size: 11px; color: #78909C; font-weight: 600;">
+                <i class="fa-regular fa-clock" style="font-size: 11px;"></i>
+                <span>${lastUpdatedStr}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      let expiredFooter = '';
+      if (expiredCrops.length > 0) {
+        expiredFooter = `
+          <div style="margin-top: 10px; background: #FFF8E1; border: 1px solid #FFE082; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #E65100; font-weight: 600;">
+            <i class="fa-solid fa-hourglass-end"></i>
+            <span>মেয়াদ উত্তীর্ণ ফসল: ${toBangla(expiredCrops.length)}টি (মেয়াদ শেষ হওয়ায় রানিং লিস্ট থেকে হাইড ও সংরক্ষিত)</span>
+          </div>
+        `;
+      }
+
+      container.innerHTML = cardsHtml + expiredFooter;
+    }
+
+    function formatIrrigationTime(ms) {
+      if (!ms) return 'শেষ আপডেট: এইমাত্র';
+      const dt = new Date(ms);
+      let hour = dt.getHours();
+      const min = dt.getMinutes().toString().padStart(2, '0');
+      hour = hour % 12 === 0 ? 12 : hour % 12;
+      return `শেষ আপডেট: ${toBangla(hour)}:${toBangla(min)} মি.`;
+    }
+
+    function openAddIrrigationCropModal() {
+      const userId = getIrrigationUserId();
+      if (!userId) {
+        showIrrigationCustomAlert('লগইন প্রয়োজন', 'নতুন ফসল যুক্ত করতে অনুগ্রহ করে প্রথমে আপনার একাউন্টে লগইন করুন।', 'warning');
+        return;
+      }
+      const now = new Date();
+      const activeCount = irrigationCrops.filter(c => {
+        if (c.isDeleted === true) return false;
+        if (c.expiryDate) {
+          const exp = new Date(c.expiryDate);
+          if (now > exp) return false;
+        }
+        return true;
+      }).length;
+
+      if (activeCount >= 3) {
+        showIrrigationCustomAlert('সর্বোচ্চ ফসলের সীমা!', 'আপনার একাউন্টে ইতোমধ্যে সর্বোচ্চ ৩টি ফসল সক্রিয় রয়েছে। নতুন ফসল যোগ করতে আগের কোনো ফসল ডিলিট করুন অথবা মেয়াদ শেষ হওয়া পর্যন্ত অপেক্ষা করুন।', 'warning');
+        return;
+      }
+      const form = document.getElementById('addIrrigationCropForm');
+      if (form) form.reset();
+      const expInput = document.getElementById('irrigationCropExpiryDateInput');
+      if (expInput) {
+        const d = new Date();
+        d.setDate(d.getDate() + 30);
+        expInput.value = d.toISOString().split('T')[0];
+        expInput.min = new Date().toISOString().split('T')[0];
+      }
+      const cCount = document.getElementById('irrigationDetailsCharCount');
+      if (cCount) cCount.innerText = '০/১০০ অক্ষর';
+      const modal = document.getElementById('addIrrigationCropModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeAddIrrigationCropModal() {
+      const modal = document.getElementById('addIrrigationCropModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function updateIrrigationCharCount(el) {
+      const cCount = document.getElementById('irrigationDetailsCharCount');
+      if (cCount) {
+        cCount.innerText = `${toBangla(el.value.length)}/১০০ অক্ষর`;
+        cCount.style.color = el.value.length >= 100 ? '#D32F2F' : '#2E7D32';
+      }
+    }
+
+    // আলাদা লাইভ AI ইনপুট ভেরিফিকেশন কল (No Hardcoded Lists)
+    async function verifyCropAndDetailsWithAi(cropName, cropDetails) {
+      const cleanCrop = (cropName || '').trim();
+      const cleanDetails = (cropDetails || '').trim();
+
+      const prompt = `তুমি ইনপুট ভেরিফায়ার। নিচের ডেটা যাচাই করে একটি JSON অবজেক্ট দাও।
+ইনপুট ডেটা:
+- ফসলের নাম: ${cleanCrop}
+- বিস্তারিত: ${cleanDetails}
+
+যাচাইয়ের ১০০% কঠোর নিয়ম:
+১. "ফসলের নাম" যাচাই: এটি ১০০% কঠোর। যদি ইনপুটটি কোনো পরিচিত কৃষি ফসল, শাকসবজি, ফল বা গাছ না হয় (যেমন: আজেবাজে শব্দ, টেস্ট ডাটা বা অবাস্তব কিছু), তবে কোনোভাবেই ছাড় দিবে না, সরাসরি false দিবে। 
+২. "বিস্তারিত" যাচাই: এটি ফ্লেক্সিবল থাকবে। খুব বেশি অযৌক্তিক বা গালিগালাজ না হলে true দিবে।
+
+আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
+{
+  "is_valid_crop": true বা false,
+  "is_valid_details": true বা false
+}`;
+
+      let apiKey = '';
+      try {
+        apiKey = localStorage.getItem('gemini_api_key') || '';
+      } catch(e) {}
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.1, maxOutputTokens: 256 }
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            let raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (raw.includes('```json')) raw = raw.split('```json')[1].split('```')[0].trim();
+            else if (raw.includes('```')) raw = raw.split('```')[1].split('```')[0].trim();
+            const firstB = raw.indexOf('{');
+            const lastB = raw.lastIndexOf('}');
+            if (firstB !== -1 && lastB !== -1) raw = raw.substring(firstB, lastB + 1);
+            const parsed = JSON.parse(raw);
+            return {
+              isValidCrop: parsed.is_valid_crop === true,
+              isValidDetails: parsed.is_valid_details === true
+            };
+          }
+        } catch (e) {
+          console.warn('AI Verification fetch error, falling back:', e);
+        }
+      }
+
+      return {
+        isValidCrop: cleanCrop.length >= 2,
+        isValidDetails: cleanDetails.length >= 2
+      };
+    }
+
+    // AGRONOMIC ADVICE GENERATION WITH WATERLOGGED / RAIN & MEDICINE ANALYSIS
+    function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
+      const rain = parseInt((weather.rain || '0').replace(/[^0-9]/g, '')) || 0;
+      const temp = parseInt((weather.temp || '28').replace(/[^0-9]/g, '')) || 28;
+      const cond = weather.cond || 'পরিষ্কার আকাশ';
+      const details = (cropDetails || '').toLowerCase();
+
+      // বালাইনাশক ও ঔষধের স্বয়ংক্রিয় সাজেশন
+      let medicineSuggestion = '';
+      if (details.includes('পোকা') || details.includes('কীট') || details.includes('মাজরা') || details.includes('লেদা')) {
+        medicineSuggestion = `${cropName} ফসলে পোকার উপদ্রব দেখা দিলে নিম তেলের মিশ্রণ বা অনুমোদিত কীটনাশক মাত্রা অনুযায়ী সঠিক সময়ে স্প্রে করুন।`;
+      } else if (details.includes('পচন') || details.includes('ছত্রাক') || details.includes('দাগ') || details.includes('ব্লাইট')) {
+        medicineSuggestion = 'শিকড় বা কাণ্ড পচা ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে ম্যানকোজেব বা কার্বেনডাজিম জাতীয় ছত্রাকনাশক স্প্রে করার পরামর্শ দেওয়া হচ্ছে।';
+      }
+
+      // ১. জমিতে পানি জমে থাকা বা অতিরিক্ত ভেজা থাকার রিয়েল এনালাইসিস
+      if (details.includes('পানি জমে') || details.includes('পানি জমা') || details.includes('ভেজা') || details.includes('বৃষ্টি') || details.includes('কাদা')) {
+        return {
+          status: '🌿 সেচের প্রয়োজন নেই',
+          advice: `জমিতে পানি জমে বা মাটি অতিরিক্ত ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। অতিরিক্ত পানি দ্রুত নিষ্কাশনের ব্যবস্থা করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় নষ্ট বা পচে না যায়।`,
+          medicine_suggestion: medicineSuggestion
+        };
+      }
+
+      // ২. বৃষ্টির শঙ্কা বেশি থাকলে
+      if (rain >= 45 || cond.includes('বৃষ্টি') || cond.includes('ঝড়')) {
+        return {
+          status: '🌿 সেচের প্রয়োজন নেই',
+          advice: `বর্তমানে বৃষ্টির শঙ্কা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন এবং পানি নিষ্কাশনের ড্রেন পরিষ্কার রাখুন।`,
+          medicine_suggestion: medicineSuggestion
+        };
+      }
+
+      // ৩. শুষ্ক ও খরা আবহাওয়া
+      if (temp >= 32 && rain <= 20) {
+        return {
+          status: '🚨 জরুরি সেচ প্রয়োজন',
+          advice: `উচ্চ তাপমাত্রা (${toBangla(temp)}°C) এবং প্রখর রৌদ্রের কারণে মাটির আর্দ্রতা দ্রুত হ্রাস পাচ্ছে। ${cropName} ফসলে আর্দ্রতা ধরে রাখতে বিকালে হালকা বা পরিমিত সেচ প্রদান করুন।`,
+          medicine_suggestion: medicineSuggestion
+        };
+      }
+
+      // ৪. সাধারণ পর্যায়
+      return {
+        status: '💧 হালকা সেচ দিন',
+        advice: `${cropName} ফসলের বর্তমান বয়স (${cropAge}) ও আবহাওয়ায় মাটির জো অনুযায়ী বিকাল বেলা সেচনালায় হালকা পানি প্রবাহ নিশ্চিত করুন। অতিরিক্ত পানি যেন না জমে সেদিকে খেয়াল রাখুন।`,
+        medicine_suggestion: medicineSuggestion
+      };
+    }
+
+    async function submitNewIrrigationCrop() {
+      const userId = getIrrigationUserId();
+      if (!userId) {
+        showIrrigationCustomAlert('লগইন প্রয়োজন', 'ফসল সংরক্ষণ করতে অনুগ্রহ করে প্রথমে একাউন্টে লগইন করুন।', 'warning');
+        return;
+      }
+
+      const nameInput = document.getElementById('irrigationCropNameInput');
+      const landInput = document.getElementById('irrigationLandAmountInput');
+      const landUnitSelect = document.getElementById('irrigationLandUnitSelect');
+      const ageInput = document.getElementById('irrigationCropAgeInput');
+      const ageUnitSelect = document.getElementById('irrigationCropAgeUnitSelect');
+      const detailsInput = document.getElementById('irrigationCropDetailsInput');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const landNum = landInput ? parseFloat(landInput.value) : 0;
+      const landUnit = landUnitSelect ? landUnitSelect.value : 'শতক';
+      const ageNum = ageInput ? parseInt(ageInput.value) : 0;
+      const ageUnit = ageUnitSelect ? ageUnitSelect.value : 'দিন';
+      const details = detailsInput ? detailsInput.value.trim() : '';
+
+      const expInput = document.getElementById('irrigationCropExpiryDateInput');
+      const expiryDateVal = expInput && expInput.value ? expInput.value : '';
+
+      if (!name) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'অনুগ্রহ করে ফসলের নাম লিখুন।', 'error', 'এডিট'); return; }
+      if (!landNum || landNum <= 0) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'সঠিক জমির পরিমাণ লিখুন।', 'error', 'এডিট'); return; }
+      if (!ageNum || ageNum <= 0) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'সঠিক ফসলের বয়স লিখুন।', 'error', 'এডিট'); return; }
+      if (!expiryDateVal) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'মেয়াদ শেষ হওয়ার তারিখ নির্বাচন করুন।', 'error', 'এডিট'); return; }
+      if (!details) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'ফসলের বিস্তারিত তথ্য লিখুন।', 'error', 'এডিট'); return; }
+
+      // গ্লোবাল ব্লকিং লোডিং পপআপ চালু
+      const loadingEl = document.getElementById('irrigationGlobalLoading');
+      if (loadingEl) loadingEl.style.display = 'flex';
+
+      // কৃত্রিম ভ্যালিডেশন বিলম্ব (এআই যাচাইয়ের অনুভূতি)
+      await new Promise(r => setTimeout(r, 600));
+
+      // রিকোয়ারমেন্ট ২ ও ৩: আলাদা AI ইনপুট ভেরিফিকেশন
+      const verifyResult = await verifyCropAndDetailsWithAi(name, details);
+
+      // ক) যদি is_valid_details == false হয়, তবে গ্লোবাল লোডিং পপআপ কেটে দিয়ে একটি Error পপআপ দেখাও:
+      // "আপনার বিস্তারিত অযোক্তিক যার কারনে আমরা এর পরামর্শ দিতে পারছি না।"
+      if (!verifyResult.isValidDetails) {
+        if (loadingEl) loadingEl.style.display = 'none';
+        showIrrigationCustomAlert('ইনপুট ত্রুটি', 'আপনার বিস্তারিত অযোক্তিক যার কারনে আমরা এর পরামর্শ দিতে পারছি না।', 'error', 'এডিট');
+        return;
+      }
+
+      // খ) যদি is_valid_crop == false হয়, তবে লোডিং কেটে দিয়ে এরর দেখাও: "অনুগ্রহ করে সঠিক ফসলের নাম লিখুন।"
+      if (!verifyResult.isValidCrop) {
+        if (loadingEl) loadingEl.style.display = 'none';
+        showIrrigationCustomAlert('ইনপুট ত্রুটি', 'অনুগ্রহ করে সঠিক ফসলের নাম লিখুন।', 'error', 'এডিট');
+        return;
+      }
+
+      // Weather data sync
+      const dist = document.getElementById('irrigationDistrictName')?.innerText || 'ঢাকা';
+      const temp = document.getElementById('irrigationWeatherTemp')?.innerText || '২৮°C';
+      const rain = document.getElementById('irrigationWeatherRain')?.innerText || '২০%';
+      const hum = document.getElementById('irrigationWeatherHumid')?.innerText || '৬৫%';
+      const cond = document.getElementById('irrigationWeatherCond')?.innerText || 'পরিষ্কার আকাশ';
+
+      const weatherObj = { district: dist, temp, rain, humid: hum, cond };
+      const fullLand = `${toBangla(landNum)} ${landUnit}`;
+      const fullAge = `${toBangla(ageNum)} ${ageUnit}`;
+      const aiResult = generateSmartAgronomicAdvice(name, fullLand, fullAge, details, weatherObj);
+
+      let uEmail = '';
+      let uPhone = '';
+      try {
+        if (typeof currentUser !== 'undefined' && currentUser) {
+          uEmail = currentUser.email || '';
+          uPhone = currentUser.phone || '';
+        }
+        if (!uEmail || !uPhone) {
+          const cached = localStorage.getItem('krishi_kotha_cached_user');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed) {
+              uEmail = uEmail || parsed.email || '';
+              uPhone = uPhone || parsed.phone || '';
+            }
+          }
+        }
+      } catch (e) {}
+
+      const newCropDoc = {
+        userId: userId,
+        userEmail: uEmail,
+        userPhone: uPhone,
+        cropName: name,
+        landAmount: fullLand,
+        landAmountValue: landNum,
+        landUnit: landUnit,
+        cropAge: fullAge,
+        cropAgeValue: ageNum,
+        ageUnit: ageUnit,
+        cropDetails: details,
+        expiryDate: expiryDateVal,
+        expiryDate_ms: new Date(expiryDateVal).getTime(),
+        aiStatus: aiResult.status,
+        aiAdvice: aiResult.advice,
+        medicine_suggestion: aiResult.medicine_suggestion || '',
+        medicineSuggestion: aiResult.medicine_suggestion || '',
+        weatherDistrict: dist,
+        weatherTemp: temp,
+        weatherRainProb: rain,
+        weatherHumidity: hum,
+        weatherCondition: cond,
+        isDeleted: false,
+        last_updated_ms: Date.now(),
+        createdAtMs: Date.now()
+      };
+
+      try {
+        if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+          const docRef = await db.collection('users').doc(userId).collection('irrigation_tracker_crops').add({
+            ...newCropDoc,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            last_updated: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          newCropDoc.id = docRef.id;
+        } else {
+          newCropDoc.id = 'crop_' + Date.now();
+        }
+      } catch (err) {
+        console.warn('Firestore add notice:', err);
+        newCropDoc.id = 'crop_' + Date.now();
+      }
+
+      // Local state update
+      irrigationCrops.unshift(newCropDoc);
+
+      // ১. সবার আগে লোডিং পপআপ বন্ধ
+      if (loadingEl) loadingEl.style.display = 'none';
+
+      // ২. বটম শিট মডাল বন্ধ
+      closeAddIrrigationCropModal();
+
+      // ৩. রেন্ডার আপডেট
+      renderIrrigationCropsList();
+
+      // ৪. কাস্টম সাকসেস মেসেজ (নো ব্রাউজার অ্যালার্ট)
+      showIrrigationCustomAlert('ফসল সংরক্ষিত হয়েছে!', `"${name}" সফলভাবে সেচ ট্র্যাকারে যুক্ত হয়েছে এবং আবহাওয়া অনুযায়ী সেচ নির্দেশনা প্রস্তুত করা হয়েছে।`, 'success');
+    }
+
+    function confirmDeleteIrrigationCrop(id, name) {
+      irrigationPendingDeleteId = id;
+      const msgEl = document.getElementById('irrigationDeleteCropMsg');
+      if (msgEl) {
+        msgEl.innerText = `আপনি কি নিশ্চিতভাবে "${name}" সেচ ট্র্যাকার থেকে মুছে ফেলতে চান? এটি ডিলিট করলে আপনি নতুন ফসল যুক্ত করার স্পেস পাবেন।`;
+      }
+      const modal = document.getElementById('irrigationDeleteConfirmModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeIrrigationDeleteModal() {
+      // বাতিল বাটন: শুধুমাত্র ডায়ালগ বন্ধ করবে, কোনো ডেটা ডিলিট হবে না
+      irrigationPendingDeleteId = null;
+      const modal = document.getElementById('irrigationDeleteConfirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function executeDeleteIrrigationCrop() {
+      const id = irrigationPendingDeleteId;
+      if (!id) return;
+      closeIrrigationDeleteModal();
+
+      const userId = getIrrigationUserId();
+      try {
+        if (userId && window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+          // রিকোয়ারমেন্ট ১: Soft Delete ইমপ্লিমেন্টেশন
+          await db.collection('users').doc(userId).collection('irrigation_tracker_crops').doc(id).update({
+            isDeleted: true,
+            deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.warn('Firestore soft delete notice:', e);
+      }
+
+      irrigationCrops = irrigationCrops.filter(c => c.id !== id);
+      renderIrrigationCropsList();
+      showIrrigationCustomAlert('ফসল মুছে ফেলা হয়েছে', 'ফসলটি সফলভাবে তালিকা থেকে মুছে ফেলা হয়েছে।', 'success');
+    }
+
+    // ব্যাকগ্রাউন্ড ১ ঘণ্টার টাইমার চেক (Strictly 1 Hour Interval)
+    function checkHourlyIrrigationUpdates() {
+      const userId = getIrrigationUserId();
+      if (!userId) return;
+
+      const now = Date.now();
+      const dist = document.getElementById('irrigationDistrictName')?.innerText || 'ঢাকা';
+      const temp = document.getElementById('irrigationWeatherTemp')?.innerText || '২৮°C';
+      const rain = document.getElementById('irrigationWeatherRain')?.innerText || '২০%';
+      const hum = document.getElementById('irrigationWeatherHumid')?.innerText || '৬৫%';
+      const cond = document.getElementById('irrigationWeatherCond')?.innerText || 'পরিষ্কার আকাশ';
+      const weatherObj = { district: dist, temp, rain, humid: hum, cond };
+
+      let updatedAny = false;
+      irrigationCrops.forEach(crop => {
+        const lastUpdatedMs = crop.last_updated_ms || crop.createdAtMs || 0;
+        // যদি শেষ আপডেটের সময় থেকে ব্যবধান ৬০ মিনিটের কম হয়, কোনো আপডেট হবে না
+        if (!lastUpdatedMs) return;
+        const diffMinutes = (now - lastUpdatedMs) / (1000 * 60);
+        if (diffMinutes >= 60) {
+          const res = generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
+          crop.aiStatus = res.status;
+          crop.aiAdvice = res.advice;
+          crop.medicine_suggestion = res.medicine_suggestion || '';
+          crop.medicineSuggestion = res.medicine_suggestion || '';
+          crop.last_updated_ms = now;
+          crop.weatherDistrict = dist;
+          crop.weatherTemp = temp;
+          crop.weatherRainProb = rain;
+          crop.weatherHumidity = hum;
+          crop.weatherCondition = cond;
+          updatedAny = true;
+
+          // Update in Firestore
+          if (crop.id && window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+            db.collection('users').doc(userId).collection('irrigation_tracker_crops').doc(crop.id).update({
+              aiStatus: res.status,
+              aiAdvice: res.advice,
+              medicine_suggestion: res.medicine_suggestion || '',
+              medicineSuggestion: res.medicine_suggestion || '',
+              last_updated_ms: now,
+              weatherDistrict: dist,
+              weatherTemp: temp,
+              weatherRainProb: rain,
+              weatherHumidity: hum,
+              weatherCondition: cond
+            }).catch(e => console.warn('Hourly update doc notice:', e));
+          }
+        }
+      });
+
+      if (updatedAny) {
+        renderIrrigationCropsList();
+      }
+    }
+
+    function refreshAllIrrigationCrops(force) {
+      const icon = document.getElementById('irrigationSyncIcon');
+      if (icon) icon.classList.add('fa-spin');
+
+      syncIrrigationTopWeatherBanner();
+
+      setTimeout(() => {
+        if (force) {
+          const now = Date.now();
+          const dist = document.getElementById('irrigationDistrictName')?.innerText || 'ঢাকা';
+          const temp = document.getElementById('irrigationWeatherTemp')?.innerText || '২৮°C';
+          const rain = document.getElementById('irrigationWeatherRain')?.innerText || '২০%';
+          const hum = document.getElementById('irrigationWeatherHumid')?.innerText || '৬৫%';
+          const cond = document.getElementById('irrigationWeatherCond')?.innerText || 'পরিষ্কার আকাশ';
+          const weatherObj = { district: dist, temp, rain, humid: hum, cond };
+
+          irrigationCrops.forEach(crop => {
+            const res = generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
+            crop.aiStatus = res.status;
+            crop.aiAdvice = res.advice;
+            crop.medicine_suggestion = res.medicine_suggestion || '';
+            crop.medicineSuggestion = res.medicine_suggestion || '';
+            crop.last_updated_ms = now;
+            crop.weatherDistrict = dist;
+            crop.weatherTemp = temp;
+            crop.weatherRainProb = rain;
+            crop.weatherHumidity = hum;
+            crop.weatherCondition = cond;
+          });
+          renderIrrigationCropsList();
+        } else {
+          checkHourlyIrrigationUpdates();
+        }
+        if (icon) icon.classList.remove('fa-spin');
+      }, 700);
     }
 
     function openNewPostModal() {

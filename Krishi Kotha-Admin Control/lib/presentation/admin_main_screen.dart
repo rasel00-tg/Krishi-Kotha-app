@@ -16,6 +16,7 @@ import 'screens/farming_calendar_management_screen.dart';
 import 'screens/expert_helpline_management_screen.dart';
 import 'screens/admin_income_expense_history_page.dart';
 import 'screens/seed_monitoring_screen.dart';
+import 'screens/irrigation_monitoring_screen.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -43,6 +44,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     'হোমপেজ – কৃষি বিশেষজ্ঞ (Coming Soon)',
     'হোমপেজ – কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
     'হোমপেজ – বীজের তথ্য মনিটরিং',
+    'হোমপেজ – সেচ ট্র্যাকার মনিটরিং',
   ];
 
   @override
@@ -62,6 +64,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       const ExpertHelplineManagementScreen(),
       const AdminIncomeExpenseHistoryPage(),
       const SeedMonitoringScreen(),
+      const IrrigationMonitoringScreen(),
     ];
   }
 
