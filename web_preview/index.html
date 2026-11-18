@@ -106,7 +106,7 @@
       height: 48px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.06));
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.06));
     }
 
     .app-bar-actions {
@@ -2239,17 +2239,20 @@
 <body>
 
   <!-- Custom Full Screen Splash Screen with 2-Second Delay & Fade-Out Animation -->
-  <div id="appSplashScreen" style="position: fixed; inset: 0; z-index: 9999999; background: #ffffff; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
-    <img src="/assets/images/opening image.png" alt="Opening Splash" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='/assets/images/opening image/opening image.png'" />
+  <div id="appSplashScreen"
+    style="position: fixed; inset: 0; z-index: 9999999; background: #ffffff; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
+    <img src="/assets/images/opening image.png" alt="Opening Splash"
+      style="width: 100%; height: 100%; object-fit: cover; display: block;"
+      onerror="this.src='/assets/images/opening image/opening image.png'" />
   </div>
 
   <script>
-    (function() {
-      setTimeout(function() {
+    (function () {
+      setTimeout(function () {
         var splash = document.getElementById('appSplashScreen');
         if (splash) {
           splash.style.opacity = '0';
-          setTimeout(function() {
+          setTimeout(function () {
             splash.style.display = 'none';
           }, 600);
         }
@@ -2263,12 +2266,10 @@
     <div class="app-bar" id="mainAppBar">
       <div class="app-bar-inner">
         <div class="app-header-logo-wrap" title="কৃষি কথা – Krishi Kotha">
-          <img src="pnglogo.png" alt="কৃষি কথা লোগো" class="app-header-logo-img"
-            onerror="this.src='pnglogo.png'" />
+          <img src="pnglogo.png" alt="কৃষি কথা লোগো" class="app-header-logo-img" onerror="this.src='pnglogo.png'" />
         </div>
         <div class="app-bar-actions">
-          <button class="notification-circle-btn" onclick="openNotificationsPage()"
-            title="বিজ্ঞপ্তি ও নোটিফিকেশন">
+          <button class="notification-circle-btn" onclick="openNotificationsPage()" title="বিজ্ঞপ্তি ও নোটিফিকেশন">
             <i class="fa-solid fa-bell"></i>
             <span class="bell-badge-dot" id="bellBadgeDot"></span>
           </button>
@@ -2333,15 +2334,18 @@
             <div class="weather-stack-container">
               <!-- Central Lottie Animation (Clean & Centered) -->
               <div class="weather-lottie-center">
-                <lottie-player src="assets/animation/home animation.json" background="transparent" speed="1" style="width: 175px; height: 175px;" loop autoplay></lottie-player>
+                <lottie-player src="assets/animation/home animation.json" background="transparent" speed="1"
+                  style="width: 175px; height: 175px;" loop autoplay></lottie-player>
               </div>
 
               <!-- Left Side: Location Chip, Degree, Condition -->
               <div class="weather-left-col">
-                <div class="location-chip-modern" id="weatherLocationChip" onclick="openDistrictPicker()" title="জেলা নির্বাচন করুন" style="cursor: pointer;">
+                <div class="location-chip-modern" id="weatherLocationChip" onclick="openDistrictPicker()"
+                  title="জেলা নির্বাচন করুন" style="cursor: pointer;">
                   <i class="fa-solid fa-location-dot" style="color: #2E7D32; font-size: 13px;"></i>
                   <span id="weatherDistrict" style="color: #1B5E20; font-weight: 800; font-size: 12.5px;">ঢাকা</span>
-                  <button class="weather-refresh-btn" id="weatherRefreshBtn" onclick="event.stopPropagation(); manualRefreshWeather();" title="আবহাওয়া রিফ্রেশ">
+                  <button class="weather-refresh-btn" id="weatherRefreshBtn"
+                    onclick="event.stopPropagation(); manualRefreshWeather();" title="আবহাওয়া রিফ্রেশ">
                     <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
                   </button>
                 </div>
@@ -2466,7 +2470,8 @@
             <span>চাষ ক্যালেন্ডার</span>
           </div>
           <!-- ২. কৃষি বিশেষজ্ঞ -->
-          <div class="quick-card" onclick="showAppLogoDialog('কৃষি বিশেষজ্ঞ', 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।', 'ঠিক আছে', '#00897B')">
+          <div class="quick-card"
+            onclick="showAppLogoDialog('কৃষি বিশেষজ্ঞ', 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।', 'ঠিক আছে', '#00897B')">
             <div class="quick-icon-wrap" style="background: #E0F2F1; color: #00897B;">
               <i class="fa-solid fa-user-doctor"></i>
             </div>
@@ -3382,39 +3387,50 @@
     <div class="full-screen-page" id="cropCalendarPage"
       style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
       <!-- Colored Header & Topbar matching Flutter App -->
-      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px;">
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <button class="topbar-back-btn" onclick="closeCropCalendarPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <button class="topbar-back-btn" onclick="closeCropCalendarPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div style="text-align: center; flex: 1;">
             <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসল চাষ ক্যালেন্ডার</h3>
-            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাসভিত্তিক ফসল রোপণ ও পরিচর্যার সময়সূচি</p>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাসভিত্তিক ফসল রোপণ ও
+              পরিচর্যার সময়সূচি</p>
           </div>
           <div style="width: 32px;"></div>
         </div>
 
         <!-- Search Bar -->
-        <div style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
+        <div
+          style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
           <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
-          <input type="text" id="cropCalendarSearchInput" placeholder="ফসলের নাম বা মৌসুম খুঁজুন..." oninput="onCropCalendarSearch(this.value)" style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
+          <input type="text" id="cropCalendarSearchInput" placeholder="ফসলের নাম বা মৌসুম খুঁজুন..."
+            oninput="onCropCalendarSearch(this.value)"
+            style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
         </div>
 
         <!-- Horizontal Month Filter Chips -->
-        <div class="month-chips-scroll" id="calendarMonthChips" style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+        <div class="month-chips-scroll" id="calendarMonthChips"
+          style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
           <!-- Dynamically populated month chips -->
         </div>
       </div>
 
       <!-- Month Banner -->
-      <div id="calendarMonthBanner" style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px;">
+      <div id="calendarMonthBanner"
+        style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
             <i class="fa-solid fa-calendar-check"></i>
           </div>
           <div>
-            <h4 id="calendarBannerMonthTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;"></h4>
-            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">এই মাসের উপযুক্ত ফসল ও পরিচর্যার পরামর্শ নিচে প্রদর্শিত হচ্ছে</p>
+            <h4 id="calendarBannerMonthTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;">
+            </h4>
+            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">এই মাসের উপযুক্ত ফসল ও পরিচর্যার পরামর্শ নিচে
+              প্রদর্শিত হচ্ছে</p>
           </div>
         </div>
       </div>
@@ -3425,16 +3441,20 @@
       </div>
     </div>
 
-        <!-- DEDICATED FULL SCREEN CROP DETAILS PAGE MATCHING FLUTTER CROP_DETAILS_PAGE -->
+    <!-- DEDICATED FULL SCREEN CROP DETAILS PAGE MATCHING FLUTTER CROP_DETAILS_PAGE -->
     <div class="full-screen-page" id="cropCalendarDetailPage"
       style="background: #F7FAF7; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
-      <div style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-        <button onclick="closeCropCalendarDetailPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+      <div
+        style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <button onclick="closeCropCalendarDetailPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div style="text-align: center; flex: 1;">
-          <h3 id="cropDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসলের নাম</h3>
-          <p id="cropDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;"></p>
+          <h3 id="cropDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসলের নাম
+          </h3>
+          <p id="cropDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">
+          </p>
         </div>
         <div style="width: 32px;"></div>
       </div>
@@ -3446,27 +3466,34 @@
     <!-- DEDICATED FULL SCREEN IRRIGATION TRACKER PAGE MATCHING FLUTTER IRRIGATION_TRACKER_SCREEN -->
     <div class="full-screen-page" id="irrigationTrackerPage"
       style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
-      
+
       <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
-      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-          <button class="topbar-back-btn" onclick="closeIrrigationTrackerPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <button class="topbar-back-btn" onclick="closeIrrigationTrackerPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div style="text-align: center; flex: 1;">
             <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">সেচ ট্র্যাকার</h3>
-            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">স্মার্ট সেচ ও ফসলের বর্তমান অবস্থা</p>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">স্মার্ট সেচ ও ফসলের বর্তমান
+              অবস্থা</p>
           </div>
-          <button onclick="refreshAllIrrigationCrops(true)" id="irrigationSyncBtn" style="background: none; border: none; font-size: 16px; color: #fff; cursor: pointer; padding: 6px;" title="ঘণ্টাভিত্তিক ডেটা রিফ্রেশ">
+          <button onclick="refreshAllIrrigationCrops(true)" id="irrigationSyncBtn"
+            style="background: none; border: none; font-size: 16px; color: #fff; cursor: pointer; padding: 6px;"
+            title="ঘণ্টাভিত্তিক ডেটা রিফ্রেশ">
             <i class="fa-solid fa-rotate" id="irrigationSyncIcon"></i>
           </button>
         </div>
 
         <!-- Dynamic Location & Live Weather Banner inside Header -->
-        <div style="background: rgba(255,255,255,0.12); border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); padding: 10px 14px;">
+        <div
+          style="background: rgba(255,255,255,0.12); border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); padding: 10px 14px;">
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 40px; height: 40px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+              <div
+                style="width: 40px; height: 40px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                 <i class="fa-solid fa-cloud-sun-rain" style="color: #2E7D32; font-size: 20px;"></i>
               </div>
               <div>
@@ -3474,7 +3501,8 @@
                   <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #FFD54F;"></i>
                   <span id="irrigationDistrictName" style="font-size: 14px; font-weight: 700; color: #fff;">ঢাকা</span>
                 </div>
-                <div id="irrigationWeatherCond" style="font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 1px;">পরিষ্কার আকাশ</div>
+                <div id="irrigationWeatherCond" style="font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 1px;">
+                  পরিষ্কার আকাশ</div>
               </div>
             </div>
             <div style="display: flex; gap: 12px; text-align: right;">
@@ -3496,12 +3524,15 @@
       </div>
 
       <!-- Action Row (List Title + Add Button) -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px 16px; flex-shrink: 0;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px 16px; flex-shrink: 0;">
         <div>
           <h4 style="font-size: 15.5px; font-weight: 700; color: #1E281F; margin: 0;">আমার তালিকাভুক্ত ফসল</h4>
-          <span id="irrigationCropQuotaText" style="font-size: 11.5px; font-weight: 600; color: #2E7D32;">আরও ৩টি ফসল যুক্ত করতে পারবেন</span>
+          <span id="irrigationCropQuotaText" style="font-size: 11.5px; font-weight: 600; color: #2E7D32;">আরও ৩টি ফসল
+            যুক্ত করতে পারবেন</span>
         </div>
-        <button id="irrigationAddCropBtn" onclick="openAddIrrigationCropModal()" style="background: #2E7D32; color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.2); transition: all 0.2s;">
+        <button id="irrigationAddCropBtn" onclick="openAddIrrigationCropModal()"
+          style="background: #2E7D32; color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.2); transition: all 0.2s;">
           <i class="fa-solid fa-plus"></i>
           <span>ফসল যোগ</span>
         </button>
@@ -3514,16 +3545,21 @@
     </div>
 
     <!-- ADD CROP BOTTOM SHEET / MODAL FOR IRRIGATION TRACKER -->
-    <div id="addIrrigationCropModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100030; display: none; align-items: flex-end; justify-content: center;">
-      <div style="background: #fff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 18px 24px 18px; max-height: 90vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.18);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #ECEFF1; padding-bottom: 12px;">
+    <div id="addIrrigationCropModal"
+      style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100030; display: none; align-items: flex-end; justify-content: center;">
+      <div
+        style="background: #fff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 18px 24px 18px; max-height: 90vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.18);">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #ECEFF1; padding-bottom: 12px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 32px; height: 32px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+            <div
+              style="width: 32px; height: 32px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 15px;">
               <i class="fa-solid fa-seedling"></i>
             </div>
             <h3 style="font-size: 16.5px; font-weight: 700; color: #1B5E20; margin: 0;">নতুন ফসল যোগ করুন</h3>
           </div>
-          <button onclick="closeAddIrrigationCropModal()" style="background: none; border: none; font-size: 18px; color: #78909C; cursor: pointer; padding: 4px;">
+          <button onclick="closeAddIrrigationCropModal()"
+            style="background: none; border: none; font-size: 18px; color: #78909C; cursor: pointer; padding: 4px;">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -3531,22 +3567,31 @@
         <form id="addIrrigationCropForm" onsubmit="event.preventDefault(); submitNewIrrigationCrop();">
           <!-- ১. ফসলের নাম -->
           <div style="margin-bottom: 14px;">
-            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের নাম *</label>
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের
+              নাম *</label>
             <div style="position: relative;">
-              <i class="fa-solid fa-leaf" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
-              <input type="text" id="irrigationCropNameInput" placeholder="ফসলের নাম লিখুন (যেমন: ধান, গম, আলু)..." required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+              <i class="fa-solid fa-leaf"
+                style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+              <input type="text" id="irrigationCropNameInput" placeholder="ফসলের নাম লিখুন (যেমন: ধান, গম, আলু)..."
+                required
+                style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
             </div>
           </div>
 
           <!-- ২. জমির পরিমাণ + ড্রপডাউন (শতক, শতাংশ, বিঘা, একর) -->
           <div style="margin-bottom: 14px;">
-            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">জমির পরিমাণ *</label>
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">জমির
+              পরিমাণ *</label>
             <div style="display: flex; gap: 8px;">
               <div style="position: relative; flex: 1;">
-                <i class="fa-solid fa-ruler-combined" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
-                <input type="number" step="any" id="irrigationLandAmountInput" placeholder="পরিমাণ লিখুন (যেমন: ১০)" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+                <i class="fa-solid fa-ruler-combined"
+                  style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+                <input type="number" step="any" id="irrigationLandAmountInput" placeholder="পরিমাণ লিখুন (যেমন: ১০)"
+                  required
+                  style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
               </div>
-              <select id="irrigationLandUnitSelect" style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
+              <select id="irrigationLandUnitSelect"
+                style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
                 <option value="শতক">শতক</option>
                 <option value="শতাংশ">শতাংশ</option>
                 <option value="বিঘা">বিঘা</option>
@@ -3557,13 +3602,17 @@
 
           <!-- ৩. ফসলের বয়স + ড্রপডাউন (দিন, মাস, বছর) -->
           <div style="margin-bottom: 14px;">
-            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের বয়স *</label>
+            <label style="font-size: 13px; font-weight: 700; color: #263238; display: block; margin-bottom: 6px;">ফসলের
+              বয়স *</label>
             <div style="display: flex; gap: 8px;">
               <div style="position: relative; flex: 1;">
-                <i class="fa-solid fa-hourglass-half" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
-                <input type="number" id="irrigationCropAgeInput" placeholder="বয়স লিখুন (যেমন: ২৫)" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+                <i class="fa-solid fa-hourglass-half"
+                  style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+                <input type="number" id="irrigationCropAgeInput" placeholder="বয়স লিখুন (যেমন: ২৫)" required
+                  style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
               </div>
-              <select id="irrigationCropAgeUnitSelect" style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
+              <select id="irrigationCropAgeUnitSelect"
+                style="width: 100px; padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: #1B5E20; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 10px; outline: none; cursor: pointer; font-family: inherit;">
                 <option value="দিন">দিন</option>
                 <option value="মাস">মাস</option>
                 <option value="বছর">বছর</option>
@@ -3577,22 +3626,30 @@
               কত দিনের জন্য ট্র্যাকিং করবেন? (মেয়াদ শেষ হওয়ার তারিখ) *
             </label>
             <div style="position: relative;">
-              <i class="fa-solid fa-calendar-days" style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
-              <input type="date" id="irrigationCropExpiryDateInput" required style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
+              <i class="fa-solid fa-calendar-days"
+                style="position: absolute; left: 12px; top: 13px; color: #2E7D32; font-size: 14px;"></i>
+              <input type="date" id="irrigationCropExpiryDateInput" required
+                style="width: 100%; box-sizing: border-box; padding: 11px 12px 11px 36px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit;">
             </div>
           </div>
 
           <!-- ৫. ফসলের বিস্তারিত (Crop Details) - সর্বোচ্চ ১০০ অক্ষর -->
           <div style="margin-bottom: 18px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-size: 13px; font-weight: 700; color: #263238;">ফসলের বিস্তারিত (সর্বোচ্চ ১০০ অক্ষর) *</label>
-              <span id="irrigationDetailsCharCount" style="font-size: 11px; font-weight: 600; color: #2E7D32;">০/১০০ অক্ষর</span>
+              <label style="font-size: 13px; font-weight: 700; color: #263238;">ফসলের বিস্তারিত (সর্বোচ্চ ১০০ অক্ষর)
+                *</label>
+              <span id="irrigationDetailsCharCount" style="font-size: 11px; font-weight: 600; color: #2E7D32;">০/১০০
+                অক্ষর</span>
             </div>
-            <textarea id="irrigationCropDetailsInput" maxlength="100" rows="2" placeholder="মাটির অবস্থা বা বিস্তারিত তথ্য লিখুন (সর্বোচ্চ ১০০ অক্ষর)..." required oninput="updateIrrigationCharCount(this)" style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit; resize: none;"></textarea>
+            <textarea id="irrigationCropDetailsInput" maxlength="100" rows="2"
+              placeholder="মাটির অবস্থা বা বিস্তারিত তথ্য লিখুন (সর্বোচ্চ ১০০ অক্ষর)..." required
+              oninput="updateIrrigationCharCount(this)"
+              style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CFD8DC; background: #F8FAF7; outline: none; font-family: inherit; resize: none;"></textarea>
           </div>
 
           <!-- সেভ বাটন -->
-          <button type="submit" id="irrigationSubmitBtn" style="width: 100%; padding: 13px; background: #2E7D32; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
+          <button type="submit" id="irrigationSubmitBtn"
+            style="width: 100%; padding: 13px; background: #2E7D32; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
             ফসল সংরক্ষণ করুন
           </button>
         </form>
@@ -3600,32 +3657,42 @@
     </div>
 
     <!-- GLOBAL BLOCKING LOADING POPUP FOR IRRIGATION TRACKER -->
-    <div id="irrigationGlobalLoading" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100060; display: none; align-items: center; justify-content: center;">
-      <div style="background: #fff; border-radius: 18px; padding: 26px 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
-        <div style="width: 44px; height: 44px; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; margin: 0 auto 18px auto; animation: spin 0.8s linear infinite;"></div>
+    <div id="irrigationGlobalLoading"
+      style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100060; display: none; align-items: center; justify-content: center;">
+      <div
+        style="background: #fff; border-radius: 18px; padding: 26px 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div
+          style="width: 44px; height: 44px; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; margin: 0 auto 18px auto; animation: spin 0.8s linear infinite;">
+        </div>
         <div style="font-size: 15px; font-weight: 700; color: #1E281F; font-family: 'Hind Siliguri', sans-serif;">
-          আপনার তথ্য যাচাই হচ্ছে.... 
+          আপনার তথ্য যাচাই হচ্ছে....
         </div>
       </div>
     </div>
 
     <!-- DELETE CONFIRMATION POPUP FOR IRRIGATION TRACKER -->
-    <div id="irrigationDeleteConfirmModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100040; display: none; align-items: center; justify-content: center;">
-      <div style="background: #fff; border-radius: 18px; padding: 22px 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 14px auto;">
+    <div id="irrigationDeleteConfirmModal"
+      style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100040; display: none; align-items: center; justify-content: center;">
+      <div
+        style="background: #fff; border-radius: 18px; padding: 22px 20px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div
+          style="width: 48px; height: 48px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 14px auto;">
           <i class="fa-solid fa-trash-can"></i>
         </div>
         <h4 style="font-size: 16px; font-weight: 700; color: #1E281F; margin: 0 0 8px 0;">ফসল মুছে ফেলার নিশ্চয়তা</h4>
         <p id="irrigationDeleteCropMsg" style="font-size: 13px; color: #546E7A; line-height: 1.5; margin: 0 0 18px 0;">
-          আপনি কি নিশ্চিতভাবে এই ফসলটি সেচ ট্র্যাকার থেকে মুছে ফেলতে চান? এটি ডিলিট করলে আপনি নতুন ফসল যুক্ত করার স্পেস পাবেন।
+          আপনি কি নিশ্চিতভাবে এই ফসলটি সেচ ট্র্যাকার থেকে মুছে ফেলতে চান? এটি ডিলিট করলে আপনি নতুন ফসল যুক্ত করার স্পেস
+          পাবেন।
         </p>
         <div style="display: flex; gap: 10px;">
           <!-- বাতিল বাটন: শুধুমাত্র ডায়ালগ বন্ধ করবে, কোনো ডেটা ডিলিট হবে না -->
-          <button type="button" onclick="closeIrrigationDeleteModal()" style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; font-weight: 700; font-size: 13.5px; cursor: pointer;">
+          <button type="button" onclick="closeIrrigationDeleteModal()"
+            style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; font-weight: 700; font-size: 13.5px; cursor: pointer;">
             বাতিল
           </button>
           <!-- নিশ্চিত বাটন -->
-          <button type="button" onclick="executeDeleteIrrigationCrop()" style="flex: 1; padding: 10px; border-radius: 10px; border: none; background: #D32F2F; color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer;">
+          <button type="button" onclick="executeDeleteIrrigationCrop()"
+            style="flex: 1; padding: 10px; border-radius: 10px; border: none; background: #D32F2F; color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer;">
             হ্যাঁ, ডিলিট করুন
           </button>
         </div>
@@ -3633,16 +3700,21 @@
     </div>
 
     <!-- CUSTOM GLOBAL ALERT POPUP (NO NATIVE BROWSER ALERTS) -->
-    <div id="irrigationCustomAlertModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100070; display: none; align-items: center; justify-content: center;">
-      <div style="background: #fff; border-radius: 20px; padding: 24px 22px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.22);">
-        <div id="irrigationAlertIconWrap" style="width: 56px; height: 56px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
+    <div id="irrigationCustomAlertModal"
+      style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100070; display: none; align-items: center; justify-content: center;">
+      <div
+        style="background: #fff; border-radius: 20px; padding: 24px 22px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.22);">
+        <div id="irrigationAlertIconWrap"
+          style="width: 56px; height: 56px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
           <i id="irrigationAlertIcon" class="fa-solid fa-circle-xmark"></i>
         </div>
-        <h4 id="irrigationAlertTitle" style="font-size: 17px; font-weight: 700; color: #1E281F; margin: 0 0 8px 0;">ইনপুট ত্রুটি</h4>
+        <h4 id="irrigationAlertTitle" style="font-size: 17px; font-weight: 700; color: #1E281F; margin: 0 0 8px 0;">
+          ইনপুট ত্রুটি</h4>
         <p id="irrigationAlertMsg" style="font-size: 13.5px; color: #546E7A; line-height: 1.5; margin: 0 0 20px 0;">
           আপনার দেওয়া ইনপুটটি সঠিক নয়। অনুগ্রহ করে একটি সঠিক ও প্রচলিত কৃষি ফসলের নাম লিখুন।
         </p>
-        <button type="button" id="irrigationAlertBtn" onclick="closeIrrigationCustomAlert()" style="width: 100%; padding: 11px; border-radius: 12px; border: none; background: #2E7D32; color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(46,125,50,0.2);">
+        <button type="button" id="irrigationAlertBtn" onclick="closeIrrigationCustomAlert()"
+          style="width: 100%; padding: 11px; border-radius: 12px; border: none; background: #2E7D32; color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(46,125,50,0.2);">
           ঠিক আছে
         </button>
       </div>
@@ -3652,15 +3724,18 @@
     <div class="full-screen-page" id="incomeExpensePage"
       style="background: #F4F7F4; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
       <!-- AppBar and Colored Topbar matching Flutter App -->
-      <div style="background: linear-gradient(180deg, #00897B 0%, #00695C 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(0, 77, 64, 0.22); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+      <div
+        style="background: linear-gradient(180deg, #00897B 0%, #00695C 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(0, 77, 64, 0.22); padding: 12px 16px 14px 16px; flex-shrink: 0;">
         <!-- Top Navigation Row -->
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <button class="topbar-back-btn" onclick="closeIncomeExpenseFullPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <button class="topbar-back-btn" onclick="closeIncomeExpenseFullPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div style="text-align: center; flex: 1;">
             <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">কৃষি খাতা (আয়-ব্যায় হিসাব)</h3>
-            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সহজ হিসাব ও লাভ-লোকসান ক্যালকুলেটর</p>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সহজ হিসাব ও লাভ-লোকসান
+              ক্যালকুলেটর</p>
           </div>
           <div style="width: 32px;"></div>
         </div>
@@ -3685,17 +3760,23 @@
         <!-- TAB 0: NEW CALCULATION VIEW -->
         <div id="incomeExpenseNewView" style="display: block;">
           <!-- Card: Title / Description -->
-          <div style="background: #fff; border: 1px solid #CFD8DC; border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <label style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <div
+            style="background: #fff; border: 1px solid #CFD8DC; border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <label
+              style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
               <i class="fa-solid fa-pen-to-square" style="color: #00897B;"></i> হিসাবের নাম / বিবরণ
             </label>
-            <input type="text" id="webLedgerTitle" class="form-input" value="" placeholder="যেমন: বোরো ধান চাষ, আলু আবাদ ইত্যাদি" style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC;">
+            <input type="text" id="webLedgerTitle" class="form-input" value=""
+              placeholder="যেমন: বোরো ধান চাষ, আলু আবাদ ইত্যাদি"
+              style="width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 13.5px; border-radius: 10px; border: 1px solid #CFD8DC;">
           </div>
 
           <!-- Card: Income Breakdown -->
-          <div style="background: #fff; border: 1.2px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(46,125,50,0.05);">
+          <div
+            style="background: #fff; border: 1.2px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(46,125,50,0.05);">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+              <div
+                style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
                 <i class="fa-solid fa-coins"></i>
               </div>
               <div>
@@ -3706,56 +3787,87 @@
 
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">ফসল বিক্রয় থেকে আয় (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">ফসল
+                  বিক্রয় থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerIncome" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ / চারা বিক্রয় থেকে আয় (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerSeedIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ /
+                  চারা বিক্রয় থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerSeedIncome" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">অন্যান্য উৎস থেকে আয় (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerOtherIncome" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label
+                  style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">অন্যান্য
+                  উৎস থেকে আয় (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerOtherIncome" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
             </div>
           </div>
 
           <!-- Card: Expense Breakdown -->
-          <div style="background: #fff; border: 1.2px solid #FFCDD2; border-radius: 16px; padding: 16px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(198,40,40,0.05);">
+          <div
+            style="background: #fff; border: 1.2px solid #FFCDD2; border-radius: 16px; padding: 16px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(198,40,40,0.05);">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: #FFEBEE; color: #C62828; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+              <div
+                style="width: 36px; height: 36px; border-radius: 10px; background: #FFEBEE; color: #C62828; display: flex; align-items: center; justify-content: center; font-size: 16px;">
                 <i class="fa-solid fa-money-bill-wave"></i>
               </div>
               <div>
                 <div style="font-size: 14.5px; font-weight: 700; color: #B71C1C;">ফসলের ব্যয়ের বিবরণ</div>
-                <div style="font-size: 11px; color: var(--text-muted);">চাষাবাদ, সার, সেচ ও অন্যান্য সর্বমোট খরচ (টাকায়)</div>
+                <div style="font-size: 11px; color: var(--text-muted);">চাষাবাদ, সার, সেচ ও অন্যান্য সর্বমোট খরচ (টাকায়)
+                </div>
               </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">জমি প্রস্তুত ও চাষ খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerTillage" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">জমি
+                  প্রস্তুত ও চাষ খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerTillage" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ / চারা ক্রয় খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerSeedBuy" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">বীজ /
+                  চারা ক্রয় খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerSeedBuy" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সার ও কীটনাশক খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerFertilizer" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সার ও
+                  কীটনাশক খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerFertilizer" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সেচ বাবদ খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerIrrigation" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">সেচ
+                  বাবদ খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerIrrigation" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">শ্রমিক মজুরি খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerLabor" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">শ্রমিক
+                  মজুরি খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerLabor" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
               <div>
-                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">পরিবহন ও অন্যান্য খরচ (টাকা)</label>
-                <input type="text" inputmode="decimal" id="webLedgerTransport" class="form-input" placeholder="০" oninput="convertLiveLedgerInput(this)" style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 3px;">পরিবহন
+                  ও অন্যান্য খরচ (টাকা)</label>
+                <input type="text" inputmode="decimal" id="webLedgerTransport" class="form-input" placeholder="০"
+                  oninput="convertLiveLedgerInput(this)"
+                  style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13.5px; border-radius: 8px; border: 1px solid #CFD8DC;">
               </div>
             </div>
           </div>
@@ -3788,8 +3900,10 @@
     <div class="full-screen-page" id="incomeExpenseResultPage"
       style="background: #F4F7F4; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
       <!-- AppBar -->
-      <div style="background: #00897B; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
-        <button onclick="closeIncomeExpenseResultPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+      <div
+        style="background: #00897B; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
+        <button onclick="closeIncomeExpenseResultPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div style="text-align: center; flex: 1;">
@@ -3808,43 +3922,54 @@
     <div class="full-screen-page" id="seedInformationPage"
       style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
       <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
-      <div style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <button class="topbar-back-btn" onclick="closeSeedInformationFullPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <button class="topbar-back-btn" onclick="closeSeedInformationFullPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div style="text-align: center; flex: 1;">
             <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">বীজের তথ্যভান্ডার</h3>
-            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">উন্নত ও প্রত্যয়িত জাতের বীজ নির্দেশিকা</p>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">উন্নত ও প্রত্যয়িত জাতের বীজ
+              নির্দেশিকা</p>
           </div>
           <div style="width: 32px;"></div>
         </div>
 
         <!-- Search Bar (Clean White Card with Green Search Icon) -->
-        <div style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
+        <div
+          style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
           <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
-          <input type="text" id="webSeedSearchInput" oninput="onWebSeedSearchChange()" placeholder="বীজের নাম বা জাত খুঁজুন..."
+          <input type="text" id="webSeedSearchInput" oninput="onWebSeedSearchChange()"
+            placeholder="বীজের নাম বা জাত খুঁজুন..."
             style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;">
-          <button id="webSeedSearchClear" onclick="clearWebSeedSearch()" style="display: none; background: none; border: none; color: #999; cursor: pointer; padding: 4px;">
+          <button id="webSeedSearchClear" onclick="clearWebSeedSearch()"
+            style="display: none; background: none; border: none; color: #999; cursor: pointer; padding: 4px;">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <!-- Horizontal Category Filter Chips -->
-        <div class="month-chips-scroll" id="webSeedCategoryPills" style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+        <div class="month-chips-scroll" id="webSeedCategoryPills"
+          style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
           <!-- Dynamically populated category chips -->
         </div>
       </div>
 
       <!-- Category Banner (if selected) -->
-      <div id="seedCategoryBanner" style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
+      <div id="seedCategoryBanner"
+        style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
             <i class="fa-solid fa-seedling"></i>
           </div>
           <div>
-            <h4 id="seedBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;"></h4>
-            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">উন্নত গুণমান ও উচ্চ ফলনশীল জাতের নির্দেশিকা নিচে প্রদর্শিত হচ্ছে</p>
+            <h4 id="seedBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;">
+            </h4>
+            <p style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">উন্নত গুণমান ও উচ্চ ফলনশীল জাতের নির্দেশিকা
+              নিচে প্রদর্শিত হচ্ছে</p>
           </div>
         </div>
       </div>
@@ -3858,13 +3983,17 @@
     <!-- DEDICATED FULL SCREEN SEED DETAILS PAGE MATCHING FLUTTER SEED_DETAILS_PAGE -->
     <div class="full-screen-page" id="seedInformationDetailPage"
       style="background: #F7FAF7; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
-      <div style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-        <button onclick="closeSeedInformationDetailPage()" style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+      <div
+        style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <button onclick="closeSeedInformationDetailPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div style="text-align: center; flex: 1;">
-          <h3 id="seedDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">বীজের নাম</h3>
-          <p id="seedDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;"></p>
+          <h3 id="seedDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">বীজের নাম
+          </h3>
+          <p id="seedDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">
+          </p>
         </div>
         <div style="width: 32px;"></div>
       </div>
@@ -7815,7 +7944,7 @@
 
     function convertLiveLedgerInput(el) {
       if (!el) return;
-      const banglaDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+      const banglaDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
       let val = el.value || '';
       let res = '';
       for (let i = 0; i < val.length; i++) {
@@ -7833,7 +7962,7 @@
 
     function toEnglishLedgerDigits(str) {
       if (!str) return '0';
-      const banglaToEnglish = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+      const banglaToEnglish = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' };
       return str.toString().replace(/[০-৯]/g, m => banglaToEnglish[m] || m);
     }
 
@@ -8048,7 +8177,7 @@
             if (cached.uid) uid = cached.uid;
             if (cached.phone) phone = cached.phone;
             if (cached.name) name = cached.name;
-          } catch (_) {}
+          } catch (_) { }
         }
 
         if (window.firebase && firebase.auth && firebase.auth().currentUser) {
@@ -8082,7 +8211,7 @@
           if (uid && uid !== 'anonymous_farmer') {
             try {
               await firebase.firestore().collection('users').doc(uid).collection('agricultural_accounts').add(payload);
-            } catch (_) {}
+            } catch (_) { }
           }
         }
 
@@ -8369,7 +8498,7 @@
       webSeedLoading = false;
       const cached = localStorage.getItem('krishi_kotha_seed_information');
       if (cached) {
-        try { webSeedData = JSON.parse(cached); } catch(_) { webSeedData = []; }
+        try { webSeedData = JSON.parse(cached); } catch (_) { webSeedData = []; }
       } else {
         webSeedData = [];
       }
@@ -13080,7 +13209,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         const harvesting = item.harvestingTime || item.plantingTime || '';
         const care = item.careTips || item.careInstructions || '';
 
-        const imgBlock = imgUrl 
+        const imgBlock = imgUrl
           ? `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openCropCalendarDetailsByIndex(${idx})">
                <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" 
                  onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15);\'><i class=\'fa-solid fa-seedling\' style=\'font-size: 22px; color: #2E7D32;\'></i></div><span style=\'font-size: 11px; font-weight: 700; color: #1B5E20;\'>কৃষি কথা – চাষ ক্যালেন্ডার</span></div>';" />
@@ -13156,7 +13285,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (hName) hName.innerText = cropName;
       if (hSub) hSub.innerText = [month ? month + ' মাস' : '', category].filter(Boolean).join(' • ');
 
-      const imgBlock = imgUrl 
+      const imgBlock = imgUrl
         ? `<div style="height: 230px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
              <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" 
                onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\'><i class=\'fa-solid fa-seedling\' style=\'font-size: 26px; color: #2E7D32;\'></i></div><span style=\'font-size: 13px; font-weight: 700; color: #1B5E20;\'>${cropName}</span></div>';" />
@@ -13385,12 +13514,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const uid = firebase.auth().currentUser.uid;
           if (!uid.startsWith('guest_')) return uid;
         }
-      } catch (e) {}
+      } catch (e) { }
       try {
         if (typeof currentUser !== 'undefined' && currentUser && currentUser.uid) {
           if (!currentUser.uid.startsWith('guest_')) return currentUser.uid;
         }
-      } catch (e) {}
+      } catch (e) { }
       try {
         const cached = localStorage.getItem('krishi_kotha_cached_user');
         if (cached) {
@@ -13399,12 +13528,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             return parsed.uid;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
       try {
         if (window.currentLoggedInUser && window.currentLoggedInUser.uid && !window.currentLoggedInUser.uid.startsWith('guest_')) {
           return window.currentLoggedInUser.uid;
         }
-      } catch (e) {}
+      } catch (e) { }
       return null;
     }
 
@@ -13750,11 +13879,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       let apiKey = '';
       try {
         apiKey = atob('QVEuQWI4Uk42Sy0zeUk0Mm03MHM4aVpjUHA4T2NmWE1CbFloVWdVV1hBbWNiXzRtdlc3WWc=');
-      } catch(e) {}
+      } catch (e) { }
       try {
         const stored = localStorage.getItem('gemini_api_key');
         if (stored) apiKey = stored;
-      } catch(e) {}
+      } catch (e) { }
 
       if (apiKey) {
         try {
@@ -13791,52 +13920,125 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       };
     }
 
-    // রিকোয়ারমেন্ট ২: রিয়েল-টাইম নির্দেশনা এবং ঔষধ সাজেশন (Hourly AI Advice & Medicine)
-    function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
+    // রিকোয়ারমেন্ট ১: Deep Analysis API Prompt (কঠোর ও নিখুঁত লজিক)
+    async function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
       const rain = parseInt((weather.rain || '0').replace(/[^0-9]/g, '')) || 0;
       const temp = parseInt((weather.temp || '28').replace(/[^0-9]/g, '')) || 28;
-      const cond = weather.cond || 'পরিষ্কার আকাশ';
-      const details = (cropDetails || '').toLowerCase();
+      const details = (cropDetails || 'মাটির অবস্থা স্বাভাবিক').trim();
+      const weatherDesc = `তাপমাত্রা ${temp}°C এবং বৃষ্টিপাতের সম্ভাবনা (Rain Probability) ${rain}%`;
 
-      // বালাইনাশক ও কার্যকরী ঔষধের নাম ও আনুমানিক মূল্য সাজেস্ট
+      const prompt = `তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে একদম স্পেসিফিক এবং লজিক্যাল পরামর্শ দিতে হবে। কোনো জেনেরিক বা সাধারণ পরামর্শ (যেমন: "বিকালে হালকা সেচ দিন") ঢালাওভাবে দেওয়া যাবে না।
+
+ইনপুট ডেটা:
+- ফসলের নাম: ${cropName}
+- ফসলের বয়স: ${cropAge}
+- বর্তমান আবহাওয়া: ${weatherDesc}
+- জমির বর্তমান অবস্থা (কৃষকের বিবরণ): ${details}
+
+বিশ্লেষণের ১০০% কঠোর নিয়ম:
+১. আবহাওয়া ও সেচ লজিক: যদি বৃষ্টির সম্ভাবনা বেশি থাকে অথবা কৃষক বিবরণে লেখে "মাটি ভেজা", "বৃষ্টি হয়েছে" বা "পানি জমেছে", তবে কোনোভাবেই সেচ দেওয়ার পরামর্শ দিবে না! বরং পানি নিষ্কাশন বা মাটি শুকানোর কথা বলবে।
+২. ফসল ও বয়সের লজিক: ধানের পানির চাহিদা আর আলুর পানির চাহিদা এক নয়। ফসলের ধরন ও বয়সের ওপর ভিত্তি করে রিয়েল পরামর্শ দিবে।
+৩. রোগ ও ঔষধ লজিক: কৃষকের বিবরণে যদি কোনো পোকা, পাতা হলুদ হওয়া, পচন বা রোগের লক্ষণ থাকে, তবেই কেবল নির্দিষ্ট ও কার্যকরী ঔষধ/কীটনাশকের নাম (যেমন: এমিস্টার টপ, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে। কোনো রোগের লক্ষণ না থাকলে ঔষধের ঘর সম্পূর্ণ ফাঁকা রাখবে।
+
+আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
+{
+  "advice": "উপরের নিয়মগুলো মেনে ২-৩ লাইনের রিয়েল-টাইম, স্মার্ট ও নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
+  "medicine_info": "রোগ থাকলে কার্যকরী ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
+}`;
+
+      let apiKey = '';
+      try {
+        apiKey = atob('QVEuQWI4Uk42Sy0zeUk0Mm03MHM4aVpjUHA4T2NmWE1CbFloVWdVV1hBbWNiXzRtdlc3WWc=');
+      } catch(e) {}
+      try {
+        const stored = localStorage.getItem('gemini_api_key');
+        if (stored) apiKey = stored;
+      } catch(e) {}
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
+            })
+          });
+          if (res.ok) {
+            const resData = await res.json();
+            const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawText) {
+              let clean = rawText.trim();
+              if (clean.includes('```json')) clean = clean.split('```json')[1].split('```')[0].trim();
+              else if (clean.includes('```')) clean = clean.split('```')[1].split('```')[0].trim();
+              const parsed = JSON.parse(clean);
+              const advice = (parsed.advice || '').trim();
+              const medicineInfo = (parsed.medicine_info || '').trim();
+              if (advice) {
+                let status = '💧 হালকা সেচ দিন';
+                if (advice.includes('নিষ্কাশন') || advice.includes('পানি বের')) status = '⚠️ পানি নিষ্কাশন করুন';
+                else if (advice.includes('প্রয়োজন নেই') || advice.includes('সেচ দেবেন না') || advice.includes('শুকানোর')) status = '🌿 সেচের প্রয়োজন নেই';
+                else if (advice.includes('জরুরি') || advice.includes('খরা')) status = '🚨 জরুরি সেচ প্রয়োজন';
+                return { status, advice, medicine_info: medicineInfo };
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      // অফলাইন ও ফলব্যাক এগ্রোনমিক অ্যালগরিদম
+      const detailsLower = details.toLowerCase();
       let medicineInfo = '';
-      if (details.includes('পোকা') || details.includes('কীট') || details.includes('মাজরা') || details.includes('লেদা')) {
-        medicineInfo = `${cropName} ফসলে পোকার উপদ্রব দমনে ক্লোরপাইরিফস বা নিম তেলের স্প্রে প্রয়োগ করুন (আনুমানিক মূল্য: ১৫০-২৫০ টাকা/বোতল)।`;
-      } else if (details.includes('পচন') || details.includes('ছত্রাক') || details.includes('দাগ') || details.includes('ব্লাইট')) {
-        medicineInfo = 'শিকড় ও কাণ্ড পচা রোগ নিয়ন্ত্রণে ম্যানকোজেব বা কার্বেনডাজিম জাতীয় ছত্রাকনাশক স্প্রে করুন (আনুমানিক মূল্য: ১২০-২০০ টাকা/প্যাকেট)।';
+      if (detailsLower.includes('পোকা') || detailsLower.includes('কীট') || detailsLower.includes('মাজরা') || detailsLower.includes('লেদা')) {
+        medicineInfo = `${cropName} ফসলে পোকা ও মাজরা দমনে কীটনাশক ক্যারাটে ২.৫ ইসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) বিকালে স্প্রে করুন।`;
+      } else if (detailsLower.includes('পচন') || detailsLower.includes('ছত্রাক') || detailsLower.includes('দাগ') || detailsLower.includes('হলুদ') || detailsLower.includes('ব্লাইট')) {
+        medicineInfo = 'ছত্রাকজনিত রোগ ও পাতা হলুদ হওয়া দমনে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
       }
 
-      // ১. জমিতে পানি জমে থাকা বা অতিরিক্ত ভেজা থাকার রিয়েল এনালাইসিস
-      if (details.includes('পানি জমে') || details.includes('পানি জমা') || details.includes('ভেজা') || details.includes('বৃষ্টি') || details.includes('কাদা')) {
+      // ১. আবহাওয়া ও সেচ লজিক
+      if (detailsLower.includes('পানি জমে') || detailsLower.includes('পানি জমা') || detailsLower.includes('ভেজা') || detailsLower.includes('বৃষ্টি') || detailsLower.includes('কাদা')) {
         return {
-          status: '🌿 সেচের প্রয়োজন নেই',
-          advice: `জমিতে পানি জমে বা মাটি অতিরিক্ত ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। অতিরিক্ত পানি দ্রুত নিষ্কাশনের ব্যবস্থা করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় নষ্ট বা পচে না যায়।`,
+          status: '⚠️ পানি নিষ্কাশন করুন',
+          advice: `জমিতে পানি জমে বা মাটি ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। জমি থেকে দ্রুত অতিরিক্ত পানি নিষ্কাশন করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় নষ্ট না হয়।`,
           medicine_info: medicineInfo
         };
       }
 
-      // ২. বৃষ্টির শঙ্কা বেশি থাকলে
-      if (rain >= 45 || cond.includes('বৃষ্টি') || cond.includes('ঝড়')) {
+      if (rain >= 40) {
         return {
           status: '🌿 সেচের প্রয়োজন নেই',
-          advice: `বর্তমানে বৃষ্টির শঙ্কা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন এবং পানি নিষ্কাশনের ড্রেন পরিষ্কার রাখুন।`,
+          advice: `বর্তমানে বৃষ্টির সম্ভাবনা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন।`,
           medicine_info: medicineInfo
         };
       }
 
-      // ৩. শুষ্ক ও খরা আবহাওয়া
-      if (temp >= 32 && rain <= 20) {
+      // ২. ফসল ও বয়সের লজিক
+      if (cropName.includes('ধান')) {
+        return {
+          status: '💧 হালকা সেচ দিন',
+          advice: `ধান ফসলের বর্তমান বয়স (${cropAge}) অনুযায়ী জমিতে ২-৩ ইঞ্চি পরিমিত পানি ধরে রাখুন। অতিরিক্ত সেচ পরিহার করে নালা সচল রাখুন।`,
+          medicine_info: medicineInfo
+        };
+      } else if (cropName.includes('আলু')) {
+        return {
+          status: '💧 হালকা সেচ দিন',
+          advice: `আলু ফসলে জলাবদ্ধতা একদমই সহ্য হয় না। সারির মাঝে নালায় সতর্কতার সাথে খুব হালকা সেচ দিন যাতে কন্দ পচে না যায়।`,
+          medicine_info: medicineInfo
+        };
+      }
+
+      if (temp >= 33) {
         return {
           status: '🚨 জরুরি সেচ প্রয়োজন',
-          advice: `উচ্চ তাপমাত্রা (${toBangla(temp)}°C) এবং প্রখর রৌদ্রের কারণে মাটির আর্দ্রতা দ্রুত হ্রাস পাচ্ছে। ${cropName} ফসলে আর্দ্রতা ধরে রাখতে বিকালে হালকা বা পরিমিত সেচ প্রদান করুন।`,
+          advice: `উচ্চ তাপমাত্রা (${toBangla(temp)}°C) এবং প্রখর রৌদ্রে ${cropName} ফসলের মাটিতে পানির তীব্র ঘাটতি হতে পারে। বিকালে পরিমিত সেচ প্রদান করুন।`,
           medicine_info: medicineInfo
         };
       }
 
-      // ৪. সাধারণ পর্যায়
       return {
         status: '💧 হালকা সেচ দিন',
-        advice: `${cropName} ফসলের বর্তমান বয়স (${cropAge}) ও আবহাওয়ায় মাটির জো অনুযায়ী বিকাল বেলা সেচনালায় হালকা পানি প্রবাহ নিশ্চিত করুন। অতিরিক্ত পানি যেন না জমে সেদিকে খেয়াল রাখুন।`,
+        advice: `${cropName} ফসলের (${cropAge}) বৃদ্ধি ও মাটিতে আর্দ্রতা বজায় রাখতে বর্তমান আবহাওয়ায় (তাপমাত্রা ${toBangla(temp)}°C) বিকালে জমিতে হালকা সেচ দেওয়া উপযুক্ত।`,
         medicine_info: medicineInfo
       };
     }
@@ -13898,7 +14100,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const weatherObj = { district: dist, temp, rain, humid: hum, cond };
       const fullLand = `${toBangla(landNum)} ${landUnit}`;
       const fullAge = `${toBangla(ageNum)} ${ageUnit}`;
-      const aiResult = generateSmartAgronomicAdvice(name, fullLand, fullAge, details, weatherObj);
+      const aiResult = await generateSmartAgronomicAdvice(name, fullLand, fullAge, details, weatherObj);
 
       let uEmail = '';
       let uPhone = '';
@@ -13917,7 +14119,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             }
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const newCropDoc = {
         userId: userId,
@@ -13935,8 +14137,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         expiryDate_ms: new Date(expiryDateVal).getTime(),
         aiStatus: aiResult.status,
         aiAdvice: aiResult.advice,
-        medicine_suggestion: aiResult.medicine_suggestion || '',
-        medicineSuggestion: aiResult.medicine_suggestion || '',
+        medicine_info: aiResult.medicine_info || '',
+        medicineInfo: aiResult.medicine_info || '',
+        medicine_suggestion: aiResult.medicine_info || '',
+        medicineSuggestion: aiResult.medicine_info || '',
         weatherDistrict: dist,
         weatherTemp: temp,
         weatherRainProb: rain,
@@ -14021,7 +14225,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     // ব্যাকগ্রাউন্ড ১ ঘণ্টার টাইমার চেক (Strictly 1 Hour Interval)
-    function checkHourlyIrrigationUpdates() {
+    async function checkHourlyIrrigationUpdates() {
       const userId = getIrrigationUserId();
       if (!userId) return;
 
@@ -14034,17 +14238,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const weatherObj = { district: dist, temp, rain, humid: hum, cond };
 
       let updatedAny = false;
-      irrigationCrops.forEach(crop => {
+      for (const crop of irrigationCrops) {
         const lastUpdatedMs = crop.last_updated_ms || crop.createdAtMs || 0;
         // যদি শেষ আপডেটের সময় থেকে ব্যবধান ৬০ মিনিটের কম হয়, কোনো আপডেট হবে না
-        if (!lastUpdatedMs) return;
+        if (!lastUpdatedMs) continue;
         const diffMinutes = (now - lastUpdatedMs) / (1000 * 60);
         if (diffMinutes >= 60) {
-          const res = generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
+          const res = await generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
           crop.aiStatus = res.status;
           crop.aiAdvice = res.advice;
-          crop.medicine_suggestion = res.medicine_suggestion || '';
-          crop.medicineSuggestion = res.medicine_suggestion || '';
+          crop.medicine_info = res.medicine_info || '';
+          crop.medicineInfo = res.medicine_info || '';
+          crop.medicine_suggestion = res.medicine_info || '';
+          crop.medicineSuggestion = res.medicine_info || '';
           crop.last_updated_ms = now;
           crop.weatherDistrict = dist;
           crop.weatherTemp = temp;
@@ -14058,8 +14264,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             db.collection('users').doc(userId).collection('irrigation_tracker_crops').doc(crop.id).update({
               aiStatus: res.status,
               aiAdvice: res.advice,
-              medicine_suggestion: res.medicine_suggestion || '',
-              medicineSuggestion: res.medicine_suggestion || '',
+              medicine_info: res.medicine_info || '',
+              medicineInfo: res.medicine_info || '',
+              medicine_suggestion: res.medicine_info || '',
+              medicineSuggestion: res.medicine_info || '',
               last_updated_ms: now,
               weatherDistrict: dist,
               weatherTemp: temp,
@@ -14069,7 +14277,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             }).catch(e => console.warn('Hourly update doc notice:', e));
           }
         }
-      });
+      }
 
       if (updatedAny) {
         renderIrrigationCropsList();
@@ -14082,7 +14290,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       syncIrrigationTopWeatherBanner();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         if (force) {
           const now = Date.now();
           const dist = document.getElementById('irrigationDistrictName')?.innerText || 'ঢাকা';
@@ -14092,22 +14300,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const cond = document.getElementById('irrigationWeatherCond')?.innerText || 'পরিষ্কার আকাশ';
           const weatherObj = { district: dist, temp, rain, humid: hum, cond };
 
-          irrigationCrops.forEach(crop => {
-            const res = generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
+          for (const crop of irrigationCrops) {
+            const res = await generateSmartAgronomicAdvice(crop.cropName, crop.landAmount, crop.cropAge, crop.cropDetails, weatherObj);
             crop.aiStatus = res.status;
             crop.aiAdvice = res.advice;
-            crop.medicine_suggestion = res.medicine_suggestion || '';
-            crop.medicineSuggestion = res.medicine_suggestion || '';
+            crop.medicine_info = res.medicine_info || '';
+            crop.medicineInfo = res.medicine_info || '';
+            crop.medicine_suggestion = res.medicine_info || '';
+            crop.medicineSuggestion = res.medicine_info || '';
             crop.last_updated_ms = now;
             crop.weatherDistrict = dist;
             crop.weatherTemp = temp;
             crop.weatherRainProb = rain;
             crop.weatherHumidity = hum;
             crop.weatherCondition = cond;
-          });
+          }
           renderIrrigationCropsList();
         } else {
-          checkHourlyIrrigationUpdates();
+          await checkHourlyIrrigationUpdates();
         }
         if (icon) icon.classList.remove('fa-spin');
       }, 700);
@@ -16701,14 +16911,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               if (isBlocked) {
                 // ১. লিসেনার অবিলম্বে বাতিল
                 if (userDocUnsubscribe) {
-                  try { userDocUnsubscribe(); } catch (_) {}
+                  try { userDocUnsubscribe(); } catch (_) { }
                   userDocUnsubscribe = null;
                 }
                 // ২. ফায়ারবেস অথ ও সেশন ক্লিয়ার
                 if (window.firebase && firebase.auth) {
-                  firebase.auth().signOut().catch(function () {});
+                  firebase.auth().signOut().catch(function () { });
                 }
-                try { localStorage.removeItem('krishi_kotha_cached_user'); } catch (_) {}
+                try { localStorage.removeItem('krishi_kotha_cached_user'); } catch (_) { }
                 currentUser = null;
                 updateWebProfileHeader();
 
@@ -16719,7 +16929,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                   closeSupportContactPage();
                   closeUpdateCredentialsPage();
                   document.querySelectorAll('.modal-overlay.active, .modal.active').forEach(m => m.classList.remove('active'));
-                } catch (_) {}
+                } catch (_) { }
                 openAuthModal('login');
                 return;
               }

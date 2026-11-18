@@ -13,6 +13,7 @@ import '../../data/models/weather_info_model.dart';
 import '../../data/services/weather_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/weather_provider.dart';
+import '../../data/services/irrigation_background_service.dart';
 
 /// স্মার্ট সেচ ট্র্যাকার (Smart Irrigation Tracker) স্ক্রিন
 /// 
@@ -97,6 +98,9 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     _hourlyCheckTimer = Timer.periodic(const Duration(hours: 1), (_) {
       _checkAllCropsForHourlyUpdate();
     });
+
+    // ৩. রিকোয়ারমেন্ট ২: অফলাইন ও ব্যাকগ্রাউন্ড ১ ঘণ্টার ওয়ার্কম্যানেজার শিডিউল নিশ্চিতকরণ
+    IrrigationBackgroundService.initAndRegisterPeriodicTask();
   }
 
   @override
@@ -314,8 +318,8 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     );
   }
 
-  // ====================== রিকোয়ারমেন্ট ২: আওয়ারলি ও রিয়েল-টাইম এনালাইসিস (ঔষধ ও সেচ পরামর্শ) ======================
-  /// Gemini API-কে প্লেইন টেক্সটের বদলে নির্দিষ্ট JSON স্ট্রাকচারে উত্তর দেওয়ার নির্দেশ দেওয়া হয়।
+  // ====================== রিকোয়ারমেন্ট ১: Deep Analysis API Prompt (কঠোর ও নিখুঁত লজিক) ======================
+  /// Gemini API-কে প্লেইন টেক্সটের বদলে নির্দিষ্ট JSON স্ট্রাকচারে গভীরভাবে বিশ্লেষণ করার নির্দেশ দেওয়া হয়।
   /// রেসপন্স থেকে jsonDecode করে advice এবং medicine_info সংগ্রহ করা হয়।
   Future<({String advice, String status, String medicineInfo})> _requestGeminiJsonAnalysis({
     required String cropName,
@@ -325,19 +329,29 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     required WeatherInfoModel weather,
   }) async {
     final cleanCropName = cropName.trim();
-    final districtName = _userDistrict ?? weather.district;
     final weatherDesc =
-        'তাপমাত্রা: ${weather.currentTemp.toStringAsFixed(1)}°C, বৃষ্টি: ${weather.rainProbability}%, আর্দ্রতা: ${weather.humidity}%, আকাশ: ${weather.conditionBn}, জেলা: $districtName';
+        'তাপমাত্রা ${weather.currentTemp.toStringAsFixed(1)}°C এবং বৃষ্টিপাতের সম্ভাবনা (Rain Probability) ${weather.rainProbability}%';
     final detailsText = cropDetails.trim().isNotEmpty ? cropDetails.trim() : 'মাটির অবস্থা স্বাভাবিক';
 
-    // রিকোয়ারমেন্ট ২: ইউজার নির্দেশিত হুবহু JSON প্রম্পট ফরম্যাট
+    // রিকোয়ারমেন্ট ১: ইউজার নির্দেশিত হুবহু Deep Analysis JSON প্রম্পট ফরম্যাট
     final prompt = '''
-তুমি বিশেষজ্ঞ কৃষিবিদ। নিচের তথ্যগুলো এনালাইসিস করে JSON আউটপুট দাও।
-ফসলের নাম: $cleanCropName, বয়স: $cropAge, বর্তমান আবহাওয়া: $weatherDesc, জমির অবস্থা: $detailsText
-আউটপুট JSON:
+তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে একদম স্পেসিফিক এবং লজিক্যাল পরামর্শ দিতে হবে। কোনো জেনেরিক বা সাধারণ পরামর্শ (যেমন: "বিকালে হালকা সেচ দিন") ঢালাওভাবে দেওয়া যাবে না।
+
+ইনপুট ডেটা:
+- ফসলের নাম: $cleanCropName
+- ফসলের বয়স: $cropAge
+- বর্তমান আবহাওয়া: $weatherDesc
+- জমির বর্তমান অবস্থা (কৃষকের বিবরণ): $detailsText
+
+বিশ্লেষণের ১০০% কঠোর নিয়ম:
+১. আবহাওয়া ও সেচ লজিক: যদি বৃষ্টির সম্ভাবনা বেশি থাকে অথবা কৃষক বিবরণে লেখে "মাটি ভেজা", "বৃষ্টি হয়েছে" বা "পানি জমেছে", তবে কোনোভাবেই সেচ দেওয়ার পরামর্শ দিবে না! বরং পানি নিষ্কাশন বা মাটি শুকানোর কথা বলবে।
+২. ফসল ও বয়সের লজিক: ধানের পানির চাহিদা আর আলুর পানির চাহিদা এক নয়। ফসলের ধরন ও বয়সের ওপর ভিত্তি করে রিয়েল পরামর্শ দিবে।
+৩. রোগ ও ঔষধ লজিক: কৃষকের বিবরণে যদি কোনো পোকা, পাতা হলুদ হওয়া, পচন বা রোগের লক্ষণ থাকে, তবেই কেবল নির্দিষ্ট ও কার্যকরী ঔষধ/কীটনাশকের নাম (যেমন: এমিস্টার টপ, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে। কোনো রোগের লক্ষণ না থাকলে ঔষধের ঘর সম্পূর্ণ ফাঁকা রাখবে।
+
+আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
 {
-  "advice": "আবহাওয়া ও বয়সের ওপর ভিত্তি করে রিয়েল-টাইম সেচ ও কৃষিকাজ নির্দেশনা।",
-  "medicine_info": "যদি বিস্তারিত লেখায় কোনো রোগ বা পোকার কথা থাকে, তবে কার্যকরী ঔষধের নাম ও আনুমানিক মূল্য (price) সাজেস্ট করো। যদি প্রয়োজন না হয়, তবে সম্পূর্ণ ফাঁকা (empty string) রাখো।"
+  "advice": "উপরের নিয়মগুলো মেনে ২-৩ লাইনের রিয়েল-টাইম, স্মার্ট ও নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
+  "medicine_info": "রোগ থাকলে কার্যকরী ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
 }
 ''';
 
@@ -697,39 +711,56 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     final cond = weather.conditionBn;
     final detailsLower = cropDetails.toLowerCase();
 
-    // বিস্তারিত ফিল্ডের সমস্যা থেকে স্বয়ংক্রিয় বালাইনাশক সাজেশন প্রস্তুতকরণ (কার্যকরী ঔষধ ও আনুমানিক মূল্যসহ)
+    // নিয়ম ৩: কৃষকের বিবরণে রোগ/পোকার লক্ষণ থাকলে নির্দিষ্ট কার্যকরী ঔষধ (এমিস্টার টপ, ক্যারাটে ইত্যাদি) ও আনুমানিক মূল্য
     String medicine = '';
     if (detailsLower.contains('পোকা') ||
         detailsLower.contains('কীট') ||
         detailsLower.contains('মাজরা') ||
         detailsLower.contains('লেদা') ||
         detailsLower.contains('পোকার আক্রমণ')) {
-      medicine = '$cropName ফসলে পোকার আক্রমণ নিয়ন্ত্রণে নিম তেল স্প্রে (আনুমানিক মূল্য ৫০-৭০ টাকা) অথবা সাইপারমেথ্রিন/ক্লোরপাইরিফস জাতীয় কীটনাশক (আনুমানিক মূল্য ১২০-১৬০ টাকা) বিকাল বেলা নিয়ম মেনে স্প্রে করুন।';
+      medicine = '$cropName ফসলে পোকা ও মাজরা দমনে কীটনাশক ক্যারাটে ২.৫ ইসি (ল্যাম্বডা-সাইহ্যালোথ্রিন) প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) অথবা ভিরতাকো অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।';
     } else if (detailsLower.contains('পচন') ||
         detailsLower.contains('ছত্রাক') ||
         detailsLower.contains('দাগ') ||
         detailsLower.contains('পচে') ||
         detailsLower.contains('ঝলসানো') ||
+        detailsLower.contains('হলুদ') ||
         detailsLower.contains('ব্লাইট')) {
-      medicine = 'শিকড় বা কাণ্ড পচা ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে ম্যানকোজেব (ইন্দোফিল এম-৪৫, আনুমানিক মূল্য ১৫০-১৮০ টাকা) অথবা কার্বেনডাজিম (অটোস্টিন, আনুমানিক মূল্য ১৩০-১৫০ টাকা) প্রতি লিটার পানিতে ২ গ্রাম মিশিয়ে স্প্রে করুন।';
+      medicine = 'ছত্রাকজনিত রোগ, পাতা হলুদ হওয়া ও পচন নিয়ন্ত্রণে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা ম্যানকোজেব প্রতি লিটার পানিতে ২ গ্রাম মিশিয়ে স্প্রে করুন।';
     }
 
+    // নিয়ম ১: আবহাওয়া ও সেচ লজিক - বৃষ্টি বা ভেজা মাটিতে কোনোভাবেই সেচ দেওয়ার পরামর্শ নয়, পানি নিষ্কাশন
     if (detailsLower.contains('পানি জমে') ||
         detailsLower.contains('পানি জমা') ||
         detailsLower.contains('ভেজা') ||
         detailsLower.contains('বৃষ্টি') ||
         detailsLower.contains('কাদা')) {
       return (
-        status: '🌿 সেচের প্রয়োজন নেই',
-        advice: 'জমিতে পানি জমে বা মাটি অতিরিক্ত ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। অতিরিক্ত পানি দ্রুত নিষ্কাশনের ব্যবস্থা করুন যাতে $cropName ফসলের শিকড় নষ্ট না হয়।',
+        status: '⚠️ পানি নিষ্কাশন করুন',
+        advice: 'জমিতে পানি জমে বা মাটি ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। জমি থেকে দ্রুত অতিরিক্ত পানি নিষ্কাশন করুন এবং মাটি শুকাতে দিন যাতে শিকড় পচে না যায়।',
         medicine: medicine,
       );
     }
 
-    if (rainProb >= 45 || cond.contains('বৃষ্টি') || cond.contains('ঝড়')) {
+    if (rainProb >= 40 || cond.contains('বৃষ্টি') || cond.contains('ঝড়')) {
       return (
         status: '🌿 সেচের প্রয়োজন নেই',
-        advice: 'বর্তমানে বৃষ্টির শঙ্কা ${BanglaNumberConverter.toBangla(rainProb)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন।',
+        advice: 'বর্তমানে বৃষ্টির সম্ভাবনা ${BanglaNumberConverter.toBangla(rainProb)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে আর্দ্রতা বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন।',
+        medicine: medicine,
+      );
+    }
+
+    // নিয়ম ২: ফসল ও বয়সের লজিক (ধানের পানির চাহিদা আর আলুর পানির চাহিদা এক নয়)
+    if (cropName.contains('ধান')) {
+      return (
+        status: '💧 হালকা সেচ দিন',
+        advice: 'ধান ফসলের বর্তমান বয়স ($cropAge) অনুযায়ী জমিতে ২-৩ ইঞ্চি পরিমিত পানি ধরে রাখুন। অতিরিক্ত সেচ পরিহার করে নালা সচল রাখুন।',
+        medicine: medicine,
+      );
+    } else if (cropName.contains('আলু')) {
+      return (
+        status: '💧 হালকা সেচ দিন',
+        advice: 'আলু ফসলে জলাবদ্ধতা একদমই সহ্য হয় না। সারির মাঝে নালায় সতর্কতার সাথে খুব হালকা সেচ দিন যাতে কন্দ পচে না যায়।',
         medicine: medicine,
       );
     }
