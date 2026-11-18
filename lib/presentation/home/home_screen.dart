@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -16,7 +18,7 @@ import '../profile/user_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../../data/models/notification_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final Function(int tabIndex) onNavigateTab;
   final FirestoreService firestoreService;
 
@@ -25,6 +27,173 @@ class HomeScreen extends StatelessWidget {
     required this.onNavigateTab,
     required this.firestoreService,
   });
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  static bool _hasShownStartupPopup = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowStartupPopup();
+    });
+  }
+
+  /// অ্যাপ ওপেন হওয়ার পর Firestore admin_settings/popup_notification যাচাই ও পপআপ প্রদর্শন
+  Future<void> _checkAndShowStartupPopup() async {
+    if (_hasShownStartupPopup || !mounted) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('admin_settings')
+          .doc('popup_notification')
+          .get();
+
+      if (!mounted || _hasShownStartupPopup) return;
+      if (!doc.exists || doc.data() == null) return;
+
+      final data = doc.data()!;
+      final bool isActive = data['isActive'] == true;
+      final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
+
+      if (isActive && imageUrl.isNotEmpty && !_hasShownStartupPopup) {
+        _hasShownStartupPopup = true;
+        if (!mounted) return;
+        _showStartupNotificationDialog(imageUrl);
+      }
+    } catch (e) {
+      debugPrint('Startup popup notification check notice: $e');
+    }
+  }
+
+  /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ
+  void _showStartupNotificationDialog(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.65),
+      builder: (BuildContext dialogContext) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 420,
+                  maxHeight: 620,
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.topRight,
+                  children: [
+                    // পপআপ ব্যানার ইমেজ কন্টেইনার
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.35),
+                            blurRadius: 25,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Flexible(
+                            child: Image.network(
+                              imageUrl,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  height: 280,
+                                  color: const Color(0xFFF1F5F9),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              (loadingProgress.expectedTotalBytes ?? 1)
+                                          : null,
+                                      color: AppColors.primary,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 200,
+                                color: const Color(0xFFF8FAFC),
+                                padding: const EdgeInsets.all(20),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
+                                    SizedBox(height: 8),
+                                    Text('ছবিটি লোড করা সম্ভব হয়নি', style: TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // উপরে ডানদিকের গোলাকার "X" (Close) বাটন
+                    Positioned(
+                      top: -12,
+                      right: -12,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +282,12 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Real-time Emergency Alert Banner from Firestore (if active)
-                    EmergencyAlertBanner(firestoreService: firestoreService),
+                    EmergencyAlertBanner(firestoreService: widget.firestoreService),
 
                     // Quick Action Services Grid (12 Essential Unique Services)
                     QuickActionGrid(
-                      onNavigateTab: onNavigateTab,
-                      firestoreService: firestoreService,
+                      onNavigateTab: widget.onNavigateTab,
+                      firestoreService: widget.firestoreService,
                       onOpenPestCatalog: () {
                         Navigator.push(
                           context,
@@ -546,7 +715,7 @@ class HomeScreen extends StatelessWidget {
   /// হেডারের ডান পাশের নোটিফিকেশন আইকন উইথ আনরিড কাউন্ট ব্যাজ
   Widget _buildNotificationButton(BuildContext context) {
     return StreamBuilder<List<NotificationModel>>(
-      stream: firestoreService.getNotificationsStream(),
+      stream: widget.firestoreService.getNotificationsStream(),
       builder: (context, snapshot) {
         final notifications = snapshot.data ?? [];
         final unreadCount = notifications.where((n) => !n.isSeen).length;
@@ -560,7 +729,7 @@ class HomeScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => NotificationsScreen(
-                    firestoreService: firestoreService,
+                    firestoreService: widget.firestoreService,
                   ),
                 ),
               );

@@ -5434,6 +5434,20 @@
     </div>
   </div>
 
+  <!-- MODAL: STARTUP POPUP NOTIFICATION (R2 Image Modal) -->
+  <div class="modal-overlay" id="startupPopupModal"
+    style="z-index: 100060; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0,0,0,0.65); align-items: center; justify-content: center; padding: 20px; display: none;">
+    <div style="position: relative; max-width: 420px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; align-items: center;">
+      <button type="button" onclick="closeStartupPopupModal()"
+        style="position: absolute; top: -14px; right: -14px; width: 36px; height: 36px; border-radius: 50%; background: #1E293B; color: #fff; border: 2px solid #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.3); max-width: 100%; max-height: 80vh;">
+        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 80vh; object-fit: contain; display: block;">
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CROP DETAILS (Full Screen Ultra-Modern Page) -->
   <div class="modal-overlay crop-fullscreen-modal" id="cropDetailModal">
     <div class="crop-fullscreen-sheet">
@@ -7258,15 +7272,52 @@
       }
     }
 
+    // Startup Popup Notification Modal Listener
+    let hasShownWebStartupPopup = false;
+    async function initStartupPopupNotificationListener() {
+      if (hasShownWebStartupPopup) return;
+      try {
+        if (typeof firebase === 'undefined' || !firebase.firestore) return;
+        const dbInstance = firebase.firestore();
+        const doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
+        if (!doc.exists) return;
+        const data = doc.data() || {};
+        if (data.isActive === true && data.imageUrl && !hasShownWebStartupPopup) {
+          hasShownWebStartupPopup = true;
+          const modal = document.getElementById('startupPopupModal');
+          const img = document.getElementById('startupPopupModalImg');
+          if (modal && img) {
+            img.src = data.imageUrl;
+            modal.classList.add('active');
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.setProperty('pointer-events', 'auto', 'important');
+          }
+        }
+      } catch (err) {
+        console.warn('Web startup popup notice:', err);
+      }
+    }
+
+    function closeStartupPopupModal() {
+      const modal = document.getElementById('startupPopupModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         initUserAppSystemControlListener();
         initWeatherScrollOpacity();
+        initStartupPopupNotificationListener();
       });
     } else {
       setTimeout(() => {
         initUserAppSystemControlListener();
         initWeatherScrollOpacity();
+        initStartupPopupNotificationListener();
       }, 200);
     }
 

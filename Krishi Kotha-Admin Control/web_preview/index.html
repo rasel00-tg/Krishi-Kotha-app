@@ -1588,96 +1588,239 @@
 
       <!-- ================= TAB 2: NOTIFICATIONS ================= -->
       <div id="tab-notifications" class="tab-content">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
-          <div class="panel-card">
-            <div class="panel-header">
-              <h3 style="display: flex; align-items: center; gap: 8px;"><svg class="app-icon" viewBox="0 0 24 24"
-                  width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <path d="m22 2-7 20-4-9-9-4Z" />
-                  <path d="M22 2 11 13" />
-                </svg> নতুন নোটিশ প্রচার করুন</h3>
-            </div>
-            <form onsubmit="broadcastNotification(event)">
-              <div class="form-group">
-                <label>বিজ্ঞপ্তির ধরন</label>
-                <select id="notifType" class="form-control">
-                  <option value="general">সাধারণ নোটিশ</option>
-                  <option value="weather">আবহাওয়া সতর্কতা</option>
-                  <option value="crop">ফসল ও রোগবালাই পরামর্শ</option>
-                  <option value="market">বাজার দর বিজ্ঞপ্তি</option>
-                </select>
+        <!-- Subtab Switcher Header -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary notif-subtab-btn" id="notifSubtabBtnBroadcast"
+            onclick="switchNotifSubtab('broadcast')"
+            style="font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-bullhorn"></i> লাইভ নোটিশ প্রচার
+          </button>
+          <button type="button" class="btn btn-outline notif-subtab-btn" id="notifSubtabBtnPopup"
+            onclick="switchNotifSubtab('popup')"
+            style="font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-window-restore"></i> পপআপ নোটিফিকেশন (Startup Modal)
+          </button>
+        </div>
+
+        <!-- Subpane 1: Live Broadcast Notice -->
+        <div id="notifSubpaneBroadcast" class="notif-subpane">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;"><svg class="app-icon" viewBox="0 0 24 24"
+                    width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                  </svg> নতুন নোটিশ প্রচার করুন</h3>
               </div>
-              <div class="form-group">
-                <label>শিরোনাম</label>
-                <input id="notifTitle" class="form-control" placeholder="বিজ্ঞপ্তির শিরোনাম লিখুন" required>
-              </div>
-              <div class="form-group">
-                <label>বিস্তারিত বার্তা</label>
-                <textarea id="notifMsg" class="form-control" rows="4" placeholder="বিস্তারিত বার্তা লিখুন"
-                  required></textarea>
-              </div>
-              <div class="form-group">
-                <label style="display: flex; justify-content: space-between; align-items: center;">
-                  <span>সংযুক্ত ছবি (ঐচ্ছিক)</span>
-                  <span style="font-size: 11px; font-weight: 600; color: #2E7D32;"><svg class="app-icon"
-                      viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;">
-                      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-                    </svg> Cloudflare R2 স্টোরেজ</span>
-                </label>
-                <div style="display: flex; gap: 8px;">
-                  <input id="notifImg" class="form-control"
-                    placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1;">
-                  <button type="button" class="btn btn-primary"
-                    onclick="document.getElementById('notifFileInput').click()"
-                    style="white-space: nowrap; padding: 0 14px; font-size: 13px;">
-                    <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" x2="12" y1="3" y2="15" />
-                    </svg> ছবি নির্বাচন
-                  </button>
-                  <input type="file" id="notifFileInput" accept="image/*" style="display: none;"
-                    onchange="handleImagePick(this, 'notif', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg')">
+              <form onsubmit="broadcastNotification(event)">
+                <div class="form-group">
+                  <label>বিজ্ঞপ্তির ধরন</label>
+                  <select id="notifType" class="form-control">
+                    <option value="general">সাধারণ নোটিশ</option>
+                    <option value="weather">আবহাওয়া সতর্কতা</option>
+                    <option value="crop">ফসল ও রোগবালাই পরামর্শ</option>
+                    <option value="market">বাজার দর বিজ্ঞপ্তি</option>
+                  </select>
                 </div>
-                <div id="notifUploadStatus" style="font-size: 12px; margin-top: 4px; display: none;"></div>
-                <div id="notifImgPreviewBox" style="margin-top: 8px; display: none;">
-                  <div style="position: relative; display: inline-block;">
-                    <img id="notifImgPreview" src="" alt="Preview"
-                      style="max-height: 120px; border-radius: 10px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-                    <button type="button" onclick="removeNotifImage()"
-                      style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"
-                      title="ছবি মুছুন">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                      </svg>
+                <div class="form-group">
+                  <label>শিরোনাম</label>
+                  <input id="notifTitle" class="form-control" placeholder="বিজ্ঞপ্তির শিরোনাম লিখুন" required>
+                </div>
+                <div class="form-group">
+                  <label>বিস্তারিত বার্তা</label>
+                  <textarea id="notifMsg" class="form-control" rows="4" placeholder="বিস্তারিত বার্তা লিখুন"
+                    required></textarea>
+                </div>
+                <div class="form-group">
+                  <label style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>সংযুক্ত ছবি (ঐচ্ছিক)</span>
+                    <span style="font-size: 11px; font-weight: 600; color: #2E7D32;"><svg class="app-icon"
+                        viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+                      </svg> Cloudflare R2 স্টোরেজ</span>
+                  </label>
+                  <div style="display: flex; gap: 8px;">
+                    <input id="notifImg" class="form-control"
+                      placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1;">
+                    <button type="button" class="btn btn-primary"
+                      onclick="document.getElementById('notifFileInput').click()"
+                      style="white-space: nowrap; padding: 0 14px; font-size: 13px;">
+                      <svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" x2="12" y1="3" y2="15" />
+                      </svg> ছবি নির্বাচন
                     </button>
+                    <input type="file" id="notifFileInput" accept="image/*" style="display: none;"
+                      onchange="handleImagePick(this, 'notif', 'notifImgPreviewBox', 'notifUploadStatus', 'notifImg')">
+                  </div>
+                  <div id="notifUploadStatus" style="font-size: 12px; margin-top: 4px; display: none;"></div>
+                  <div id="notifImgPreviewBox" style="margin-top: 8px; display: none;">
+                    <div style="position: relative; display: inline-block;">
+                      <img id="notifImgPreview" src="" alt="Preview"
+                        style="max-height: 120px; border-radius: 10px; border: 1px solid var(--border); object-fit: cover; display: block; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+                      <button type="button" onclick="removeNotifImage()"
+                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"
+                        title="ছবি মুছুন">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M18 6 6 18" />
+                          <path d="m6 6 12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" id="notifSubmitBtn" class="btn btn-primary"
+                  style="width: 100%; justify-content: center;"><svg class="app-icon" viewBox="0 0 24 24" width="15"
+                    height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+                    <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+                    <circle cx="12" cy="12" r="2" />
+                    <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
+                    <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
+                  </svg> লাইভ প্রচার করুন (Broadcast)</button>
+              </form>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3>প্রচারিত নোটিফিকেশন তালিকা</h3>
+                <span class="badge badge-crop" id="notifCountBadge">মোট: ০</span>
+              </div>
+              <div id="allNotifsList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subpane 2: Startup Popup Notification Control -->
+        <div id="notifSubpanePopup" class="notif-subpane" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+            <!-- Left Card: Popup Settings & Controls -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-window-restore" style="color: var(--primary);"></i>
+                  স্টার্টআপ পপআপ নোটিফিকেশন নিয়ন্ত্রণ
+                </h3>
+                <span class="badge" id="popupActiveBadge" style="background: #FFF3E0; color: #E65100; font-weight: 700; font-size: 12px;">
+                  যাচাই হচ্ছে...
+                </span>
+              </div>
+
+              <div style="background: #F4FBF4; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #1B5E20; line-height: 1.5;">
+                <i class="fa-solid fa-circle-info" style="color: #2E7D32; margin-right: 6px;"></i>
+                কৃষক বা ইউজাররা অ্যাপ ওপেন করার সাথে সাথেই এই পপআপটি (মডাল হিসেবে) স্ক্রিনে ভেসে উঠবে। ছবি নির্বাচন করে সেভ বাটনে চাপ দিলে ছবি অটোমেটিক কম্প্রেস হয়ে <strong>Cloudflare R2</strong>-তে আপলোড হবে এবং অ্যাপের জন্য সক্রিয় হবে।
+              </div>
+
+              <form id="popupNotificationForm" onsubmit="savePopupNotification(event)">
+                <!-- Toggle Switch: অ্যাপে শো করুন (isActive: true/false) -->
+                <div class="form-group" style="background: #FAFBF9; border: 1.2px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <div>
+                    <strong style="font-size: 14.5px; color: var(--text); display: block; margin-bottom: 3px;">
+                      অ্যাপে শো করুন (সক্রিয় / নিষ্ক্রিয়)
+                    </strong>
+                    <span style="font-size: 12px; color: var(--text-muted);">
+                      অন থাকলে অ্যাপ খোলার সাথে সাথে ইউজার এই পপআপটি দেখতে পাবে
+                    </span>
+                  </div>
+                  <!-- Switch Toggle Button -->
+                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 54px; height: 30px; cursor: pointer; flex-shrink: 0;">
+                    <input type="checkbox" id="popupIsActiveToggle" style="opacity: 0; width: 0; height: 0;" onchange="updatePopupToggleVisual(this.checked)">
+                    <span id="popupToggleSlider"
+                      style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CFD8DC; transition: .25s ease-in-out; border-radius: 34px;">
+                      <span id="popupToggleThumb"
+                        style="position: absolute; content: ''; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .25s ease-in-out; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"></span>
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Image Upload Field (File Pick + Cloudflare R2 Pipeline) -->
+                <div class="form-group">
+                  <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; margin-bottom: 6px;">
+                    <span>পপআপ ব্যানার ছবি নির্বাচন</span>
+                    <span style="font-size: 11px; font-weight: 600; color: #2E7D32;">
+                      <i class="fa-solid fa-cloud-arrow-up"></i> Cloudflare R2 স্টোরেজ
+                    </span>
+                  </label>
+
+                  <div style="display: flex; gap: 8px;">
+                    <input id="popupImgUrl" class="form-control"
+                      placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1; font-size: 13px;">
+                    <button type="button" class="btn btn-primary"
+                      onclick="document.getElementById('popupFileInput').click()"
+                      style="white-space: nowrap; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                      <i class="fa-solid fa-image"></i> ছবি নির্বাচন
+                    </button>
+                    <input type="file" id="popupFileInput" accept="image/*" style="display: none;"
+                      onchange="handlePopupImagePick(this)">
+                  </div>
+
+                  <!-- Upload Status / Compression Info -->
+                  <div id="popupUploadStatus" style="font-size: 12px; margin-top: 6px; display: none;"></div>
+
+                  <!-- Selected Image Preview Box -->
+                  <div id="popupImgPreviewBox" style="margin-top: 12px; display: none;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">
+                      নির্বাচিত ছবির প্রিভিউ:
+                    </label>
+                    <div style="position: relative; display: inline-block; max-width: 100%; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); box-shadow: 0 3px 12px rgba(0,0,0,0.08); background: #FAFBF9;">
+                      <img id="popupImgPreview" src="" alt="Preview"
+                        style="max-width: 100%; max-height: 240px; object-fit: contain; display: block;">
+                      <button type="button" onclick="removePopupImage()"
+                        style="position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: #D32F2F; color: #fff; border: 2px solid #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"
+                        title="ছবি মুছুন / বাতিল">
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit / Save Button -->
+                <button type="submit" id="popupSubmitBtn" class="btn btn-primary"
+                  style="width: 100%; justify-content: center; padding: 12px; font-size: 14.5px; font-weight: 700; margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ ও অ্যাপে আপডেট করুন
+                </button>
+              </form>
+            </div>
+
+            <!-- Right Card: Live Mobile Mockup Preview -->
+            <div class="panel-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FAFBF9;">
+              <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text);">
+                  <i class="fa-solid fa-mobile-screen" style="color: var(--primary); margin-right: 6px;"></i>
+                  অ্যাপে যেমন দেখাবে (লাইভ প্রিভিউ)
+                </h3>
+              </div>
+
+              <!-- Mockup Mobile Screen -->
+              <div style="width: 270px; height: 460px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 28px; border: 4px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; padding: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.25);">
+                <!-- Mock Notch -->
+                <div style="position: absolute; top: 10px; width: 80px; height: 16px; background: #1E293B; border-radius: 10px;"></div>
+
+                <!-- Mock Close X Button -->
+                <div style="position: absolute; top: 54px; right: 22px; width: 28px; height: 28px; border-radius: 50%; background: #1E293B; color: #fff; border: 1.5px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+                  <i class="fa-solid fa-xmark"></i>
+                </div>
+
+                <!-- Mock Popup Box with Image -->
+                <div id="mockPopupBox" style="width: 100%; max-height: 310px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px;">
+                  <img id="mockPopupImg" src="" alt="Popup Preview" style="width: 100%; max-height: 280px; object-fit: contain; display: none; border-radius: 12px;">
+                  <div id="mockPopupEmptyState" style="padding: 36px 16px; text-align: center; color: #94A3B8; font-size: 12.5px;">
+                    <i class="fa-solid fa-image" style="font-size: 38px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <span>কোনো সক্রিয় ছবি নেই</span>
                   </div>
                 </div>
               </div>
-              <button type="submit" id="notifSubmitBtn" class="btn btn-primary"
-                style="width: 100%; justify-content: center;"><svg class="app-icon" viewBox="0 0 24 24" width="15"
-                  height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-                  <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-                  <circle cx="12" cy="12" r="2" />
-                  <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-                  <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
-                </svg> লাইভ প্রচার করুন (Broadcast)</button>
-            </form>
-          </div>
-
-          <div class="panel-card">
-            <div class="panel-header">
-              <h3>প্রচারিত নোটিফিকেশন তালিকা</h3>
-              <span class="badge badge-crop" id="notifCountBadge">মোট: ০</span>
+              <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted); text-align: center;">
+                ইউজাররা অ্যাপ ওপেন করলে এই ডিজাইনে স্বয়ংক্রিয়ভাবে পপআপটি ভেসে উঠবে
+              </div>
             </div>
-            <div id="allNotifsList"></div>
           </div>
         </div>
       </div>
@@ -5131,6 +5274,7 @@
           if (typeof renderDashboardEnhanced === 'function') renderDashboardEnhanced();
         } else if (tabKey === 'notifications') {
           renderNotifications();
+          if (typeof loadPopupNotificationSettings === 'function') loadPopupNotificationSettings();
         } else if (tabKey === 'market') {
           renderMarketList();
         } else if (tabKey === 'crops') {
@@ -6404,6 +6548,7 @@
       crop: { file: null, blobUrl: null },
       pest: { file: null, blobUrl: null },
       notif: { file: null, blobUrl: null },
+      popup: { file: null, blobUrl: null, isDeleted: false },
       market: { file: null, blobUrl: null },
       privacy: { file: null, blobUrl: null, rawImg: null, isDeleted: false },
       fc: { file: null, blobUrl: null, isDeleted: false },
@@ -6788,6 +6933,183 @@
         showToast('নোটিফিকেশন সফলভাবে মুছে ফেলা হয়েছে।');
       } catch (err) {
         showToast('ত্রুটি: ' + err.message);
+      }
+    }
+
+    // ==================== STARTUP POPUP NOTIFICATION CONTROLLER ====================
+    function switchNotifSubtab(key) {
+      const btnBroadcast = document.getElementById('notifSubtabBtnBroadcast');
+      const btnPopup = document.getElementById('notifSubtabBtnPopup');
+      const paneBroadcast = document.getElementById('notifSubpaneBroadcast');
+      const panePopup = document.getElementById('notifSubpanePopup');
+
+      if (key === 'popup') {
+        if (btnBroadcast) { btnBroadcast.classList.remove('btn-primary'); btnBroadcast.classList.add('btn-outline'); }
+        if (btnPopup) { btnPopup.classList.remove('btn-outline'); btnPopup.classList.add('btn-primary'); }
+        if (paneBroadcast) paneBroadcast.style.display = 'none';
+        if (panePopup) panePopup.style.display = 'block';
+        loadPopupNotificationSettings();
+      } else {
+        if (btnPopup) { btnPopup.classList.remove('btn-primary'); btnPopup.classList.add('btn-outline'); }
+        if (btnBroadcast) { btnBroadcast.classList.remove('btn-outline'); btnBroadcast.classList.add('btn-primary'); }
+        if (panePopup) panePopup.style.display = 'none';
+        if (paneBroadcast) paneBroadcast.style.display = 'block';
+      }
+    }
+
+    function updatePopupToggleVisual(isActive) {
+      const slider = document.getElementById('popupToggleSlider');
+      const thumb = document.getElementById('popupToggleThumb');
+      const toggle = document.getElementById('popupIsActiveToggle');
+      const badge = document.getElementById('popupActiveBadge');
+      if (toggle) toggle.checked = isActive;
+      if (slider) slider.style.backgroundColor = isActive ? '#2E7D32' : '#CFD8DC';
+      if (thumb) thumb.style.transform = isActive ? 'translateX(24px)' : 'translateX(0)';
+      if (badge) {
+        if (isActive) {
+          badge.style.background = '#E8F5E9';
+          badge.style.color = '#2E7D32';
+          badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> অ্যাপে বর্তমানে সক্রিয়';
+        } else {
+          badge.style.background = '#FFEBEE';
+          badge.style.color = '#C62828';
+          badge.innerHTML = '<i class="fa-solid fa-circle-pause"></i> বর্তমানে নিষ্ক্রিয়';
+        }
+      }
+    }
+
+    async function handlePopupImagePick(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('অনুগ্রহ করে শুধুমাত্র ছবি ফাইল নির্বাচন করুন।');
+        return;
+      }
+
+      await handleImagePick(input, 'popup', 'popupImgPreviewBox', 'popupUploadStatus', 'popupImgUrl');
+
+      // মোবাইল লাইভ প্রিভিউ মকআপে আপডেট
+      if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
+        const mockImg = document.getElementById('mockPopupImg');
+        const mockEmpty = document.getElementById('mockPopupEmptyState');
+        if (mockImg) {
+          mockImg.src = pendingUploads.popup.blobUrl;
+          mockImg.style.display = 'block';
+        }
+        if (mockEmpty) mockEmpty.style.display = 'none';
+      }
+    }
+
+    function removePopupImage() {
+      removeImageSelection('popup', 'popupFileInput', 'popupImgPreviewBox', 'popupUploadStatus', 'popupImgUrl');
+      const mockImg = document.getElementById('mockPopupImg');
+      const mockEmpty = document.getElementById('mockPopupEmptyState');
+      if (mockImg) {
+        mockImg.src = '';
+        mockImg.style.display = 'none';
+      }
+      if (mockEmpty) mockEmpty.style.display = 'block';
+      const urlInput = document.getElementById('popupImgUrl');
+      if (urlInput) urlInput.value = '';
+    }
+
+    async function savePopupNotification(e) {
+      if (e) e.preventDefault();
+      const submitBtn = document.getElementById('popupSubmitBtn');
+      const origContent = submitBtn ? submitBtn.innerHTML : '';
+      const toggle = document.getElementById('popupIsActiveToggle');
+      const isActive = toggle ? toggle.checked : false;
+      let imgUrl = document.getElementById('popupImgUrl')?.value.trim() || '';
+
+      if (isActive && !imgUrl && (!pendingUploads.popup || !pendingUploads.popup.file)) {
+        showToast('পপআপ সক্রিয় করতে হলে একটি ছবি নির্বাচন করুন অথবা ছবির লিংক দিন।');
+        return;
+      }
+
+      try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ছবি প্রসেসিং ও সংরক্ষণ হচ্ছে...';
+        }
+
+        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি কম্প্রেস হয়ে Cloudflare R2-এ আপলোড হবে
+        if (pendingUploads.popup && pendingUploads.popup.file) {
+          imgUrl = await uploadFileToR2Pipeline(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
+          const urlInput = document.getElementById('popupImgUrl');
+          if (urlInput) urlInput.value = imgUrl;
+        }
+
+        // Firestore admin_settings/popup_notification ডকুমেন্টে সেভ করা
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+          const dbInstance = firebase.firestore();
+          const serverTs = (firebase.firestore.FieldValue && firebase.firestore.FieldValue.serverTimestamp)
+            ? firebase.firestore.FieldValue.serverTimestamp()
+            : new Date();
+
+          await dbInstance.collection('admin_settings').doc('popup_notification').set({
+            isActive: isActive,
+            imageUrl: imgUrl,
+            updatedAt: serverTs
+          }, { merge: true });
+        }
+
+        // লোকাল মেমোরি পরিষ্কার
+        if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.popup.blobUrl); } catch (_) { }
+        }
+        pendingUploads.popup = { file: null, blobUrl: null };
+
+        showToast('স্টার্টআপ পপআপ নোটিফিকেশন সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+        await loadPopupNotificationSettings();
+      } catch (err) {
+        console.error('Save popup notification error:', err);
+        showToast('পপআপ নোটিফিকেশন সংরক্ষণে ত্রুটি: ' + err.message);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origContent;
+        }
+      }
+    }
+
+    async function loadPopupNotificationSettings() {
+      try {
+        if (typeof firebase === 'undefined' || !firebase.firestore) return;
+        const dbInstance = firebase.firestore();
+        const doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
+
+        const urlInput = document.getElementById('popupImgUrl');
+        const previewBox = document.getElementById('popupImgPreviewBox');
+        const previewImg = document.getElementById('popupImgPreview');
+        const mockImg = document.getElementById('mockPopupImg');
+        const mockEmpty = document.getElementById('mockPopupEmptyState');
+
+        if (doc.exists) {
+          const data = doc.data() || {};
+          const isActive = data.isActive === true;
+          const imageUrl = data.imageUrl || '';
+
+          updatePopupToggleVisual(isActive);
+          if (urlInput) urlInput.value = imageUrl;
+
+          if (imageUrl) {
+            if (previewImg) previewImg.src = imageUrl;
+            if (previewBox) previewBox.style.display = 'block';
+            if (mockImg) { mockImg.src = imageUrl; mockImg.style.display = 'block'; }
+            if (mockEmpty) mockEmpty.style.display = 'none';
+          } else {
+            if (previewBox) previewBox.style.display = 'none';
+            if (mockImg) { mockImg.src = ''; mockImg.style.display = 'none'; }
+            if (mockEmpty) mockEmpty.style.display = 'block';
+          }
+        } else {
+          updatePopupToggleVisual(false);
+          if (previewBox) previewBox.style.display = 'none';
+          if (mockImg) { mockImg.src = ''; mockImg.style.display = 'none'; }
+          if (mockEmpty) mockEmpty.style.display = 'block';
+        }
+      } catch (err) {
+        console.warn('Load popup notification settings notice:', err);
       }
     }
 
@@ -12789,6 +13111,7 @@
       setupMarketFormPasteSanitizers();
       updatePolicyCounters();
       updatePolicyPreview();
+      loadPopupNotificationSettings();
     });
   </script>
   <!-- MODAL: ADMIN INCOME-EXPENSE MEMO DETAILS -->
