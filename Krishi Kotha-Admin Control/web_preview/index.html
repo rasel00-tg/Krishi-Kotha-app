@@ -4299,7 +4299,7 @@
       </div>
 
       <!-- Modal Actions (Sticky / Fixed Bottom) -->
-      <div class="modal-actions"
+      <div class="modal-actions" id="ticketModalActions"
         style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; border-top: 1px solid var(--border); padding: 12px 20px; flex-shrink: 0; background: #FAFBF9; border-radius: 0 0 14px 14px;">
         <button type="button" class="btn btn-outline" onclick="closeTicketModal()" style="padding: 9px 16px;">বন্ধ
           করুন</button>
@@ -8678,19 +8678,20 @@
       const acceptBtn = document.getElementById('acceptTicketBtn');
       const rejectBtn = document.getElementById('rejectTicketBtn');
       const statusBanner = document.getElementById('ticketDecisionStatusBanner');
+      const actionsContainer = document.getElementById('ticketModalActions');
 
       const s = ticket.status || 'pending';
       const isAlreadyDecided = (s === 'resolved' || s === 'answered' || s === 'rejected');
 
-      // রিকোয়ারমেন্ট ৩: স্ট্যাটাস যদি আগেই 'গৃহীত' বা 'বাতিল' থাকে, তবে 'গ্রহণ' ও 'বাতিল' বাটন দেখাবে না
+      // রিকোয়ারমেন্ট ২ ও ৩: স্ট্যাটাস যদি আগেই 'গৃহীত' বা 'বাতিল' থাকে, তবে 'গ্রহণ' ও 'বাতিল' বাটন DOM থেকে চিরতরে রিমুভ/হাইড
       if (isAlreadyDecided) {
-        if (acceptBtn) {
-          acceptBtn.style.display = 'none';
-          acceptBtn.disabled = true;
-        }
-        if (rejectBtn) {
-          rejectBtn.style.display = 'none';
-          rejectBtn.disabled = true;
+        if (actionsContainer) {
+          actionsContainer.innerHTML = `
+            <button type="button" class="btn btn-outline" onclick="closeTicketModal()" style="padding: 9px 20px;">বন্ধ করুন</button>
+          `;
+        } else {
+          if (acceptBtn) acceptBtn.remove();
+          if (rejectBtn) rejectBtn.remove();
         }
         if (replyInput) replyInput.disabled = true;
         if (offInput) offInput.disabled = true;
@@ -8712,15 +8713,29 @@
           }
         }
       } else {
-        if (acceptBtn) {
-          acceptBtn.style.display = 'inline-flex';
-          acceptBtn.disabled = false;
-          acceptBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> গ্রহণ করুন (সমাধান)';
-        }
-        if (rejectBtn) {
-          rejectBtn.style.display = 'inline-flex';
-          rejectBtn.disabled = false;
-          rejectBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> বাতিল করুন';
+        if (actionsContainer) {
+          actionsContainer.innerHTML = `
+            <button type="button" class="btn btn-outline" onclick="closeTicketModal()" style="padding: 9px 16px;">বন্ধ করুন</button>
+            <button type="button" class="btn" onclick="handleTicketDecision('rejected')" id="rejectTicketBtn"
+              style="background: #D32F2F; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+              <i class="fa-solid fa-circle-xmark"></i> বাতিল করুন
+            </button>
+            <button type="button" class="btn btn-primary" onclick="handleTicketDecision('resolved')" id="acceptTicketBtn"
+              style="padding: 9px 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-circle-check"></i> গ্রহণ করুন (সমাধান)
+            </button>
+          `;
+        } else {
+          if (acceptBtn) {
+            acceptBtn.style.display = 'inline-flex';
+            acceptBtn.disabled = false;
+            acceptBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> গ্রহণ করুন (সমাধান)';
+          }
+          if (rejectBtn) {
+            rejectBtn.style.display = 'inline-flex';
+            rejectBtn.disabled = false;
+            rejectBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> বাতিল করুন';
+          }
         }
         if (replyInput) replyInput.disabled = false;
         if (offInput) offInput.disabled = false;
@@ -8770,6 +8785,14 @@
       const id = document.getElementById('replyTicketId').value;
       if (!id) return;
 
+      const targetTicket = tickets.find(t => t.id === id);
+      const curStatus = targetTicket ? (targetTicket.status || 'pending') : 'pending';
+      // রিকোয়ারমেন্ট ৩: ডাবল-অ্যাকশন প্রতিরোধ (ইতোমধ্যে সিদ্ধান্ত নেওয়া হয়ে থাকলে তৎক্ষণাৎ রিটার্ন)
+      if (curStatus === 'resolved' || curStatus === 'answered' || curStatus === 'rejected') {
+        showToast('এই টিকিটটি ইতোমধ্যে নিষ্পত্তি করা হয়েছে!');
+        return;
+      }
+
       const officer = document.getElementById('replyOfficer')?.value.trim() || 'কৃষি কথা সাপোর্ট টিম';
       const text = document.getElementById('replyText')?.value.trim();
 
@@ -8791,11 +8814,15 @@
       }
 
       try {
-        if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+          const db = firebase.firestore();
+          const serverTs = (firebase.firestore.FieldValue && firebase.firestore.FieldValue.serverTimestamp)
+            ? firebase.firestore.FieldValue.serverTimestamp()
+            : new Date();
           const updatePayload = {
             status: decision,
             officerName: officer,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: serverTs
           };
 
           if (decision === 'resolved') {
@@ -8803,25 +8830,34 @@
             updatePayload.officerReply = text;
             updatePayload.reply = text;
             updatePayload.rejectionReason = null;
-            updatePayload.resolvedAt = firebase.firestore.FieldValue.serverTimestamp();
+            updatePayload.resolvedAt = serverTs;
           } else {
             updatePayload.adminReply = text;
             updatePayload.officerReply = text;
             updatePayload.reply = text;
             updatePayload.rejectionReason = text;
-            updatePayload.rejectedAt = firebase.firestore.FieldValue.serverTimestamp();
+            updatePayload.rejectedAt = serverTs;
           }
 
           await db.collection('support_tickets').doc(id).update(updatePayload);
         }
 
         // ইন-মেমোরি স্ট্যাটাস সাথে সাথে আপডেট
-        const targetTicket = tickets.find(t => t.id === id);
         if (targetTicket) {
           targetTicket.status = decision;
           targetTicket.reply = text;
           targetTicket.rejectionReason = decision === 'rejected' ? text : null;
           targetTicket.officerName = officer;
+        }
+
+        // রিকোয়ারমেন্ট ৩: সফল হওয়ার সাথে সাথে বাটন দুটো DOM থেকে পুরোপুরি রিমুভ (element.remove())
+        if (acceptBtn) acceptBtn.remove();
+        if (rejectBtn) rejectBtn.remove();
+        const actionsContainer = document.getElementById('ticketModalActions');
+        if (actionsContainer) {
+          actionsContainer.innerHTML = `
+            <button type="button" class="btn btn-outline" onclick="closeTicketModal()" style="padding: 9px 20px;">বন্ধ করুন</button>
+          `;
         }
 
         closeTicketModal();

@@ -1054,6 +1054,8 @@ class _TicketReplyDialogState extends State<_TicketReplyDialog> {
   }
 
   Future<void> _handleDecision(String decision) async {
+    final s = widget.ticket.status.toLowerCase();
+    if (s == 'resolved' || s == 'rejected') return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
