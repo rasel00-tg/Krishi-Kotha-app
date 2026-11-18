@@ -3604,7 +3604,7 @@
       <div style="background: #fff; border-radius: 18px; padding: 26px 24px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div style="width: 44px; height: 44px; border: 3.5px solid #E8F5E9; border-top-color: #2E7D32; border-radius: 50%; margin: 0 auto 18px auto; animation: spin 0.8s linear infinite;"></div>
         <div style="font-size: 15px; font-weight: 700; color: #1E281F; font-family: 'Hind Siliguri', sans-serif;">
-          আপনার ফসল তথ্য যাচাই করা হচ্ছে....
+          আপনার তথ্য যাচাই হচ্ছে.... 
         </div>
       </div>
     </div>
@@ -13550,7 +13550,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         const details = crop.cropDetails || 'মাটির অবস্থা স্বাভাবিক';
         const status = crop.aiStatus || '💧 হালকা সেচ দিন';
         const advice = crop.aiAdvice || 'বর্তমান আবহাওয়া অনুযায়ী পর্যাপ্ত আর্দ্রতা বজায় রাখতে হালকা সেচ দিন।';
-        const medicineSuggestion = (crop.medicine_suggestion || crop.medicineSuggestion || '').trim();
+        const medicineInfo = (crop.medicine_info || crop.medicineInfo || crop.medicine_suggestion || crop.medicineSuggestion || '').trim();
         const district = crop.weatherDistrict || 'ঢাকা';
         const lastUpdatedMs = crop.last_updated_ms || crop.createdAtMs || Date.now();
         const lastUpdatedStr = formatIrrigationTime(lastUpdatedMs);
@@ -13638,22 +13638,22 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 ${advice}
               </div>
 
-              ${medicineSuggestion ? `
+              ${medicineInfo ? `
                 <div style="margin-top: 10px; background: #FFF8E1; border: 1.2px solid #FFE082; border-radius: 10px; padding: 10px;">
                   <div style="display: flex; align-items: center; gap: 6px; color: #E65100; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
                     <i class="fa-solid fa-prescription-bottle-medical"></i>
                     <span>ঔষধ ও বালাইনাশক পরামর্শ:</span>
                   </div>
                   <div style="font-size: 12px; color: #37474F; line-height: 1.4;">
-                    ${medicineSuggestion}
+                    ${medicineInfo}
                   </div>
                 </div>
               ` : ''}
 
-              <!-- সতর্কতা ডিসক্লেইমার -->
-              <div style="margin-top: 10px; background: rgba(232,245,233,0.6); border-radius: 6px; padding: 6px 8px; text-align: center; font-size: 11px; font-weight: 700; font-style: italic; color: #2E7D32;">
-                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
-                <span>ঔষধ কেনার জন্য অবশ্যই বিশেষজ্ঞদের পরামর্শ নিবেন</span>
+              <!-- সতর্কতা ডিসক্লেইমার (স্পষ্ট লাল কালারে) -->
+              <div style="margin-top: 10px; background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 11px; font-weight: 700; color: #D32F2F;">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i>
+                <span>ফসলে ঔষধ প্রয়োগ করার আগে বিশেষজ্ঞদের পরামর্শ নিন, সরাসরি ঔষধ ব্যবহার করবেন না।</span>
               </div>
 
               <div style="margin-top: 8px; display: flex; align-items: center; gap: 4px; font-size: 11px; color: #78909C; font-weight: 600;">
@@ -13735,29 +13735,25 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
-    // আলাদা লাইভ AI ইনপুট ভেরিফিকেশন কল (No Hardcoded Lists)
-    async function verifyCropAndDetailsWithAi(cropName, cropDetails) {
+    // রিকোয়ারমেন্ট ১: শুধুমাত্র "ফসলের নাম" ভেরিফাই করা (Strict Live API Validation)
+    async function verifyCropWithAi(cropName) {
       const cleanCrop = (cropName || '').trim();
-      const cleanDetails = (cropDetails || '').trim();
 
-      const prompt = `তুমি ইনপুট ভেরিফায়ার। নিচের ডেটা যাচাই করে একটি JSON অবজেক্ট দাও।
-ইনপুট ডেটা:
-- ফসলের নাম: ${cleanCrop}
-- বিস্তারিত: ${cleanDetails}
-
-যাচাইয়ের ১০০% কঠোর নিয়ম:
-১. "ফসলের নাম" যাচাই: এটি ১০০% কঠোর। যদি ইনপুটটি কোনো পরিচিত কৃষি ফসল, শাকসবজি, ফল বা গাছ না হয় (যেমন: আজেবাজে শব্দ, টেস্ট ডাটা বা অবাস্তব কিছু), তবে কোনোভাবেই ছাড় দিবে না, সরাসরি false দিবে। 
-২. "বিস্তারিত" যাচাই: এটি ফ্লেক্সিবল থাকবে। খুব বেশি অযৌক্তিক বা গালিগালাজ না হলে true দিবে।
-
-আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
+      const prompt = `তুমি ইনপুট ভেরিফায়ার। যাচাই করো ইনপুট দেওয়া নামটি কোনো বাস্তব কৃষি ফসল, শাকসবজি, ফল বা গাছ কিনা। 
+ফসলের নাম: ${cleanCrop}
+আউটপুট JSON:
 {
-  "is_valid_crop": true বা false,
-  "is_valid_details": true বা false
+  "is_valid_crop": true বা false (১০০% কঠোরভাবে চেক করো, আজেবাজে নাম বা অন্য কিছু হলে false দাও),
+  "error_message": "যদি false হয় তবে লিখুন: 'আপনার দেওয়া নামটি সঠিক ফসলের নাম নয়। অনুগ্রহ করে সঠিক নাম দিন।'"
 }`;
 
       let apiKey = '';
       try {
-        apiKey = localStorage.getItem('gemini_api_key') || '';
+        apiKey = atob('QVEuQWI4Uk42Sy0zeUk0Mm03MHM4aVpjUHA4T2NmWE1CbFloVWdVV1hBbWNiXzRtdlc3WWc=');
+      } catch(e) {}
+      try {
+        const stored = localStorage.getItem('gemini_api_key');
+        if (stored) apiKey = stored;
       } catch(e) {}
 
       if (apiKey) {
@@ -13781,7 +13777,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             const parsed = JSON.parse(raw);
             return {
               isValidCrop: parsed.is_valid_crop === true,
-              isValidDetails: parsed.is_valid_details === true
+              errorMessage: (parsed.error_message || '').trim() || 'আপনার দেওয়া নামটি সঠিক ফসলের নাম নয়। অনুগ্রহ করে সঠিক নাম দিন।'
             };
           }
         } catch (e) {
@@ -13791,23 +13787,23 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       return {
         isValidCrop: cleanCrop.length >= 2,
-        isValidDetails: cleanDetails.length >= 2
+        errorMessage: 'আপনার দেওয়া নামটি সঠিক ফসলের নাম নয়। অনুগ্রহ করে সঠিক নাম দিন।'
       };
     }
 
-    // AGRONOMIC ADVICE GENERATION WITH WATERLOGGED / RAIN & MEDICINE ANALYSIS
+    // রিকোয়ারমেন্ট ২: রিয়েল-টাইম নির্দেশনা এবং ঔষধ সাজেশন (Hourly AI Advice & Medicine)
     function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
       const rain = parseInt((weather.rain || '0').replace(/[^0-9]/g, '')) || 0;
       const temp = parseInt((weather.temp || '28').replace(/[^0-9]/g, '')) || 28;
       const cond = weather.cond || 'পরিষ্কার আকাশ';
       const details = (cropDetails || '').toLowerCase();
 
-      // বালাইনাশক ও ঔষধের স্বয়ংক্রিয় সাজেশন
-      let medicineSuggestion = '';
+      // বালাইনাশক ও কার্যকরী ঔষধের নাম ও আনুমানিক মূল্য সাজেস্ট
+      let medicineInfo = '';
       if (details.includes('পোকা') || details.includes('কীট') || details.includes('মাজরা') || details.includes('লেদা')) {
-        medicineSuggestion = `${cropName} ফসলে পোকার উপদ্রব দেখা দিলে নিম তেলের মিশ্রণ বা অনুমোদিত কীটনাশক মাত্রা অনুযায়ী সঠিক সময়ে স্প্রে করুন।`;
+        medicineInfo = `${cropName} ফসলে পোকার উপদ্রব দমনে ক্লোরপাইরিফস বা নিম তেলের স্প্রে প্রয়োগ করুন (আনুমানিক মূল্য: ১৫০-২৫০ টাকা/বোতল)।`;
       } else if (details.includes('পচন') || details.includes('ছত্রাক') || details.includes('দাগ') || details.includes('ব্লাইট')) {
-        medicineSuggestion = 'শিকড় বা কাণ্ড পচা ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে ম্যানকোজেব বা কার্বেনডাজিম জাতীয় ছত্রাকনাশক স্প্রে করার পরামর্শ দেওয়া হচ্ছে।';
+        medicineInfo = 'শিকড় ও কাণ্ড পচা রোগ নিয়ন্ত্রণে ম্যানকোজেব বা কার্বেনডাজিম জাতীয় ছত্রাকনাশক স্প্রে করুন (আনুমানিক মূল্য: ১২০-২০০ টাকা/প্যাকেট)।';
       }
 
       // ১. জমিতে পানি জমে থাকা বা অতিরিক্ত ভেজা থাকার রিয়েল এনালাইসিস
@@ -13815,7 +13811,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return {
           status: '🌿 সেচের প্রয়োজন নেই',
           advice: `জমিতে পানি জমে বা মাটি অতিরিক্ত ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। অতিরিক্ত পানি দ্রুত নিষ্কাশনের ব্যবস্থা করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় নষ্ট বা পচে না যায়।`,
-          medicine_suggestion: medicineSuggestion
+          medicine_info: medicineInfo
         };
       }
 
@@ -13824,7 +13820,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return {
           status: '🌿 সেচের প্রয়োজন নেই',
           advice: `বর্তমানে বৃষ্টির শঙ্কা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন এবং পানি নিষ্কাশনের ড্রেন পরিষ্কার রাখুন।`,
-          medicine_suggestion: medicineSuggestion
+          medicine_info: medicineInfo
         };
       }
 
@@ -13833,7 +13829,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return {
           status: '🚨 জরুরি সেচ প্রয়োজন',
           advice: `উচ্চ তাপমাত্রা (${toBangla(temp)}°C) এবং প্রখর রৌদ্রের কারণে মাটির আর্দ্রতা দ্রুত হ্রাস পাচ্ছে। ${cropName} ফসলে আর্দ্রতা ধরে রাখতে বিকালে হালকা বা পরিমিত সেচ প্রদান করুন।`,
-          medicine_suggestion: medicineSuggestion
+          medicine_info: medicineInfo
         };
       }
 
@@ -13841,7 +13837,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       return {
         status: '💧 হালকা সেচ দিন',
         advice: `${cropName} ফসলের বর্তমান বয়স (${cropAge}) ও আবহাওয়ায় মাটির জো অনুযায়ী বিকাল বেলা সেচনালায় হালকা পানি প্রবাহ নিশ্চিত করুন। অতিরিক্ত পানি যেন না জমে সেদিকে খেয়াল রাখুন।`,
-        medicine_suggestion: medicineSuggestion
+        medicine_info: medicineInfo
       };
     }
 
@@ -13875,28 +13871,20 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!expiryDateVal) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'মেয়াদ শেষ হওয়ার তারিখ নির্বাচন করুন।', 'error', 'এডিট'); return; }
       if (!details) { showIrrigationCustomAlert('ইনপুট ত্রুটি', 'ফসলের বিস্তারিত তথ্য লিখুন।', 'error', 'এডিট'); return; }
 
-      // গ্লোবাল ব্লকিং লোডিং পপআপ চালু
+      // গ্লোবাল ব্লকিং লোডিং পপআপ চালু ("আপনার তথ্য যাচাই হচ্ছে.... ")
       const loadingEl = document.getElementById('irrigationGlobalLoading');
       if (loadingEl) loadingEl.style.display = 'flex';
 
       // কৃত্রিম ভ্যালিডেশন বিলম্ব (এআই যাচাইয়ের অনুভূতি)
       await new Promise(r => setTimeout(r, 600));
 
-      // রিকোয়ারমেন্ট ২ ও ৩: আলাদা AI ইনপুট ভেরিফিকেশন
-      const verifyResult = await verifyCropAndDetailsWithAi(name, details);
+      // রিকোয়ারমেন্ট ১: শুধুমাত্র "ফসলের নাম" ভেরিফাই করা (Strict Live API Validation)
+      const verifyResult = await verifyCropWithAi(name);
 
-      // ক) যদি is_valid_details == false হয়, তবে গ্লোবাল লোডিং পপআপ কেটে দিয়ে একটি Error পপআপ দেখাও:
-      // "আপনার বিস্তারিত অযোক্তিক যার কারনে আমরা এর পরামর্শ দিতে পারছি না।"
-      if (!verifyResult.isValidDetails) {
-        if (loadingEl) loadingEl.style.display = 'none';
-        showIrrigationCustomAlert('ইনপুট ত্রুটি', 'আপনার বিস্তারিত অযোক্তিক যার কারনে আমরা এর পরামর্শ দিতে পারছি না।', 'error', 'এডিট');
-        return;
-      }
-
-      // খ) যদি is_valid_crop == false হয়, তবে লোডিং কেটে দিয়ে এরর দেখাও: "অনুগ্রহ করে সঠিক ফসলের নাম লিখুন।"
+      // যদি false হয়, পপআপ কেটে Error দেখাবে এবং ফসল যোগ হবে না
       if (!verifyResult.isValidCrop) {
         if (loadingEl) loadingEl.style.display = 'none';
-        showIrrigationCustomAlert('ইনপুট ত্রুটি', 'অনুগ্রহ করে সঠিক ফসলের নাম লিখুন।', 'error', 'এডিট');
+        showIrrigationCustomAlert('ইনপুট ত্রুটি', verifyResult.errorMessage || 'আপনার দেওয়া নামটি সঠিক ফসলের নাম নয়। অনুগ্রহ করে সঠিক নাম দিন।', 'error', 'এডিট');
         return;
       }
 
