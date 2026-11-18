@@ -13684,6 +13684,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         const lastUpdatedMs = crop.last_updated_ms || crop.createdAtMs || Date.now();
         const lastUpdatedStr = formatIrrigationTime(lastUpdatedMs);
 
+        // হোমবারের রিয়েল-টাইম তাপমাত্রা ও আর্দ্রতার সাথে সরাসরি সিঙ্ক
+        const tempEl = document.getElementById('tempValue');
+        const humEl = document.getElementById('humidityValue');
+        const currentTempDisplay = tempEl ? tempEl.innerText.trim() + '°C' : (crop.weatherTemp ? (crop.weatherTemp.toString().includes('°') ? crop.weatherTemp : crop.weatherTemp + '°C') : '২৮°C');
+        const currentHumDisplay = humEl ? humEl.innerText.trim() : (crop.weatherHumidity ? (crop.weatherHumidity.toString().includes('%') ? crop.weatherHumidity : crop.weatherHumidity + '%') : '৬৫%');
+
         // Expiry date chip
         let expiryChip = '';
         if (crop.expiryDate) {
@@ -13759,9 +13765,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                   <i class="fa-solid fa-lightbulb" style="color: #2E7D32;"></i>
                   <span>আপনার জন্য বর্তমান নির্দেশনা</span>
                 </div>
-                <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px;">
-                  ${status}
-                </span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="background: #fff; border: 1px solid #C8E6C9; border-radius: 6px; padding: 2px 7px; font-size: 10px; font-weight: 700; color: #2E7D32;">
+                    🌡️ ${currentTempDisplay} | 💧 ${currentHumDisplay}
+                  </span>
+                  <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px;">
+                    ${status}
+                  </span>
+                </div>
               </div>
               <div style="font-size: 12.5px; color: #1E281F; line-height: 1.5; margin-bottom: 8px;">
                 ${advice}
@@ -13920,30 +13931,28 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       };
     }
 
-    // রিকোয়ারমেন্ট ১: Deep Analysis API Prompt (কঠোর ও নিখুঁত লজিক)
+    // রিকোয়ারমেন্ট ২: Ultra-Sensitive Deep Analysis API Prompt
     async function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
       const rain = parseInt((weather.rain || '0').replace(/[^0-9]/g, '')) || 0;
       const temp = parseInt((weather.temp || '28').replace(/[^0-9]/g, '')) || 28;
       const details = (cropDetails || 'মাটির অবস্থা স্বাভাবিক').trim();
-      const weatherDesc = `তাপমাত্রা ${temp}°C এবং বৃষ্টিপাতের সম্ভাবনা (Rain Probability) ${rain}%`;
+      const weatherDesc = `তাপমাত্রা ${temp}°C এবং বৃষ্টিপাতের সম্ভাবনা ${rain}%`;
 
-      const prompt = `তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে একদম স্পেসিফিক এবং লজিক্যাল পরামর্শ দিতে হবে। কোনো জেনেরিক বা সাধারণ পরামর্শ (যেমন: "বিকালে হালকা সেচ দিন") ঢালাওভাবে দেওয়া যাবে না।
-
+      const prompt = `তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে স্পেসিফিক পরামর্শ দিতে হবে।
 ইনপুট ডেটা:
 - ফসলের নাম: ${cropName}
 - ফসলের বয়স: ${cropAge}
 - বর্তমান আবহাওয়া: ${weatherDesc}
-- জমির বর্তমান অবস্থা (কৃষকের বিবরণ): ${details}
+- জমির বর্তমান অবস্থা: ${details}
 
 বিশ্লেষণের ১০০% কঠোর নিয়ম:
-১. আবহাওয়া ও সেচ লজিক: যদি বৃষ্টির সম্ভাবনা বেশি থাকে অথবা কৃষক বিবরণে লেখে "মাটি ভেজা", "বৃষ্টি হয়েছে" বা "পানি জমেছে", তবে কোনোভাবেই সেচ দেওয়ার পরামর্শ দিবে না! বরং পানি নিষ্কাশন বা মাটি শুকানোর কথা বলবে।
-২. ফসল ও বয়সের লজিক: ধানের পানির চাহিদা আর আলুর পানির চাহিদা এক নয়। ফসলের ধরন ও বয়সের ওপর ভিত্তি করে রিয়েল পরামর্শ দিবে।
-৩. রোগ ও ঔষধ লজিক: কৃষকের বিবরণে যদি কোনো পোকা, পাতা হলুদ হওয়া, পচন বা রোগের লক্ষণ থাকে, তবেই কেবল নির্দিষ্ট ও কার্যকরী ঔষধ/কীটনাশকের নাম (যেমন: এমিস্টার টপ, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে। কোনো রোগের লক্ষণ না থাকলে ঔষধের ঘর সম্পূর্ণ ফাঁকা রাখবে।
+১. আবহাওয়া ও সেচ লজিক: বৃষ্টির সম্ভাবনা থাকলে বা জমিতে পানি/ভেজা থাকলে সেচ দিতে না করবে। 
+২. রোগ ও ঔষধ লজিক (Ultra-Sensitive): কৃষকের বিবরণে যদি "পচে যাচ্ছে", "পচন", "পোকা", "হলুদ হয়ে যাচ্ছে", "দাগ পড়ছে" বা ফসলের যেকোনো নেতিবাচক লক্ষণ থাকে, তবে কোনোভাবেই ঔষধের ঘর ফাঁকা রাখা যাবে না! অবশ্যই সমস্যা অনুযায়ী একটি কার্যকরী ঔষধ/কীটনাশক/ছত্রাকনাশকের নাম (যেমন: এমিস্টার টপ, টিল্ট, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে।
 
 আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
 {
-  "advice": "উপরের নিয়মগুলো মেনে ২-৩ লাইনের রিয়েল-টাইম, স্মার্ট ও নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
-  "medicine_info": "রোগ থাকলে কার্যকরী ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
+  "advice": "আবহাওয়া ও বয়সের ওপর ভিত্তি করে রিয়েল-টাইম নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
+  "medicine_info": "যেকোনো সমস্যার লক্ষণ থাকলে অবশ্যই কার্যকরী ঔষধের নাম, দাম ও প্রয়োগবিধি। কোনো সমস্যা না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
 }`;
 
       let apiKey = '';
@@ -13987,13 +13996,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         } catch(e) {}
       }
 
-      // অফলাইন ও ফলব্যাক এগ্রোনমিক অ্যালগরিদম
+      // অফলাইন ও ফলব্যাক এগ্রোনমিক অ্যালগরিদম (Ultra-Sensitive)
       const detailsLower = details.toLowerCase();
       let medicineInfo = '';
-      if (detailsLower.includes('পোকা') || detailsLower.includes('কীট') || detailsLower.includes('মাজরা') || detailsLower.includes('লেদা')) {
+      if (detailsLower.includes('পচ') || detailsLower.includes('পচে') || detailsLower.includes('পচন') || detailsLower.includes('ছত্রাক') || detailsLower.includes('দাগ') || detailsLower.includes('হলুদ') || detailsLower.includes('ব্লাইট') || detailsLower.includes('ঝলসানো')) {
+        if (cropName.includes('মরিচ') || detailsLower.includes('মরিচ')) {
+          medicineInfo = 'মরিচ ফসলে পচন ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে টিল্ট ২৫০ ইসি (প্রপিকোনাজল) প্রতি লিটার পানিতে ০.৫ মিলি অথবা এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
+        } else {
+          medicineInfo = `${cropName} ফসলে ছত্রাকজনিত রোগ ও পাতা হলুদ হওয়া দমনে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা টিল্ট ২৫০ ইসি ০.৫ মিলি স্প্রে করুন।`;
+        }
+      } else if (detailsLower.includes('পোকা') || detailsLower.includes('কীট') || detailsLower.includes('মাজরা') || detailsLower.includes('লেদা') || detailsLower.includes('মাছি') || detailsLower.includes('মাকড়')) {
         medicineInfo = `${cropName} ফসলে পোকা ও মাজরা দমনে কীটনাশক ক্যারাটে ২.৫ ইসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) বিকালে স্প্রে করুন।`;
-      } else if (detailsLower.includes('পচন') || detailsLower.includes('ছত্রাক') || detailsLower.includes('দাগ') || detailsLower.includes('হলুদ') || detailsLower.includes('ব্লাইট')) {
-        medicineInfo = 'ছত্রাকজনিত রোগ ও পাতা হলুদ হওয়া দমনে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
       }
 
       // ১. আবহাওয়া ও সেচ লজিক
@@ -14091,6 +14104,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       // Weather data sync
+      syncIrrigationTopWeatherBanner();
       const dist = document.getElementById('irrigationDistrictName')?.innerText || 'ঢাকা';
       const temp = document.getElementById('irrigationWeatherTemp')?.innerText || '২৮°C';
       const rain = document.getElementById('irrigationWeatherRain')?.innerText || '২০%';

@@ -318,7 +318,7 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     );
   }
 
-  // ====================== রিকোয়ারমেন্ট ১: Deep Analysis API Prompt (কঠোর ও নিখুঁত লজিক) ======================
+  // ====================== রিকোয়ারমেন্ট ২: Ultra-Sensitive Deep Analysis API Prompt ======================
   /// Gemini API-কে প্লেইন টেক্সটের বদলে নির্দিষ্ট JSON স্ট্রাকচারে গভীরভাবে বিশ্লেষণ করার নির্দেশ দেওয়া হয়।
   /// রেসপন্স থেকে jsonDecode করে advice এবং medicine_info সংগ্রহ করা হয়।
   Future<({String advice, String status, String medicineInfo})> _requestGeminiJsonAnalysis({
@@ -330,28 +330,26 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
   }) async {
     final cleanCropName = cropName.trim();
     final weatherDesc =
-        'তাপমাত্রা ${weather.currentTemp.toStringAsFixed(1)}°C এবং বৃষ্টিপাতের সম্ভাবনা (Rain Probability) ${weather.rainProbability}%';
+        'তাপমাত্রা ${weather.currentTemp.toStringAsFixed(1)}°C এবং বৃষ্টিপাতের সম্ভাবনা ${weather.rainProbability}%';
     final detailsText = cropDetails.trim().isNotEmpty ? cropDetails.trim() : 'মাটির অবস্থা স্বাভাবিক';
 
-    // রিকোয়ারমেন্ট ১: ইউজার নির্দেশিত হুবহু Deep Analysis JSON প্রম্পট ফরম্যাট
+    // রিকোয়ারমেন্ট ২: Ultra-Sensitive Medicine Logic প্রম্পট
     final prompt = '''
-তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে একদম স্পেসিফিক এবং লজিক্যাল পরামর্শ দিতে হবে। কোনো জেনেরিক বা সাধারণ পরামর্শ (যেমন: "বিকালে হালকা সেচ দিন") ঢালাওভাবে দেওয়া যাবে না।
-
+তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে স্পেসিফিক পরামর্শ দিতে হবে।
 ইনপুট ডেটা:
 - ফসলের নাম: $cleanCropName
 - ফসলের বয়স: $cropAge
 - বর্তমান আবহাওয়া: $weatherDesc
-- জমির বর্তমান অবস্থা (কৃষকের বিবরণ): $detailsText
+- জমির বর্তমান অবস্থা: $detailsText
 
 বিশ্লেষণের ১০০% কঠোর নিয়ম:
-১. আবহাওয়া ও সেচ লজিক: যদি বৃষ্টির সম্ভাবনা বেশি থাকে অথবা কৃষক বিবরণে লেখে "মাটি ভেজা", "বৃষ্টি হয়েছে" বা "পানি জমেছে", তবে কোনোভাবেই সেচ দেওয়ার পরামর্শ দিবে না! বরং পানি নিষ্কাশন বা মাটি শুকানোর কথা বলবে।
-২. ফসল ও বয়সের লজিক: ধানের পানির চাহিদা আর আলুর পানির চাহিদা এক নয়। ফসলের ধরন ও বয়সের ওপর ভিত্তি করে রিয়েল পরামর্শ দিবে।
-৩. রোগ ও ঔষধ লজিক: কৃষকের বিবরণে যদি কোনো পোকা, পাতা হলুদ হওয়া, পচন বা রোগের লক্ষণ থাকে, তবেই কেবল নির্দিষ্ট ও কার্যকরী ঔষধ/কীটনাশকের নাম (যেমন: এমিস্টার টপ, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে। কোনো রোগের লক্ষণ না থাকলে ঔষধের ঘর সম্পূর্ণ ফাঁকা রাখবে।
+১. আবহাওয়া ও সেচ লজিক: বৃষ্টির সম্ভাবনা থাকলে বা জমিতে পানি/ভেজা থাকলে সেচ দিতে না করবে। 
+২. রোগ ও ঔষধ লজিক (Ultra-Sensitive): কৃষকের বিবরণে যদি "পচে যাচ্ছে", "পচন", "পোকা", "হলুদ হয়ে যাচ্ছে", "দাগ পড়ছে" বা ফসলের যেকোনো নেতিবাচক লক্ষণ থাকে, তবে কোনোভাবেই ঔষধের ঘর ফাঁকা রাখা যাবে না! অবশ্যই সমস্যা অনুযায়ী একটি কার্যকরী ঔষধ/কীটনাশক/ছত্রাকনাশকের নাম (যেমন: এমিস্টার টপ, টিল্ট, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে।
 
 আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
 {
-  "advice": "উপরের নিয়মগুলো মেনে ২-৩ লাইনের রিয়েল-টাইম, স্মার্ট ও নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
-  "medicine_info": "রোগ থাকলে কার্যকরী ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
+  "advice": "আবহাওয়া ও বয়সের ওপর ভিত্তি করে রিয়েল-টাইম নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
+  "medicine_info": "যেকোনো সমস্যার লক্ষণ থাকলে অবশ্যই কার্যকরী ঔষধের নাম, দাম ও প্রয়োগবিধি। কোনো সমস্যা না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
 }
 ''';
 
@@ -711,22 +709,30 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     final cond = weather.conditionBn;
     final detailsLower = cropDetails.toLowerCase();
 
-    // নিয়ম ৩: কৃষকের বিবরণে রোগ/পোকার লক্ষণ থাকলে নির্দিষ্ট কার্যকরী ঔষধ (এমিস্টার টপ, ক্যারাটে ইত্যাদি) ও আনুমানিক মূল্য
+    // নিয়ম ২: রোগ ও ঔষধ লজিক (Ultra-Sensitive) - কৃষকের বিবরণে পচন, পোকা, দাগ বা কোনো সমস্যা থাকলেই ঔষধ সাজেস্ট
     String medicine = '';
-    if (detailsLower.contains('পোকা') ||
+    if (detailsLower.contains('পচ') ||
+        detailsLower.contains('পচে') ||
+        detailsLower.contains('পচন') ||
+        detailsLower.contains('ছত্রাক') ||
+        detailsLower.contains('দাগ') ||
+        detailsLower.contains('ঝলসানো') ||
+        detailsLower.contains('হলুদ') ||
+        detailsLower.contains('ব্লাইট') ||
+        detailsLower.contains('মরিচা')) {
+      if (cropName.contains('মরিচ') || detailsLower.contains('মরিচ')) {
+        medicine = 'মরিচ ফসলে পচন ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে টিল্ট ২৫০ ইসি (প্রপিকোনাজল) প্রতি লিটার পানিতে ০.৫ মিলি অথবা এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
+      } else {
+        medicine = '$cropName ফসলে পচন, ছত্রাক ও পাতা হলুদ হওয়া নিয়ন্ত্রণে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা টিল্ট ২৫০ ইসি ০.৫ মিলি স্প্রে করুন।';
+      }
+    } else if (detailsLower.contains('পোকা') ||
         detailsLower.contains('কীট') ||
         detailsLower.contains('মাজরা') ||
         detailsLower.contains('লেদা') ||
+        detailsLower.contains('মাছি') ||
+        detailsLower.contains('মাকড়') ||
         detailsLower.contains('পোকার আক্রমণ')) {
-      medicine = '$cropName ফসলে পোকা ও মাজরা দমনে কীটনাশক ক্যারাটে ২.৫ ইসি (ল্যাম্বডা-সাইহ্যালোথ্রিন) প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) অথবা ভিরতাকো অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।';
-    } else if (detailsLower.contains('পচন') ||
-        detailsLower.contains('ছত্রাক') ||
-        detailsLower.contains('দাগ') ||
-        detailsLower.contains('পচে') ||
-        detailsLower.contains('ঝলসানো') ||
-        detailsLower.contains('হলুদ') ||
-        detailsLower.contains('ব্লাইট')) {
-      medicine = 'ছত্রাকজনিত রোগ, পাতা হলুদ হওয়া ও পচন নিয়ন্ত্রণে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা ম্যানকোজেব প্রতি লিটার পানিতে ২ গ্রাম মিশিয়ে স্প্রে করুন।';
+      medicine = '$cropName ফসলে পোকা ও কীটের আক্রমণ নিয়ন্ত্রণে কীটনাশক ক্যারাটে ২.৫ ইসি (ল্যাম্বডা-সাইহ্যালোথ্রিন) প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) অথবা ভিরতাকো অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।';
     }
 
     // নিয়ম ১: আবহাওয়া ও সেচ লজিক - বৃষ্টি বা ভেজা মাটিতে কোনোভাবেই সেচ দেওয়ার পরামর্শ নয়, পানি নিষ্কাশন
@@ -2143,8 +2149,8 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
             data['medicineSuggestion'] as String? ??
             '')
         .trim();
-    final weatherTemp = (data['weatherTemp'] as num?)?.toDouble() ?? 28.0;
-    final weatherHumidity = (data['weatherHumidity'] as num?)?.toInt() ?? 65;
+    final liveTemp = weather?.currentTemp ?? (data['weatherTemp'] as num?)?.toDouble() ?? 28.0;
+    final liveHumidity = weather?.humidity ?? (data['weatherHumidity'] as num?)?.toInt() ?? 65;
     final lastUpdatedStamp = data['last_updated'] ?? data['updatedAt'] ?? data['lastAiCheck'];
     final expRaw = data['expiryDate'];
 
@@ -2316,7 +2322,7 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                           border: Border.all(color: const Color(0xFFC8E6C9)),
                         ),
                         child: Text(
-                          '🌡️ ${BanglaNumberConverter.toBangla(weatherTemp.toStringAsFixed(0))}°C | 💧 ${BanglaNumberConverter.toBangla(weatherHumidity)}%',
+                          '🌡️ ${BanglaNumberConverter.toBangla(liveTemp.toStringAsFixed(0))}°C | 💧 ${BanglaNumberConverter.toBangla(liveHumidity)}%',
                           style: const TextStyle(fontSize: 10, color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
                         ),
                       ),
