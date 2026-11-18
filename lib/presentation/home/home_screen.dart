@@ -95,103 +95,101 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.65),
       builder: (BuildContext dialogContext) {
+        final double dialogWidth = MediaQuery.of(dialogContext).size.width * 0.85;
+
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: Dialog(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 420,
-                  maxHeight: 620,
-                ),
+              child: Container(
+                width: dialogWidth,
+                color: Colors.transparent,
                 child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.topRight,
                   children: [
-                    // পপআপ ব্যানার ইমেজ কন্টেইনার
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.35),
-                            blurRadius: 25,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Flexible(
-                            child: CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.contain,
-                              placeholder: (context, url) => Container(
-                                height: 280,
-                                color: const Color(0xFFF1F5F9),
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                    strokeWidth: 2.5,
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                height: 200,
-                                color: const Color(0xFFF8FAFC),
-                                padding: const EdgeInsets.all(20),
-                                child: const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
-                                    SizedBox(height: 8),
-                                    Text('ছবিটি লোড করা সম্ভব হয়নি', style: TextStyle(color: Colors.grey)),
-                                  ],
+                    // ইমেজের জন্য ClipRRect (বর্ডার রেডিয়াস 12.0) এবং রেস্পন্সিভ উইডথ
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Container(
+                        width: dialogWidth,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          width: dialogWidth,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Container(
+                            height: 250,
+                            width: dialogWidth,
+                            color: const Color(0xFFF1F5F9),
+                            child: const Center(
+                              child: SizedBox(
+                                height: 40,
+                                width: 40,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2.5,
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // উপরে ডানদিকের গোলাকার "X" (Close) বাটন
-                    Positioned(
-                      top: -12,
-                      right: -12,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => Navigator.of(dialogContext).pop(),
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                          errorWidget: (context, url, error) => Container(
+                            height: 200,
+                            width: dialogWidth,
+                            color: const Color(0xFFF8FAFC),
+                            padding: const EdgeInsets.all(20),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text(
+                                  'ছবিটি লোড করা সম্ভব হয়নি',
+                                  style: TextStyle(color: Colors.grey, fontSize: 13),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ক্রস (X) ক্লোজ বাটন - ঠিক ইমেজের উপরের ডান কোনায় (Top-Right Corner)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                        child: Container(
+                          margin: const EdgeInsets.all(8),
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFFD32F2F), // স্পষ্ট লাল রঙ
+                            size: 20,
                           ),
                         ),
                       ),
