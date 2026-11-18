@@ -7040,24 +7040,29 @@
         }
 
         // Firestore admin_settings/popup_notification ডকুমেন্টে সেভ করা
-        if (typeof firebase !== 'undefined' && firebase.firestore) {
-          const dbInstance = firebase.firestore();
-          const serverTs = (firebase.firestore.FieldValue && firebase.firestore.FieldValue.serverTimestamp)
-            ? firebase.firestore.FieldValue.serverTimestamp()
-            : new Date();
+        const firestoreDb = (typeof db !== 'undefined' && db)
+          ? db
+          : ((typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') ? firebase.firestore() : null);
 
-          await dbInstance.collection('admin_settings').doc('popup_notification').set({
-            isActive: isActive,
-            imageUrl: imgUrl,
-            updatedAt: serverTs
-          }, { merge: true });
+        if (!firestoreDb) {
+          throw new Error('ফায়ারবেস ডাটাবেস সংযোগ সক্রিয় পাওয়া যায়নি।');
         }
+
+        const serverTs = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue && firebase.firestore.FieldValue.serverTimestamp)
+          ? firebase.firestore.FieldValue.serverTimestamp()
+          : new Date();
+
+        await firestoreDb.collection('admin_settings').doc('popup_notification').set({
+          imageUrl: imgUrl,
+          isActive: isActive,
+          updatedAt: serverTs
+        }, { merge: true });
 
         // লোকাল মেমোরি পরিষ্কার
         if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
           try { URL.revokeObjectURL(pendingUploads.popup.blobUrl); } catch (_) { }
         }
-        pendingUploads.popup = { file: null, blobUrl: null };
+        pendingUploads.popup = { file: null, blobUrl: null, isDeleted: false };
 
         showToast('স্টার্টআপ পপআপ নোটিফিকেশন সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
         await loadPopupNotificationSettings();
@@ -7074,9 +7079,11 @@
 
     async function loadPopupNotificationSettings() {
       try {
-        if (typeof firebase === 'undefined' || !firebase.firestore) return;
-        const dbInstance = firebase.firestore();
-        const doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
+        const firestoreDb = (typeof db !== 'undefined' && db)
+          ? db
+          : ((typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') ? firebase.firestore() : null);
+        if (!firestoreDb) return;
+        const doc = await firestoreDb.collection('admin_settings').doc('popup_notification').get();
 
         const urlInput = document.getElementById('popupImgUrl');
         const previewBox = document.getElementById('popupImgPreviewBox');
