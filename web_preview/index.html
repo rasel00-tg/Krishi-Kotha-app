@@ -5442,8 +5442,11 @@
         style="position: absolute; top: -14px; right: -14px; width: 36px; height: 36px; border-radius: 50%; background: #1E293B; color: #fff; border: 2px solid #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <div style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.3); max-width: 100%; max-height: 80vh;">
-        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 80vh; object-fit: contain; display: block;">
+      <div id="startupPopupModalContainer" style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.3); max-width: 100%; max-height: 80vh; min-height: 200px; display: flex; align-items: center; justify-content: center; position: relative;">
+        <div id="startupPopupLoader" style="position: absolute; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 200px; background: #F1F5F9; z-index: 1;">
+          <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; color: #2E7D32;"></i>
+        </div>
+        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 80vh; object-fit: contain; display: block; opacity: 0; transition: opacity 0.25s ease;" onload="this.style.opacity='1'; const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';">
       </div>
     </div>
   </div>
@@ -7287,6 +7290,9 @@
           const modal = document.getElementById('startupPopupModal');
           const img = document.getElementById('startupPopupModalImg');
           if (modal && img) {
+            const loader = document.getElementById('startupPopupLoader');
+            if (loader) loader.style.display = 'flex';
+            img.style.opacity = '0';
             img.src = data.imageUrl;
             modal.classList.add('active');
             modal.style.setProperty('display', 'flex', 'important');

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -18,6 +19,9 @@ import '../profile/user_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../../data/models/notification_model.dart';
 
+/// গ্লোবাল সেশন স্টেট - অ্যাপের সেশনে স্টার্টআপ পপআপ একবারের বেশি দেখানো হবে না
+bool _hasShownStartupPopupGlobal = false;
+
 class HomeScreen extends StatefulWidget {
   final Function(int tabIndex) onNavigateTab;
   final FirestoreService firestoreService;
@@ -33,19 +37,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static bool _hasShownStartupPopup = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowStartupPopup();
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _checkAndShowStartupPopup();
+        }
+      });
     });
   }
 
   /// অ্যাপ ওপেন হওয়ার পর Firestore admin_settings/popup_notification যাচাই ও পপআপ প্রদর্শন
   Future<void> _checkAndShowStartupPopup() async {
-    if (_hasShownStartupPopup || !mounted) return;
+    if (_hasShownStartupPopupGlobal || !mounted) return;
 
     try {
       final doc = await FirebaseFirestore.instance
@@ -53,15 +59,27 @@ class _HomeScreenState extends State<HomeScreen> {
           .doc('popup_notification')
           .get();
 
-      if (!mounted || _hasShownStartupPopup) return;
+      if (!mounted || _hasShownStartupPopupGlobal) return;
       if (!doc.exists || doc.data() == null) return;
 
       final data = doc.data()!;
       final bool isActive = data['isActive'] == true;
       final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
 
-      if (isActive && imageUrl.isNotEmpty && !_hasShownStartupPopup) {
-        _hasShownStartupPopup = true;
+      if (isActive && imageUrl.isNotEmpty && !_hasShownStartupPopupGlobal) {
+        _hasShownStartupPopupGlobal = true;
+        if (!mounted) return;
+
+        // দ্রুত রেন্ডারিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে ইমেজ প্রিক্যাশ করা হচ্ছে
+        try {
+          await precacheImage(
+            CachedNetworkImageProvider(imageUrl),
+            context,
+          ).timeout(const Duration(milliseconds: 700));
+        } catch (_) {
+          // প্রিক্যাশ টাইমআউট হলেও ডায়ালগ ওপেন হবে এবং CachedNetworkImage স্বয়ংক্রিয়ভাবে লোড করবে
+        }
+
         if (!mounted) return;
         _showStartupNotificationDialog(imageUrl);
       }
@@ -113,27 +131,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Flexible(
-                            child: Image.network(
-                              imageUrl,
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
                               fit: BoxFit.contain,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  height: 280,
-                                  color: const Color(0xFFF1F5F9),
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              (loadingProgress.expectedTotalBytes ?? 1)
-                                          : null,
-                                      color: AppColors.primary,
-                                      strokeWidth: 2.5,
-                                    ),
+                              placeholder: (context, url) => Container(
+                                height: 280,
+                                color: const Color(0xFFF1F5F9),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                    strokeWidth: 2.5,
                                   ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) => Container(
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
                                 height: 200,
                                 color: const Color(0xFFF8FAFC),
                                 padding: const EdgeInsets.all(20),
