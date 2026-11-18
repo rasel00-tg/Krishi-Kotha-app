@@ -1781,6 +1781,17 @@
                   </div>
                 </div>
 
+                <!-- Headline Input Field -->
+                <div class="form-group" style="margin-top: 14px;">
+                  <label for="popupHeadline" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                    পপআপের শিরোনাম / হেডলাইন (Headline)
+                  </label>
+                  <input type="text" id="popupHeadline" class="form-control"
+                    placeholder="পপআপের হেডলাইন লিখুন"
+                    style="font-size: 13.5px;"
+                    oninput="updatePopupPreviewHeadline(this.value)">
+                </div>
+
                 <!-- Submit / Save Button -->
                 <button type="submit" id="popupSubmitBtn" class="btn btn-primary"
                   style="width: 100%; justify-content: center; padding: 12px; font-size: 14.5px; font-weight: 700; margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">
@@ -1804,14 +1815,15 @@
                 <div style="position: absolute; top: 10px; width: 80px; height: 16px; background: #1E293B; border-radius: 10px;"></div>
 
                 <!-- Mock Close X Button -->
-                <div style="position: absolute; top: 54px; right: 22px; width: 28px; height: 28px; border-radius: 50%; background: #1E293B; color: #fff; border: 1.5px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+                <div style="position: absolute; top: 48px; right: 20px; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; color: #D32F2F; border: none; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
                   <i class="fa-solid fa-xmark"></i>
                 </div>
 
-                <!-- Mock Popup Box with Image -->
-                <div id="mockPopupBox" style="width: 100%; max-height: 310px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px;">
-                  <img id="mockPopupImg" src="" alt="Popup Preview" style="width: 100%; max-height: 280px; object-fit: contain; display: none; border-radius: 12px;">
-                  <div id="mockPopupEmptyState" style="padding: 36px 16px; text-align: center; color: #94A3B8; font-size: 12.5px;">
+                <!-- Mock Popup Box with Image + Headline -->
+                <div id="mockPopupBox" style="width: 100%; max-height: 330px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0;">
+                  <img id="mockPopupImg" src="" alt="Popup Preview" style="width: 100%; max-height: 240px; object-fit: contain; display: none; border-radius: 16px 16px 0 0;">
+                  <div id="mockPopupHeadline" style="display: none; padding: 10px 12px; font-weight: 700; font-size: 13.5px; color: #1E293B; text-align: center; line-height: 1.35; width: 100%; box-sizing: border-box;"></div>
+                  <div id="mockPopupEmptyState" style="padding: 36px 16px; text-align: center; color: #94A3B8; font-size: 12.5px; width: 100%;">
                     <i class="fa-solid fa-image" style="font-size: 38px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
                     <span>কোনো সক্রিয় ছবি নেই</span>
                   </div>
@@ -7013,6 +7025,25 @@
       if (urlInput) urlInput.value = '';
     }
 
+    function updatePopupPreviewHeadline(val) {
+      const mockHeadline = document.getElementById('mockPopupHeadline');
+      const mockEmpty = document.getElementById('mockPopupEmptyState');
+      const mockImg = document.getElementById('mockPopupImg');
+      const hasImg = mockImg && mockImg.style.display !== 'none' && mockImg.src;
+
+      if (mockHeadline) {
+        if (val && val.trim()) {
+          mockHeadline.textContent = val.trim();
+          mockHeadline.style.display = 'block';
+          if (mockEmpty) mockEmpty.style.display = 'none';
+        } else {
+          mockHeadline.textContent = '';
+          mockHeadline.style.display = 'none';
+          if (mockEmpty && !hasImg) mockEmpty.style.display = 'block';
+        }
+      }
+    }
+
     async function savePopupNotification(e) {
       if (e) e.preventDefault();
       const submitBtn = document.getElementById('popupSubmitBtn');
@@ -7020,9 +7051,10 @@
       const toggle = document.getElementById('popupIsActiveToggle');
       const isActive = toggle ? toggle.checked : false;
       let imgUrl = document.getElementById('popupImgUrl')?.value.trim() || '';
+      const headline = document.getElementById('popupHeadline')?.value.trim() || '';
 
-      if (isActive && !imgUrl && (!pendingUploads.popup || !pendingUploads.popup.file)) {
-        showToast('পপআপ সক্রিয় করতে হলে একটি ছবি নির্বাচন করুন অথবা ছবির লিংক দিন।');
+      if (isActive && !imgUrl && (!pendingUploads.popup || !pendingUploads.popup.file) && !headline) {
+        showToast('পপআপ সক্রিয় করতে হলে একটি ছবি বা শিরোনাম (হেডলাইন) দিন।');
         return;
       }
 
@@ -7032,9 +7064,14 @@
           submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ছবি প্রসেসিং ও সংরক্ষণ হচ্ছে...';
         }
 
-        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি কম্প্রেস হয়ে Cloudflare R2-এ আপলোড হবে
+        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি কম্প্রেস হয়ে আপলোড হবে
         if (pendingUploads.popup && pendingUploads.popup.file) {
-          imgUrl = await uploadFileToR2Pipeline(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
+          try {
+            imgUrl = await uploadFileToCloudinary(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
+          } catch (uplErr) {
+            console.warn('Cloudinary upload fallback to R2:', uplErr);
+            imgUrl = await uploadFileToR2Pipeline(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
+          }
           const urlInput = document.getElementById('popupImgUrl');
           if (urlInput) urlInput.value = imgUrl;
         }
@@ -7052,11 +7089,17 @@
           ? firebase.firestore.FieldValue.serverTimestamp()
           : new Date();
 
-        await firestoreDb.collection('admin_settings').doc('popup_notification').set({
+        const popupData = {
           imageUrl: imgUrl,
+          headline: headline,
           isActive: isActive,
           updatedAt: serverTs
-        }, { merge: true });
+        };
+
+        await firestoreDb.collection('admin_settings').doc('popup_notification').set(popupData, { merge: true });
+        try {
+          await firestoreDb.collection('app_settings').doc('popup_notification').set(popupData, { merge: true });
+        } catch (_) { }
 
         // লোকাল মেমোরি পরিষ্কার
         if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
@@ -7064,11 +7107,19 @@
         }
         pendingUploads.popup = { file: null, blobUrl: null, isDeleted: false };
 
-        showToast('স্টার্টআপ পপআপ নোটিফিকেশন সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+        if (typeof showAdminSuccess === 'function') {
+          showAdminSuccess('সংরক্ষণ সফল হয়েছে!', 'পপআপ নোটিফিকেশনের তথ্য (ছবি ও হেডলাইন) সফলভাবে ফায়ারবেসে সংরক্ষিত হয়েছে। ইউজার অ্যাপে লাইভ আপডেট সম্পন্ন!');
+        } else {
+          showToast('স্টার্টআপ পপআপ নোটিফিকেশন সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+        }
         await loadPopupNotificationSettings();
       } catch (err) {
         console.error('Save popup notification error:', err);
-        showToast('পপআপ নোটিফিকেশন সংরক্ষণে ত্রুটি: ' + err.message);
+        if (typeof showAdminError === 'function') {
+          showAdminError('সংরক্ষণ ব্যর্থ!', 'পপআপ নোটিফিকেশন সংরক্ষণে ত্রুটি: ' + (err.message || 'আবার চেষ্টা করুন'));
+        } else {
+          showToast('পপআপ নোটিফিকেশন সংরক্ষণে ত্রুটি: ' + err.message);
+        }
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -7083,21 +7134,28 @@
           ? db
           : ((typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') ? firebase.firestore() : null);
         if (!firestoreDb) return;
-        const doc = await firestoreDb.collection('admin_settings').doc('popup_notification').get();
+        let doc = await firestoreDb.collection('admin_settings').doc('popup_notification').get();
+        if (!doc.exists) {
+          doc = await firestoreDb.collection('app_settings').doc('popup_notification').get();
+        }
 
         const urlInput = document.getElementById('popupImgUrl');
+        const headlineInput = document.getElementById('popupHeadline');
         const previewBox = document.getElementById('popupImgPreviewBox');
         const previewImg = document.getElementById('popupImgPreview');
         const mockImg = document.getElementById('mockPopupImg');
+        const mockHeadline = document.getElementById('mockPopupHeadline');
         const mockEmpty = document.getElementById('mockPopupEmptyState');
 
         if (doc.exists) {
           const data = doc.data() || {};
           const isActive = data.isActive === true;
           const imageUrl = data.imageUrl || '';
+          const headline = data.headline || '';
 
           updatePopupToggleVisual(isActive);
           if (urlInput) urlInput.value = imageUrl;
+          if (headlineInput) headlineInput.value = headline;
 
           if (imageUrl) {
             if (previewImg) previewImg.src = imageUrl;
@@ -7107,12 +7165,24 @@
           } else {
             if (previewBox) previewBox.style.display = 'none';
             if (mockImg) { mockImg.src = ''; mockImg.style.display = 'none'; }
-            if (mockEmpty) mockEmpty.style.display = 'block';
+            if (mockEmpty && !headline) mockEmpty.style.display = 'block';
+          }
+
+          if (mockHeadline) {
+            if (headline) {
+              mockHeadline.textContent = headline;
+              mockHeadline.style.display = 'block';
+              if (mockEmpty) mockEmpty.style.display = 'none';
+            } else {
+              mockHeadline.textContent = '';
+              mockHeadline.style.display = 'none';
+            }
           }
         } else {
           updatePopupToggleVisual(false);
           if (previewBox) previewBox.style.display = 'none';
           if (mockImg) { mockImg.src = ''; mockImg.style.display = 'none'; }
+          if (mockHeadline) { mockHeadline.textContent = ''; mockHeadline.style.display = 'none'; }
           if (mockEmpty) mockEmpty.style.display = 'block';
         }
       } catch (err) {

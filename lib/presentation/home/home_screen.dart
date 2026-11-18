@@ -54,42 +54,53 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_hasShownStartupPopupGlobal || !mounted) return;
 
     try {
-      final doc = await FirebaseFirestore.instance
+      DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
           .collection('admin_settings')
           .doc('popup_notification')
           .get();
 
       if (!mounted || _hasShownStartupPopupGlobal) return;
-      if (!doc.exists || doc.data() == null) return;
+      if (!doc.exists || doc.data() == null) {
+        doc = await FirebaseFirestore.instance
+            .collection('app_settings')
+            .doc('popup_notification')
+            .get();
+        if (!mounted || _hasShownStartupPopupGlobal || !doc.exists || doc.data() == null) {
+          return;
+        }
+      }
 
       final data = doc.data()!;
       final bool isActive = data['isActive'] == true;
       final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
+      final String headline = (data['headline'] as String?)?.trim() ?? '';
 
-      if (isActive && imageUrl.isNotEmpty && !_hasShownStartupPopupGlobal) {
+      if (isActive && (imageUrl.isNotEmpty || headline.isNotEmpty) && !_hasShownStartupPopupGlobal) {
         _hasShownStartupPopupGlobal = true;
         if (!mounted) return;
 
         // দ্রুত রেন্ডারিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে ইমেজ প্রিক্যাশ করা হচ্ছে
-        try {
-          await precacheImage(
-            CachedNetworkImageProvider(imageUrl),
-            context,
-          ).timeout(const Duration(milliseconds: 700));
-        } catch (_) {
-          // প্রিক্যাশ টাইমআউট হলেও ডায়ালগ ওপেন হবে এবং CachedNetworkImage স্বয়ংক্রিয়ভাবে লোড করবে
+        if (imageUrl.isNotEmpty) {
+          try {
+            await precacheImage(
+              CachedNetworkImageProvider(imageUrl),
+              context,
+            ).timeout(const Duration(milliseconds: 700));
+          } catch (_) {
+            // প্রিক্যাশ টাইমআউট হলেও ডায়ালগ ওপেন হবে এবং CachedNetworkImage স্বয়ংক্রিয়ভাবে লোড করবে
+          }
         }
 
         if (!mounted) return;
-        _showStartupNotificationDialog(imageUrl);
+        _showStartupNotificationDialog(imageUrl, headline);
       }
     } catch (e) {
       debugPrint('Startup popup notification check notice: $e');
     }
   }
 
-  /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ
-  void _showStartupNotificationDialog(String imageUrl) {
+  /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ (ইমেজ + হেডলাইন সমন্বিত কার্ড)
+  void _showStartupNotificationDialog(String imageUrl, String headline) {
     showDialog(
       context: context,
       useRootNavigator: true,
@@ -109,64 +120,90 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: dialogWidth,
                 color: Colors.transparent,
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    // ইমেজের জন্য ClipRRect (বর্ডার রেডিয়াস 12.0) এবং রেস্পন্সিভ উইডথ
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: Container(
-                        width: dialogWidth,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          width: dialogWidth,
-                          fit: BoxFit.contain,
-                          placeholder: (context, url) => Container(
-                            height: 250,
-                            width: dialogWidth,
-                            color: const Color(0xFFF1F5F9),
-                            child: const Center(
-                              child: SizedBox(
-                                height: 40,
-                                width: 40,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                  strokeWidth: 2.5,
+                    // সমন্বিত সাদা কার্ড (বর্ডার রেডিয়াস ১৬.০)
+                    Container(
+                      width: dialogWidth,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.35),
+                            blurRadius: 25,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // ১. ইমেজ (উপরে রাউন্ডেড ১৬.০)
+                          if (imageUrl.isNotEmpty)
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: dialogWidth,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Container(
+                                  height: 250,
+                                  width: dialogWidth,
+                                  color: const Color(0xFFF1F5F9),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      height: 40,
+                                      width: 40,
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  height: 200,
+                                  width: dialogWidth,
+                                  color: const Color(0xFFF8FAFC),
+                                  padding: const EdgeInsets.all(20),
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'ছবিটি লোড করা সম্ভব হয়নি',
+                                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            height: 200,
-                            width: dialogWidth,
-                            color: const Color(0xFFF8FAFC),
-                            padding: const EdgeInsets.all(20),
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text(
-                                  'ছবিটি লোড করা সম্ভব হয়নি',
-                                  style: TextStyle(color: Colors.grey, fontSize: 13),
+
+                          // ২. হেডলাইন (ইমেজের ঠিক নিচে bold ১৮ ফন্ট সাইজ এবং মাঝে সেন্টারড)
+                          if (headline.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              child: Text(
+                                headline,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E293B),
+                                  height: 1.35,
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
                     ),
 
-                    // ক্রস (X) ক্লোজ বাটন - ঠিক ইমেজের উপরের ডান কোনায় (Top-Right Corner)
+                    // ক্রস (X) ক্লোজ বাটন - ঠিক কার্ডের উপরের ডান কোনায়
                     Positioned(
                       top: 0,
                       right: 0,
@@ -181,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withOpacity(0.25),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),

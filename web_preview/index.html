@@ -5434,7 +5434,7 @@
     </div>
   </div>
 
-  <!-- MODAL: STARTUP POPUP NOTIFICATION (R2 Image Modal) -->
+  <!-- MODAL: STARTUP POPUP NOTIFICATION (Unified Image + Headline Modal) -->
   <div class="modal-overlay" id="startupPopupModal"
     style="z-index: 100060; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 16px; display: none;">
     <div style="position: relative; max-width: 440px; width: 85%; max-height: 85vh; display: flex; flex-direction: column; align-items: center;">
@@ -5442,11 +5442,12 @@
         style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: #ffffff; color: #D32F2F; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <div id="startupPopupModalContainer" style="background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.3); width: 100%; max-height: 80vh; min-height: 250px; display: flex; align-items: center; justify-content: center; position: relative;">
-        <div id="startupPopupLoader" style="position: absolute; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 250px; background: #F1F5F9; z-index: 1;">
+      <div id="startupPopupModalContainer" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.3); width: 100%; max-height: 80vh; min-height: 180px; display: flex; flex-direction: column; align-items: stretch; position: relative;">
+        <div id="startupPopupLoader" style="position: absolute; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 200px; background: #F1F5F9; z-index: 1;">
           <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; color: #2E7D32;"></i>
         </div>
-        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 80vh; width: 100%; object-fit: contain; display: block; opacity: 0; transition: opacity 0.25s ease;" onload="this.style.opacity='1'; const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';">
+        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 70vh; width: 100%; object-fit: contain; display: block; border-radius: 16px 16px 0 0; opacity: 0; transition: opacity 0.25s ease;" onload="this.style.opacity='1'; const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';">
+        <div id="startupPopupHeadlineText" style="display: none; padding: 14px 16px; font-weight: 700; font-size: 18px; color: #1E293B; text-align: center; width: 100%; line-height: 1.35; box-sizing: border-box;"></div>
       </div>
     </div>
   </div>
@@ -7282,18 +7283,37 @@
       try {
         if (typeof firebase === 'undefined' || !firebase.firestore) return;
         const dbInstance = firebase.firestore();
-        const doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
+        let doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
+        if (!doc.exists) {
+          doc = await dbInstance.collection('app_settings').doc('popup_notification').get();
+        }
         if (!doc.exists) return;
         const data = doc.data() || {};
-        if (data.isActive === true && data.imageUrl && !hasShownWebStartupPopup) {
+        if (data.isActive === true && (data.imageUrl || data.headline) && !hasShownWebStartupPopup) {
           hasShownWebStartupPopup = true;
           const modal = document.getElementById('startupPopupModal');
           const img = document.getElementById('startupPopupModalImg');
-          if (modal && img) {
-            const loader = document.getElementById('startupPopupLoader');
-            if (loader) loader.style.display = 'flex';
-            img.style.opacity = '0';
-            img.src = data.imageUrl;
+          const headlineEl = document.getElementById('startupPopupHeadlineText');
+          if (modal) {
+            if (data.imageUrl && img) {
+              const loader = document.getElementById('startupPopupLoader');
+              if (loader) loader.style.display = 'flex';
+              img.style.display = 'block';
+              img.style.opacity = '0';
+              img.src = data.imageUrl;
+            } else if (img) {
+              img.style.display = 'none';
+              const loader = document.getElementById('startupPopupLoader');
+              if (loader) loader.style.display = 'none';
+            }
+            if (headlineEl) {
+              if (data.headline && data.headline.trim()) {
+                headlineEl.textContent = data.headline.trim();
+                headlineEl.style.display = 'block';
+              } else {
+                headlineEl.style.display = 'none';
+              }
+            }
             modal.classList.add('active');
             modal.style.setProperty('display', 'flex', 'important');
             modal.style.setProperty('pointer-events', 'auto', 'important');
