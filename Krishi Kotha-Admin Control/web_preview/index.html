@@ -4255,11 +4255,12 @@
     </div>
   </div>
 
-  <!-- Support Reply & Decision Modal -->
+  <!-- Support Reply & Decision Modal (Scrollable Modal with Fixed Footer Actions) -->
   <div class="modal-overlay" id="ticketModal">
-    <div class="modal-box" style="max-width: 600px; width: 92%;">
+    <div class="modal-box" style="max-width: 620px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; border-radius: 14px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+      <!-- Modal Header (Fixed Top) -->
       <div
-        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 16px 20px 12px 20px; flex-shrink: 0; background: #fff;">
         <h3 class="modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text);">
           <i class="fa-solid fa-headset" style="color: var(--primary); margin-right: 6px;"></i>সাপোর্ট টিকিট বিস্তারিত ও
           সিদ্ধান্ত
@@ -4269,29 +4270,37 @@
             class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <input type="hidden" id="replyTicketId">
+      <!-- Modal Body (Scrollable Container: max-height: 75vh; overflow-y: auto;) -->
+      <div id="ticketModalBody" style="max-height: 75vh; overflow-y: auto; padding: 18px 20px; flex: 1 1 auto;">
+        <input type="hidden" id="replyTicketId">
 
-      <!-- Ticket Overview Card -->
-      <div id="ticketModalDetailsCard"
-        style="background: #F8FAF8; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-        <!-- Dynamically rendered -->
+        <!-- Ticket Overview Card -->
+        <div id="ticketModalDetailsCard"
+          style="background: #F8FAF8; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+          <!-- Dynamically rendered -->
+        </div>
+
+        <!-- Decision Status Banner (Shown if already decided) -->
+        <div id="ticketDecisionStatusBanner" style="display: none; margin-bottom: 14px;"></div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-weight: 600; font-size: 13px;">কর্মকর্তার নাম ও পদবি</label>
+          <input id="replyOfficer" class="form-control" placeholder="যেমন: কৃষি কর্মকর্তা / সাপোর্ট টিম"
+            value="কৃষি কথা সাপোর্ট টিম" style="font-size: 13.5px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label style="font-weight: 600; font-size: 13px;">পরামর্শ / সমাধান / বাতিলের কারণ <span
+              style="color: #D32F2F;">*</span></label>
+          <textarea id="replyText" class="form-control" rows="4"
+            placeholder="কৃষকের জন্য সমাধান, পরামর্শ বার্তা অথবা বাতিলের সুনির্দিষ্ট কারণ লিখুন..." required
+            style="font-size: 13.5px;"></textarea>
+        </div>
       </div>
 
-      <div class="form-group" style="margin-bottom: 12px;">
-        <label style="font-weight: 600; font-size: 13px;">কর্মকর্তার নাম ও পদবি</label>
-        <input id="replyOfficer" class="form-control" placeholder="যেমন: কৃষি কর্মকর্তা / সাপোর্ট টিম"
-          value="কৃষি কথা সাপোর্ট টিম" style="font-size: 13.5px;">
-      </div>
-
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight: 600; font-size: 13px;">পরামর্শ / সমাধান / বাতিলের কারণ <span
-            style="color: #D32F2F;">*</span></label>
-        <textarea id="replyText" class="form-control" rows="4"
-          placeholder="কৃষকের জন্য সমাধান, পরামর্শ বার্তা অথবা বাতিলের সুনির্দিষ্ট কারণ লিখুন..." required
-          style="font-size: 13.5px;"></textarea>
-      </div>
-
-      <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+      <!-- Modal Actions (Sticky / Fixed Bottom) -->
+      <div class="modal-actions"
+        style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; border-top: 1px solid var(--border); padding: 12px 20px; flex-shrink: 0; background: #FAFBF9; border-radius: 0 0 14px 14px;">
         <button type="button" class="btn btn-outline" onclick="closeTicketModal()" style="padding: 9px 16px;">বন্ধ
           করুন</button>
         <button type="button" class="btn" onclick="handleTicketDecision('rejected')" id="rejectTicketBtn"
@@ -5475,34 +5484,64 @@
         checkInitialCoreLoadDone();
       }, err => console.error("Users stream error:", err));
 
-      // 6. Support Tickets Listener
-      db.collection('support_tickets').onSnapshot(snapshot => {
-        tickets = [];
-        snapshot.forEach(doc => {
-          const d = doc.data() || {};
-          tickets.push({
-            id: doc.id,
-            userId: d.userId || d.authorId || '',
-            authorId: d.authorId || d.userId || '',
-            farmer: d.userName || d.authorName || 'কৃষক ভাই',
-            phone: d.userPhone || d.authorPhone || '',
-            email: d.userEmail || d.authorEmail || '',
-            district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
-            rawDistrict: d.district || '',
-            rawUpazila: d.upazila || '',
-            subject: d.category || d.subject || '',
-            details: d.message || d.details || '',
-            status: d.status || 'pending',
-            reply: d.adminReply || d.officerReply || null,
-            rejectionReason: d.rejectionReason || null,
-            officerName: d.officerName || '',
-            createdAt: d.createdAt || d.timestamp || null,
-            raw: d
-          });
+      // 6. Support Tickets Listener (রিকোয়ারমেন্ট ২: orderBy createdAt descending ও ইন-মেমোরি সর্ট)
+      const parseTicketDoc = doc => {
+        const d = doc.data() || {};
+        return {
+          id: doc.id,
+          userId: d.userId || d.authorId || '',
+          authorId: d.authorId || d.userId || '',
+          farmer: d.userName || d.authorName || 'কৃষক ভাই',
+          phone: d.userPhone || d.authorPhone || '',
+          email: d.userEmail || d.authorEmail || '',
+          district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
+          rawDistrict: d.district || '',
+          rawUpazila: d.upazila || '',
+          subject: d.category || d.subject || '',
+          details: d.message || d.details || '',
+          status: d.status || 'pending',
+          reply: d.adminReply || d.officerReply || d.reply || null,
+          rejectionReason: d.rejectionReason || null,
+          officerName: d.officerName || '',
+          createdAt: d.createdAt || d.timestamp || null,
+          raw: d
+        };
+      };
+
+      const sortTicketsDescending = list => {
+        list.sort((a, b) => {
+          const parseTime = item => {
+            if (!item || !item.createdAt) return 0;
+            if (typeof item.createdAt.toMillis === 'function') return item.createdAt.toMillis();
+            if (item.createdAt.seconds) return item.createdAt.seconds * 1000;
+            if (typeof item.createdAt === 'number') return item.createdAt;
+            const parsed = new Date(item.createdAt).getTime();
+            return isNaN(parsed) ? 0 : parsed;
+          };
+          return parseTime(b) - parseTime(a);
         });
-        renderUsers();
-        renderSupportTicketsTable();
-      }, err => console.error("Tickets stream error:", err));
+      };
+
+      try {
+        db.collection('support_tickets').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+          tickets = [];
+          snapshot.forEach(doc => tickets.push(parseTicketDoc(doc)));
+          sortTicketsDescending(tickets);
+          renderUsers();
+          renderSupportTicketsTable();
+        }, err => {
+          console.warn("Tickets orderBy error, falling back to unordered listener:", err);
+          db.collection('support_tickets').onSnapshot(fallbackSnap => {
+            tickets = [];
+            fallbackSnap.forEach(doc => tickets.push(parseTicketDoc(doc)));
+            sortTicketsDescending(tickets);
+            renderUsers();
+            renderSupportTicketsTable();
+          }, fbErr => console.error("Tickets stream fallback error:", fbErr));
+        });
+      } catch (err) {
+        console.warn("Tickets listener initialization error:", err);
+      }
 
       // 6.b Support Contact Live Settings Listener
       try {
@@ -8361,10 +8400,12 @@
                 ${t.subject || 'সাধারণ'}
               </span>
             </td>
-            <td style="padding: 12px 14px; font-size: 13px; color: var(--text); max-width: 320px; line-height: 1.45;">
-              <div>${shortDetails}</div>
-              ${t.reply ? `<div style="margin-top: 6px; font-size: 12px; background: #E8F5E9; color: #1B5E20; padding: 4px 8px; border-radius: 6px;"><strong>পরামর্শ:</strong> ${t.reply}</div>` : ''}
-              ${t.rejectionReason ? `<div style="margin-top: 6px; font-size: 12px; background: #FFEBEE; color: #C62828; padding: 4px 8px; border-radius: 6px;"><strong>বাতিলের কারণ:</strong> ${t.rejectionReason}</div>` : ''}
+            <td style="padding: 12px 14px; font-size: 13px; color: var(--text); max-width: 300px; line-height: 1.45;">
+              <div style="max-width: 290px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${escapeHtml(t.details || '')}">
+                ${escapeHtml(t.details || 'কোনো বিবরণ নেই')}
+              </div>
+              ${t.reply ? `<div style="margin-top: 5px; font-size: 11.5px; background: #E8F5E9; color: #1B5E20; padding: 3px 8px; border-radius: 6px; max-width: 290px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${escapeHtml(t.reply)}"><strong>পরামর্শ:</strong> ${escapeHtml(t.reply)}</div>` : ''}
+              ${t.rejectionReason ? `<div style="margin-top: 5px; font-size: 11.5px; background: #FFEBEE; color: #C62828; padding: 3px 8px; border-radius: 6px; max-width: 290px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${escapeHtml(t.rejectionReason)}"><strong>বাতিলের কারণ:</strong> ${escapeHtml(t.rejectionReason)}</div>` : ''}
             </td>
             <td style="padding: 12px 14px; text-align: center;">${statusBadge}</td>
             <td style="padding: 12px 14px; text-align: center;">
@@ -8634,9 +8675,60 @@
       const replyInput = document.getElementById('replyText');
       if (replyInput) replyInput.value = ticket.reply || ticket.rejectionReason || '';
 
+      const acceptBtn = document.getElementById('acceptTicketBtn');
+      const rejectBtn = document.getElementById('rejectTicketBtn');
+      const statusBanner = document.getElementById('ticketDecisionStatusBanner');
+
+      const s = ticket.status || 'pending';
+      const isAlreadyDecided = (s === 'resolved' || s === 'answered' || s === 'rejected');
+
+      // রিকোয়ারমেন্ট ৩: স্ট্যাটাস যদি আগেই 'গৃহীত' বা 'বাতিল' থাকে, তবে 'গ্রহণ' ও 'বাতিল' বাটন দেখাবে না
+      if (isAlreadyDecided) {
+        if (acceptBtn) {
+          acceptBtn.style.display = 'none';
+          acceptBtn.disabled = true;
+        }
+        if (rejectBtn) {
+          rejectBtn.style.display = 'none';
+          rejectBtn.disabled = true;
+        }
+        if (replyInput) replyInput.disabled = true;
+        if (offInput) offInput.disabled = true;
+
+        if (statusBanner) {
+          statusBanner.style.display = 'block';
+          if (s === 'rejected') {
+            statusBanner.innerHTML = `
+              <div style="background: #FFEBEE; border: 1.2px solid #FFCDD2; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; color: #C62828; font-size: 13px; font-weight: 600;">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span>এই টিকিটটি ইতোমধ্যে <strong>বাতিল</strong> করা হয়েছে। নতুন করে কোনো সিদ্ধান্ত নেওয়া যাবে না।</span>
+              </div>`;
+          } else {
+            statusBanner.innerHTML = `
+              <div style="background: #E8F5E9; border: 1.2px solid #C8E6C9; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; color: #2E7D32; font-size: 13px; font-weight: 600;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>এই টিকিটটি ইতোমধ্যে <strong>গৃহীত ও সমাধান</strong> করা হয়েছে। নতুন করে কোনো সিদ্ধান্ত নেওয়া যাবে না।</span>
+              </div>`;
+          }
+        }
+      } else {
+        if (acceptBtn) {
+          acceptBtn.style.display = 'inline-flex';
+          acceptBtn.disabled = false;
+          acceptBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> গ্রহণ করুন (সমাধান)';
+        }
+        if (rejectBtn) {
+          rejectBtn.style.display = 'inline-flex';
+          rejectBtn.disabled = false;
+          rejectBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> বাতিল করুন';
+        }
+        if (replyInput) replyInput.disabled = false;
+        if (offInput) offInput.disabled = false;
+        if (statusBanner) statusBanner.style.display = 'none';
+      }
+
       const detailsContainer = document.getElementById('ticketModalDetailsCard');
       if (detailsContainer) {
-        const s = ticket.status || 'pending';
         let statusBadge = '';
         if (s === 'resolved' || s === 'answered') {
           statusBadge = `<span class="badge" style="background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> গৃহীত (সমাধান)</span>`;
@@ -8649,21 +8741,21 @@
         detailsContainer.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
             <div>
-              <strong style="font-size: 15px; color: var(--text);">${ticket.farmer}</strong>
+              <strong style="font-size: 15px; color: var(--text);">${escapeHtml(ticket.farmer)}</strong>
               <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
-                <span><i class="fa-solid fa-phone" style="font-size: 11px;"></i> ${ticket.phone || 'ফোন নম্বর নেই'}</span>
-                ${ticket.district ? ` • <span>${ticket.district}</span>` : ''}
+                <span><i class="fa-solid fa-phone" style="font-size: 11px;"></i> ${escapeHtml(ticket.phone || 'ফোন নম্বর নেই')}</span>
+                ${ticket.district ? ` • <span>${escapeHtml(ticket.district)}</span>` : ''}
               </div>
             </div>
             <div>${statusBadge}</div>
           </div>
           <div style="margin-bottom: 8px;">
             <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">বিষয় / ক্যাটাগরি:</span>
-            <span class="badge badge-crop" style="margin-left: 6px; font-size: 12px;">${ticket.subject || 'সাধারণ'}</span>
+            <span class="badge badge-crop" style="margin-left: 6px; font-size: 12px;">${escapeHtml(ticket.subject || 'সাধারণ')}</span>
           </div>
-          <div style="background: #fff; border: 1px solid #E0E5E0; border-radius: 8px; padding: 10px; font-size: 13.5px; color: var(--text); line-height: 1.5;">
-            <strong>কৃষকের অভিযোগ বা পরামর্শ:</strong>
-            <p style="margin: 4px 0 0 0; white-space: pre-wrap;">${ticket.details || 'কোনো বিবরণ দেওয়া হয়নি'}</p>
+          <div style="background: #fff; border: 1px solid #E0E5E0; border-radius: 8px; padding: 12px; font-size: 13.5px; color: var(--text); line-height: 1.55; word-break: break-word;">
+            <strong style="color: #2E7D32; display: block; margin-bottom: 4px;">কৃষকের সম্পূর্ণ অভিযোগ বা পরামর্শ:</strong>
+            <p style="margin: 0; white-space: pre-wrap;">${escapeHtml(ticket.details || 'কোনো বিবরণ দেওয়া হয়নি')}</p>
           </div>
           <div style="margin-top: 6px; font-size: 11.5px; color: var(--text-muted); text-align: right;">
             তারিখ: ${formatTimestampBn(ticket.createdAt)}
@@ -8688,11 +8780,18 @@
 
       const acceptBtn = document.getElementById('acceptTicketBtn');
       const rejectBtn = document.getElementById('rejectTicketBtn');
-      if (acceptBtn) acceptBtn.disabled = true;
-      if (rejectBtn) rejectBtn.disabled = true;
+      // রিকোয়ারমেন্ট ৩: অ্যাকশন বাটনে ক্লিকের সাথে সাথে disabled করা যাতে পুনরায় ক্লিক বা ডুপ্লিকেশন না হয়
+      if (acceptBtn) {
+        acceptBtn.disabled = true;
+        if (decision === 'resolved') acceptBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+      if (rejectBtn) {
+        rejectBtn.disabled = true;
+        if (decision === 'rejected') rejectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
 
       try {
-        if (db) {
+        if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
           const updatePayload = {
             status: decision,
             officerName: officer,
@@ -8716,15 +8815,29 @@
           await db.collection('support_tickets').doc(id).update(updatePayload);
         }
 
+        // ইন-মেমোরি স্ট্যাটাস সাথে সাথে আপডেট
+        const targetTicket = tickets.find(t => t.id === id);
+        if (targetTicket) {
+          targetTicket.status = decision;
+          targetTicket.reply = text;
+          targetTicket.rejectionReason = decision === 'rejected' ? text : null;
+          targetTicket.officerName = officer;
+        }
+
         closeTicketModal();
         showToast(decision === 'resolved' ? 'টিকিটটি সফলভাবে গ্রহণ ও সমাধান করা হয়েছে!' : 'টিকিটটি বাতিল হিসেবে তালিকাভুক্ত করা হয়েছে।');
         renderSupportTicketsTable();
       } catch (err) {
         console.error('Ticket decision error:', err);
         showToast('সিদ্ধান্ত সংরক্ষণে ত্রুটি: ' + err.message);
-      } finally {
-        if (acceptBtn) acceptBtn.disabled = false;
-        if (rejectBtn) rejectBtn.disabled = false;
+        if (acceptBtn) {
+          acceptBtn.disabled = false;
+          acceptBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> গ্রহণ করুন (সমাধান)';
+        }
+        if (rejectBtn) {
+          rejectBtn.disabled = false;
+          rejectBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> বাতিল করুন';
+        }
       }
     }
 

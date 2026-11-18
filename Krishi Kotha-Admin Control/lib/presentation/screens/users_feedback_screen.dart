@@ -1091,69 +1091,110 @@ class _TicketReplyDialogState extends State<_TicketReplyDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.ticket.status;
+    final isDecided = s == 'resolved' || s == 'rejected';
+
     return AlertDialog(
       title: Text('টিকিট সিদ্ধান্ত ও উত্তর: ${widget.ticket.subject}'),
-      content: SizedBox(
-        width: 500,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9FBF9),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AdminColors.border),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 520, maxWidth: 520),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isDecided) ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: s == 'resolved' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: s == 'resolved' ? const Color(0xFFC8E6C9) : const Color(0xFFFFCDD2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(s == 'resolved' ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                            size: 18, color: s == 'resolved' ? AdminColors.primary : AdminColors.alertCritical),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            s == 'resolved'
+                                ? 'এই টিকিটটি ইতোমধ্যে গৃহীত ও সমাধান করা হয়েছে।'
+                                : 'এই টিকিটটি ইতোমধ্যে বাতিল করা হয়েছে।',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: s == 'resolved' ? AdminColors.primary : AdminColors.alertCritical,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FBF9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AdminColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('কৃষক: ${widget.ticket.farmerName} (${widget.ticket.farmerPhone})',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(height: 4),
+                      Text('বার্তা: ${widget.ticket.details}',
+                          style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('কৃষক: ${widget.ticket.farmerName} (${widget.ticket.farmerPhone})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(height: 4),
-                    Text('বার্তা: ${widget.ticket.details}', style: const TextStyle(fontSize: 12.5, color: AdminColors.textSecondary)),
-                  ],
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _officerNameCtrl,
+                  enabled: !isDecided && !_saving,
+                  decoration: const InputDecoration(
+                    labelText: 'উত্তরদাতার নাম ও পদবি',
+                    hintText: 'উত্তরদাতার নাম ও পদবি লিখুন',
+                  ),
+                  validator: (v) => v == null || v.trim().isEmpty ? 'নাম আবশ্যক' : null,
                 ),
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _officerNameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'উত্তরদাতার নাম ও পদবি',
-                  hintText: 'উত্তরদাতার নাম ও পদবি লিখুন',
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _replyCtrl,
+                  enabled: !isDecided && !_saving,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'পরামর্শ, সমাধান বা বাতিলের কারণ',
+                    hintText: 'কৃষকের জন্য পরামর্শ লিখুন বা বাতিলের সুনির্দিষ্ট কারণ উল্লেখ করুন',
+                  ),
+                  validator: (v) => v == null || v.trim().isEmpty ? 'মন্তব্য/পরামর্শ আবশ্যক' : null,
                 ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'নাম আবশ্যক' : null,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _replyCtrl,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'পরামর্শ, সমাধান বা বাতিলের কারণ',
-                  hintText: 'কৃষকের জন্য পরামর্শ লিখুন বা বাতিলের সুনির্দিষ্ট কারণ উল্লেখ করুন',
-                ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'মন্তব্য/পরামর্শ আবশ্যক' : null,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('বন্ধ করুন')),
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
-          onPressed: _saving ? null : () => _handleDecision('rejected'),
-          icon: const Icon(Icons.cancel_rounded, size: 16, color: Colors.white),
-          label: const Text('বাতিল করুন', style: TextStyle(color: Colors.white)),
-        ),
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
-          onPressed: _saving ? null : () => _handleDecision('resolved'),
-          icon: const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
-          label: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'গ্রহণ করুন', style: const TextStyle(color: Colors.white)),
-        ),
+        if (!isDecided) ...[
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.alertCritical),
+            onPressed: _saving ? null : () => _handleDecision('rejected'),
+            icon: const Icon(Icons.cancel_rounded, size: 16, color: Colors.white),
+            label: const Text('বাতিল করুন', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: AdminColors.primary),
+            onPressed: _saving ? null : () => _handleDecision('resolved'),
+            icon: const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
+            label: Text(_saving ? 'সংরক্ষণ হচ্ছে...' : 'গ্রহণ করুন', style: const TextStyle(color: Colors.white)),
+          ),
+        ],
       ],
     );
   }
