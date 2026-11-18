@@ -13758,15 +13758,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               <strong style="color: #2E7D32;">জমির অবস্থা:</strong> ${details}
             </div>
 
-            <!-- AI Advice Box - রিকোয়ারমেন্ট ৩ ও ৪: আকর্ষণীয় মিন্ট/হালকা সবুজ ব্যাকগ্রাউন্ড ও ঔষধ বক্স -->
-            <div style="background: #F1F8F5; border: 1.2px solid #C8E6C9; border-radius: 12px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #1B5E20;">
+            <!-- AI Advice Box - রিকোয়ারমেন্ট ৩: Colors.green.shade50 ও বর্ডার Colors.green.shade200, রেডিয়াস 12.0 -->
+            <div style="background: #E8F5E9; border: 1.2px solid #A5D6A7; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #1B5E20;">
                   <i class="fa-solid fa-lightbulb" style="color: #2E7D32;"></i>
                   <span>আপনার জন্য বর্তমান নির্দেশনা</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="background: #fff; border: 1px solid #C8E6C9; border-radius: 6px; padding: 2px 7px; font-size: 10px; font-weight: 700; color: #2E7D32;">
+                  <span style="background: #fff; border: 1px solid #A5D6A7; border-radius: 6px; padding: 2px 7px; font-size: 10px; font-weight: 700; color: #1B5E20;">
                     🌡️ ${currentTempDisplay} | 💧 ${currentHumDisplay}
                   </span>
                   <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px;">
@@ -13774,24 +13774,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                   </span>
                 </div>
               </div>
-              <div style="font-size: 12.5px; color: #1E281F; line-height: 1.5; margin-bottom: 8px;">
+              <div style="font-size: 13px; color: #1E281F; line-height: 1.5; margin-bottom: 10px; font-weight: 500;">
                 ${advice}
               </div>
 
               ${medicineInfo ? `
-                <div style="margin-top: 10px; background: #FFF8E1; border: 1.2px solid #FFE082; border-radius: 10px; padding: 10px;">
-                  <div style="display: flex; align-items: center; gap: 6px; color: #E65100; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                <div style="margin-top: 10px; background: #FFF3E0; border: 1.2px solid #FFCC80; border-radius: 10px; padding: 11px;">
+                  <div style="display: flex; align-items: center; gap: 6px; color: #E65100; font-size: 12.5px; font-weight: 700; margin-bottom: 5px;">
                     <i class="fa-solid fa-prescription-bottle-medical"></i>
                     <span>ঔষধ ও বালাইনাশক পরামর্শ:</span>
                   </div>
-                  <div style="font-size: 12px; color: #37474F; line-height: 1.4;">
+                  <div style="font-size: 12px; color: #3E2723; line-height: 1.45; font-weight: 500;">
                     ${medicineInfo}
                   </div>
                 </div>
               ` : ''}
 
-              <!-- সতর্কতা ডিসক্লেইমার (স্পষ্ট লাল কালারে) -->
-              <div style="margin-top: 10px; background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 11px; font-weight: 700; color: #D32F2F;">
+              <!-- সতর্কতা ডিসক্লেইমার (স্পষ্ট বোল্ড লাল কালারে) -->
+              <div style="margin-top: 10px; background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 8px; padding: 8px 10px; text-align: center; font-size: 11.5px; font-weight: 700; color: #D32F2F;">
                 <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i>
                 <span>ফসলে ঔষধ প্রয়োগ করার আগে বিশেষজ্ঞদের পরামর্শ নিন, সরাসরি ঔষধ ব্যবহার করবেন না।</span>
               </div>
@@ -13931,14 +13931,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       };
     }
 
-    // রিকোয়ারমেন্ট ২: Ultra-Sensitive Deep Analysis API Prompt
+    // রিকোয়ারমেন্ট ২: Problem-Solving Deep Analysis API Prompt
     async function generateSmartAgronomicAdvice(cropName, landAmount, cropAge, cropDetails, weather) {
       const rain = parseInt((weather.rain || '0').replace(/[^0-9]/g, '')) || 0;
       const temp = parseInt((weather.temp || '28').replace(/[^0-9]/g, '')) || 28;
       const details = (cropDetails || 'মাটির অবস্থা স্বাভাবিক').trim();
-      const weatherDesc = `তাপমাত্রা ${temp}°C এবং বৃষ্টিপাতের সম্ভাবনা ${rain}%`;
+      const weatherDesc = `তাপমাত্রা ${toBangla(temp)}°C এবং বৃষ্টিপাতের অবস্থা ${toBangla(rain)}%`;
 
-      const prompt = `তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে স্পেসিফিক পরামর্শ দিতে হবে।
+      const prompt = `তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে কৃষকের দেওয়া "জমির অবস্থা" গভীরভাবে বিশ্লেষণ করে সরাসরি সমস্যার সমাধান দিতে হবে। কোনো মুখস্থ বা জেনেরিক উত্তর দেওয়া যাবে না।
+
 ইনপুট ডেটা:
 - ফসলের নাম: ${cropName}
 - ফসলের বয়স: ${cropAge}
@@ -13946,13 +13947,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 - জমির বর্তমান অবস্থা: ${details}
 
 বিশ্লেষণের ১০০% কঠোর নিয়ম:
-১. আবহাওয়া ও সেচ লজিক: বৃষ্টির সম্ভাবনা থাকলে বা জমিতে পানি/ভেজা থাকলে সেচ দিতে না করবে। 
-২. রোগ ও ঔষধ লজিক (Ultra-Sensitive): কৃষকের বিবরণে যদি "পচে যাচ্ছে", "পচন", "পোকা", "হলুদ হয়ে যাচ্ছে", "দাগ পড়ছে" বা ফসলের যেকোনো নেতিবাচক লক্ষণ থাকে, তবে কোনোভাবেই ঔষধের ঘর ফাঁকা রাখা যাবে না! অবশ্যই সমস্যা অনুযায়ী একটি কার্যকরী ঔষধ/কীটনাশক/ছত্রাকনাশকের নাম (যেমন: এমিস্টার টপ, টিল্ট, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে।
+১. "জমির অবস্থা"-তে ফোকাস করো: কৃষক যদি কোনো নির্দিষ্ট সমস্যার কথা লেখে (যেমন: গাছ হেলে যাচ্ছে, পাতা কুঁচকে যাচ্ছে, পচে যাচ্ছে, পোকা ধরেছে), তবে তোমার মূল ফোকাস হবে ওই সমস্যাটি কীভাবে সমাধান করা যায় তার লজিক্যাল উপায় বলা। 
+২. জেনেরিক উত্তর নিষিদ্ধ: যদি জমিতে সমস্যা থাকে বা বৃষ্টি হয়, তবে কোনোভাবেই "বিকালে হালকা সেচ দিন" এই টাইপ জেনেরিক উত্তর দিবে না।
+৩. ঔষধ সাজেশন: যদি "পচন", "পোকা", "হেলে পড়া" বা রোগের লক্ষণ থাকে, তবে অবশ্যই কার্যকরী ঔষধ/কীটনাশক/ভিটামিন এবং তার দাম সাজেস্ট করবে।
 
 আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
 {
-  "advice": "আবহাওয়া ও বয়সের ওপর ভিত্তি করে রিয়েল-টাইম নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
-  "medicine_info": "যেকোনো সমস্যার লক্ষণ থাকলে অবশ্যই কার্যকরী ঔষধের নাম, দাম ও প্রয়োগবিধি। কোনো সমস্যা না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
+  "advice": "জমির অবস্থা এবং আবহাওয়ার ওপর ভিত্তি করে নির্দিষ্ট সমস্যার রিয়েল-টাইম সমাধান ও কৃষিকাজ নির্দেশনা।",
+  "medicine_info": "সমস্যা থাকলে ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
 }`;
 
       let apiKey = '';
@@ -13986,9 +13988,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               const medicineInfo = (parsed.medicine_info || '').trim();
               if (advice) {
                 let status = '💧 হালকা সেচ দিন';
-                if (advice.includes('নিষ্কাশন') || advice.includes('পানি বের')) status = '⚠️ পানি নিষ্কাশন করুন';
-                else if (advice.includes('প্রয়োজন নেই') || advice.includes('সেচ দেবেন না') || advice.includes('শুকানোর')) status = '🌿 সেচের প্রয়োজন নেই';
-                else if (advice.includes('জরুরি') || advice.includes('খরা')) status = '🚨 জরুরি সেচ প্রয়োজন';
+                if (advice.includes('নিষ্কাশন') || advice.includes('পানি বের') || advice.includes('ঠেকনা')) status = '⚠️ পানি নিষ্কাশন ও পরিচর্যা';
+                else if (advice.includes('প্রয়োজন নেই') || advice.includes('সেচ দেবেন না') || advice.includes('স্থগিত')) status = '🌿 সেচের প্রয়োজন নেই';
+                else if (advice.includes('জরুরি') || advice.includes('পোকা') || advice.includes('ছত্রাকনাশক')) status = '🚨 বিশেষ প্রতিকার';
                 return { status, advice, medicine_info: medicineInfo };
               }
             }
@@ -13996,24 +13998,56 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         } catch(e) {}
       }
 
-      // অফলাইন ও ফলব্যাক এগ্রোনমিক অ্যালগরিদম (Ultra-Sensitive)
+      // অফলাইন ও ফলব্যাক এগ্রোনমিক অ্যালগরিদম (Problem-Solving Mode)
       const detailsLower = details.toLowerCase();
       let medicineInfo = '';
+
+      // ক) গাছ হেলে যাওয়া / হেলে পড়া
+      if (detailsLower.includes('হেলে') || detailsLower.includes('ঢলে') || detailsLower.includes('পড়ে যা')) {
+        medicineInfo = 'গাছের শিকড় ও কাণ্ড শক্ত করতে অনুমোদিত চিলেটেড জিংক (১ গ্রাম/লি.) অথবা পিজিআর (যেমন: ফ্লোরা প্রতি লিটার পানিতে ২ মিলি, আনুমানিক বাজারমূল্য ১৮০-২২০ টাকা) স্প্রে করুন।';
+        return {
+          status: '⚠️ পানি নিষ্কাশন ও ঠেকনা দিন',
+          advice: `${cropName} গাছ হেলে পড়া রোধে গোড়ার অতিরিক্ত পানি দ্রুত নিষ্কাশন করুন এবং গাছের গোড়ায় শুকনো মাটি তুলে দিয়ে বাঁশের খুঁটি দিয়ে শক্ত ঠেকনা দিন। মাটি অতিরিক্ত ভেজা থাকলে এখন কোনো সেচ দিবেন না।`,
+          medicine_info: medicineInfo
+        };
+      }
+
+      // খ) পাতা কুঁচকে যাওয়া / কোঁকড়ানো
+      if (detailsLower.includes('কুঁচকে') || detailsLower.includes('কোঁকড়') || detailsLower.includes('মুড়িয়ে')) {
+        medicineInfo = 'পাতা কোঁকড়ানো ও চোষক পোকা দমনে ইমিডাক্লোপ্রিড (যেমন: এডমায়ার ২০ এসএল প্রতি লিটার পানিতে ০.৫ মিলি, আনুমানিক বাজারমূল্য ১৮০-২১০ টাকা) স্প্রে করুন।';
+        return {
+          status: '🚨 চোষক পোকা দমন করুন',
+          advice: `${cropName} গাছের পাতা কুঁচকে যাওয়ার প্রধান কারণ চোষক পোকা বা মাইটের আক্রমণ। পাতা ভেজা রাখবেন না এবং অবিলম্বে চোষক পোকা দমনে অনুমোদিত কীটনাশক স্প্রে করুন।`,
+          medicine_info: medicineInfo
+        };
+      }
+
+      // গ) পচন / ছত্রাক / দাগ / ব্লাইট
       if (detailsLower.includes('পচ') || detailsLower.includes('পচে') || detailsLower.includes('পচন') || detailsLower.includes('ছত্রাক') || detailsLower.includes('দাগ') || detailsLower.includes('হলুদ') || detailsLower.includes('ব্লাইট') || detailsLower.includes('ঝলসানো')) {
         if (cropName.includes('মরিচ') || detailsLower.includes('মরিচ')) {
           medicineInfo = 'মরিচ ফসলে পচন ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে টিল্ট ২৫০ ইসি (প্রপিকোনাজল) প্রতি লিটার পানিতে ০.৫ মিলি অথবা এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
         } else {
           medicineInfo = `${cropName} ফসলে ছত্রাকজনিত রোগ ও পাতা হলুদ হওয়া দমনে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা টিল্ট ২৫০ ইসি ০.৫ মিলি স্প্রে করুন।`;
         }
+        return {
+          status: '⚠️ সেচ বন্ধ ও ছত্রাকনাশক দিন',
+          advice: `${cropName} ফসলে পচন ও ছত্রাকের সংক্রমণ দেখা দেওয়ায় জমিতে সেচ দেওয়া অবিলম্বে বন্ধ রাখুন এবং জমে থাকা পানি দ্রুত নিষ্কাশন করুন। রোদ উঠলে জমিতে দ্রুত ছত্রাকনাশক স্প্রে করুন।`,
+          medicine_info: medicineInfo
+        };
       } else if (detailsLower.includes('পোকা') || detailsLower.includes('কীট') || detailsLower.includes('মাজরা') || detailsLower.includes('লেদা') || detailsLower.includes('মাছি') || detailsLower.includes('মাকড়')) {
         medicineInfo = `${cropName} ফসলে পোকা ও মাজরা দমনে কীটনাশক ক্যারাটে ২.৫ ইসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) বিকালে স্প্রে করুন।`;
+        return {
+          status: '🚨 কীটনাশক প্রয়োগ করুন',
+          advice: `${cropName} ফসলে পোকার আক্রমণ দমনে আক্রান্ত অংশ ধ্বংস করুন এবং উপযুক্ত কীটনাশক অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।`,
+          medicine_info: medicineInfo
+        };
       }
 
-      // ১. আবহাওয়া ও সেচ লজিক
+      // ১. আবহাওয়া ও সেচ লজিক (মাটি ভেজা বা বৃষ্টি থাকলে সেচ নিষিদ্ধ)
       if (detailsLower.includes('পানি জমে') || detailsLower.includes('পানি জমা') || detailsLower.includes('ভেজা') || detailsLower.includes('বৃষ্টি') || detailsLower.includes('কাদা')) {
         return {
           status: '⚠️ পানি নিষ্কাশন করুন',
-          advice: `জমিতে পানি জমে বা মাটি ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। জমি থেকে দ্রুত অতিরিক্ত পানি নিষ্কাশন করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় নষ্ট না হয়।`,
+          advice: `জমিতে পানি জমে বা মাটি ভেজা থাকায় এখন কোনো সেচ দেওয়া যাবে না। জমি থেকে দ্রুত অতিরিক্ত পানি নিষ্কাশন করুন এবং মাটি শুকাতে দিন যাতে ${cropName} ফসলের শিকড় পচে না যায়।`,
           medicine_info: medicineInfo
         };
       }
@@ -14021,7 +14055,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (rain >= 40) {
         return {
           status: '🌿 সেচের প্রয়োজন নেই',
-          advice: `বর্তমানে বৃষ্টির সম্ভাবনা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে রস বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন।`,
+          advice: `বর্তমানে বৃষ্টির সম্ভাবনা ${toBangla(rain)}% ও আকাশ মেঘলা। জমিতে প্রাকৃতিকভাবে আর্দ্রতা বজায় থাকবে, তাই সেচ প্রদান স্থগিত রাখুন।`,
           medicine_info: medicineInfo
         };
       }

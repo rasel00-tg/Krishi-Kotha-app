@@ -318,7 +318,7 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     );
   }
 
-  // ====================== রিকোয়ারমেন্ট ২: Ultra-Sensitive Deep Analysis API Prompt ======================
+  // ====================== রিকোয়ারমেন্ট ২: Problem-Solving Deep Analysis API Prompt ======================
   /// Gemini API-কে প্লেইন টেক্সটের বদলে নির্দিষ্ট JSON স্ট্রাকচারে গভীরভাবে বিশ্লেষণ করার নির্দেশ দেওয়া হয়।
   /// রেসপন্স থেকে jsonDecode করে advice এবং medicine_info সংগ্রহ করা হয়।
   Future<({String advice, String status, String medicineInfo})> _requestGeminiJsonAnalysis({
@@ -329,13 +329,17 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     required WeatherInfoModel weather,
   }) async {
     final cleanCropName = cropName.trim();
-    final weatherDesc =
-        'তাপমাত্রা ${weather.currentTemp.toStringAsFixed(1)}°C এবং বৃষ্টিপাতের সম্ভাবনা ${weather.rainProbability}%';
+    // রিকোয়ারমেন্ট ১: ব্যানারের হুবহু সেই একই লাইভ ভেরিয়েবল
+    final bannerTemp = BanglaNumberConverter.toBangla(weather.currentTemp.toStringAsFixed(0));
+    final bannerRain = BanglaNumberConverter.toBangla(weather.rainProbability);
+    final bannerCond = weather.conditionBn;
+    final weatherDesc = 'তাপমাত্রা $bannerTemp°C এবং বৃষ্টির সম্ভাবনা $bannerRain% ($bannerCond)';
     final detailsText = cropDetails.trim().isNotEmpty ? cropDetails.trim() : 'মাটির অবস্থা স্বাভাবিক';
 
-    // রিকোয়ারমেন্ট ২: Ultra-Sensitive Medicine Logic প্রম্পট
+    // রিকোয়ারমেন্ট ২: Problem-Solving Deep Analysis JSON প্রম্পট
     final prompt = '''
-তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে নিচের ডেটাগুলো গভীরভাবে বিশ্লেষণ করে স্পেসিফিক পরামর্শ দিতে হবে।
+তুমি বাংলাদেশের একজন শীর্ষস্থানীয় কৃষি বিশেষজ্ঞ। তোমাকে কৃষকের দেওয়া "জমির অবস্থা" গভীরভাবে বিশ্লেষণ করে সরাসরি সমস্যার সমাধান দিতে হবে। কোনো মুখস্থ বা জেনেরিক উত্তর দেওয়া যাবে না।
+
 ইনপুট ডেটা:
 - ফসলের নাম: $cleanCropName
 - ফসলের বয়স: $cropAge
@@ -343,13 +347,14 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
 - জমির বর্তমান অবস্থা: $detailsText
 
 বিশ্লেষণের ১০০% কঠোর নিয়ম:
-১. আবহাওয়া ও সেচ লজিক: বৃষ্টির সম্ভাবনা থাকলে বা জমিতে পানি/ভেজা থাকলে সেচ দিতে না করবে। 
-২. রোগ ও ঔষধ লজিক (Ultra-Sensitive): কৃষকের বিবরণে যদি "পচে যাচ্ছে", "পচন", "পোকা", "হলুদ হয়ে যাচ্ছে", "দাগ পড়ছে" বা ফসলের যেকোনো নেতিবাচক লক্ষণ থাকে, তবে কোনোভাবেই ঔষধের ঘর ফাঁকা রাখা যাবে না! অবশ্যই সমস্যা অনুযায়ী একটি কার্যকরী ঔষধ/কীটনাশক/ছত্রাকনাশকের নাম (যেমন: এমিস্টার টপ, টিল্ট, ক্যারাটে ইত্যাদি) এবং আনুমানিক বাজারমূল্যসহ সাজেস্ট করবে।
+১. "জমির অবস্থা"-তে ফোকাস করো: কৃষক যদি কোনো নির্দিষ্ট সমস্যার কথা লেখে (যেমন: গাছ হেলে যাচ্ছে, পাতা কুঁচকে যাচ্ছে, পচে যাচ্ছে, পোকা ধরেছে), তবে তোমার মূল ফোকাস হবে ওই সমস্যাটি কীভাবে সমাধান করা যায় তার লজিক্যাল উপায় বলা। 
+২. জেনেরিক উত্তর নিষিদ্ধ: যদি জমিতে সমস্যা থাকে বা বৃষ্টি হয়, তবে কোনোভাবেই "বিকালে হালকা সেচ দিন" এই টাইপ জেনেরিক উত্তর দিবে না।
+৩. ঔষধ সাজেশন: যদি "পচন", "পোকা", "হেলে পড়া" বা রোগের লক্ষণ থাকে, তবে অবশ্যই কার্যকরী ঔষধ/কীটনাশক/ভিটামিন এবং তার দাম সাজেস্ট করবে।
 
 আউটপুট অবশ্যই ১০০% ভ্যালিড JSON হতে হবে:
 {
-  "advice": "আবহাওয়া ও বয়সের ওপর ভিত্তি করে রিয়েল-টাইম নির্দিষ্ট সেচ/যত্ন নির্দেশনা।",
-  "medicine_info": "যেকোনো সমস্যার লক্ষণ থাকলে অবশ্যই কার্যকরী ঔষধের নাম, দাম ও প্রয়োগবিধি। কোনো সমস্যা না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
+  "advice": "জমির অবস্থা এবং আবহাওয়ার ওপর ভিত্তি করে নির্দিষ্ট সমস্যার রিয়েল-টাইম সমাধান ও কৃষিকাজ নির্দেশনা।",
+  "medicine_info": "সমস্যা থাকলে ঔষধের নাম ও দাম। না থাকলে সম্পূর্ণ ফাঁকা (empty string) রাখুন।"
 }
 ''';
 
@@ -709,33 +714,78 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     final cond = weather.conditionBn;
     final detailsLower = cropDetails.toLowerCase();
 
-    // নিয়ম ২: রোগ ও ঔষধ লজিক (Ultra-Sensitive) - কৃষকের বিবরণে পচন, পোকা, দাগ বা কোনো সমস্যা থাকলেই ঔষধ সাজেস্ট
+    // ================== ১. "জমির অবস্থা"-তে ফোকাস (Problem-Solving Logic) ==================
     String medicine = '';
+
+    // ক) গাছ হেলে যাওয়া / হেলে পড়া
+    if (detailsLower.contains('হেলে') || detailsLower.contains('ঢলে') || detailsLower.contains('পড়ে যা')) {
+      medicine = 'গাছের শিকড় ও কাণ্ড শক্ত করে সোজা রাখতে অনুমোদিত চিলেটেড জিংক (লিবরেল জিংক ১ গ্রাম/লি.) অথবা পিজিআর (যেমন: ফ্লোরা প্রতি লিটার পানিতে ২ মিলি, আনুমানিক বাজারমূল্য ১৮০-২২০ টাকা) স্প্রে করুন।';
+      return (
+        status: '⚠️ পানি নিষ্কাশন ও ঠেকনা দিন',
+        advice: '$cropName গাছ হেলে পড়া রোধে গোড়ার অতিরিক্ত পানি দ্রুত নিষ্কাশন করুন এবং গাছের গোড়ায় শুকনো মাটি তুলে দিয়ে বাঁশের খুঁটি বা কঞ্চি দিয়ে শক্ত ঠেকনা দিন। মাটি অতিরিক্ত ভেজা থাকলে এখন কোনো সেচ দিবেন না।',
+        medicine: medicine,
+      );
+    }
+
+    // খ) পাতা কুঁচকে যাওয়া / কোঁকড়ানো
+    if (detailsLower.contains('কুঁচকে') || detailsLower.contains('কোঁকড়') || detailsLower.contains('মুড়িয়ে')) {
+      medicine = 'পাতা কোঁকড়ানো ও চোষক পোকা দমনে ইমিডাক্লোপ্রিড (যেমন: এডমায়ার ২০ এসএল প্রতি লিটার পানিতে ০.৫ মিলি, আনুমানিক বাজারমূল্য ১৮০-২১০ টাকা) অথবা পেগাসাস ৫০ এসসি অনুমোদিত মাত্রায় স্প্রে করুন।';
+      return (
+        status: '🚨 চোষক পোকা দমন করুন',
+        advice: '$cropName গাছের পাতা কুঁচকে যাওয়ার প্রধান কারণ চোষক পোকা (সাদা মাছি/থ্রিপস) বা মাইটের আক্রমণ। পাতা ভেজা রাখবেন না এবং অবিলম্বে চোষক পোকা দমনে স্প্রে করুন।',
+        medicine: medicine,
+      );
+    }
+
+    // গ) পচন / ছত্রাক / ঝলসানো / দাগ / ব্লাইট
     if (detailsLower.contains('পচ') ||
         detailsLower.contains('পচে') ||
         detailsLower.contains('পচন') ||
         detailsLower.contains('ছত্রাক') ||
         detailsLower.contains('দাগ') ||
         detailsLower.contains('ঝলসানো') ||
-        detailsLower.contains('হলুদ') ||
         detailsLower.contains('ব্লাইট') ||
         detailsLower.contains('মরিচা')) {
       if (cropName.contains('মরিচ') || detailsLower.contains('মরিচ')) {
         medicine = 'মরিচ ফসলে পচন ও ছত্রাকজনিত রোগ নিয়ন্ত্রণে টিল্ট ২৫০ ইসি (প্রপিকোনাজল) প্রতি লিটার পানিতে ০.৫ মিলি অথবা এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) স্প্রে করুন।';
       } else {
-        medicine = '$cropName ফসলে পচন, ছত্রাক ও পাতা হলুদ হওয়া নিয়ন্ত্রণে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা টিল্ট ২৫০ ইসি ০.৫ মিলি স্প্রে করুন।';
+        medicine = '$cropName ফসলে পচন, ছত্রাক ও পাতা ঝলসানো নিয়ন্ত্রণে এমিস্টার টপ ৩২৫ এসসি প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ৩২০-৩৫০ টাকা) অথবা টিল্ট ২৫০ ইসি ০.৫ মিলি স্প্রে করুন।';
       }
-    } else if (detailsLower.contains('পোকা') ||
+      return (
+        status: '⚠️ সেচ বন্ধ ও ছত্রাকনাশক দিন',
+        advice: '$cropName ফসলে পচন ও ছত্রাকের সংক্রমণ দেখা দেওয়ায় জমিতে সেচ দেওয়া অবিলম্বে বন্ধ রাখুন এবং জমে থাকা পানি দ্রুত নিষ্কাশন করুন। রোদের সময় জমিতে ছত্রাকনাশক স্প্রে করুন।',
+        medicine: medicine,
+      );
+    }
+
+    // ঘ) পোকা / কীট / মাজরা / লেদা / মাছি
+    if (detailsLower.contains('পোকা') ||
         detailsLower.contains('কীট') ||
         detailsLower.contains('মাজরা') ||
         detailsLower.contains('লেদা') ||
         detailsLower.contains('মাছি') ||
         detailsLower.contains('মাকড়') ||
         detailsLower.contains('পোকার আক্রমণ')) {
-      medicine = '$cropName ফসলে পোকা ও কীটের আক্রমণ নিয়ন্ত্রণে কীটনাশক ক্যারাটে ২.৫ ইসি (ল্যাম্বডা-সাইহ্যালোথ্রিন) প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) অথবা ভিরতাকো অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।';
+      medicine = '$cropName ফসলে পোকা ও কীটের উপদ্রব নিয়ন্ত্রণে কীটনাশক ক্যারাটে ২.৫ ইসি (ল্যাম্বডা-সাইহ্যালোথ্রিন) প্রতি লিটার পানিতে ১ মিলি (আনুমানিক বাজারমূল্য ১৫০-১৮০ টাকা) অথবা ভিরতাকো অনুমোদিত মাত্রায় বিকালে স্প্রে করুন।';
+      return (
+        status: '🚨 কীটনাশক প্রয়োগ করুন',
+        advice: '$cropName ফসলে পোকার আক্রমণ দমনে আক্রান্ত পাতা ও ডগা সংগ্রহ করে ধ্বংস করুন এবং নিয়মিত পর্যবেক্ষণ করে উপযুক্ত কীটনাশক প্রয়োগ করুন।',
+        medicine: medicine,
+      );
     }
 
-    // নিয়ম ১: আবহাওয়া ও সেচ লজিক - বৃষ্টি বা ভেজা মাটিতে কোনোভাবেই সেচ দেওয়ার পরামর্শ নয়, পানি নিষ্কাশন
+    // ঙ) হলুদ হওয়া
+    if (detailsLower.contains('হলুদ')) {
+      medicine = '$cropName ফসলে পাতা হলুদ হওয়া ও পুষ্টি ঘাটতি দমনে চিলেটেড জিংক প্রতি লিটার পানিতে ১ গ্রাম এবং ম্যানকোজেব ২ গ্রাম মিশিয়ে স্প্রে করুন (আনুমানিক বাজারমূল্য ১২০-১৫০ টাকা)।';
+      return (
+        status: '🌿 পুষ্টি ও ছত্রাক পরিচর্যা',
+        advice: '$cropName গাছের পাতা হলুদ হওয়া রোধে গোড়ার পানি নিষ্কাশন নিশ্চিত করুন এবং প্রয়োজনীয় অনুখাদ্য ও জিংক স্প্রে করে গাছের পুষ্টি চাহিদা পূরণ করুন।',
+        medicine: medicine,
+      );
+    }
+
+    // ================== ২. আবহাওয়া ও সেচ লজিক (জেনেরিক উত্তর নিষিদ্ধ) ==================
+    // বৃষ্টি বা ভেজা মাটিতে কোনোভাবেই সেচ দেওয়ার পরামর্শ নয়, পানি নিষ্কাশন
     if (detailsLower.contains('পানি জমে') ||
         detailsLower.contains('পানি জমা') ||
         detailsLower.contains('ভেজা') ||
@@ -1591,19 +1641,24 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                               // is_valid_crop true হলে: পরবর্তী ধাপে গিয়ে আবহাওয়া ও এআই এনালাইসিস প্রস্তুত করা
                               final currentDist = _userDistrict ?? 'ঢাকা';
                               final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
-                              final weather = weatherProvider.weatherInfo ??
-                                  _currentWeather ??
-                                  WeatherInfoModel(
-                                    district: currentDist,
-                                    currentTemp: 29.0,
-                                    feelsLike: 31.0,
-                                    humidity: 65,
-                                    rainProbability: 20,
-                                    windSpeedKmH: 8.5,
-                                    conditionBn: 'পরিষ্কার',
-                                    farmingAdvice: '',
-                                    fiveDayForecast: const [],
-                                  );
+                              WeatherInfoModel? weather = weatherProvider.weatherInfo ?? _currentWeather;
+                              if (weather == null) {
+                                try {
+                                  await weatherProvider.fetchWeather(currentDist);
+                                  weather = weatherProvider.weatherInfo;
+                                } catch (_) {}
+                              }
+                              weather ??= WeatherInfoModel(
+                                district: currentDist,
+                                currentTemp: 28.0,
+                                feelsLike: 30.0,
+                                humidity: 65,
+                                rainProbability: 20,
+                                windSpeedKmH: 8.5,
+                                conditionBn: 'পরিষ্কার আকাশ',
+                                farmingAdvice: '',
+                                fiveDayForecast: const [],
+                              );
 
                               // অপরিবর্তিত ১ ঘণ্টার পরামর্শ এনালাইসিস থেকে প্রাথমিক এআই পরামর্শ ও স্ট্যাটাস সংগ্রহ
                               final aiResult = await _requestGeminiJsonAnalysis(
@@ -2282,14 +2337,14 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
 
             const SizedBox(height: 10),
 
-            // ৪. "আপনার জন্য বর্তমান নির্দেশনা" - আকর্ষণীয় ও আরামদায়ক হালকা সবুজ/মিন্ট ডিজাইন (#F1F8F5), বর্ডার রেডিয়াস ১৪
+            // ৪. "আপনার জন্য বর্তমান নির্দেশনা" - রিকোয়ারমেন্ট ৩: Colors.green.shade50 ও বর্ডার Colors.green.shade200, রেডিয়াস 12.0
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(13),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F8F5), // আকর্ষণীয় মিন্ট/হালকা সবুজ ব্যাকগ্রাউন্ড
-                borderRadius: BorderRadius.circular(14), // বর্ডার রেডিয়াস ১৪
-                border: Border.all(color: const Color(0xFFC8E6C9), width: 1.2), // পরিপাটি নরম বর্ডার #C8E6C9
+                color: Colors.green.shade50, // হালকা সবুজ / মিন্ট কালার
+                borderRadius: BorderRadius.circular(12.0), // বর্ডার রেডিয়াস ১২.০
+                border: Border.all(color: Colors.green.shade200, width: 1.2), // পরিপাটি নরম বর্ডার
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x06000000),
@@ -2303,12 +2358,12 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFF2E7D32), size: 17),
+                      const Icon(Icons.lightbulb_rounded, color: Color(0xFF1B5E20), size: 18),
                       const SizedBox(width: 6),
                       const Text(
                         'আপনার জন্য বর্তমান নির্দেশনা',
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1B5E20),
                         ),
@@ -2319,60 +2374,62 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFC8E6C9)),
+                          border: Border.all(color: Colors.green.shade200),
                         ),
                         child: Text(
                           '🌡️ ${BanglaNumberConverter.toBangla(liveTemp.toStringAsFixed(0))}°C | 💧 ${BanglaNumberConverter.toBangla(liveHumidity)}%',
-                          style: const TextStyle(fontSize: 10, color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 10, color: Colors.green.shade800, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     aiAdvice,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 13,
                       color: Color(0xFF1E281F),
-                      height: 1.45,
+                      height: 1.5, // পড়ার আরামদায়ক লাইন হাইট
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
 
-                  // রিয়েল-টাইম ঔষধ/বালাইনাশক পরামর্শ বক্স (যদি medicine_info বিদ্যমান থাকে)
+                  // রিয়েল-টাইম ঔষধ/বালাইনাশক পরামর্শ বক্স (যদি medicine_info বিদ্যমান থাকে - Colors.orange.shade50)
                   if (medicineInfo.isNotEmpty) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(11),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF8E1), // হালকা অ্যাম্বার/হলুদ ব্যাকগ্রাউন্ড
+                        color: Colors.orange.shade50, // হালকা হলুদ/অরেঞ্জ ব্যাকগ্রাউন্ড
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFFE082), width: 1.2),
+                        border: Border.all(color: Colors.orange.shade200, width: 1.2),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: const [
-                              Icon(Icons.medication_liquid_rounded, size: 16, color: Color(0xFFE65100)),
+                              Icon(Icons.medication_liquid_rounded, size: 17, color: Color(0xFFE65100)),
                               SizedBox(width: 6),
                               Text(
                                 'ঔষধ ও বালাইনাশক পরামর্শ:',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFFE65100),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 6),
                           Text(
                             medicineInfo,
                             style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF37474F),
-                              height: 1.4,
+                              fontSize: 12.5,
+                              color: Color(0xFF3E2723),
+                              height: 1.45,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -2380,11 +2437,11 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                     ),
                   ],
 
-                  // স্পষ্ট লাল সতর্কতা বা ডিসক্লেইমার
-                  const SizedBox(height: 10),
+                  // স্পষ্ট লাল সতর্কতা বা ডিসক্লেইমার (⚠️ বোল্ড লাল কালার)
+                  const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFEBEE), // হালকা লাল ব্যাকগ্রাউন্ড
                       borderRadius: BorderRadius.circular(8),
@@ -2393,16 +2450,16 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Icon(Icons.warning_amber_rounded, size: 15, color: Color(0xFFD32F2F)),
+                        Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFFD32F2F)),
                         SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             'ফসলে ঔষধ প্রয়োগ করার আগে বিশেষজ্ঞদের পরামর্শ নিন, সরাসরি ঔষধ ব্যবহার করবেন না।',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFD32F2F), // স্পষ্ট লাল কালার
+                              color: Color(0xFFD32F2F), // স্পষ্ট বোল্ড লাল কালার
                               height: 1.35,
                             ),
                           ),
