@@ -22,7 +22,7 @@
 
   <script>
     // Global menu navigation handlers - Guaranteed instant availability
-    window.toggleHomepageSubmenu = function(e) {
+    window.toggleHomepageSubmenu = function (e) {
       if (e) e.stopPropagation();
       const sub = document.getElementById('homepageSubmenu');
       const caret = document.getElementById('homepageCaret');
@@ -38,7 +38,7 @@
         if (caret) caret.style.transform = 'rotate(0deg)';
       }
     };
-    window.toggleSettingsSubmenu = function(e) {
+    window.toggleSettingsSubmenu = function (e) {
       if (e) e.stopPropagation();
       const sub = document.getElementById('settingsSubmenu');
       const caret = document.getElementById('settingsCaret');
@@ -5085,9 +5085,6 @@
       }
     }
     window.toggleSettingsSubmenu = toggleSettingsSubmenu;
-    if (caret) caret.style.transform = 'rotate(0deg)';
-      }
-    }
 
     function switchTab(tabKey) {
       if (tabKey === 'users') tabKey = 'support';
@@ -6195,8 +6192,10 @@
     function renderNotifications() {
       const dbList = document.getElementById('dashboardNotifList');
       const allList = document.getElementById('allNotifsList');
-      document.getElementById('notifCountBadge').innerText = 'মোট: ' + notifications.length;
-      document.getElementById('stat-notifs').innerText = notifications.length;
+      const notifBadge = document.getElementById('notifCountBadge');
+      if (notifBadge) notifBadge.innerText = 'মোট: ' + notifications.length;
+      const statNotifs = document.getElementById('stat-notifs');
+      if (statNotifs) statNotifs.innerText = notifications.length;
 
       if (notifications.length === 0) {
         if (allList) allList.innerHTML = '<div class="empty-state">বর্তমানে কোনো তথ্য নেই</div>';
@@ -8167,8 +8166,10 @@
     function renderUsers() {
       const uList = document.getElementById('usersList');
       const tList = document.getElementById('ticketsList');
-      document.getElementById('stat-farmers').innerText = users.length;
-      document.getElementById('usersCountBadge').innerText = 'মোট: ' + users.length + ' জন';
+      const statFarmers = document.getElementById('stat-farmers');
+      if (statFarmers) statFarmers.innerText = users.length;
+      const usersBadge = document.getElementById('usersCountBadge');
+      if (usersBadge) usersBadge.innerText = 'মোট: ' + users.length + ' জন';
 
       renderDashboardEnhanced();
 
