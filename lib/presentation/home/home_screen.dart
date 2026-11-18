@@ -92,13 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showStartupNotificationDialog(String imageUrl) {
     showDialog(
       context: context,
+      useRootNavigator: true,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.65),
+      barrierColor: Colors.black.withOpacity(0.85),
       builder: (BuildContext dialogContext) {
         final double dialogWidth = MediaQuery.of(dialogContext).size.width * 0.85;
 
         return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
           child: Dialog(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -170,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       top: 0,
                       right: 0,
                       child: GestureDetector(
-                        onTap: () => Navigator.of(dialogContext).pop(),
+                        onTap: () => Navigator.of(dialogContext, rootNavigator: true).pop(),
                         child: Container(
                           margin: const EdgeInsets.all(8),
                           width: 32,
