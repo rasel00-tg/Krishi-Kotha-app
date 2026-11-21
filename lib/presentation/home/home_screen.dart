@@ -287,7 +287,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       _isPopupCurrentlyOpen = false;
     });
   }
-  }
 
   @override
   Widget build(BuildContext context) {
