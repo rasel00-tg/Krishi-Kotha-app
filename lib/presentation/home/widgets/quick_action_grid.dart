@@ -11,6 +11,7 @@ import '../crop_calendar_screen.dart';
 import '../income_expense_screen.dart';
 import '../seed_information_page.dart';
 import '../irrigation_tracker_screen.dart';
+import '../soil_health_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -601,14 +602,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.terrain_outlined,
         color: const Color(0xFF6D4C41),
         bgColor: const Color(0xFFEFEBE9),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'soil',
-          title: AppStrings.serviceSoilHealth,
-          icon: Icons.terrain_outlined,
-          color: const Color(0xFF6D4C41),
-          bgColor: const Color(0xFFEFEBE9),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const SoilHealthScreen(),
+            ),
+          );
+        },
       ),
       // ১০. পশু ও হাঁস-মুরগি
       QuickActionItem(

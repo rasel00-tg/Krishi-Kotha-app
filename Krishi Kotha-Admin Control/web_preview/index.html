@@ -283,7 +283,7 @@
     }
 
     .submenu-container.open {
-      max-height: 520px;
+      max-height: 600px;
       opacity: 1;
       margin: 4px 0 8px 18px;
     }
@@ -1198,6 +1198,17 @@
           <div style="flex: 1; min-width: 0;">
             <div style="font-size: 12.5px; font-weight: 600;">সার-বীজ ডিলার মনিটরিং</div>
             <div style="font-size: 9.5px; opacity: 0.7;">ডিলারদের তালিকা ও লাইভ তথ্য</div>
+          </div>
+        </li>
+        <li class="menu-item submenu-item" id="submenuItemSoilHealthMonitoring"
+          onclick="switchTab('soil_health_monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(109, 76, 65, 0.16); color: #6D4C41; margin-right: -4px;">
+            <i class="fa-solid fa-mountain" style="font-size: 13px;"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">মাটির স্বাস্থ্য মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">মাটির ধরন, pH ও সার ব্যবস্থাপনা</div>
           </div>
         </li>
       </div>
@@ -3475,6 +3486,130 @@
           </div>
         </div>
       </div>
+
+      <!-- ================= TAB: HOMEPAGE - SOIL HEALTH MONITORING ================= -->
+      <div id="tab-soil-health-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • মাটির স্বাস্থ্য মনিটরিং ও ব্যবস্থাপনা</h2>
+            <p>মাটির ধরন, pH মাত্রা, উপযোগী ফসল ও সার প্রয়োগ নির্দেশনার রিয়েল-টাইম তথ্য পর্যবেক্ষণ ও নিয়ন্ত্রণ।</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-primary" onclick="initAdminSoilHealthLiveSync(true)"
+              style="background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+            <button class="btn btn-primary" onclick="openAdminSoilModal()"
+              style="background: #fff; color: #1B5E20; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-plus"></i> নতুন তথ্য যুক্ত করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards (4 Cards) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট মাটির রেকর্ড</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(27, 94, 32, 0.12); color: #1B5E20; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-mountain" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminSoilStatTotal" style="font-size: 24px; font-weight: 800; color: #1B5E20;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">ডাটাবেসের সকল মাটির ধরন</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">দোআঁশ ও উর্বর মাটি</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-seedling" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminSoilStatLoam" style="font-size: 24px; font-weight: 800; color: #0288D1;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">দোআঁশ ও পলিমাটি সমৃদ্ধ</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">বিশেষ/সমস্যাযুক্ত মাটি</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminSoilStatSpecial" style="font-size: 24px; font-weight: 800; color: #E65100;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">লবণাক্ত, বেলে ও লাল মাটি</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">ক্যাটাগরি সংখ্যা</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(123, 31, 162, 0.12); color: #7B1FA2; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-layer-group" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminSoilStatCategories" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সক্রিয় মাটির শ্রেণিবিভাগ</div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 16px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <!-- Search Bar -->
+            <div style="flex: 1; min-width: 260px; position: relative;">
+              <input type="text" id="adminSoilSearchInput" class="form-control"
+                placeholder="মাটির নাম, ধরন, pH মান বা উপযোগী ফসল দিয়ে খুঁজুন..."
+                oninput="onAdminSoilSearch(this.value)"
+                style="padding-left: 38px; width: 100%; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; height: 42px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 14px; top: 14px; color: #90A4AE; font-size: 14px;"></i>
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+              <select id="adminSoilCategoryFilter" class="form-control"
+                onchange="onAdminSoilCategoryFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer; min-width: 150px;">
+                <option value="all">সকল ক্যাটাগরি</option>
+                <option value="দোআঁশ মাটি">দোআঁশ মাটি</option>
+                <option value="এঁটেল মাটি">এঁটেল মাটি</option>
+                <option value="বেলে মাটি">বেলে মাটি</option>
+                <option value="পলি মাটি">পলি মাটি</option>
+                <option value="লাল/পাহাড়ি মাটি">লাল/পাহাড়ি মাটি</option>
+                <option value="লবণাক্ত মাটি">লবণাক্ত মাটি</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="panel-card">
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 950px;">
+              <thead>
+                <tr style="background: #F1F8E9; color: #1B5E20; text-align: left; font-size: 12.5px;">
+                  <th style="padding: 12px 14px; width: 60px;">ছবি</th>
+                  <th style="padding: 12px 14px;">মাটির নাম ও ধরন</th>
+                  <th style="padding: 12px 14px;">ক্যাটাগরি</th>
+                  <th style="padding: 12px 14px;">pH মাত্রা</th>
+                  <th style="padding: 12px 14px;">উপযোগী ফসল</th>
+                  <th style="padding: 12px 14px;">বৈশিষ্ট্য ও পুষ্টি</th>
+                  <th style="padding: 12px 14px; text-align: center; width: 120px;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminSoilTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">তথ্য লোডিং হচ্ছে...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -5469,6 +5604,7 @@
     function switchTab(tabKey) {
       if (tabKey === 'users') tabKey = 'support';
       if (tabKey === 'fertilizer_dealer_monitoring') tabKey = 'fertilizer-dealer-monitoring';
+      if (tabKey === 'soil_health_monitoring') tabKey = 'soil-health-monitoring';
 
       try {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -5493,6 +5629,7 @@
           'seed-monitoring': 'হোমপেজ • বীজের তথ্য মনিটরিং',
           'irrigation-monitoring': 'হোমপেজ • সেচ ট্র্যাকার মনিটরিং ও কন্ট্রোল',
           'fertilizer-dealer-monitoring': 'হোমপেজ • সার-বীজ ডিলার মনিটরিং',
+          'soil-health-monitoring': 'হোমপেজ • মাটির স্বাস্থ্য মনিটরিং',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -5612,6 +5749,20 @@
           } else {
             renderAdminDealersTable();
           }
+        } else if (tabKey === 'soil-health-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemSoilHealthMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminSoilFirstLoadDone || adminSoilList.length === 0) {
+            initAdminSoilHealthLiveSync(true, false);
+          } else {
+            renderAdminSoilTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -5648,6 +5799,10 @@
         if (tabKey !== 'fertilizer-dealer-monitoring') {
           const subDealer = document.getElementById('submenuItemDealerMonitoring');
           if (subDealer) subDealer.classList.remove('active');
+        }
+        if (tabKey !== 'soil-health-monitoring') {
+          const subSoil = document.getElementById('submenuItemSoilHealthMonitoring');
+          if (subSoil) subSoil.classList.remove('active');
         }
 
         if (tabKey !== 'settings-privacy') {
@@ -6800,7 +6955,8 @@
       market: { file: null, blobUrl: null },
       privacy: { file: null, blobUrl: null, rawImg: null, isDeleted: false },
       fc: { file: null, blobUrl: null, isDeleted: false },
-      seed: { file: null, blobUrl: null, isDeleted: false }
+      seed: { file: null, blobUrl: null, isDeleted: false },
+      soil: { file: null, blobUrl: null, isDeleted: false }
     };
 
     // Step 1: Pre-upload Local Memory Hold (Local File Preview Only with Client Auto Compression)
@@ -13843,6 +13999,493 @@
     window.viewAdminDealerDetails = viewAdminDealerDetails;
     window.closeAdminDealerModal = closeAdminDealerModal;
 
+    // ==========================================
+    // UNIFIED ADMIN GLOBAL POPUP
+    // ==========================================
+    function showAdminGlobalPopup({ title = '', message = '', type = 'info', onConfirm = null } = {}) {
+      if (type === 'confirm' || (typeof onConfirm === 'function')) {
+        showAdminConfirm(title || 'নিশ্চিতকরণ প্রয়োজন', message, onConfirm, 'হ্যাঁ, নিশ্চিত', true);
+      } else if (type === 'error') {
+        showAdminError(title || 'ত্রুটি', message);
+      } else {
+        showAdminSuccess(title || 'সফল হয়েছে!', message);
+      }
+    }
+    window.showAdminGlobalPopup = showAdminGlobalPopup;
+
+    // ==========================================
+    // SOIL HEALTH MONITORING CONTROLLER
+    // ==========================================
+    let adminSoilList = [];
+    let adminSoilCategoryFilter = 'all';
+    let adminSoilSearchQuery = '';
+    let adminSoilFirstLoadDone = false;
+    let adminSoilUnsubscribe = null;
+
+    async function initAdminSoilHealthLiveSync(forceServer = false, isInitial = false) {
+      if (!window.firebase || !firebase.firestore) return;
+
+      const shouldShowLoading = forceServer || (!adminSoilFirstLoadDone && !isInitial);
+      if (shouldShowLoading && typeof showAdminLoading === 'function') {
+        showAdminLoading('মাটির স্বাস্থ্য তথ্য লোড হচ্ছে...', 'ক্লাউড ফায়ারবেস থেকে রিয়েল-টাইম তথ্য সিঙ্ক করা হচ্ছে...');
+      }
+
+      if (adminSoilUnsubscribe) {
+        adminSoilUnsubscribe();
+        adminSoilUnsubscribe = null;
+      }
+
+      try {
+        const db = firebase.firestore();
+        const collectionRef = db.collection('soil_health');
+
+        adminSoilUnsubscribe = collectionRef.onSnapshot((snapshot) => {
+          adminSoilList = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data() || {};
+            data.id = doc.id;
+            adminSoilList.push(data);
+          });
+
+          adminSoilList.sort((a, b) => {
+            const timeA = (a.updatedAt && a.updatedAt.toMillis) ? a.updatedAt.toMillis() : ((a.createdAt && a.createdAt.toMillis) ? a.createdAt.toMillis() : 0);
+            const timeB = (b.updatedAt && b.updatedAt.toMillis) ? b.updatedAt.toMillis() : ((b.createdAt && b.createdAt.toMillis) ? b.createdAt.toMillis() : 0);
+            return timeB - timeA;
+          });
+
+          adminSoilFirstLoadDone = true;
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+            hideAdminLoading();
+          }
+
+          updateAdminSoilStatCards();
+          renderAdminSoilTable();
+        }, (err) => {
+          console.warn('initAdminSoilHealthLiveSync snapshot error:', err);
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+            hideAdminLoading();
+          }
+        });
+      } catch (err) {
+        console.warn('initAdminSoilHealthLiveSync catch error:', err);
+        if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+          hideAdminLoading();
+        }
+      }
+    }
+
+    function updateAdminSoilStatCards() {
+      const totalEl = document.getElementById('adminSoilStatTotal');
+      const loamEl = document.getElementById('adminSoilStatLoam');
+      const specialEl = document.getElementById('adminSoilStatSpecial');
+      const categoriesEl = document.getElementById('adminSoilStatCategories');
+
+      if (!totalEl) return;
+
+      const total = adminSoilList.length;
+      let loamCount = 0;
+      let specialCount = 0;
+      const categoriesSet = new Set();
+
+      adminSoilList.forEach(item => {
+        const cat = (item.category || item.soilType || '').toLowerCase();
+        const title = (item.title || item.soilName || '').toLowerCase();
+        const combined = cat + ' ' + title;
+
+        if (cat) categoriesSet.add(item.category || item.soilType);
+
+        if (combined.includes('দোআঁশ') || combined.includes('পলি')) {
+          loamCount++;
+        }
+        if (combined.includes('লবণাক্ত') || combined.includes('বেলে') || combined.includes('লাল') || combined.includes('পাহাড়ি') || combined.includes('এঁটেল')) {
+          specialCount++;
+        }
+      });
+
+      totalEl.innerText = `${total} টি`;
+      if (loamEl) loamEl.innerText = `${loamCount} টি`;
+      if (specialEl) specialEl.innerText = `${specialCount} টি`;
+      if (categoriesEl) categoriesEl.innerText = `${categoriesSet.size} টি`;
+    }
+
+    function renderAdminSoilTable() {
+      const tbody = document.getElementById('adminSoilTableBody');
+      if (!tbody) return;
+
+      let filtered = adminSoilList.filter(item => {
+        const cat = item.category || item.soilType || '';
+        const title = item.title || item.soilName || '';
+        const ph = item.phRange || item.ph || '';
+        const crops = item.suitableCrops || item.crops || '';
+        const char = item.characteristics || item.description || '';
+        const fert = item.fertilizerManagement || item.fertilizer || '';
+
+        if (adminSoilCategoryFilter !== 'all' && cat !== adminSoilCategoryFilter) {
+          return false;
+        }
+
+        if (adminSoilSearchQuery) {
+          const q = adminSoilSearchQuery.toLowerCase();
+          const matches = title.toLowerCase().includes(q) ||
+                          cat.toLowerCase().includes(q) ||
+                          ph.toLowerCase().includes(q) ||
+                          crops.toLowerCase().includes(q) ||
+                          char.toLowerCase().includes(q) ||
+                          fert.toLowerCase().includes(q);
+          if (!matches) return false;
+        }
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 48px; color: #78909C;">
+              <i class="fa-solid fa-mountain" style="font-size: 32px; color: #CFD8DC; margin-bottom: 12px; display: block;"></i>
+              কোনো মাটির তথ্য পাওয়া যায়নি।
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const title = escapeHtml(item.title || item.soilName || 'মাটির তথ্য');
+        const cat = escapeHtml(item.category || item.soilType || 'সাধারণ মাটি');
+        const ph = escapeHtml(item.phRange || item.ph || 'উল্লেখ নেই');
+        const crops = escapeHtml(item.suitableCrops || item.crops || 'উল্লেখ নেই');
+        const char = escapeHtml(item.characteristics || item.description || 'বিবরণ নেই');
+        const imageUrl = item.imageUrl || item.img || '';
+
+        const imgHtml = imageUrl
+          ? `<img src="${imageUrl}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #ECEFF1;" onerror="this.src=''; this.style.display='none';">`
+          : `<div style="width: 44px; height: 44px; border-radius: 8px; background: #ECEFF1; display: flex; align-items: center; justify-content: center; color: #90A4AE;"><i class="fa-solid fa-mountain" style="font-size: 16px;"></i></div>`;
+
+        return `
+          <tr style="border-bottom: 1px solid #ECEFF1; transition: background 0.2s;">
+            <td style="padding: 12px 14px;">${imgHtml}</td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 700; color: #263238; font-size: 13.5px;">${title}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #E8F5E9; color: #1B5E20; display: inline-block;">${cat}</span>
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #E0F2F1; color: #00695C; display: inline-block;">${ph}</span>
+            </td>
+            <td style="padding: 12px 14px; font-size: 12.5px; color: #455A64; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${crops}">
+              ${crops}
+            </td>
+            <td style="padding: 12px 14px; font-size: 12px; color: #546E7A; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${char}">
+              ${char}
+            </td>
+            <td style="padding: 12px 14px; text-align: center; white-space: nowrap;">
+              <button onclick="openAdminSoilModal('${item.id}')"
+                style="border: none; background: #E8F5E9; color: #2E7D32; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-right: 6px; font-weight: 600;" title="সম্পাদনা করুন">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deleteAdminSoil('${item.id}', '${title.replace(/'/g, "\\'")}')"
+                style="border: none; background: #FFEBEE; color: #C62828; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;" title="মুছে ফেলুন">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function onAdminSoilSearch(val) {
+      adminSoilSearchQuery = (val || '').trim();
+      renderAdminSoilTable();
+    }
+
+    function onAdminSoilCategoryFilterChange(val) {
+      adminSoilCategoryFilter = val || 'all';
+      renderAdminSoilTable();
+    }
+
+    function openAdminSoilModal(id = null) {
+      const modal = document.getElementById('adminSoilModal');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('adminSoilModalTitle');
+      const form = document.getElementById('adminSoilForm');
+      if (form) form.reset();
+
+      if (pendingUploads.soil && pendingUploads.soil.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.soil.blobUrl); } catch (_) { }
+      }
+      pendingUploads.soil = { file: null, blobUrl: null, isDeleted: false };
+
+      const previewBox = document.getElementById('adminSoilImgPreviewBox');
+      const previewImg = document.getElementById('adminSoilImgPreview');
+      const statusEl = document.getElementById('adminSoilUploadStatus');
+      const pickBtnText = document.getElementById('adminSoilPickBtnText');
+      if (previewBox) previewBox.style.display = 'none';
+      if (statusEl) statusEl.innerText = 'ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন';
+      if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+
+      document.getElementById('adminSoilEditId').value = id || '';
+      document.getElementById('adminSoilExistingImageUrl').value = '';
+
+      if (id) {
+        if (titleEl) titleEl.innerText = 'মাটির তথ্য সম্পাদনা করুন';
+        const item = adminSoilList.find(x => x.id === id);
+        if (item) {
+          document.getElementById('adminSoilInputTitle').value = item.title || item.soilName || '';
+          document.getElementById('adminSoilSelectCategory').value = item.category || item.soilType || '';
+          document.getElementById('adminSoilInputPh').value = item.phRange || item.ph || '';
+          document.getElementById('adminSoilInputCrops').value = item.suitableCrops || item.crops || '';
+          document.getElementById('adminSoilInputCharacteristics').value = item.characteristics || item.description || '';
+          document.getElementById('adminSoilInputFertilizer').value = item.fertilizerManagement || item.fertilizer || '';
+
+          const existingImg = item.imageUrl || item.img || '';
+          document.getElementById('adminSoilExistingImageUrl').value = existingImg;
+          if (existingImg && previewBox && previewImg) {
+            previewImg.src = existingImg;
+            previewBox.style.display = 'block';
+            if (statusEl) statusEl.innerText = 'বর্তমান ছবি সক্রিয় আছে';
+            if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+          }
+        }
+      } else {
+        if (titleEl) titleEl.innerText = 'নতুন মাটির তথ্য যোগ করুন';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeAdminSoilModal() {
+      const modal = document.getElementById('adminSoilModal');
+      if (modal) modal.style.display = 'none';
+
+      if (pendingUploads.soil && pendingUploads.soil.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.soil.blobUrl); } catch (_) { }
+      }
+      pendingUploads.soil = { file: null, blobUrl: null, isDeleted: false };
+    }
+
+    async function handleAdminSoilImageSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('adminSoilUploadStatus');
+      const previewBox = document.getElementById('adminSoilImgPreviewBox');
+      const previewImg = document.getElementById('adminSoilImgPreview');
+      const pickBtnText = document.getElementById('adminSoilPickBtnText');
+
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: #0288D1;"><i class="fa-solid fa-spinner fa-spin"></i> কম্প্রেশন প্রসেসিং হচ্ছে...</span>';
+      }
+
+      try {
+        const compressedFile = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const maxDim = 900;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                } else {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  const compFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                    type: "image/webp",
+                    lastModified: Date.now()
+                  });
+                  compFile._isAlreadyOptimized = true;
+                  resolve(compFile);
+                } else {
+                  resolve(file);
+                }
+              }, 'image/webp', 0.75);
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+          };
+          reader.onerror = () => resolve(file);
+          reader.readAsDataURL(file);
+        });
+
+        if (pendingUploads.soil && pendingUploads.soil.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.soil.blobUrl); } catch (_) { }
+        }
+
+        const blobUrl = URL.createObjectURL(compressedFile);
+        pendingUploads.soil = { file: compressedFile, blobUrl: blobUrl, isDeleted: false };
+
+        if (previewImg) previewImg.src = blobUrl;
+        if (previewBox) previewBox.style.display = 'block';
+
+        const sizeKb = (compressedFile.size / 1024).toFixed(1);
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #2E7D32;"><i class="fa-solid fa-check"></i> অপ্টিমাইজড (${sizeKb} KB) • সাবমিট করলে আপলোড হবে</span>`;
+        }
+        if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+      } catch (err) {
+        console.warn('Soil image selection error:', err);
+        if (statusEl) statusEl.innerText = 'ছবি প্রসেস ব্যর্থ হয়েছে';
+      }
+    }
+
+    function removeAdminSoilImage() {
+      if (pendingUploads.soil && pendingUploads.soil.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.soil.blobUrl); } catch (_) { }
+      }
+      pendingUploads.soil = { file: null, blobUrl: null, isDeleted: true };
+
+      const fileInp = document.getElementById('adminSoilFileInput');
+      if (fileInp) fileInp.value = '';
+
+      const pBox = document.getElementById('adminSoilImgPreviewBox');
+      if (pBox) pBox.style.display = 'none';
+
+      document.getElementById('adminSoilExistingImageUrl').value = '';
+
+      const statusEl = document.getElementById('adminSoilUploadStatus');
+      if (statusEl) statusEl.innerText = 'ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন';
+
+      const btnText = document.getElementById('adminSoilPickBtnText');
+      if (btnText) btnText.innerText = 'ছবি নির্বাচন করুন';
+    }
+
+    async function saveAdminSoilForm(e) {
+      if (e) e.preventDefault();
+      const submitBtn = document.getElementById('adminSoilSubmitBtn');
+      const origText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+
+      showAdminLoading('মাটির তথ্য সংরক্ষণ হচ্ছে...', 'ক্লাউড স্টোরেজ ও ডাটাবেজে আপডেট চলছে...');
+
+      try {
+        const id = document.getElementById('adminSoilEditId').value;
+        const title = document.getElementById('adminSoilInputTitle').value.trim();
+        const category = document.getElementById('adminSoilSelectCategory').value;
+        const phRange = document.getElementById('adminSoilInputPh').value.trim();
+        const suitableCrops = document.getElementById('adminSoilInputCrops').value.trim();
+        const characteristics = document.getElementById('adminSoilInputCharacteristics').value.trim();
+        const fertilizerManagement = document.getElementById('adminSoilInputFertilizer').value.trim();
+        let finalImageUrl = document.getElementById('adminSoilExistingImageUrl').value.trim();
+
+        if (!title || !category) {
+          hideAdminLoading();
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = origText; }
+          showAdminError('তথ্য অসম্পূর্ণ!', 'মাটির নাম এবং ক্যাটাগরি অবশ্যই পূরণ করতে হবে।');
+          return;
+        }
+
+        if (pendingUploads.soil && pendingUploads.soil.isDeleted) {
+          finalImageUrl = '';
+        }
+
+        if (pendingUploads.soil && pendingUploads.soil.file) {
+          showAdminLoading('ছবি Cloudflare R2-তে আপলোড হচ্ছে...', 'নিরাপদ ক্লাউড স্টোরেজে ট্রান্সফার চলছে...');
+          finalImageUrl = await uploadFileToR2Pipeline(pendingUploads.soil.file, 'soil_health', 'adminSoilUploadStatus');
+          if (pendingUploads.soil.blobUrl) {
+            try { URL.revokeObjectURL(pendingUploads.soil.blobUrl); } catch (_) { }
+          }
+          pendingUploads.soil = { file: null, blobUrl: null, isDeleted: false };
+        }
+
+        const data = {
+          title,
+          soilName: title,
+          name: title,
+          category,
+          soilType: category,
+          phRange,
+          ph: phRange,
+          suitableCrops,
+          crops: suitableCrops,
+          characteristics,
+          description: characteristics,
+          fertilizerManagement,
+          fertilizer: fertilizerManagement,
+          imageUrl: finalImageUrl,
+          img: finalImageUrl,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (id) {
+          await firebase.firestore().collection('soil_health').doc(id).set(data, { merge: true });
+        } else {
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await firebase.firestore().collection('soil_health').add(data);
+        }
+
+        hideAdminLoading();
+        closeAdminSoilModal();
+        showAdminGlobalPopup({
+          title: 'সফল হয়েছে!',
+          message: id ? 'মাটির তথ্য সফলভাবে আপডেট হয়েছে!' : 'নতুন মাটির তথ্য সফলভাবে যুক্ত হয়েছে!',
+          type: 'success'
+        });
+      } catch (err) {
+        console.error('Save soil health error:', err);
+        hideAdminLoading();
+        showAdminError('সংরক্ষণ করতে ব্যর্থ!', err.message || err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origText;
+        }
+      }
+    }
+
+    function deleteAdminSoil(id, name) {
+      showAdminConfirm(
+        'মাটির তথ্য ডিলিট',
+        `আপনি কি নিশ্চিত যে "${name}" তথ্যটি স্থায়ীভাবে মুছে ফেলতে চান? এটি অ্যাপ থেকেও মুছে যাবে।`,
+        async () => {
+          showAdminLoading('মাটির তথ্য মুছে ফেলা হচ্ছে...');
+          try {
+            await firebase.firestore().collection('soil_health').doc(id).delete();
+            hideAdminLoading();
+            showAdminGlobalPopup({
+              title: 'সফল হয়েছে!',
+              message: 'মাটির তথ্য সফলভাবে মুছে ফেলা হয়েছে!',
+              type: 'success'
+            });
+          } catch (err) {
+            hideAdminLoading();
+            showAdminError('মুছতে সমস্যা হয়েছে!', err.message || err);
+          }
+        },
+        'মুছে ফেলুন',
+        true
+      );
+    }
+
+    window.initAdminSoilHealthLiveSync = initAdminSoilHealthLiveSync;
+    window.renderAdminSoilTable = renderAdminSoilTable;
+    window.onAdminSoilSearch = onAdminSoilSearch;
+    window.onAdminSoilCategoryFilterChange = onAdminSoilCategoryFilterChange;
+    window.openAdminSoilModal = openAdminSoilModal;
+    window.closeAdminSoilModal = closeAdminSoilModal;
+    window.handleAdminSoilImageSelect = handleAdminSoilImageSelect;
+    window.removeAdminSoilImage = removeAdminSoilImage;
+    window.saveAdminSoilForm = saveAdminSoilForm;
+    window.deleteAdminSoil = deleteAdminSoil;
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       // 1. Show Branded Global Loading Popup for System Initialization
@@ -13856,6 +14499,7 @@
       initAdminSeedMonitoringLiveSync(false, true);
       initAdminIrrigationSync(false, true);
       initAdminDealersMonitoringLiveSync(false, true);
+      initAdminSoilHealthLiveSync(false, true);
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
       populateAdminDealersDistricts();
@@ -14251,6 +14895,144 @@
           style="border: none; background: #2E7D32; color: #fff; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN SOIL HEALTH (ADD / EDIT) -->
+  <div class="modal-overlay" id="adminSoilModal"
+    style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; width: 92%; max-width: 680px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2);">
+      <div
+        style="padding: 18px 24px; border-bottom: 1px solid #ECEFF1; display: flex; justify-content: space-between; align-items: center; background: #FAFAFA;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: rgba(27, 94, 32, 0.12); color: #1B5E20; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-mountain" style="font-size: 16px;"></i>
+          </div>
+          <div>
+            <h3 id="adminSoilModalTitle" style="font-size: 16px; font-weight: 700; color: #263238; margin: 0;">নতুন মাটির তথ্য যোগ করুন</h3>
+            <span style="font-size: 11.5px; color: #78909C;">মাটির স্বাস্থ্য ও উপযুক্ত সার নির্দেশনা প্রদান করুন</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminSoilModal()"
+          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 20px 24px; flex: 1;">
+        <form id="adminSoilForm" onsubmit="saveAdminSoilForm(event)" style="display: flex; flex-direction: column; gap: 16px;">
+          <input type="hidden" id="adminSoilEditId" value="">
+          <input type="hidden" id="adminSoilExistingImageUrl" value="">
+
+          <!-- মাটির নাম ও ক্যাটাগরি -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                মাটির নাম/ধরন <span style="color: #D32F2F;">*</span>
+              </label>
+              <input type="text" id="adminSoilInputTitle" class="form-control" required
+                placeholder="যেমন: দোআঁশ মাটি বা এঁটেল মাটি"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                ক্যাটাগরি <span style="color: #D32F2F;">*</span>
+              </label>
+              <select id="adminSoilSelectCategory" class="form-control" required
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px; background: #fff;">
+                <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+                <option value="দোআঁশ মাটি">দোআঁশ মাটি</option>
+                <option value="এঁটেল মাটি">এঁটেল মাটি</option>
+                <option value="বেলে মাটি">বেলে মাটি</option>
+                <option value="পলি মাটি">পলি মাটি</option>
+                <option value="লাল/পাহাড়ি মাটি">লাল/পাহাড়ি মাটি</option>
+                <option value="লবণাক্ত মাটি">লবণাক্ত মাটি</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- pH মাত্রা ও উপযোগী ফসল -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                pH মান/মাত্রা
+              </label>
+              <input type="text" id="adminSoilInputPh" class="form-control"
+                placeholder="যেমন: ৬.০ - ৭.০"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                উপযোগী ফসলসমূহ
+              </label>
+              <input type="text" id="adminSoilInputCrops" class="form-control"
+                placeholder="যেমন: ধান, গম, পাট, আলু, সবজি"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+          </div>
+
+          <!-- বৈশিষ্ট্য ও গঠন -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              মাটির বৈশিষ্ট্য ও গঠন
+            </label>
+            <textarea id="adminSoilInputCharacteristics" rows="3" class="form-control"
+              placeholder="মাটির পানি ধারণ ক্ষমতা, কণার আকার, পুষ্টি উপাদান ইত্যাদি লিখুন..."
+              style="padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; resize: vertical; line-height: 1.4;"></textarea>
+          </div>
+
+          <!-- সার ও পুষ্টি ব্যবস্থাপনা -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              সার ও পুষ্টি ব্যবস্থাপনা নির্দেশিকা
+            </label>
+            <textarea id="adminSoilInputFertilizer" rows="3" class="form-control"
+              placeholder="জৈব সার, ইউরিয়া, টিএসপি, পটাশ প্রয়োগের সঠিক নিয়ম লিখুন..."
+              style="padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; resize: vertical; line-height: 1.4;"></textarea>
+          </div>
+
+          <!-- ছবি আপলোড (Cloudflare R2 Deferred Upload) -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              মাটির ছবি (Cloudflare R2 অটো-কম্প্রেশন)
+            </label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" onclick="document.getElementById('adminSoilFileInput').click()"
+                class="btn btn-outline"
+                style="height: 38px; padding: 0 14px; font-size: 12.5px; border-radius: 8px; border: 1.5px solid #2E7D32; color: #2E7D32; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span id="adminSoilPickBtnText">ছবি নির্বাচন করুন</span>
+              </button>
+              <input type="file" id="adminSoilFileInput" accept="image/*" style="display: none;"
+                onchange="handleAdminSoilImageSelect(event)">
+              <span id="adminSoilUploadStatus" style="font-size: 12px; color: #78909C;">ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন</span>
+            </div>
+
+            <!-- Preview Box -->
+            <div id="adminSoilImgPreviewBox"
+              style="display: none; margin-top: 10px; position: relative; width: 180px; height: 110px; border-radius: 10px; overflow: hidden; border: 1px solid #CFD8DC; background: #ECEFF1;">
+              <img id="adminSoilImgPreview" src="" style="width: 100%; height: 100%; object-fit: cover;">
+              <button type="button" onclick="removeAdminSoilImage()"
+                style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid #ECEFF1;">
+            <button type="button" onclick="closeAdminSoilModal()"
+              style="padding: 9px 18px; border-radius: 8px; font-size: 13px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; cursor: pointer;">
+              বাতিল
+            </button>
+            <button type="submit" id="adminSoilSubmitBtn"
+              style="padding: 9px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; background: #2E7D32; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
