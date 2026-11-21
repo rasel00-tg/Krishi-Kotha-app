@@ -7276,39 +7276,59 @@
       }
     }
 
-    // Startup Popup Notification Modal Listener
-    let hasShownWebStartupPopup = false;
-    async function initStartupPopupNotificationListener() {
-      if (hasShownWebStartupPopup) return;
+    // Startup Popup Notification Modal Listener (Real-time Stream & Auto Expiry)
+    let shownWebPopupTimestamp = null;
+    let webPopupUnsubscribe = null;
+
+    function initStartupPopupNotificationListener() {
       try {
         if (typeof firebase === 'undefined' || !firebase.firestore) return;
         const dbInstance = firebase.firestore();
-        let doc = await dbInstance.collection('admin_settings').doc('popup_notification').get();
-        if (!doc.exists) {
-          doc = await dbInstance.collection('app_settings').doc('popup_notification').get();
+        if (webPopupUnsubscribe) {
+          try { webPopupUnsubscribe(); } catch (_) { }
         }
-        if (!doc.exists) return;
-        const data = doc.data() || {};
-        if (data.isActive === true && (data.imageUrl || data.headline) && !hasShownWebStartupPopup) {
-          hasShownWebStartupPopup = true;
+
+        webPopupUnsubscribe = dbInstance.collection('admin_settings').doc('popup_notification').onSnapshot(doc => {
+          if (!doc || !doc.exists) return;
+          const data = doc.data() || {};
+          const isActive = data.isActive === true;
+          const imageUrl = (data.imageUrl || '').trim();
+          const headline = (data.headline || '').trim();
+
+          // Auto Expiry Check:
+          let expiryDate = null;
+          if (data.expiresAt) {
+            if (typeof data.expiresAt.toDate === 'function') expiryDate = data.expiresAt.toDate();
+            else if (data.expiresAt.seconds) expiryDate = new Date(data.expiresAt.seconds * 1000);
+            else expiryDate = new Date(data.expiresAt);
+          }
+
+          if (expiryDate && !isNaN(expiryDate.getTime()) && Date.now() > expiryDate.getTime()) {
+            closeStartupPopupModal();
+            return;
+          }
+
+          if (!isActive || !imageUrl) {
+            closeStartupPopupModal();
+            return;
+          }
+
+          const popupVersionId = data.updatedAt ? (data.updatedAt.seconds || data.updatedAt) + '_' + imageUrl : imageUrl;
+          if (shownWebPopupTimestamp === popupVersionId) return;
+          shownWebPopupTimestamp = popupVersionId;
+
           const modal = document.getElementById('startupPopupModal');
           const img = document.getElementById('startupPopupModalImg');
           const headlineEl = document.getElementById('startupPopupHeadlineText');
-          if (modal) {
-            if (data.imageUrl && img) {
-              const loader = document.getElementById('startupPopupLoader');
-              if (loader) loader.style.display = 'flex';
-              img.style.display = 'block';
-              img.style.opacity = '0';
-              img.src = data.imageUrl;
-            } else if (img) {
-              img.style.display = 'none';
-              const loader = document.getElementById('startupPopupLoader');
-              if (loader) loader.style.display = 'none';
-            }
+          if (modal && img) {
+            const loader = document.getElementById('startupPopupLoader');
+            if (loader) loader.style.display = 'flex';
+            img.style.display = 'block';
+            img.style.opacity = '0';
+            img.src = imageUrl;
             if (headlineEl) {
-              if (data.headline && data.headline.trim()) {
-                headlineEl.textContent = data.headline.trim();
+              if (headline) {
+                headlineEl.textContent = headline;
                 headlineEl.style.display = 'block';
               } else {
                 headlineEl.style.display = 'none';
@@ -7318,7 +7338,7 @@
             modal.style.setProperty('display', 'flex', 'important');
             modal.style.setProperty('pointer-events', 'auto', 'important');
           }
-        }
+        }, err => console.warn('Web startup popup stream notice:', err));
       } catch (err) {
         console.warn('Web startup popup notice:', err);
       }

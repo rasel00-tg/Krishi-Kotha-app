@@ -1792,6 +1792,38 @@
                     oninput="updatePopupPreviewHeadline(this.value)">
                 </div>
 
+                <!-- Date & Duration Scheduling Fields (Smart Synced) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="popupDurationDays" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                      কত দিন দেখাবে (দিন সংখ্যা)
+                    </label>
+                    <input type="number" id="popupDurationDays" class="form-control" min="1"
+                      placeholder="যেমন: ৩ দিন" style="font-size: 13.5px;"
+                      oninput="handlePopupDurationInput(this.value)">
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">দিন লিখলে শেষ তারিখ অটো সেট হবে</span>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="popupExpiryDate" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                      শেষ তারিখ (Expiry Date)
+                    </label>
+                    <input type="date" id="popupExpiryDate" class="form-control"
+                      style="font-size: 13.5px;"
+                      onchange="handlePopupExpiryDateChange(this.value)">
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">তারিখ বেছে নিলে দিন সংখ্যা অটো হবে</span>
+                  </div>
+                </div>
+
+                <!-- Active Expiry Status Banner in Form -->
+                <div id="popupExpiryStatusBanner" style="margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 12.5px; display: none; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i id="popupExpiryStatusIcon" class="fa-solid fa-circle-check"></i>
+                    <span id="popupExpiryStatusText" style="font-weight: 600;"></span>
+                  </div>
+                  <span id="popupExpiryBadge" style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px;"></span>
+                </div>
+
                 <!-- Submit / Save Button -->
                 <button type="submit" id="popupSubmitBtn" class="btn btn-primary"
                   style="width: 100%; justify-content: center; padding: 12px; font-size: 14.5px; font-weight: 700; margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">
@@ -6988,6 +7020,9 @@
           badge.innerHTML = '<i class="fa-solid fa-circle-pause"></i> বর্তমানে নিষ্ক্রিয়';
         }
       }
+      if (typeof updatePopupExpiryPreviewStatus === 'function') {
+        updatePopupExpiryPreviewStatus();
+      }
     }
 
     async function handlePopupImagePick(input) {
@@ -7044,6 +7079,110 @@
       }
     }
 
+    function handlePopupDurationInput(val) {
+      const days = parseInt(val, 10);
+      const expiryInput = document.getElementById('popupExpiryDate');
+      if (!isNaN(days) && days > 0) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const yyyy = targetDate.getFullYear();
+        const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(targetDate.getDate()).padStart(2, '0');
+        if (expiryInput) expiryInput.value = `${yyyy}-${mm}-${dd}`;
+      } else if (!val) {
+        if (expiryInput) expiryInput.value = '';
+      }
+      updatePopupExpiryPreviewStatus();
+    }
+
+    function handlePopupExpiryDateChange(val) {
+      const durationInput = document.getElementById('popupDurationDays');
+      if (val) {
+        const parts = val.split('-');
+        if (parts.length === 3) {
+          const target = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const diffMs = target.getTime() - today.getTime();
+          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          if (durationInput) {
+            durationInput.value = diffDays > 0 ? diffDays : 1;
+          }
+        }
+      } else {
+        if (durationInput) durationInput.value = '';
+      }
+      updatePopupExpiryPreviewStatus();
+    }
+
+    function updatePopupExpiryPreviewStatus() {
+      const banner = document.getElementById('popupExpiryStatusBanner');
+      const textEl = document.getElementById('popupExpiryStatusText');
+      const iconEl = document.getElementById('popupExpiryStatusIcon');
+      const badgeEl = document.getElementById('popupExpiryBadge');
+      const toggle = document.getElementById('popupIsActiveToggle');
+      const expiryVal = document.getElementById('popupExpiryDate')?.value;
+      const isActive = toggle ? toggle.checked : false;
+
+      if (!banner || !textEl || !badgeEl || !iconEl) return;
+
+      if (!expiryVal) {
+        if (isActive) {
+          banner.style.display = 'flex';
+          banner.style.background = '#F0FDF4';
+          banner.style.borderColor = '#BBF7D0';
+          banner.style.color = '#166534';
+          iconEl.className = 'fa-solid fa-circle-check';
+          iconEl.style.color = '#16A34A';
+          textEl.textContent = 'পপআপটি স্থায়ীভাবে সক্রিয় (কোনো নির্দিষ্ট মেয়াদসীমা সেট করা নেই)';
+          badgeEl.textContent = 'চালু';
+          badgeEl.style.background = '#DCFCE7';
+          badgeEl.style.color = '#15803D';
+        } else {
+          banner.style.display = 'none';
+        }
+        return;
+      }
+
+      const expDate = new Date(expiryVal + 'T23:59:59');
+      const isExpired = Date.now() > expDate.getTime();
+      const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+      const dateTextBn = `${toBnDigits(expDate.getDate())} ${monthNames[expDate.getMonth()]} ${toBnDigits(expDate.getFullYear())}`;
+
+      banner.style.display = 'flex';
+      if (!isActive) {
+        banner.style.background = '#F8FAFC';
+        banner.style.borderColor = '#CBD5E1';
+        banner.style.color = '#475569';
+        iconEl.className = 'fa-solid fa-circle-pause';
+        iconEl.style.color = '#64748B';
+        textEl.textContent = `পপআপ বর্তমানে বন্ধ (নির্ধারিত মেয়াদ: ${dateTextBn} পর্যন্ত)`;
+        badgeEl.textContent = 'নিষ্ক্রিয়';
+        badgeEl.style.background = '#E2E8F0';
+        badgeEl.style.color = '#334155';
+      } else if (isExpired) {
+        banner.style.background = '#FEF2F2';
+        banner.style.borderColor = '#FECACA';
+        banner.style.color = '#991B1B';
+        iconEl.className = 'fa-solid fa-triangle-exclamation';
+        iconEl.style.color = '#DC2626';
+        textEl.textContent = `পপআপের মেয়াদ শেষ (${dateTextBn} রাত ১১:৫৯ এ অতিক্রান্ত)`;
+        badgeEl.textContent = 'মেয়াদ শেষ';
+        badgeEl.style.background = '#FEE2E2';
+        badgeEl.style.color = '#B91C1C';
+      } else {
+        banner.style.background = '#F0FDF4';
+        banner.style.borderColor = '#BBF7D0';
+        banner.style.color = '#166534';
+        iconEl.className = 'fa-solid fa-circle-check';
+        iconEl.style.color = '#16A34A';
+        textEl.textContent = `পপআপ চালু (মেয়াদ: ${dateTextBn} রাত ১১:৫৯ পর্যন্ত)`;
+        badgeEl.textContent = 'চালু';
+        badgeEl.style.background = '#DCFCE7';
+        badgeEl.style.color = '#15803D';
+      }
+    }
+
     async function savePopupNotification(e) {
       if (e) e.preventDefault();
       const submitBtn = document.getElementById('popupSubmitBtn');
@@ -7052,6 +7191,10 @@
       const isActive = toggle ? toggle.checked : false;
       let imgUrl = document.getElementById('popupImgUrl')?.value.trim() || '';
       const headline = document.getElementById('popupHeadline')?.value.trim() || '';
+
+      const durationVal = document.getElementById('popupDurationDays')?.value;
+      const durationDays = durationVal ? parseInt(durationVal, 10) : null;
+      const expiryDateVal = document.getElementById('popupExpiryDate')?.value || '';
 
       if (isActive && !imgUrl && (!pendingUploads.popup || !pendingUploads.popup.file) && !headline) {
         showToast('পপআপ সক্রিয় করতে হলে একটি ছবি বা শিরোনাম (হেডলাইন) দিন।');
@@ -7089,10 +7232,20 @@
           ? firebase.firestore.FieldValue.serverTimestamp()
           : new Date();
 
+        let expiresAtTimestamp = null;
+        if (expiryDateVal) {
+          const expDate = new Date(expiryDateVal + 'T23:59:59');
+          expiresAtTimestamp = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.Timestamp && firebase.firestore.Timestamp.fromDate)
+            ? firebase.firestore.Timestamp.fromDate(expDate)
+            : expDate;
+        }
+
         const popupData = {
           imageUrl: imgUrl,
           headline: headline,
           isActive: isActive,
+          durationDays: durationDays,
+          expiresAt: expiresAtTimestamp,
           updatedAt: serverTs
         };
 
@@ -7108,7 +7261,7 @@
         pendingUploads.popup = { file: null, blobUrl: null, isDeleted: false };
 
         if (typeof showAdminSuccess === 'function') {
-          showAdminSuccess('সংরক্ষণ সফল হয়েছে!', 'পপআপ নোটিফিকেশনের তথ্য (ছবি ও হেডলাইন) সফলভাবে ফায়ারবেসে সংরক্ষিত হয়েছে। ইউজার অ্যাপে লাইভ আপডেট সম্পন্ন!');
+          showAdminSuccess('সংরক্ষণ সফল হয়েছে!', 'পপআপ নোটিফিকেশনের তথ্য (ছবি, হেডলাইন ও মেয়াদ) সফলভাবে ফায়ারবেসে সংরক্ষিত হয়েছে। ইউজার অ্যাপে লাইভ আপডেট সম্পন্ন!');
         } else {
           showToast('স্টার্টআপ পপআপ নোটিফিকেশন সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
         }
@@ -7141,6 +7294,8 @@
 
         const urlInput = document.getElementById('popupImgUrl');
         const headlineInput = document.getElementById('popupHeadline');
+        const durationInput = document.getElementById('popupDurationDays');
+        const expiryInput = document.getElementById('popupExpiryDate');
         const previewBox = document.getElementById('popupImgPreviewBox');
         const previewImg = document.getElementById('popupImgPreview');
         const mockImg = document.getElementById('mockPopupImg');
@@ -7152,10 +7307,27 @@
           const isActive = data.isActive === true;
           const imageUrl = data.imageUrl || '';
           const headline = data.headline || '';
+          const durationDays = data.durationDays || '';
+
+          let expiryDateStr = '';
+          if (data.expiresAt) {
+            let expDate = null;
+            if (typeof data.expiresAt.toDate === 'function') expDate = data.expiresAt.toDate();
+            else if (data.expiresAt.seconds) expDate = new Date(data.expiresAt.seconds * 1000);
+            else expDate = new Date(data.expiresAt);
+            if (expDate && !isNaN(expDate.getTime())) {
+              const yyyy = expDate.getFullYear();
+              const mm = String(expDate.getMonth() + 1).padStart(2, '0');
+              const dd = String(expDate.getDate()).padStart(2, '0');
+              expiryDateStr = `${yyyy}-${mm}-${dd}`;
+            }
+          }
 
           updatePopupToggleVisual(isActive);
           if (urlInput) urlInput.value = imageUrl;
           if (headlineInput) headlineInput.value = headline;
+          if (durationInput) durationInput.value = durationDays;
+          if (expiryInput) expiryInput.value = expiryDateStr;
 
           if (imageUrl) {
             if (previewImg) previewImg.src = imageUrl;
@@ -7178,14 +7350,22 @@
               mockHeadline.style.display = 'none';
             }
           }
+
+          updatePopupExpiryPreviewStatus();
         } else {
           updatePopupToggleVisual(false);
           if (previewBox) previewBox.style.display = 'none';
           if (mockImg) { mockImg.src = ''; mockImg.style.display = 'none'; }
           if (mockHeadline) { mockHeadline.textContent = ''; mockHeadline.style.display = 'none'; }
           if (mockEmpty) mockEmpty.style.display = 'block';
+          if (durationInput) durationInput.value = '';
+          if (expiryInput) expiryInput.value = '';
+          updatePopupExpiryPreviewStatus();
         }
       } catch (err) {
+        console.warn('Load popup notification settings notice:', err);
+      }
+    }
         console.warn('Load popup notification settings notice:', err);
       }
     }

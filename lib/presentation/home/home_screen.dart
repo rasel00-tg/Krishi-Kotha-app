@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,9 +20,6 @@ import '../profile/user_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../../data/models/notification_model.dart';
 
-/// গ্লোবাল সেশন স্টেট - অ্যাপের সেশনে স্টার্টআপ পপআপ একবারের বেশি দেখানো হবে না
-bool _hasShownStartupPopupGlobal = false;
-
 class HomeScreen extends StatefulWidget {
   final Function(int tabIndex) onNavigateTab;
   final FirestoreService firestoreService;
@@ -37,66 +35,95 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// ইন-মেমোরি ভেরিয়েবল: বর্তমান সেশনে উইজেট রিবিল্ডে ডুপ্লিকেট পপআপ ওভারল্যাপ রোধ করতে
+  String? _shownPopupTimestamp;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _popupSubscription;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) {
-          _checkAndShowStartupPopup();
-        }
-      });
+    _listenToStartupPopupNotification();
+  }
+
+  @override
+  void dispose() {
+    _popupSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// রিয়েল-টাইম স্টার্টআপ পপআপ লিসেনার (ইনস্ট্যান্ট শো ও অটো-এক্সপায়ারি লজিক)
+  void _listenToStartupPopupNotification() {
+    _popupSubscription?.cancel();
+    _popupSubscription = FirebaseFirestore.instance
+        .collection('admin_settings')
+        .doc('popup_notification')
+        .snapshots()
+        .listen((doc) {
+      if (!mounted) return;
+      if (!doc.exists || doc.data() == null) {
+        return;
+      }
+      _evaluateAndShowPopup(doc.data()!);
+    }, onError: (error) {
+      debugPrint('Startup popup stream notice: $error');
     });
   }
 
-  /// অ্যাপ ওপেন হওয়ার পর Firestore admin_settings/popup_notification যাচাই ও পপআপ প্রদর্শন
-  Future<void> _checkAndShowStartupPopup() async {
-    if (_hasShownStartupPopupGlobal || !mounted) return;
+  void _evaluateAndShowPopup(Map<String, dynamic> data) async {
+    final bool isActive = data['isActive'] == true;
+    final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
+    final String headline = (data['headline'] as String?)?.trim() ?? '';
 
+    // ১) isActive == true কিনা
+    if (!isActive) return;
+
+    // ২) imageUrl ফাঁকা নয় কিনা
+    if (imageUrl.isEmpty) return;
+
+    // ৩) expiresAt চেক: বর্তমান সময় (DateTime.now()) যদি expiresAt তারিখের চেয়ে কম হয় তবেই দেখাবে
+    DateTime? expiryDate;
+    final dynamic rawExpiresAt = data['expiresAt'];
+    if (rawExpiresAt is Timestamp) {
+      expiryDate = rawExpiresAt.toDate();
+    } else if (rawExpiresAt is String && rawExpiresAt.isNotEmpty) {
+      expiryDate = DateTime.tryParse(rawExpiresAt);
+    }
+
+    if (expiryDate != null && DateTime.now().isAfter(expiryDate)) {
+      // নির্ধারিত তারিখ পার হয়ে গেছে (Auto-Expired) -> পপআপ সম্পূর্ণ হাইড থাকবে
+      return;
+    }
+
+    // ডুপ্লিকেট প্রিভেনশন: বর্তমান সেশনের উইজেট রিবিল্ডে যেন একই পপআপ ওভারল্যাপ না হয়
+    final dynamic rawUpdatedAt = data['updatedAt'];
+    final String popupId = (rawUpdatedAt != null)
+        ? '${rawUpdatedAt.toString()}_$imageUrl'
+        : '${imageUrl}_$headline';
+
+    if (_shownPopupTimestamp == popupId) {
+      return;
+    }
+
+    _shownPopupTimestamp = popupId;
+
+    // দ্রুত রেন্ডারিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে ইমেজ প্রিক্যাশ
     try {
-      DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
-          .collection('admin_settings')
-          .doc('popup_notification')
-          .get();
+      await precacheImage(
+        CachedNetworkImageProvider(imageUrl),
+        context,
+      ).timeout(const Duration(milliseconds: 700));
+    } catch (_) {
+      // প্রিক্যাশ ব্যর্থ হলেও CachedNetworkImage লোড করবে
+    }
 
-      if (!mounted || _hasShownStartupPopupGlobal) return;
-      if (!doc.exists || doc.data() == null) {
-        doc = await FirebaseFirestore.instance
-            .collection('app_settings')
-            .doc('popup_notification')
-            .get();
-        if (!mounted || _hasShownStartupPopupGlobal || !doc.exists || doc.data() == null) {
-          return;
-        }
-      }
+    if (!mounted) return;
 
-      final data = doc.data()!;
-      final bool isActive = data['isActive'] == true;
-      final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
-      final String headline = (data['headline'] as String?)?.trim() ?? '';
-
-      if (isActive && (imageUrl.isNotEmpty || headline.isNotEmpty) && !_hasShownStartupPopupGlobal) {
-        _hasShownStartupPopupGlobal = true;
-        if (!mounted) return;
-
-        // দ্রুত রেন্ডারিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে ইমেজ প্রিক্যাশ করা হচ্ছে
-        if (imageUrl.isNotEmpty) {
-          try {
-            await precacheImage(
-              CachedNetworkImageProvider(imageUrl),
-              context,
-            ).timeout(const Duration(milliseconds: 700));
-          } catch (_) {
-            // প্রিক্যাশ টাইমআউট হলেও ডায়ালগ ওপেন হবে এবং CachedNetworkImage স্বয়ংক্রিয়ভাবে লোড করবে
-          }
-        }
-
-        if (!mounted) return;
+    // কোনো বাড়তি ডিলে (Future.delayed) ছাড়াই ইনস্ট্যান্ট ডায়ালগ প্রদর্শন
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
         _showStartupNotificationDialog(imageUrl, headline);
       }
-    } catch (e) {
-      debugPrint('Startup popup notification check notice: $e');
-    }
+    });
   }
 
   /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ (ইমেজ + হেডলাইন সমন্বিত কার্ড)
