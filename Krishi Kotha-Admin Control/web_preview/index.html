@@ -7451,7 +7451,7 @@
       }
     }
 
-    // ==================== POPUP IMAGE OPTIMIZER (STRICT ITERATIVE CANVAS -> WEBP / JPEG ≤150KB) ====================
+    // ==================== POPUP IMAGE OPTIMIZER (STRICT ITERATIVE CANVAS -> JPEG ≤150KB) ====================
     async function compressPopupImageForR2(file, maxWidth = 900, targetMaxKB = 150) {
       if (!file || !file.type || !file.type.startsWith('image/')) {
         console.error('[compressPopupImageForR2] অবৈধ ফাইল বা ছবি নয়:', file);
@@ -7492,29 +7492,14 @@
               ctx.fillRect(0, 0, width, height);
               ctx.drawImage(img, 0, 0, width, height);
 
-              // WebP ব্রাউজার সাপোর্ট যাচাই
-              function checkWebpSupport() {
-                try {
-                  const testCanvas = document.createElement('canvas');
-                  testCanvas.width = 1;
-                  testCanvas.height = 1;
-                  const dataUrl = testCanvas.toDataURL('image/webp');
-                  return typeof dataUrl === 'string' && dataUrl.indexOf('data:image/webp') === 0;
-                } catch (_) {
-                  return false;
-                }
-              }
-
-              const isWebpSupported = checkWebpSupport();
-              const mimeType = isWebpSupported ? 'image/webp' : 'image/jpeg';
-              const fileExt = isWebpSupported ? 'webp' : 'jpg';
+              // সর্বোচ্চ সামঞ্জস্যতার জন্য ফরম্যাট হিসেবে image/jpeg (.jpg)
+              const mimeType = 'image/jpeg';
+              const fileExt = 'jpg';
 
               function getCanvasBlob(type, quality) {
                 return new Promise((res, rej) => {
                   canvas.toBlob((blob) => {
-                    if (blob && (blob.type === type || (type === 'image/webp' && blob.type.startsWith('image/')))) {
-                      res(blob);
-                    } else if (blob) {
+                    if (blob) {
                       res(blob);
                     } else {
                       rej(new Error(`ক্যানভাস ব্লব তৈরি ব্যর্থ (${type}, ${quality})`));
@@ -7523,10 +7508,10 @@
                 });
               }
 
-              // Iterative Quality Loop: প্রথমে 0.78, তারপর 0.65, 0.55, 0.45, 0.35
-              const qualitySteps = [0.78, 0.65, 0.55, 0.45, 0.35];
+              // Iterative Quality Loop: প্রথমে 0.75, তারপর 0.65, 0.55, 0.45, 0.35
+              const qualitySteps = [0.75, 0.65, 0.55, 0.45, 0.35];
               let selectedBlob = null;
-              let selectedQuality = 0.78;
+              let selectedQuality = 0.75;
 
               for (let i = 0; i < qualitySteps.length; i++) {
                 const q = qualitySteps[i];
@@ -7556,8 +7541,7 @@
               const origKB = (file.size / 1024).toFixed(1);
               const compKB = (compressedFile.size / 1024).toFixed(1);
               const origDisplay = file.size >= 1024 * 1024 ? `${origMB} MB` : `${origKB} KB`;
-              const formatLabel = mimeType === 'image/webp' ? 'WebP' : 'JPEG';
-              console.log(`[Popup Image Optimizer] কম্প্রেশন সম্পন্ন: ${origDisplay} → ${compKB} KB (${formatLabel}, Quality: ${selectedQuality})`);
+              console.log(`[Popup Image Optimizer] কম্প্রেশন সম্পন্ন: ${origDisplay} → ${compKB} KB (JPEG, Quality: ${selectedQuality})`);
 
               resolve(compressedFile);
             } catch (canvasErr) {
@@ -7868,7 +7852,14 @@
             : expDate;
         }
 
+        // Clean public URL (strip any query params like ?X-Amz-Signature=...)
+        if (imgUrl) {
+          imgUrl = imgUrl.split('?')[0].trim();
+        }
+
+        const permanentNotificationId = 'popup_' + Date.now();
         const popupData = {
+          notificationId: permanentNotificationId,
           imageUrl: imgUrl,
           headline: headline,
           isActive: isActive,

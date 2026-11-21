@@ -5531,7 +5531,7 @@
         <div id="startupPopupLoader" style="position: absolute; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 200px; background: #F1F5F9; z-index: 1;">
           <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; color: #2E7D32;"></i>
         </div>
-        <img id="startupPopupModalImg" src="" alt="Popup Notification" style="max-width: 100%; max-height: 70vh; width: 100%; object-fit: contain; display: block; border-radius: 16px 16px 0 0; opacity: 0; transition: opacity 0.25s ease;" onload="this.style.opacity='1'; const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';">
+        <img id="startupPopupModalImg" src="" alt="Popup Notification" referrerpolicy="no-referrer" style="max-width: 100%; max-height: 70vh; width: 100%; object-fit: contain; display: block; border-radius: 16px 16px 0 0; opacity: 0; transition: opacity 0.25s ease;" onload="this.style.opacity='1'; const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';" onerror="console.error('Web preview popup image failed to load:', this.src); const l = document.getElementById('startupPopupLoader'); if (l) l.style.display='none';">
         <div id="startupPopupHeadlineText" style="display: none; padding: 14px 16px; font-weight: 700; font-size: 18px; color: #1E293B; text-align: center; width: 100%; line-height: 1.35; box-sizing: border-box;"></div>
       </div>
     </div>
@@ -7362,8 +7362,69 @@
     }
 
     // Startup Popup Notification Modal Listener (Real-time Stream & Auto Expiry)
-    let shownWebPopupTimestamp = null;
+    // Startup Popup Notification Modal Listener (Smart Lock + LocalStorage Dedup & Daily Limit)
+    window._isWebPopupCurrentlyOpen = false;
     let webPopupUnsubscribe = null;
+
+    function getWebPopupTodayDateStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function checkAndAcquireWebPopupSlot(notificationId, isUpdate) {
+      if (window._isWebPopupCurrentlyOpen) return false;
+      const cleanId = String(notificationId || '').trim();
+      if (!cleanId) return false;
+
+      try {
+        const todayStr = getWebPopupTodayDateStr();
+        const savedDate = localStorage.getItem('smart_popup_counter_date') || '';
+        let dailyCount = parseInt(localStorage.getItem('smart_popup_daily_normal_count') || '0', 10);
+
+        if (savedDate !== todayStr) {
+          dailyCount = 0;
+          localStorage.setItem('smart_popup_counter_date', todayStr);
+          localStorage.setItem('smart_popup_daily_normal_count', '0');
+        }
+
+        let seenNormalIds = [];
+        try {
+          seenNormalIds = JSON.parse(localStorage.getItem('smart_popup_seen_normal_ids') || '[]');
+        } catch (_) { seenNormalIds = []; }
+
+        let seenUpdateIds = [];
+        try {
+          seenUpdateIds = JSON.parse(localStorage.getItem('smart_popup_seen_update_ids') || '[]');
+        } catch (_) { seenUpdateIds = []; }
+
+        if (isUpdate) {
+          if (seenUpdateIds.includes(cleanId)) return false;
+          seenUpdateIds.push(cleanId);
+          localStorage.setItem('smart_popup_seen_update_ids', JSON.stringify(seenUpdateIds));
+          window._isWebPopupCurrentlyOpen = true;
+          return true;
+        }
+
+        if (seenNormalIds.includes(cleanId)) return false;
+        if (dailyCount >= 5) {
+          console.log('[WebPopup] Blocked: Daily normal limit of 5 reached.');
+          return false;
+        }
+
+        dailyCount += 1;
+        localStorage.setItem('smart_popup_daily_normal_count', String(dailyCount));
+        seenNormalIds.push(cleanId);
+        localStorage.setItem('smart_popup_seen_normal_ids', JSON.stringify(seenNormalIds));
+        window._isWebPopupCurrentlyOpen = true;
+        return true;
+      } catch (err) {
+        console.warn('Web popup slot acquire notice:', err);
+        return false;
+      }
+    }
 
     function initStartupPopupNotificationListener() {
       try {
@@ -7375,9 +7436,12 @@
 
         webPopupUnsubscribe = dbInstance.collection('admin_settings').doc('popup_notification').onSnapshot(doc => {
           if (!doc || !doc.exists) return;
+          // Optimistic local write skip
+          if (doc.metadata && doc.metadata.hasPendingWrites) return;
+
           const data = doc.data() || {};
           const isActive = data.isActive === true;
-          const imageUrl = (data.imageUrl || '').trim();
+          const rawUrl = (data.imageUrl || data.image || data.photoUrl || '').trim();
           const headline = (data.headline || '').trim();
 
           // Auto Expiry Check:
@@ -7393,14 +7457,24 @@
             return;
           }
 
-          if (!isActive || !imageUrl) {
+          if (!isActive || !rawUrl || (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://'))) {
             closeStartupPopupModal();
             return;
           }
 
-          const popupVersionId = data.updatedAt ? (data.updatedAt.seconds || data.updatedAt) + '_' + imageUrl : imageUrl;
-          if (shownWebPopupTimestamp === popupVersionId) return;
-          shownWebPopupTimestamp = popupVersionId;
+          // Deterministic notification ID
+          let notificationId = (data.notificationId || data.id || '').toString().trim();
+          if (!notificationId) {
+            let tsPart = '';
+            if (data.updatedAt && data.updatedAt.seconds) tsPart = data.updatedAt.seconds;
+            else if (data.updatedAt) tsPart = String(data.updatedAt);
+            notificationId = 'popup_' + (tsPart + '_' + rawUrl + '_' + headline).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
+          }
+
+          const isUpdate = data.isUpdate === true || String(data.type || '').toLowerCase() === 'update' || String(data.category || '').toLowerCase() === 'update';
+
+          const slotAcquired = checkAndAcquireWebPopupSlot(notificationId, isUpdate);
+          if (!slotAcquired) return;
 
           const modal = document.getElementById('startupPopupModal');
           const img = document.getElementById('startupPopupModalImg');
@@ -7410,7 +7484,7 @@
             if (loader) loader.style.display = 'flex';
             img.style.display = 'block';
             img.style.opacity = '0';
-            img.src = imageUrl;
+            img.src = rawUrl;
             if (headlineEl) {
               if (headline) {
                 headlineEl.textContent = headline;
@@ -7430,6 +7504,7 @@
     }
 
     function closeStartupPopupModal() {
+      window._isWebPopupCurrentlyOpen = false;
       const modal = document.getElementById('startupPopupModal');
       if (modal) {
         modal.classList.remove('active');
@@ -7439,11 +7514,7 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        shownWebPopupTimestamp = null;
-      } else if (document.visibilityState === 'visible') {
-        initStartupPopupNotificationListener();
-      }
+      // ডুপ্লিকেট পপআপ রোধে ট্যাব পরিবর্তনের সময় রিসেট বন্ধ রাখা হয়েছে
     });
 
     if (document.readyState === 'loading') {

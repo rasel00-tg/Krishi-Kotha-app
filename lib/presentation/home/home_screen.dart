@@ -61,12 +61,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // ব্যাকগ্রাউন্ড থেকে অ্যাপে ফিরলে চেক করে পপআপ ট্রাই করা (স্মার্ট ম্যানেজার ডুপ্লিকেট ও লিমিট নিয়ন্ত্রণ করবে)
-      if (!SmartPopupManager.instance.isPopupCurrentlyOpen && _lastPopupData != null) {
-        _evaluateAndShowPopup(_lastPopupData!);
-      }
-    }
+    // Single-Source Control: সমস্ত পপআপ প্রদর্শন শুধুমাত্র Firestore StreamBuilder দ্বারা নিয়ন্ত্রিত হয়।
   }
 
   /// স্মার্ট পপআপ যাচাই ও প্রদর্শন নিয়ন্ত্রণ
@@ -74,14 +69,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (SmartPopupManager.instance.isPopupCurrentlyOpen || !mounted) return;
 
     final bool isActive = data['isActive'] == true;
-    final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
     final String headline = (data['headline'] as String?)?.trim() ?? '';
 
     // ১) isActive == true কিনা চেক
     if (!isActive) return;
 
-    // ২) imageUrl ফাঁকা নয় কিনা চেক
-    if (imageUrl.isEmpty) return;
+    // ২) imageUrl বৈধ http/https কিনা কঠোরভাবে যাচাই
+    final String rawUrl = (data['imageUrl'] ?? data['image'] ?? data['photoUrl'] ?? '').toString().trim();
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      debugPrint('[HomeScreen] Popup skipped: Invalid or empty imageUrl ($rawUrl)');
+      return;
+    }
+    final String imageUrl = rawUrl;
 
     // ৩) নিরাপদ এক্সপায়ারি ডেট চেক (Safe Expiry Parsing):
     DateTime? expiryDate;
@@ -101,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final String notificationId = SmartPopupManager.extractNotificationId(data);
     final bool isUpdate = SmartPopupManager.checkIsUpdate(data);
 
-    // ৫) স্লট অধিগ্রহণ (দৈনিক সর্বোচ্চ ৫ বার, আপডেট বাইপাস ও ডুপ্লিকেট রোধ)
+    // ৫) স্লট অধিগ্রহণ (সিঙ্ক্রোনাস ও অ্যাসিঙ্ক রেস-কন্ডিশন গার্ডসহ)
     final bool slotAcquired = await SmartPopupManager.instance.tryAcquirePopupSlot(
       notificationId: notificationId,
       isUpdate: isUpdate,
@@ -114,9 +113,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await precacheImage(
         CachedNetworkImageProvider(imageUrl),
         context,
-      ).timeout(const Duration(seconds: 2), onTimeout: () {});
-    } catch (_) {
-      // নেট স্লো হলেও ডায়ালগ ওপেন আটকে থাকবে না
+      ).timeout(const Duration(seconds: 2), onTimeout: () {
+        debugPrint('[HomeScreen] Precache timeout for popup image: $imageUrl');
+      });
+    } catch (precacheErr) {
+      debugPrint('[HomeScreen] Precache notice for popup image: $precacheErr');
     }
 
     if (!mounted) {
@@ -209,23 +210,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 ),
-                                errorWidget: (context, url, error) => Container(
-                                  height: 200,
-                                  width: double.infinity,
-                                  color: const Color(0xFFF8FAFC),
-                                  padding: const EdgeInsets.all(20),
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'ছবিটি লোড করা সম্ভব হয়নি',
-                                        style: TextStyle(color: Colors.grey, fontSize: 13),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                errorWidget: (context, url, error) {
+                                  debugPrint('[HomeScreen] Popup image load failed! URL: $url | Error: $error');
+                                  return Container(
+                                    height: 200,
+                                    width: double.infinity,
+                                    color: const Color(0xFFF8FAFC),
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.broken_image_rounded, size: 48, color: Colors.grey),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'ছবিটি লোড করা সম্ভব হয়নি',
+                                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          url,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(color: Colors.grey, fontSize: 10),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
                             ),
 
@@ -300,6 +311,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             stream: _popupStream,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
+                // serverTimestamp() এর লোকাল অপটিমিস্টিক রাইটের ডুপ্লিকেট ফায়ার রোধ
+                if (snapshot.data!.metadata.hasPendingWrites) {
+                  return const SizedBox.shrink();
+                }
                 final data = snapshot.data!.data();
                 if (data != null) {
                   final String currentId = SmartPopupManager.extractNotificationId(data);

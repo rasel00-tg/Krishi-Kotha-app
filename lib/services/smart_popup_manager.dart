@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Singleton Service to control Smart Popup Notification frequency,
@@ -14,8 +15,9 @@ class SmartPopupManager {
 
   static const int maxDailyNormalPopups = 5;
 
-  /// In-memory Singleton Lock to prevent duplicate popups across Lifecycle, FCM, and StreamBuilder
+  /// In-memory Singleton Locks to prevent duplicate popups across Lifecycle, FCM, and StreamBuilder
   bool _isPopupCurrentlyOpen = false;
+  bool _isAcquiringLock = false;
   final Set<String> _inFlightIds = <String>{};
 
   bool get isPopupCurrentlyOpen => _isPopupCurrentlyOpen;
@@ -40,11 +42,13 @@ class SmartPopupManager {
     final cleanId = notificationId.trim();
     if (cleanId.isEmpty) return false;
 
-    // ১. In-memory lock check (দ্রুততম সিনক্রোনাস ডুপ্লিকেট ফিল্টার)
-    if (_isPopupCurrentlyOpen || _inFlightIds.contains(cleanId)) {
-      debugPrint('[SmartPopupManager] Blocked: Popup already open or in-flight ($cleanId)');
+    // ১. Synchronous In-memory lock check (যেকোনো await-এর আগে সিঙ্ক্রোনাসলি যাচাই ও ব্লক)
+    if (_isPopupCurrentlyOpen || _isAcquiringLock || _inFlightIds.contains(cleanId)) {
+      debugPrint('[SmartPopupManager] Blocked: Popup already open, acquiring, or in-flight ($cleanId)');
       return false;
     }
+
+    _isAcquiringLock = true;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -109,6 +113,8 @@ class SmartPopupManager {
     } catch (e) {
       debugPrint('[SmartPopupManager] Error checking popup slot: $e');
       return false;
+    } finally {
+      _isAcquiringLock = false;
     }
   }
 
@@ -117,6 +123,7 @@ class SmartPopupManager {
     final cleanId = notificationId.trim();
     _inFlightIds.remove(cleanId);
     _isPopupCurrentlyOpen = false;
+    _isAcquiringLock = false;
     debugPrint('[SmartPopupManager] Released popup slot for ($cleanId)');
   }
 
@@ -128,12 +135,15 @@ class SmartPopupManager {
     }
     final rawUpdatedAt = data['updatedAt'];
     String tsPart = '';
-    if (rawUpdatedAt != null) {
+    if (rawUpdatedAt is Timestamp) {
+      tsPart = rawUpdatedAt.millisecondsSinceEpoch.toString();
+    } else if (rawUpdatedAt != null) {
       tsPart = rawUpdatedAt.toString().trim();
     }
-    final imgPart = (data['imageUrl'] ?? data['image'] ?? '').toString().trim();
+    final imgPart = (data['imageUrl'] ?? data['image'] ?? data['photoUrl'] ?? '').toString().trim();
     final headlinePart = (data['headline'] ?? '').toString().trim();
-    return '${tsPart}_${imgPart}_${headlinePart}';
+    final combined = '${tsPart}_${imgPart}_$headlinePart';
+    return 'popup_${combined.hashCode.abs()}';
   }
 
   /// ডাটাটি Update Notification কিনা যাচাই করার হেল্পার
