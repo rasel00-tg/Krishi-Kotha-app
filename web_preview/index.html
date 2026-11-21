@@ -7353,6 +7353,14 @@
       }
     }
 
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        shownWebPopupTimestamp = null;
+      } else if (document.visibilityState === 'visible') {
+        initStartupPopupNotificationListener();
+      }
+    });
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         initUserAppSystemControlListener();

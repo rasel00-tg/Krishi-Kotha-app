@@ -34,24 +34,41 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  /// ইন-মেমোরি ভেরিয়েবল: বর্তমান সেশনে উইজেট রিবিল্ডে ডুপ্লিকেট পপআপ ওভারল্যাপ রোধ করতে
-  String? _shownPopupTimestamp;
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  /// ডুপ্লিকেট ওভারল্যাপ ও রিবিল্ড গার্ড
+  bool _isPopupCurrentlyOpen = false;
+  bool _hasShownPopup = false;
+  Map<String, dynamic>? _lastPopupData;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _popupSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _listenToStartupPopupNotification();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _popupSubscription?.cancel();
     super.dispose();
   }
 
-  /// রিয়েল-টাইম স্টার্টআপ পপআপ লিসেনার (ইনস্ট্যান্ট শো ও অটো-এক্সপায়ারি লজিক)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      // ইউজার অ্যাপ থেকে বের হলে বা মিনিমাইজ করলে শো-ফ্ল্যাগ রিসেট
+      _hasShownPopup = false;
+    } else if (state == AppLifecycleState.resumed) {
+      // ইউজার ব্যাকগ্রাউন্ড থেকে আবার অ্যাপে ফিরলে চেক করে পপআপ দেখানো
+      if (!_isPopupCurrentlyOpen && !_hasShownPopup && _lastPopupData != null) {
+        _evaluateAndShowPopup(_lastPopupData!);
+      }
+    }
+  }
+
+  /// রিয়েল-টাইম স্টার্টআপ পপআপ লিসেনার (Firestore Local Cache & Instant Show)
   void _listenToStartupPopupNotification() {
     _popupSubscription?.cancel();
     _popupSubscription = FirebaseFirestore.instance
@@ -63,30 +80,35 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!doc.exists || doc.data() == null) {
         return;
       }
-      _evaluateAndShowPopup(doc.data()!);
+      _lastPopupData = doc.data()!;
+      if (!_isPopupCurrentlyOpen && !_hasShownPopup) {
+        _evaluateAndShowPopup(_lastPopupData!);
+      }
     }, onError: (error) {
       debugPrint('Startup popup stream notice: $error');
     });
   }
 
   void _evaluateAndShowPopup(Map<String, dynamic> data) async {
+    if (_isPopupCurrentlyOpen || _hasShownPopup || !mounted) return;
+
     final bool isActive = data['isActive'] == true;
     final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
     final String headline = (data['headline'] as String?)?.trim() ?? '';
 
-    // ১) isActive == true কিনা
+    // ১) isActive == true কিনা চেক
     if (!isActive) return;
 
-    // ২) imageUrl ফাঁকা নয় কিনা
+    // ২) imageUrl ফাঁকা নয় কিনা চেক
     if (imageUrl.isEmpty) return;
 
-    // ৩) expiresAt চেক: বর্তমান সময় (DateTime.now()) যদি expiresAt তারিখের চেয়ে কম হয় তবেই দেখাবে
+    // ৩) নিরাপদ এক্সপায়ারি ডেট চেক (Safe Expiry Parsing):
     DateTime? expiryDate;
     final dynamic rawExpiresAt = data['expiresAt'];
     if (rawExpiresAt is Timestamp) {
       expiryDate = rawExpiresAt.toDate();
-    } else if (rawExpiresAt is String && rawExpiresAt.isNotEmpty) {
-      expiryDate = DateTime.tryParse(rawExpiresAt);
+    } else if (rawExpiresAt is String && rawExpiresAt.trim().isNotEmpty) {
+      expiryDate = DateTime.tryParse(rawExpiresAt.trim());
     }
 
     if (expiryDate != null && DateTime.now().isAfter(expiryDate)) {
@@ -94,33 +116,23 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // ডুপ্লিকেট প্রিভেনশন: বর্তমান সেশনের উইজেট রিবিল্ডে যেন একই পপআপ ওভারল্যাপ না হয়
-    final dynamic rawUpdatedAt = data['updatedAt'];
-    final String popupId = (rawUpdatedAt != null)
-        ? '${rawUpdatedAt.toString()}_$imageUrl'
-        : '${imageUrl}_$headline';
+    _hasShownPopup = true;
 
-    if (_shownPopupTimestamp == popupId) {
-      return;
-    }
-
-    _shownPopupTimestamp = popupId;
-
-    // দ্রুত রেন্ডারিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে ইমেজ প্রিক্যাশ
+    // দ্রুততম ইনস্ট্যান্ট লোডিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে প্রি-ক্যাশ (Precache with timeout fallback)
     try {
       await precacheImage(
         CachedNetworkImageProvider(imageUrl),
         context,
-      ).timeout(const Duration(milliseconds: 700));
+      ).timeout(const Duration(seconds: 2), onTimeout: () {});
     } catch (_) {
-      // প্রিক্যাশ ব্যর্থ হলেও CachedNetworkImage লোড করবে
+      // নেট স্লো হলেও ডায়ালগ ওপেন আটকে থাকবে না
     }
 
-    if (!mounted) return;
+    if (!mounted || _isPopupCurrentlyOpen) return;
 
-    // কোনো বাড়তি ডিলে (Future.delayed) ছাড়াই ইনস্ট্যান্ট ডায়ালগ প্রদর্শন
+    // কোনো বাড়তি ডিলে ছাড়া ফ্রেম রেন্ডার হলে ইনস্ট্যান্ট ডায়ালগ প্রদর্শন
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (mounted && !_isPopupCurrentlyOpen) {
         _showStartupNotificationDialog(imageUrl, headline);
       }
     });
@@ -128,6 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ (ইমেজ + হেডলাইন সমন্বিত কার্ড)
   void _showStartupNotificationDialog(String imageUrl, String headline) {
+    if (_isPopupCurrentlyOpen || !mounted) return;
+    _isPopupCurrentlyOpen = true;
+
     showDialog(
       context: context,
       useRootNavigator: true,
@@ -168,22 +183,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // ১. ইমেজ (উপরে রাউন্ডেড ১৬.০)
+                          // ১. ইমেজ (উপরে রাউন্ডেড ১৬.০, আল্ট্রা-ফাস্ট ক্যাশ ও শিমার প্লেসহোল্ডার)
                           if (imageUrl.isNotEmpty)
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
                               child: CachedNetworkImage(
                                 imageUrl: imageUrl,
                                 width: dialogWidth,
+                                memCacheWidth: 800,
+                                fadeInDuration: const Duration(milliseconds: 100),
                                 fit: BoxFit.contain,
                                 placeholder: (context, url) => Container(
-                                  height: 250,
-                                  width: dialogWidth,
+                                  height: 220,
+                                  width: double.infinity,
                                   color: const Color(0xFFF1F5F9),
                                   child: const Center(
                                     child: SizedBox(
-                                      height: 40,
-                                      width: 40,
+                                      height: 36,
+                                      width: 36,
                                       child: CircularProgressIndicator(
                                         color: AppColors.primary,
                                         strokeWidth: 2.5,
@@ -193,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 errorWidget: (context, url, error) => Container(
                                   height: 200,
-                                  width: dialogWidth,
+                                  width: double.infinity,
                                   color: const Color(0xFFF8FAFC),
                                   padding: const EdgeInsets.all(20),
                                   child: const Column(
@@ -266,7 +283,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-    );
+    ).then((_) {
+      _isPopupCurrentlyOpen = false;
+    });
+  }
   }
 
   @override
