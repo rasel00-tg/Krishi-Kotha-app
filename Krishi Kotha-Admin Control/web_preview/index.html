@@ -7366,9 +7366,14 @@
         console.warn('Load popup notification settings notice:', err);
       }
     }
-        console.warn('Load popup notification settings notice:', err);
-      }
-    }
+    window.handlePopupDurationInput = handlePopupDurationInput;
+    window.handlePopupExpiryDateChange = handlePopupExpiryDateChange;
+    window.updatePopupExpiryPreviewStatus = updatePopupExpiryPreviewStatus;
+    window.savePopupNotification = savePopupNotification;
+    window.loadPopupNotificationSettings = loadPopupNotificationSettings;
+    window.handlePopupImagePick = handlePopupImagePick;
+    window.removePopupImage = removePopupImage;
+    window.updatePopupPreviewHeadline = updatePopupPreviewHeadline;
 
     // ==================== BANGLADESH 64 DISTRICTS & LOCATIONS ====================
     const BD_LOCATIONS = {
