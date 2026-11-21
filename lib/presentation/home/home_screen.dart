@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// ডুপ্লিকেট ওভারল্যাপ ও রিবিল্ড গার্ড
   bool _isPopupCurrentlyOpen = false;
   bool _hasShownPopup = false;
+  String? _lastShownVersionId;
   Map<String, dynamic>? _lastPopupData;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _popupSubscription;
 
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
-      // ইউজার অ্যাপ থেকে বের হলে বা মিনিমাইজ করলে শো-ফ্ল্যাগ রিসেট
+      // ইউজার অ্যাপ থেকে বের হলে বা মিনিমাইজ করলে শো-ফ্ল্যাগ রিসেট যাতে ফিরে আসলে আবার চেক হয়
       _hasShownPopup = false;
     } else if (state == AppLifecycleState.resumed) {
       // ইউজার ব্যাকগ্রাউন্ড থেকে আবার অ্যাপে ফিরলে চেক করে পপআপ দেখানো
@@ -80,7 +81,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (!doc.exists || doc.data() == null) {
         return;
       }
-      _lastPopupData = doc.data()!;
+      final data = doc.data()!;
+      _lastPopupData = data;
+
+      // নতুন কনটেন্ট বা আপডেট আসলে রিসেট করে প্রদর্শনের সুযোগ দেওয়া
+      final String versionId = '${data['updatedAt']}_${data['imageUrl']}_${data['headline']}';
+      if (_lastShownVersionId != versionId) {
+        _hasShownPopup = false;
+        _lastShownVersionId = versionId;
+      }
+
       if (!_isPopupCurrentlyOpen && !_hasShownPopup) {
         _evaluateAndShowPopup(_lastPopupData!);
       }

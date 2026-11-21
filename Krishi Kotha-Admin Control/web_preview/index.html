@@ -6804,20 +6804,26 @@
         statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি বিশ্লেষণ ও স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (${(file.size / 1024).toFixed(1)} KB)...</span>`;
       }
 
-      // Client-side High-Fidelity Compression (Target 200KB - 380KB)
+      // Client-side High-Fidelity Compression (Skip if already compressed via WebP optimizer)
       let uploadFile = file;
-      try {
-        const comp = await compressImageClientSide(file);
-        uploadFile = comp.file;
-        const origKB = comp.originalKB.toFixed(0);
-        const optKB = comp.optimizedKB.toFixed(0);
-        const savedPct = Math.max(0, Math.round((1 - (comp.optimizedKB / comp.originalKB)) * 100));
+      if (!file._isAlreadyOptimized) {
+        try {
+          const comp = await compressImageClientSide(file);
+          uploadFile = comp.file;
+          const origKB = comp.originalKB.toFixed(0);
+          const optKB = comp.optimizedKB.toFixed(0);
+          const savedPct = Math.max(0, Math.round((1 - (comp.optimizedKB / comp.originalKB)) * 100));
 
-        if (statusEl) {
-          statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origKB} KB ➔ ${optKB} KB, ${savedPct}% সাশ্রয়)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origKB} KB ➔ ${optKB} KB, ${savedPct}% সাশ্রয়)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+          }
+        } catch (compErr) {
+          console.warn("Client compression notice:", compErr);
         }
-      } catch (compErr) {
-        console.warn("Client compression notice:", compErr);
+      } else {
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${(uploadFile.size / 1024).toFixed(1)} KB)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+        }
       }
 
       try {
@@ -7025,6 +7031,90 @@
       }
     }
 
+    // ==================== POPUP IMAGE OPTIMIZER (HTML5 CANVAS -> WEBP / JPEG 900PX) ====================
+    async function compressPopupImageForR2(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        return file;
+      }
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.naturalWidth || img.width;
+            let height = img.naturalHeight || img.height;
+            const maxDim = 900; // ৯০০ পিক্সেল ম্যাক্সিমাম রেজোলিউশন (preserving aspect ratio)
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            function toBlobPromise(type, quality) {
+              return new Promise((res) => {
+                canvas.toBlob((blob) => {
+                  if (blob && blob.type === type) {
+                    res(blob);
+                  } else {
+                    res(null);
+                  }
+                }, type, quality);
+              });
+            }
+
+            (async () => {
+              // আউটপুট ফরম্যাট WebP (quality 0.75), ব্রাউজার সাপোর্ট না করলে JPEG (quality 0.75)
+              let blob = await toBlobPromise('image/webp', 0.75);
+              let format = 'webp';
+              let mime = 'image/webp';
+
+              if (!blob) {
+                blob = await toBlobPromise('image/jpeg', 0.75);
+                format = 'jpg';
+                mime = 'image/jpeg';
+              }
+
+              if (blob) {
+                const baseName = (file.name.substring(0, file.name.lastIndexOf('.')) || 'popup').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const compressedFile = new File([blob], `${baseName}_opt.${format}`, {
+                  type: mime,
+                  lastModified: Date.now()
+                });
+                compressedFile._isAlreadyOptimized = true;
+                resolve(compressedFile);
+              } else {
+                file._isAlreadyOptimized = true;
+                resolve(file);
+              }
+            })();
+          };
+          img.onerror = () => {
+            file._isAlreadyOptimized = true;
+            resolve(file);
+          };
+          img.src = e.target.result;
+        };
+        reader.onerror = () => {
+          file._isAlreadyOptimized = true;
+          resolve(file);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function handlePopupImagePick(input) {
       const file = input.files && input.files[0];
       if (!file) return;
@@ -7033,31 +7123,71 @@
         return;
       }
 
-      await handleImagePick(input, 'popup', 'popupImgPreviewBox', 'popupUploadStatus', 'popupImgUrl');
+      // Deferred Upload: সিলেক্ট করলে শুধুমাত্র লোকাল প্রিভিউ দেখাবে, কোনো প্রি-ম্যাচিউর আপলোড হবে না
+      if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.popup.blobUrl); } catch (_) { }
+      }
+
+      const localBlobUrl = URL.createObjectURL(file);
+      pendingUploads.popup = { file: file, blobUrl: localBlobUrl, isDeleted: false };
+
+      const previewBox = document.getElementById('popupImgPreviewBox');
+      const previewImg = document.getElementById('popupImgPreview');
+      if (previewBox && previewImg) {
+        previewImg.src = localBlobUrl;
+        previewBox.style.display = 'block';
+      }
+
+      const statusEl = document.getElementById('popupUploadStatus');
+      const rawKB = (file.size / 1024).toFixed(1);
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ছবি নির্বাচিত (${rawKB} KB) — সেভ বাটনে চাপলে অটো ৯০০px WebP কম্প্রেশন হয়ে Cloudflare R2-তে সংরক্ষিত হবে</span>`;
+      }
 
       // মোবাইল লাইভ প্রিভিউ মকআপে আপডেট
-      if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
-        const mockImg = document.getElementById('mockPopupImg');
-        const mockEmpty = document.getElementById('mockPopupEmptyState');
-        if (mockImg) {
-          mockImg.src = pendingUploads.popup.blobUrl;
-          mockImg.style.display = 'block';
-        }
-        if (mockEmpty) mockEmpty.style.display = 'none';
+      const mockImg = document.getElementById('mockPopupImg');
+      const mockEmpty = document.getElementById('mockPopupEmptyState');
+      if (mockImg) {
+        mockImg.src = localBlobUrl;
+        mockImg.style.display = 'block';
       }
+      if (mockEmpty) mockEmpty.style.display = 'none';
     }
 
     function removePopupImage() {
-      removeImageSelection('popup', 'popupFileInput', 'popupImgPreviewBox', 'popupUploadStatus', 'popupImgUrl');
+      if (pendingUploads.popup && pendingUploads.popup.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.popup.blobUrl); } catch (_) { }
+      }
+      pendingUploads.popup = { file: null, blobUrl: null, isDeleted: true };
+
+      const fileInput = document.getElementById('popupFileInput');
+      if (fileInput) fileInput.value = '';
+
+      const previewBox = document.getElementById('popupImgPreviewBox');
+      const previewImg = document.getElementById('popupImgPreview');
+      if (previewBox) previewBox.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+
+      const statusEl = document.getElementById('popupUploadStatus');
+      if (statusEl) {
+        statusEl.style.display = 'none';
+        statusEl.innerHTML = '';
+      }
+
+      const urlInput = document.getElementById('popupImgUrl');
+      if (urlInput) urlInput.value = '';
+
       const mockImg = document.getElementById('mockPopupImg');
       const mockEmpty = document.getElementById('mockPopupEmptyState');
+      const headline = document.getElementById('popupHeadline')?.value.trim();
       if (mockImg) {
         mockImg.src = '';
         mockImg.style.display = 'none';
       }
-      if (mockEmpty) mockEmpty.style.display = 'block';
-      const urlInput = document.getElementById('popupImgUrl');
-      if (urlInput) urlInput.value = '';
+      if (mockEmpty && !headline) {
+        mockEmpty.style.display = 'block';
+      }
     }
 
     function updatePopupPreviewHeadline(val) {
@@ -7207,14 +7337,24 @@
           submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ছবি প্রসেসিং ও সংরক্ষণ হচ্ছে...';
         }
 
-        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি কম্প্রেস হয়ে আপলোড হবে
+        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি ক্লায়েন্ট-সাইডে ৯০০px WebP কম্প্রেস হয়ে Cloudflare R2-তে সরাসরি আপলোড হবে
         if (pendingUploads.popup && pendingUploads.popup.file) {
-          try {
-            imgUrl = await uploadFileToCloudinary(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
-          } catch (uplErr) {
-            console.warn('Cloudinary upload fallback to R2:', uplErr);
-            imgUrl = await uploadFileToR2Pipeline(pendingUploads.popup.file, 'popup_modal', 'popupUploadStatus');
+          const statusEl = document.getElementById('popupUploadStatus');
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (Max 900px, WebP/JPEG)...</span>`;
           }
+
+          const compressedFile = await compressPopupImageForR2(pendingUploads.popup.file);
+          const origSizeKB = (pendingUploads.popup.file.size / 1024).toFixed(1);
+          const optSizeKB = (compressedFile.size / 1024).toFixed(1);
+
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origSizeKB} KB ➔ ${optSizeKB} KB)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+          }
+
+          // সরাসরি Cloudflare R2-তে আপলোড ও পাবলিক URL প্রাপ্তি
+          imgUrl = await uploadFileToR2Pipeline(compressedFile, 'popup_modal', 'popupUploadStatus');
           const urlInput = document.getElementById('popupImgUrl');
           if (urlInput) urlInput.value = imgUrl;
         }
@@ -7366,6 +7506,7 @@
         console.warn('Load popup notification settings notice:', err);
       }
     }
+    window.compressPopupImageForR2 = compressPopupImageForR2;
     window.handlePopupDurationInput = handlePopupDurationInput;
     window.handlePopupExpiryDateChange = handlePopupExpiryDateChange;
     window.updatePopupExpiryPreviewStatus = updatePopupExpiryPreviewStatus;
