@@ -7451,86 +7451,134 @@
       }
     }
 
-    // ==================== POPUP IMAGE OPTIMIZER (HTML5 CANVAS -> WEBP / JPEG 900PX) ====================
-    async function compressPopupImageForR2(file) {
-      if (!file || !file.type.startsWith('image/')) {
-        return file;
+    // ==================== POPUP IMAGE OPTIMIZER (STRICT ITERATIVE CANVAS -> WEBP / JPEG ≤150KB) ====================
+    async function compressPopupImageForR2(file, maxWidth = 900, targetMaxKB = 150) {
+      if (!file || !file.type || !file.type.startsWith('image/')) {
+        console.error('[compressPopupImageForR2] অবৈধ ফাইল বা ছবি নয়:', file);
+        throw new Error('অনুগ্রহ করে একটি সঠিক ছবি ফাইল প্রদান করুন।');
       }
-      return new Promise((resolve) => {
+
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
-          img.onload = () => {
-            let width = img.naturalWidth || img.width;
-            let height = img.naturalHeight || img.height;
-            const maxDim = 900; // ৯০০ পিক্সেল ম্যাক্সিমাম রেজোলিউশন (preserving aspect ratio)
+          img.onload = async () => {
+            try {
+              let width = img.naturalWidth || img.width;
+              let height = img.naturalHeight || img.height;
+              const maxHeight = 1200;
 
-            if (width > maxDim || height > maxDim) {
-              if (width > height) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              } else {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, width, height);
-
-            function toBlobPromise(type, quality) {
-              return new Promise((res) => {
-                canvas.toBlob((blob) => {
-                  if (blob && blob.type === type) {
-                    res(blob);
-                  } else {
-                    res(null);
-                  }
-                }, type, quality);
-              });
-            }
-
-            (async () => {
-              // আউটপুট ফরম্যাট WebP (quality 0.75), ব্রাউজার সাপোর্ট না করলে JPEG (quality 0.75)
-              let blob = await toBlobPromise('image/webp', 0.75);
-              let format = 'webp';
-              let mime = 'image/webp';
-
-              if (!blob) {
-                blob = await toBlobPromise('image/jpeg', 0.75);
-                format = 'jpg';
-                mime = 'image/jpeg';
+              // Aspect Ratio ঠিক রেখে সর্বোচ্চ প্রস্থ 900px এবং সর্বোচ্চ উচ্চতা 1200px-এ স্কেলিং
+              if (width > maxWidth || height > maxHeight) {
+                const widthRatio = maxWidth / width;
+                const heightRatio = maxHeight / height;
+                const scale = Math.min(widthRatio, heightRatio);
+                width = Math.max(1, Math.round(width * scale));
+                height = Math.max(1, Math.round(height * scale));
               }
 
-              if (blob) {
-                const baseName = (file.name.substring(0, file.name.lastIndexOf('.')) || 'popup').replace(/[^a-zA-Z0-9_-]/g, '_');
-                const compressedFile = new File([blob], `${baseName}_opt.${format}`, {
-                  type: mime,
-                  lastModified: Date.now()
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                throw new Error('ক্যানভাস ২D কনটেক্সট তৈরি করতে ব্যর্থ হয়েছে।');
+              }
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+
+              // Canvas-এ ড্র করার আগে ট্রান্সপারেন্ট PNG কালো হয়ে যাওয়া ঠেকাতে ব্যাকগ্রাউন্ড সাদা (#FFFFFF) ফিল
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // WebP ব্রাউজার সাপোর্ট যাচাই
+              function checkWebpSupport() {
+                try {
+                  const testCanvas = document.createElement('canvas');
+                  testCanvas.width = 1;
+                  testCanvas.height = 1;
+                  const dataUrl = testCanvas.toDataURL('image/webp');
+                  return typeof dataUrl === 'string' && dataUrl.indexOf('data:image/webp') === 0;
+                } catch (_) {
+                  return false;
+                }
+              }
+
+              const isWebpSupported = checkWebpSupport();
+              const mimeType = isWebpSupported ? 'image/webp' : 'image/jpeg';
+              const fileExt = isWebpSupported ? 'webp' : 'jpg';
+
+              function getCanvasBlob(type, quality) {
+                return new Promise((res, rej) => {
+                  canvas.toBlob((blob) => {
+                    if (blob && (blob.type === type || (type === 'image/webp' && blob.type.startsWith('image/')))) {
+                      res(blob);
+                    } else if (blob) {
+                      res(blob);
+                    } else {
+                      rej(new Error(`ক্যানভাস ব্লব তৈরি ব্যর্থ (${type}, ${quality})`));
+                    }
+                  }, type, quality);
                 });
-                compressedFile._isAlreadyOptimized = true;
-                resolve(compressedFile);
-              } else {
-                file._isAlreadyOptimized = true;
-                resolve(file);
               }
-            })();
+
+              // Iterative Quality Loop: প্রথমে 0.78, তারপর 0.65, 0.55, 0.45, 0.35
+              const qualitySteps = [0.78, 0.65, 0.55, 0.45, 0.35];
+              let selectedBlob = null;
+              let selectedQuality = 0.78;
+
+              for (let i = 0; i < qualitySteps.length; i++) {
+                const q = qualitySteps[i];
+                selectedQuality = q;
+                const blob = await getCanvasBlob(mimeType, q);
+                selectedBlob = blob;
+                const currentKB = blob.size / 1024;
+                console.log(`[compressPopupImageForR2] ধাপ ${i + 1}: format=${mimeType}, quality=${q}, size=${currentKB.toFixed(1)} KB (target <= ${targetMaxKB} KB)`);
+                if (currentKB <= targetMaxKB) {
+                  break;
+                }
+              }
+
+              if (!selectedBlob) {
+                throw new Error('ইমেজ কম্প্রেশন ব্লব তৈরি করা যায়নি।');
+              }
+
+              const baseName = (file.name.substring(0, file.name.lastIndexOf('.')) || 'popup_image').replace(/[^a-zA-Z0-9_-]/g, '_');
+              const compressedFileName = `${baseName}_opt.${fileExt}`;
+              const compressedFile = new File([selectedBlob], compressedFileName, {
+                type: mimeType,
+                lastModified: Date.now()
+              });
+              compressedFile._isAlreadyOptimized = true;
+
+              const origMB = (file.size / (1024 * 1024)).toFixed(2);
+              const origKB = (file.size / 1024).toFixed(1);
+              const compKB = (compressedFile.size / 1024).toFixed(1);
+              const origDisplay = file.size >= 1024 * 1024 ? `${origMB} MB` : `${origKB} KB`;
+              const formatLabel = mimeType === 'image/webp' ? 'WebP' : 'JPEG';
+              console.log(`[Popup Image Optimizer] কম্প্রেশন সম্পন্ন: ${origDisplay} → ${compKB} KB (${formatLabel}, Quality: ${selectedQuality})`);
+
+              resolve(compressedFile);
+            } catch (canvasErr) {
+              console.error('[compressPopupImageForR2] কম্প্রেশন প্রক্রিয়ায় ত্রুটি:', canvasErr);
+              reject(canvasErr);
+            }
           };
-          img.onerror = () => {
-            file._isAlreadyOptimized = true;
-            resolve(file);
+
+          img.onerror = (imgErr) => {
+            console.error('[compressPopupImageForR2] ইমেজ লোড করতে ব্যর্থ:', imgErr);
+            reject(new Error('ইমেজ ফাইলটি লোড করা যায়নি বা ফরম্যাট আনসাপোর্টেড।'));
           };
+
           img.src = e.target.result;
         };
-        reader.onerror = () => {
-          file._isAlreadyOptimized = true;
-          resolve(file);
+
+        reader.onerror = (readErr) => {
+          console.error('[compressPopupImageForR2] ফাইল পড়তে ব্যর্থ:', readErr);
+          reject(new Error('ফাইলটি পড়তে সমস্যা হয়েছে।'));
         };
+
         reader.readAsDataURL(file);
       });
     }
@@ -7559,10 +7607,12 @@
       }
 
       const statusEl = document.getElementById('popupUploadStatus');
+      const rawMB = (file.size / (1024 * 1024)).toFixed(2);
       const rawKB = (file.size / 1024).toFixed(1);
+      const rawDisplay = file.size >= 1024 * 1024 ? `${rawMB} MB` : `${rawKB} KB`;
       if (statusEl) {
         statusEl.style.display = 'block';
-        statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ছবি নির্বাচিত (${rawKB} KB) — সেভ বাটনে চাপলে অটো ৯০০px WebP কম্প্রেশন হয়ে Cloudflare R2-তে সংরক্ষিত হবে</span>`;
+        statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ছবি নির্বাচিত (${rawDisplay}) — সেভ বাটনে চাপলে অটো ৯০০px WebP কম্প্রেশন (≤150 KB) হয়ে Cloudflare R2-তে সংরক্ষিত হবে</span>`;
       }
 
       // মোবাইল লাইভ প্রিভিউ মকআপে আপডেট
@@ -7757,26 +7807,44 @@
           submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ছবি প্রসেসিং ও সংরক্ষণ হচ্ছে...';
         }
 
-        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি ক্লায়েন্ট-সাইডে ৯০০px WebP কম্প্রেস হয়ে Cloudflare R2-তে সরাসরি আপলোড হবে
+        // Deferred Upload: শুধুমাত্র সাবমিটের সময় ছবি ক্লায়েন্ট-সাইডে ৯০০px WebP/JPEG কম্প্রেস হয়ে Cloudflare R2-তে সরাসরি আপলোড হবে
         if (pendingUploads.popup && pendingUploads.popup.file) {
+          const rawFile = pendingUploads.popup.file;
+          const origMB = (rawFile.size / (1024 * 1024)).toFixed(2);
+          const origKB = (rawFile.size / 1024).toFixed(1);
+          const origDisplay = rawFile.size >= 1024 * 1024 ? `${origMB} MB` : `${origKB} KB`;
+
           const statusEl = document.getElementById('popupUploadStatus');
           if (statusEl) {
             statusEl.style.display = 'block';
-            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (Max 900px, WebP/JPEG)...</span>`;
+            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ছবি স্বয়ংক্রিয় কম্প্রেশন হচ্ছে (Max 900x1200px, WebP/JPEG, Target ≤150KB)...</span>`;
           }
 
-          const compressedFile = await compressPopupImageForR2(pendingUploads.popup.file);
-          const origSizeKB = (pendingUploads.popup.file.size / 1024).toFixed(1);
-          const optSizeKB = (compressedFile.size / 1024).toFixed(1);
+          // ২ ও ৩. কঠোর Iterative Canvas Compression কল (900px, 150KB) - No Silent Fallback
+          const compressedFile = await compressPopupImageForR2(rawFile, 900, 150);
+          const compKB = (compressedFile.size / 1024).toFixed(1);
+          const formatLabel = compressedFile.type === 'image/webp' ? 'WebP' : 'JPEG';
+          const sizeVerifyMsg = `কম্প্রেস সম্পন্ন: ${origDisplay} → ${compKB} KB (${formatLabel})`;
+
+          console.log(`[Popup Save Pipeline] ${sizeVerifyMsg}`);
 
           if (statusEl) {
-            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অপ্টিমাইজড (${origSizeKB} KB ➔ ${optSizeKB} KB)! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+            statusEl.innerHTML = `<span style="color: #0288D1; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ${sizeVerifyMsg}! Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
           }
 
-          // সরাসরি Cloudflare R2-তে আপলোড ও পাবলিক URL প্রাপ্তি
+          // ৩. R2 Presigned URL / Worker আপলোডে শুধুমাত্র কম্প্রেসড ফাইল ও সঠিক Content-Type পাঠানো
           imgUrl = await uploadFileToR2Pipeline(compressedFile, 'popup_modal', 'popupUploadStatus');
           const urlInput = document.getElementById('popupImgUrl');
           if (urlInput) urlInput.value = imgUrl;
+
+          // ৪. সাইজ কমার লাইভ প্রমাণ (Size Verification Status)
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><svg class="app-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${sizeVerifyMsg} — Cloudflare R2-তে সফলভাবে সংরক্ষিত!</span>`;
+          }
+        } else if (pendingUploads.popup && pendingUploads.popup.isDeleted) {
+          imgUrl = '';
+          const urlInput = document.getElementById('popupImgUrl');
+          if (urlInput) urlInput.value = '';
         }
 
         // Firestore admin_settings/popup_notification ডকুমেন্টে সেভ করা
