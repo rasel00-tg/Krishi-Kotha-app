@@ -7755,9 +7755,10 @@
     };
 
     function openServiceModal(type) {
-      if (type === 'dealers') {
+      if (type === 'dealers' || type === 'agri_expert') {
+        const title = type === 'dealers' ? 'সার-বীজ ডিলার' : 'কৃষি বিশেষজ্ঞ';
         showIrrigationCustomAlert(
-          'সার-বীজ ডিলার',
+          title,
           'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
           'info',
           'ঠিক আছে'
@@ -7766,12 +7767,12 @@
         const titleEl = document.getElementById('irrigationAlertTitle');
         const btn = document.getElementById('irrigationAlertBtn');
         if (iconWrap) {
-          iconWrap.style.background = '#E8F5E9';
-          iconWrap.style.border = '2px solid rgba(46, 125, 50, 0.25)';
-          iconWrap.innerHTML = '<img src="pnglogo.png" style="width: 44px; height: 44px; object-fit: contain; padding: 2px;" alt="কৃষি কথা লোগো" onerror="this.outerHTML=\'<i class=\\\'fa-solid fa-store\\\'></i>\'">';
+          iconWrap.style.background = 'transparent';
+          iconWrap.style.border = 'none';
+          iconWrap.innerHTML = '<img src="pnglogo.png" style="width: 58px; height: 58px; object-fit: contain;" alt="কৃষি কথা লোগো" onerror="this.outerHTML=\'<i class=\\\'fa-solid fa-leaf\\\'></i>\'">';
         }
-        if (titleEl) titleEl.style.color = '#2E7D32';
-        if (btn) btn.style.background = '#2E7D32';
+        if (titleEl) titleEl.style.color = '#00897B';
+        if (btn) btn.style.background = '#00897B';
         return;
       }
       if (type === 'irrigation') {

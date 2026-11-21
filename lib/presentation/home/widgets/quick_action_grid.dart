@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/bangla_number_converter.dart';
 import '../../../core/widgets/app_unified_dialog.dart';
+import '../../../global_popup/global_popup.dart';
 import '../../../data/services/firestore_service.dart';
 import '../agri_service_detail_screen.dart';
 import '../crop_calendar_screen.dart';
@@ -499,12 +500,7 @@ class QuickActionGrid extends StatelessWidget {
         color: const Color(0xFF00897B),
         bgColor: const Color(0xFFE0F2F1),
         onTap: () {
-          AppUnifiedDialog.showLogoDialog(
-            context,
-            title: 'কৃষি বিশেষজ্ঞ',
-            message: 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
-            primaryColor: const Color(0xFF00897B),
-          );
+          GlobalPopup.showComingSoon(context, title: 'কৃষি বিশেষজ্ঞ');
         },
       ),
       // ৩. কৃষি রিমাইন্ডার
@@ -579,12 +575,7 @@ class QuickActionGrid extends StatelessWidget {
         color: const Color(0xFF2E7D32),
         bgColor: const Color(0xFFE8F5E9),
         onTap: () {
-          AppUnifiedDialog.showLogoDialog(
-            context,
-            title: AppStrings.serviceInputDealers,
-            message: 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
-            primaryColor: const Color(0xFF2E7D32),
-          );
+          GlobalPopup.showComingSoon(context, title: 'সার-বীজ ডিলার');
         },
       ),
       // ৮. কৃষি আয়-ব্যয়
