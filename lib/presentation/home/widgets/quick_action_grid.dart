@@ -66,104 +66,6 @@ class QuickActionGrid extends StatelessWidget {
     );
   }
 
-  /// সার-বীজ ডিলার আপকামিং নোটিস গ্লোবাল পপআপ (useRootNavigator: true)
-  void _showDealerUpcomingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      useRootNavigator: true,
-      barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.65),
-      builder: (dialogCtx) => Dialog(
-        backgroundColor: Colors.white,
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // অ্যাপের ইউনিফাইড গ্রিন আইকন ব্যাজ
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF81C784), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.12),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.storefront_rounded,
-                    color: Color(0xFF2E7D32),
-                    size: 36,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'সার-বীজ ডিলার',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF546E7A),
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (Navigator.of(dialogCtx, rootNavigator: true).canPop()) {
-                      Navigator.of(dialogCtx, rootNavigator: true).pop();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'ঠিক আছে',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showDiseaseScannerSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -676,7 +578,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.storefront_outlined,
         color: const Color(0xFF2E7D32),
         bgColor: const Color(0xFFE8F5E9),
-        onTap: () => _showDealerUpcomingDialog(context),
+        onTap: () {
+          AppUnifiedDialog.showLogoDialog(
+            context,
+            title: AppStrings.serviceInputDealers,
+            message: 'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
+            primaryColor: const Color(0xFF2E7D32),
+          );
+        },
       ),
       // ৮. কৃষি আয়-ব্যয়
       QuickActionItem(

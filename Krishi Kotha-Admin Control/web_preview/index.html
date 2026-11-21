@@ -283,7 +283,7 @@
     }
 
     .submenu-container.open {
-      max-height: 350px;
+      max-height: 520px;
       opacity: 1;
       margin: 4px 0 8px 18px;
     }
@@ -1193,11 +1193,7 @@
           onclick="switchTab('fertilizer_dealer_monitoring')">
           <div class="menu-icon-badge"
             style="width: 26px; height: 26px; background: rgba(46, 125, 50, 0.16); color: #2E7D32; margin-right: -4px;">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+            <i class="fa-solid fa-store" style="font-size: 13px;"></i>
           </div>
           <div style="flex: 1; min-width: 0;">
             <div style="font-size: 12.5px; font-weight: 600;">সার-বীজ ডিলার মনিটরিং</div>
@@ -1604,7 +1600,8 @@
       <!-- ================= TAB 2: NOTIFICATIONS ================= -->
       <div id="tab-notifications" class="tab-content">
         <!-- Subtab Switcher Header -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap;">
+        <div
+          style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap;">
           <button type="button" class="btn btn-primary notif-subtab-btn" id="notifSubtabBtnBroadcast"
             onclick="switchNotifSubtab('broadcast')"
             style="font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
@@ -1723,19 +1720,24 @@
                   <i class="fa-solid fa-window-restore" style="color: var(--primary);"></i>
                   স্টার্টআপ পপআপ নোটিফিকেশন নিয়ন্ত্রণ
                 </h3>
-                <span class="badge" id="popupActiveBadge" style="background: #FFF3E0; color: #E65100; font-weight: 700; font-size: 12px;">
+                <span class="badge" id="popupActiveBadge"
+                  style="background: #FFF3E0; color: #E65100; font-weight: 700; font-size: 12px;">
                   যাচাই হচ্ছে...
                 </span>
               </div>
 
-              <div style="background: #F4FBF4; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #1B5E20; line-height: 1.5;">
+              <div
+                style="background: #F4FBF4; border: 1px solid #C8E6C9; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #1B5E20; line-height: 1.5;">
                 <i class="fa-solid fa-circle-info" style="color: #2E7D32; margin-right: 6px;"></i>
-                কৃষক বা ইউজাররা অ্যাপ ওপেন করার সাথে সাথেই এই পপআপটি (মডাল হিসেবে) স্ক্রিনে ভেসে উঠবে। ছবি নির্বাচন করে সেভ বাটনে চাপ দিলে ছবি অটোমেটিক কম্প্রেস হয়ে <strong>Cloudflare R2</strong>-তে আপলোড হবে এবং অ্যাপের জন্য সক্রিয় হবে।
+                কৃষক বা ইউজাররা অ্যাপ ওপেন করার সাথে সাথেই এই পপআপটি (মডাল হিসেবে) স্ক্রিনে ভেসে উঠবে। ছবি নির্বাচন করে
+                সেভ বাটনে চাপ দিলে ছবি অটোমেটিক কম্প্রেস হয়ে <strong>Cloudflare R2</strong>-তে আপলোড হবে এবং অ্যাপের
+                জন্য সক্রিয় হবে।
               </div>
 
               <form id="popupNotificationForm" onsubmit="savePopupNotification(event)">
                 <!-- Toggle Switch: অ্যাপে শো করুন (isActive: true/false) -->
-                <div class="form-group" style="background: #FAFBF9; border: 1.2px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="form-group"
+                  style="background: #FAFBF9; border: 1.2px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                   <div>
                     <strong style="font-size: 14.5px; color: var(--text); display: block; margin-bottom: 3px;">
                       অ্যাপে শো করুন (সক্রিয় / নিষ্ক্রিয়)
@@ -1745,8 +1747,10 @@
                     </span>
                   </div>
                   <!-- Switch Toggle Button -->
-                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 54px; height: 30px; cursor: pointer; flex-shrink: 0;">
-                    <input type="checkbox" id="popupIsActiveToggle" style="opacity: 0; width: 0; height: 0;" onchange="updatePopupToggleVisual(this.checked)">
+                  <label class="switch-toggle"
+                    style="position: relative; display: inline-block; width: 54px; height: 30px; cursor: pointer; flex-shrink: 0;">
+                    <input type="checkbox" id="popupIsActiveToggle" style="opacity: 0; width: 0; height: 0;"
+                      onchange="updatePopupToggleVisual(this.checked)">
                     <span id="popupToggleSlider"
                       style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CFD8DC; transition: .25s ease-in-out; border-radius: 34px;">
                       <span id="popupToggleThumb"
@@ -1757,7 +1761,8 @@
 
                 <!-- Image Upload Field (File Pick + Cloudflare R2 Pipeline) -->
                 <div class="form-group">
-                  <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; margin-bottom: 6px;">
+                  <label
+                    style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; margin-bottom: 6px;">
                     <span>পপআপ ব্যানার ছবি নির্বাচন</span>
                     <span style="font-size: 11px; font-weight: 600; color: #2E7D32;">
                       <i class="fa-solid fa-cloud-arrow-up"></i> Cloudflare R2 স্টোরেজ
@@ -1766,7 +1771,8 @@
 
                   <div style="display: flex; gap: 8px;">
                     <input id="popupImgUrl" class="form-control"
-                      placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..." style="flex: 1; font-size: 13px;">
+                      placeholder="https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/..."
+                      style="flex: 1; font-size: 13px;">
                     <button type="button" class="btn btn-primary"
                       onclick="document.getElementById('popupFileInput').click()"
                       style="white-space: nowrap; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
@@ -1781,10 +1787,12 @@
 
                   <!-- Selected Image Preview Box -->
                   <div id="popupImgPreviewBox" style="margin-top: 12px; display: none;">
-                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">
+                    <label
+                      style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">
                       নির্বাচিত ছবির প্রিভিউ:
                     </label>
-                    <div style="position: relative; display: inline-block; max-width: 100%; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); box-shadow: 0 3px 12px rgba(0,0,0,0.08); background: #FAFBF9;">
+                    <div
+                      style="position: relative; display: inline-block; max-width: 100%; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); box-shadow: 0 3px 12px rgba(0,0,0,0.08); background: #FAFBF9;">
                       <img id="popupImgPreview" src="" alt="Preview"
                         style="max-width: 100%; max-height: 240px; object-fit: contain; display: block;">
                       <button type="button" onclick="removePopupImage()"
@@ -1798,45 +1806,48 @@
 
                 <!-- Headline Input Field -->
                 <div class="form-group" style="margin-top: 14px;">
-                  <label for="popupHeadline" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                  <label for="popupHeadline"
+                    style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                     পপআপের শিরোনাম / হেডলাইন (Headline)
                   </label>
-                  <input type="text" id="popupHeadline" class="form-control"
-                    placeholder="পপআপের হেডলাইন লিখুন"
-                    style="font-size: 13.5px;"
-                    oninput="updatePopupPreviewHeadline(this.value)">
+                  <input type="text" id="popupHeadline" class="form-control" placeholder="পপআপের হেডলাইন লিখুন"
+                    style="font-size: 13.5px;" oninput="updatePopupPreviewHeadline(this.value)">
                 </div>
 
                 <!-- Date & Duration Scheduling Fields (Smart Synced) -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label for="popupDurationDays" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                    <label for="popupDurationDays"
+                      style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                       কত দিন দেখাবে (দিন সংখ্যা)
                     </label>
-                    <input type="number" id="popupDurationDays" class="form-control" min="1"
-                      placeholder="যেমন: ৩ দিন" style="font-size: 13.5px;"
-                      oninput="handlePopupDurationInput(this.value)">
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">দিন লিখলে শেষ তারিখ অটো সেট হবে</span>
+                    <input type="number" id="popupDurationDays" class="form-control" min="1" placeholder="যেমন: ৩ দিন"
+                      style="font-size: 13.5px;" oninput="handlePopupDurationInput(this.value)">
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">দিন লিখলে
+                      শেষ তারিখ অটো সেট হবে</span>
                   </div>
 
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label for="popupExpiryDate" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                    <label for="popupExpiryDate"
+                      style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                       শেষ তারিখ (Expiry Date)
                     </label>
-                    <input type="date" id="popupExpiryDate" class="form-control"
-                      style="font-size: 13.5px;"
+                    <input type="date" id="popupExpiryDate" class="form-control" style="font-size: 13.5px;"
                       onchange="handlePopupExpiryDateChange(this.value)">
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">তারিখ বেছে নিলে দিন সংখ্যা অটো হবে</span>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">তারিখ বেছে
+                      নিলে দিন সংখ্যা অটো হবে</span>
                   </div>
                 </div>
 
                 <!-- Active Expiry Status Banner in Form -->
-                <div id="popupExpiryStatusBanner" style="margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 12.5px; display: none; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+                <div id="popupExpiryStatusBanner"
+                  style="margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 12.5px; display: none; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <i id="popupExpiryStatusIcon" class="fa-solid fa-circle-check"></i>
                     <span id="popupExpiryStatusText" style="font-weight: 600;"></span>
                   </div>
-                  <span id="popupExpiryBadge" style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px;"></span>
+                  <span id="popupExpiryBadge"
+                    style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px;"></span>
                 </div>
 
                 <!-- Submit / Save Button -->
@@ -1848,8 +1859,10 @@
             </div>
 
             <!-- Right Card: Live Mobile Mockup Preview -->
-            <div class="panel-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FAFBF9;">
-              <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div class="panel-card"
+              style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FAFBF9;">
+              <div
+                style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text);">
                   <i class="fa-solid fa-mobile-screen" style="color: var(--primary); margin-right: 6px;"></i>
                   অ্যাপে যেমন দেখাবে (লাইভ প্রিভিউ)
@@ -1857,21 +1870,31 @@
               </div>
 
               <!-- Mockup Mobile Screen -->
-              <div style="width: 270px; height: 460px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 28px; border: 4px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; padding: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.25);">
+              <div
+                style="width: 270px; height: 460px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 28px; border: 4px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; padding: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.25);">
                 <!-- Mock Notch -->
-                <div style="position: absolute; top: 10px; width: 80px; height: 16px; background: #1E293B; border-radius: 10px;"></div>
+                <div
+                  style="position: absolute; top: 10px; width: 80px; height: 16px; background: #1E293B; border-radius: 10px;">
+                </div>
 
                 <!-- Mock Close X Button -->
-                <div style="position: absolute; top: 48px; right: 20px; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; color: #D32F2F; border: none; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
+                <div
+                  style="position: absolute; top: 48px; right: 20px; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; color: #D32F2F; border: none; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
                   <i class="fa-solid fa-xmark"></i>
                 </div>
 
                 <!-- Mock Popup Box with Image + Headline -->
-                <div id="mockPopupBox" style="width: 100%; max-height: 330px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0;">
-                  <img id="mockPopupImg" src="" alt="Popup Preview" style="width: 100%; max-height: 240px; object-fit: contain; display: none; border-radius: 16px 16px 0 0;">
-                  <div id="mockPopupHeadline" style="display: none; padding: 10px 12px; font-weight: 700; font-size: 13.5px; color: #1E293B; text-align: center; line-height: 1.35; width: 100%; box-sizing: border-box;"></div>
-                  <div id="mockPopupEmptyState" style="padding: 36px 16px; text-align: center; color: #94A3B8; font-size: 12.5px; width: 100%;">
-                    <i class="fa-solid fa-image" style="font-size: 38px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                <div id="mockPopupBox"
+                  style="width: 100%; max-height: 330px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0;">
+                  <img id="mockPopupImg" src="" alt="Popup Preview"
+                    style="width: 100%; max-height: 240px; object-fit: contain; display: none; border-radius: 16px 16px 0 0;">
+                  <div id="mockPopupHeadline"
+                    style="display: none; padding: 10px 12px; font-weight: 700; font-size: 13.5px; color: #1E293B; text-align: center; line-height: 1.35; width: 100%; box-sizing: border-box;">
+                  </div>
+                  <div id="mockPopupEmptyState"
+                    style="padding: 36px 16px; text-align: center; color: #94A3B8; font-size: 12.5px; width: 100%;">
+                    <i class="fa-solid fa-image"
+                      style="font-size: 38px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
                     <span>কোনো সক্রিয় ছবি নেই</span>
                   </div>
                 </div>
@@ -3315,7 +3338,8 @@
           style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
           <div>
             <h2>হোমপেজ • সার-বীজ ডিলার মনিটরিং ও কন্ট্রোল</h2>
-            <p>সকল সরকারি বিসিআইসি ও বিএডিসি অনুমোদিত সার ও বীজ ডিলারের তালিকা, দোকান ও লাইসেন্স স্ট্যাটাস রিয়েল-টাইম পর্যবেক্ষণ।</p>
+            <p>সকল সরকারি বিসিআইসি ও বিএডিসি অনুমোদিত সার ও বীজ ডিলারের তালিকা, দোকান ও লাইসেন্স স্ট্যাটাস রিয়েল-টাইম
+              পর্যবেক্ষণ।</p>
           </div>
           <div>
             <button class="btn btn-primary" onclick="initAdminDealersMonitoringLiveSync(true)"
@@ -3397,7 +3421,8 @@
             <!-- Filters Group -->
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
               <!-- Status Filter -->
-              <select id="adminDealersStatusFilter" class="form-control" onchange="onAdminDealersStatusFilterChange(this.value)"
+              <select id="adminDealersStatusFilter" class="form-control"
+                onchange="onAdminDealersStatusFilterChange(this.value)"
                 style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer;">
                 <option value="all">সকল স্ট্যাটাস</option>
                 <option value="active">সক্রিয় / অনুমোদিত</option>
@@ -3406,7 +3431,8 @@
               </select>
 
               <!-- Category Filter -->
-              <select id="adminDealersCategoryFilter" class="form-control" onchange="onAdminDealersCategoryFilterChange(this.value)"
+              <select id="adminDealersCategoryFilter" class="form-control"
+                onchange="onAdminDealersCategoryFilterChange(this.value)"
                 style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer;">
                 <option value="all">সকল ক্যাটাগরি</option>
                 <option value="bcic">বিসিআইসি সার ডিলার</option>
@@ -3416,7 +3442,8 @@
               </select>
 
               <!-- District Filter -->
-              <select id="adminDealersDistrictFilter" class="form-control" onchange="onAdminDealersDistrictFilterChange(this.value)"
+              <select id="adminDealersDistrictFilter" class="form-control"
+                onchange="onAdminDealersDistrictFilterChange(this.value)"
                 style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer; min-width: 140px;">
                 <option value="all">সকল জেলা</option>
               </select>
@@ -4600,7 +4627,8 @@
 
   <!-- Support Reply & Decision Modal (Scrollable Modal with Fixed Footer Actions) -->
   <div class="modal-overlay" id="ticketModal">
-    <div class="modal-box" style="max-width: 620px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; border-radius: 14px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+    <div class="modal-box"
+      style="max-width: 620px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; border-radius: 14px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
       <!-- Modal Header (Fixed Top) -->
       <div
         style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 16px 20px 12px 20px; flex-shrink: 0; background: #fff;">
@@ -13896,7 +13924,8 @@
       <div id="adminDealerModalBody"></div>
       <div style="text-align: right; margin-top: 18px;">
         <button type="button" class="btn btn-primary" onclick="closeAdminDealerModal()"
-          style="padding: 8px 20px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer;">বন্ধ করুন</button>
+          style="padding: 8px 20px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer;">বন্ধ
+          করুন</button>
       </div>
     </div>
   </div>

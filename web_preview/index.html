@@ -7763,11 +7763,13 @@
           'ঠিক আছে'
         );
         const iconWrap = document.getElementById('irrigationAlertIconWrap');
-        const icon = document.getElementById('irrigationAlertIcon');
         const titleEl = document.getElementById('irrigationAlertTitle');
         const btn = document.getElementById('irrigationAlertBtn');
-        if (iconWrap) { iconWrap.style.background = '#E8F5E9'; iconWrap.style.color = '#2E7D32'; }
-        if (icon) icon.className = 'fa-solid fa-store';
+        if (iconWrap) {
+          iconWrap.style.background = '#E8F5E9';
+          iconWrap.style.border = '2px solid rgba(46, 125, 50, 0.25)';
+          iconWrap.innerHTML = '<img src="pnglogo.png" style="width: 44px; height: 44px; object-fit: contain; padding: 2px;" alt="কৃষি কথা লোগো" onerror="this.outerHTML=\'<i class=\\\'fa-solid fa-store\\\'></i>\'">';
+        }
         if (titleEl) titleEl.style.color = '#2E7D32';
         if (btn) btn.style.background = '#2E7D32';
         return;
@@ -13572,6 +13574,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     function closeIrrigationCustomAlert() {
       const modal = document.getElementById('irrigationCustomAlertModal');
       if (modal) modal.style.display = 'none';
+      const iconWrap = document.getElementById('irrigationAlertIconWrap');
+      if (iconWrap && !iconWrap.querySelector('#irrigationAlertIcon')) {
+        iconWrap.innerHTML = '<i id="irrigationAlertIcon" class="fa-solid fa-circle-xmark"></i>';
+        iconWrap.style.border = 'none';
+      }
     }
 
     function openIrrigationTrackerPage() {
