@@ -19,6 +19,7 @@ import '../support/expert_helpline_screen.dart';
 import '../profile/user_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../../data/models/notification_model.dart';
+import '../../services/smart_popup_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int tabIndex) onNavigateTab;
@@ -35,12 +36,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  /// ডুপ্লিকেট ওভারল্যাপ ও রিবিল্ড গার্ড
-  bool _isPopupCurrentlyOpen = false;
-  bool _hasShownPopup = false;
-  String? _lastShownVersionId;
+  String? _lastEvaluatedNotificationId;
   Map<String, dynamic>? _lastPopupData;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _popupSubscription;
+  late final Stream<DocumentSnapshot<Map<String, dynamic>>> _popupStream;
   late final Stream<List<NotificationModel>> _notificationStream;
 
   @override
@@ -48,61 +46,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _notificationStream = widget.firestoreService.getNotificationsStream(limit: 30);
-    _listenToStartupPopupNotification();
+    // Read Optimization: Initialize stream once in initState
+    _popupStream = FirebaseFirestore.instance
+        .collection('admin_settings')
+        .doc('popup_notification')
+        .snapshots();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _popupSubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
-      // ইউজার অ্যাপ থেকে বের হলে বা মিনিমাইজ করলে শো-ফ্ল্যাগ রিসেট যাতে ফিরে আসলে আবার চেক হয়
-      _hasShownPopup = false;
-    } else if (state == AppLifecycleState.resumed) {
-      // ইউজার ব্যাকগ্রাউন্ড থেকে আবার অ্যাপে ফিরলে চেক করে পপআপ দেখানো
-      if (!_isPopupCurrentlyOpen && !_hasShownPopup && _lastPopupData != null) {
+    if (state == AppLifecycleState.resumed) {
+      // ব্যাকগ্রাউন্ড থেকে অ্যাপে ফিরলে চেক করে পপআপ ট্রাই করা (স্মার্ট ম্যানেজার ডুপ্লিকেট ও লিমিট নিয়ন্ত্রণ করবে)
+      if (!SmartPopupManager.instance.isPopupCurrentlyOpen && _lastPopupData != null) {
         _evaluateAndShowPopup(_lastPopupData!);
       }
     }
   }
 
-  /// রিয়েল-টাইম স্টার্টআপ পপআপ লিসেনার (Firestore Local Cache & Instant Show)
-  void _listenToStartupPopupNotification() {
-    _popupSubscription?.cancel();
-    _popupSubscription = FirebaseFirestore.instance
-        .collection('admin_settings')
-        .doc('popup_notification')
-        .snapshots()
-        .listen((doc) {
-      if (!mounted) return;
-      if (!doc.exists || doc.data() == null) {
-        return;
-      }
-      final data = doc.data()!;
-      _lastPopupData = data;
-
-      // নতুন কনটেন্ট বা আপডেট আসলে রিসেট করে প্রদর্শনের সুযোগ দেওয়া
-      final String versionId = '${data['updatedAt']}_${data['imageUrl']}_${data['headline']}';
-      if (_lastShownVersionId != versionId) {
-        _hasShownPopup = false;
-        _lastShownVersionId = versionId;
-      }
-
-      if (!_isPopupCurrentlyOpen && !_hasShownPopup) {
-        _evaluateAndShowPopup(_lastPopupData!);
-      }
-    }, onError: (error) {
-      debugPrint('Startup popup stream notice: $error');
-    });
-  }
-
+  /// স্মার্ট পপআপ যাচাই ও প্রদর্শন নিয়ন্ত্রণ
   void _evaluateAndShowPopup(Map<String, dynamic> data) async {
-    if (_isPopupCurrentlyOpen || _hasShownPopup || !mounted) return;
+    if (SmartPopupManager.instance.isPopupCurrentlyOpen || !mounted) return;
 
     final bool isActive = data['isActive'] == true;
     final String imageUrl = (data['imageUrl'] as String?)?.trim() ?? '';
@@ -128,9 +97,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return;
     }
 
-    _hasShownPopup = true;
+    // ৪) স্মার্ট পপআপ ম্যানেজার দ্বারা আইডি ও আপডেট নোটিফিকেশন শনাক্তকরণ
+    final String notificationId = SmartPopupManager.extractNotificationId(data);
+    final bool isUpdate = SmartPopupManager.checkIsUpdate(data);
 
-    // দ্রুততম ইনস্ট্যান্ট লোডিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে প্রি-ক্যাশ (Precache with timeout fallback)
+    // ৫) স্লট অধিগ্রহণ (দৈনিক সর্বোচ্চ ৫ বার, আপডেট বাইপাস ও ডুপ্লিকেট রোধ)
+    final bool slotAcquired = await SmartPopupManager.instance.tryAcquirePopupSlot(
+      notificationId: notificationId,
+      isUpdate: isUpdate,
+    );
+
+    if (!slotAcquired || !mounted) return;
+
+    // ৬) দ্রুততম ইনস্ট্যান্ট লোডিং নিশ্চিত করতে ব্যাকগ্রাউন্ডে প্রি-ক্যাশ (Precache with timeout fallback)
     try {
       await precacheImage(
         CachedNetworkImageProvider(imageUrl),
@@ -140,21 +119,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       // নেট স্লো হলেও ডায়ালগ ওপেন আটকে থাকবে না
     }
 
-    if (!mounted || _isPopupCurrentlyOpen) return;
+    if (!mounted) {
+      SmartPopupManager.instance.releasePopupSlot(notificationId);
+      return;
+    }
 
-    // কোনো বাড়তি ডিলে ছাড়া ফ্রেম রেন্ডার হলে ইনস্ট্যান্ট ডায়ালগ প্রদর্শন
+    // কোনো বাড়তি ডিলে ছাড়া ফ্রেম রেন্ডার হলে ডায়ালগ প্রদর্শন
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isPopupCurrentlyOpen) {
-        _showStartupNotificationDialog(imageUrl, headline);
+      if (mounted) {
+        _showStartupNotificationDialog(
+          imageUrl: imageUrl,
+          headline: headline,
+          notificationId: notificationId,
+        );
+      } else {
+        SmartPopupManager.instance.releasePopupSlot(notificationId);
       }
     });
   }
 
   /// গ্লোবাল স্টার্টআপ পপআপ মডাল ডায়ালগ (ইমেজ + হেডলাইন সমন্বিত কার্ড)
-  void _showStartupNotificationDialog(String imageUrl, String headline) {
-    if (_isPopupCurrentlyOpen || !mounted) return;
-    _isPopupCurrentlyOpen = true;
-
+  void _showStartupNotificationDialog({
+    required String imageUrl,
+    required String headline,
+    required String notificationId,
+  }) {
     showDialog(
       context: context,
       useRootNavigator: true,
@@ -295,8 +284,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
         );
       },
-    ).then((_) {
-      _isPopupCurrentlyOpen = false;
+    ).whenComplete(() {
+      SmartPopupManager.instance.releasePopupSlot(notificationId);
     });
   }
 
@@ -306,6 +295,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       backgroundColor: const Color(0xFFF8FAF7),
       body: Stack(
         children: [
+          // রিয়েল-টাইম স্মার্ট পপআপ স্ট্রিম লিসেনার (কোনো বাড়তি রিড ছাড়া ক্যাশড স্ট্রিম)
+          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: _popupStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
+                final data = snapshot.data!.data();
+                if (data != null) {
+                  final String currentId = SmartPopupManager.extractNotificationId(data);
+                  if (_lastEvaluatedNotificationId != currentId) {
+                    _lastEvaluatedNotificationId = currentId;
+                    _lastPopupData = data;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _evaluateAndShowPopup(data);
+                      }
+                    });
+                  }
+                }
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+
           // ইথারিয়াল গ্লাস স্ফিয়ার ও ভাইব্রেন্ট অ্যাকসেন্ট অর্বস ব্যাকগ্রাউন্ড
           Positioned.fill(
             child: IgnorePointer(
