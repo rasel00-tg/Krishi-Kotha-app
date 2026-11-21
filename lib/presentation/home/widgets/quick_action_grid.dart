@@ -595,13 +595,13 @@ class QuickActionGrid extends StatelessWidget {
           );
         },
       ),
-      // ৯. মাটির স্বাস্থ্য
+      // ৯. মাটির স্বাস্থ্য (ফুল-স্ক্রিন পেজ)
       QuickActionItem(
         id: 'soil',
         title: AppStrings.serviceSoilHealth,
-        icon: Icons.terrain_outlined,
-        color: const Color(0xFF6D4C41),
-        bgColor: const Color(0xFFEFEBE9),
+        icon: Icons.terrain_rounded,
+        color: const Color(0xFF2E7D32),
+        bgColor: const Color(0xFFE8F5E9),
         onTap: () {
           Navigator.push(
             context,

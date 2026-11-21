@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/premium_loading_widget.dart';
 import '../../global_popup/global_popup.dart';
 
 class SoilHealthScreen extends StatefulWidget {
@@ -29,12 +30,25 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
     'লবণাক্ত মাটি',
   ];
 
-  late final Stream<QuerySnapshot> _soilStream;
+  final Map<String, String> _categorySubtitleMap = {
+    'দোআঁশ মাটি': 'আদর্শ কৃষিজ মাটি (সব ফসলের জন্য উপযোগী)',
+    'এঁটেল মাটি': 'ভারী ও পানি ধারণক্ষম মাটি (ধান ও রবি ফসল)',
+    'বেলে মাটি': 'হালকা ও পানি নিষ্কাশনশীল মাটি (তরমুজ, বাদাম ও আলু)',
+    'পলি মাটি': 'উর্বর পলিগঠিত চর ও নদী অববাহিকার মাটি',
+    'লাল/পাহাড়ি মাটি': 'লৌহসমৃদ্ধ অম্লীয় পাহাড়ি অঞ্চলের মাটি',
+    'লবণাক্ত মাটি': 'উপকূলীয় অঞ্চলের লবণাক্ততামুক্ত সহনশীল চাষ',
+  };
+
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _soilStream;
 
   @override
   void initState() {
     super.initState();
-    _soilStream = FirebaseFirestore.instance.collection('soil_health').limit(100).snapshots();
+    // Read Optimization: Initialize stream once in initState with reasonable limit
+    _soilStream = FirebaseFirestore.instance
+        .collection('soil_health')
+        .limit(50)
+        .snapshots();
     _selectedCategory = widget.initialCategory ?? 'সব মাটি';
   }
 
@@ -59,7 +73,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
       title: title,
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.62,
+          maxHeight: MediaQuery.of(context).size.height * 0.65,
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -67,19 +81,19 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ছবি (Cloudflare R2)
+              // Cloudflare R2 ছবি
               if (imageUrl.isNotEmpty) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    height: 150,
+                    imageUrl: imageUrl.trim(),
+                    height: 160,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     placeholder: (_, __) => Shimmer.fromColors(
                       baseColor: Colors.grey.shade200,
                       highlightColor: Colors.grey.shade100,
-                      child: Container(height: 150, color: Colors.white),
+                      child: Container(height: 160, color: Colors.white),
                     ),
                     errorWidget: (_, __, ___) => const SizedBox.shrink(),
                   ),
@@ -93,7 +107,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                 runSpacing: 8,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(20),
@@ -116,7 +130,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0F2F1),
                       borderRadius: BorderRadius.circular(20),
@@ -128,7 +142,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                         const Icon(Icons.science_rounded, size: 14, color: Color(0xFF00695C)),
                         const SizedBox(width: 4),
                         Text(
-                          'pH: $ph',
+                          'pH মাত্রা: $ph',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -142,7 +156,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
               ),
               const SizedBox(height: 14),
 
-              // উপযোগী ফসল
+              // উপযোগী ফসলসমূহ
               _buildModalSectionHeader('উপযোগী ফসলসমূহ', Icons.eco_rounded, const Color(0xFF2E7D32)),
               const SizedBox(height: 5),
               Container(
@@ -155,7 +169,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                 ),
                 child: Text(
                   crops,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.4),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.45),
                 ),
               ),
               const SizedBox(height: 12),
@@ -173,7 +187,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                 ),
                 child: Text(
                   characteristics,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF4E342E), height: 1.4),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF4E342E), height: 1.45),
                 ),
               ),
               const SizedBox(height: 12),
@@ -191,12 +205,12 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
                 ),
                 child: Text(
                   fertilizer,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF01579B), height: 1.4),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF01579B), height: 1.45),
                 ),
               ),
               const SizedBox(height: 18),
 
-              // বন্ধ করুন বাটন (সেন্ট্রালাইজড গ্লোবাল স্টাইল)
+              // বন্ধ করুন বাটন
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -243,7 +257,6 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
-      // ২. "চাষ ক্যালেন্ডার" পেইজের মতো হুবহু AppBar (TopBar)
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
         elevation: 0,
@@ -275,15 +288,15 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: StreamBuilder<QuerySnapshot>(
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: _soilStream,
           builder: (context, snapshot) {
             final docs = snapshot.data?.docs ?? [];
 
-            // ৩. ডাইনামিক ক্যাটাগরি তালিকা তৈরি (বেস ক্যাটাগরি + ফায়ারবেসের নতুন ক্যাটাগরি)
+            // ডাইনামিক ক্যাটাগরি তালিকা তৈরি (বেস ক্যাটাগরি + ফায়ারস্টোরের নতুন ক্যাটাগরি)
             final Set<String> dynamicCategories = Set.from(_baseCategories);
             for (final doc in docs) {
-              final data = doc.data() as Map<String, dynamic>;
+              final data = doc.data();
               final cat = (data['category'] ?? data['soilType'] ?? '').toString().trim();
               if (cat.isNotEmpty && !dynamicCategories.contains(cat)) {
                 dynamicCategories.add(cat);
@@ -293,10 +306,60 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
 
             return Column(
               children: [
-                // ২ & ৩. "চাষ ক্যালেন্ডার" পেইজের হুবহু কালারিং টপবার বক্স (সার্চ বার ও ক্যাটাগরি চিপস সহ)
+                // ১. "চাষ ক্যালেন্ডার" পেইজের হুবহু কালারিং টপবার বক্স (সার্চ বার ও ক্যাটাগরি চিপস সহ)
                 _buildColoredTopBar(categoriesList),
 
-                // ৪. মাটির তালিকা (StreamBuilder রিয়েল-টাইম ডেটা ও R2 ইমেজ)
+                // ২. নির্বাচিত ক্যাটাগরির অতিরিক্ত ব্যানার তথ্য (যদি কোনো নির্দিষ্ট ক্যাটাগরি সিলেক্ট থাকে)
+                if (_selectedCategory != 'সব মাটি')
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE8F5E9), Color(0xFFF1F8E9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFC8E6C9)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.terrain_rounded, color: Colors.white, size: 18),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$_selectedCategory - স্বাস্থ্য নির্দেশিকা',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1B5E20),
+                                ),
+                              ),
+                              Text(
+                                _categorySubtitleMap[_selectedCategory] ??
+                                    'এই মাটির উপযুক্ত ফসল ও সার ব্যবস্থাপনা নিচে প্রদর্শিত হচ্ছে',
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF2E7D32)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // ৩. মাটির তালিকা (StreamBuilder রিয়েল-টাইম ডেটা ও R2 ইমেজ)
                 Expanded(
                   child: _buildSoilContent(snapshot, docs),
                 ),
@@ -370,7 +433,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
 
           const SizedBox(height: 12),
 
-          // ৩. মাটির ক্যাটাগরি ফিল্টার চিপস (হুবহু "চাষ ক্যালেন্ডার" স্টাইল)
+          // মাটির ক্যাটাগরি ফিল্টার চিপস (হুবহু "চাষ ক্যালেন্ডার" স্টাইল)
           SizedBox(
             height: 38,
             child: ListView.separated(
@@ -438,26 +501,35 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
     );
   }
 
-  Widget _buildSoilContent(AsyncSnapshot<QuerySnapshot> snapshot, List<QueryDocumentSnapshot> docs) {
-    if (snapshot.connectionState == ConnectionState.waiting && docs.isEmpty) {
+  Widget _buildSoilContent(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot, List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    if ((snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) ||
+        (!snapshot.hasData && !snapshot.hasError)) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
+        child: PremiumLoadingWidget(
+          topic: 'মাটির স্বাস্থ্য',
+          subtitle: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন',
+        ),
       );
     }
 
-    if (snapshot.hasError) {
+    if (snapshot.hasError && !snapshot.hasData) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
+              const Icon(Icons.error_outline_rounded, color: Color(0xFFD32F2F), size: 48),
               const SizedBox(height: 12),
+              const Text(
+                'তথ্য লোড করতে সমস্যা হয়েছে',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
               Text(
-                'তথ্য লোড করতে সমস্যা হয়েছে: ${snapshot.error}',
+                '${snapshot.error}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -465,290 +537,485 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
       );
     }
 
-    if (docs.isEmpty) {
-      return _buildEmptyState('ডাটাবেসে এখনো কোনো মাটির স্বাস্থ্য সংক্রান্ত তথ্য যুক্ত করা হয়নি।');
+    var items = docs.map((doc) {
+      final data = Map<String, dynamic>.from(doc.data());
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+
+    // ফিল্টারিং: ক্যাটাগরিভিত্তিক
+    if (_selectedCategory != 'সব মাটি') {
+      final targetCat = _selectedCategory.toLowerCase();
+      items = items.where((item) {
+        final category = (item['category'] ?? item['soilType'] ?? '').toString().toLowerCase();
+        final title = (item['title'] ?? item['soilName'] ?? item['name'] ?? '').toString().toLowerCase();
+        return category.contains(targetCat) || title.contains(targetCat);
+      }).toList();
     }
 
-    // ফিল্টারিং ও সার্চিং
-    final filteredDocs = docs.where((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      final title = (data['title'] ?? data['soilName'] ?? data['name'] ?? '').toString().toLowerCase();
-      final category = (data['category'] ?? data['soilType'] ?? '').toString().toLowerCase();
-      final ph = (data['phRange'] ?? data['ph'] ?? '').toString().toLowerCase();
-      final crops = (data['suitableCrops'] ?? data['crops'] ?? '').toString().toLowerCase();
-      final characteristics = (data['characteristics'] ?? data['description'] ?? '').toString().toLowerCase();
-      final fertilizer = (data['fertilizerManagement'] ?? data['fertilizer'] ?? '').toString().toLowerCase();
-
-      // ক্যাটাগরি ফিল্টার
-      if (_selectedCategory != 'সব মাটি') {
-        final targetCat = _selectedCategory.toLowerCase();
-        if (!category.contains(targetCat) && !title.contains(targetCat)) {
-          return false;
-        }
-      }
-
-      // সার্চ কুয়েরি
-      if (_searchQuery.isNotEmpty) {
-        final q = _searchQuery.toLowerCase();
-        final matches = title.contains(q) ||
+    // ফিল্টারিং: সার্চ কোয়েরি
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      items = items.where((item) {
+        final title = (item['title'] ?? item['soilName'] ?? item['name'] ?? '').toString().toLowerCase();
+        final category = (item['category'] ?? item['soilType'] ?? '').toString().toLowerCase();
+        final ph = (item['phRange'] ?? item['ph'] ?? '').toString().toLowerCase();
+        final crops = (item['suitableCrops'] ?? item['crops'] ?? '').toString().toLowerCase();
+        final characteristics = (item['characteristics'] ?? item['description'] ?? '').toString().toLowerCase();
+        final fertilizer = (item['fertilizerManagement'] ?? item['fertilizer'] ?? '').toString().toLowerCase();
+        return title.contains(q) ||
             category.contains(q) ||
             ph.contains(q) ||
             crops.contains(q) ||
             characteristics.contains(q) ||
             fertilizer.contains(q);
-        if (!matches) return false;
-      }
+      }).toList();
+    }
 
-      return true;
-    }).toList();
-
-    // ইন-মেমোরি সর্ট (সর্বশেষ আপডেট হওয়া তথ্য প্রথমে)
-    filteredDocs.sort((a, b) {
-      final dataA = a.data() as Map<String, dynamic>;
-      final dataB = b.data() as Map<String, dynamic>;
-      final timeA = (dataA['updatedAt'] as Timestamp?)?.millisecondsSinceEpoch ??
-          (dataA['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ??
+    // ক্রমানুসারে সাজানো (সর্বশেষ আপডেট হওয়া তথ্য প্রথমে)
+    items.sort((a, b) {
+      final timeA = (a['updatedAt'] as Timestamp?)?.millisecondsSinceEpoch ??
+          (a['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ??
           0;
-      final timeB = (dataB['updatedAt'] as Timestamp?)?.millisecondsSinceEpoch ??
-          (dataB['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ??
+      final timeB = (b['updatedAt'] as Timestamp?)?.millisecondsSinceEpoch ??
+          (b['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ??
           0;
       return timeB.compareTo(timeA);
     });
 
-    if (filteredDocs.isEmpty) {
-      return _buildEmptyState('আপনার অনুসন্ধানের সাথে কোনো মাটির তথ্য মেলেনি।');
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F8F1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.terrain_rounded, color: Color(0xFF2E7D32), size: 40),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _selectedCategory == 'সব মাটি'
+                    ? 'কোনো মাটির তথ্য পাওয়া যায়নি'
+                    : '$_selectedCategory ক্যাটাগরিতে কোনো তথ্য নেই',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'এডমিন প্যানেল থেকে তথ্য যুক্ত করা হলে এখানে প্রদর্শিত হবে।',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              ),
+              if (_selectedCategory != 'সব মাটি' || _searchQuery.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedCategory = 'সব মাটি';
+                      _searchQuery = '';
+                      _searchController.clear();
+                    });
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('সব মাটির তথ্য দেখুন'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF2E7D32),
+                    side: const BorderSide(color: Color(0xFF2E7D32)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
     }
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       physics: const BouncingScrollPhysics(),
-      itemCount: filteredDocs.length,
+      itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        final doc = filteredDocs[index];
-        final data = doc.data() as Map<String, dynamic>;
-        return _buildSoilCard(context, data);
+        final item = items[index];
+        return _buildSoilCard(context, item);
       },
     );
   }
 
-  Widget _buildSoilCard(BuildContext context, Map<String, dynamic> data) {
-    final title = (data['title'] ?? data['soilName'] ?? data['name'] ?? 'মাটির তথ্য').toString();
-    final category = (data['category'] ?? data['soilType'] ?? 'মাটি').toString();
-    final ph = (data['phRange'] ?? data['ph'] ?? 'উল্লেখ নেই').toString();
-    final crops = (data['suitableCrops'] ?? data['crops'] ?? 'উল্লেখ নেই').toString();
-    final characteristics = (data['characteristics'] ?? data['description'] ?? '').toString();
-    final imageUrl = (data['imageUrl'] ?? data['img'] ?? '').toString();
+  /// "চাষ ক্যালেন্ডার" কার্ডের হুবহু ক্লোন কার্ড স্ট্রাকচার
+  Widget _buildSoilCard(BuildContext context, Map<String, dynamic> item) {
+    final title = (item['title'] ?? item['soilName'] ?? item['name'] ?? 'মাটির তথ্য').toString();
+    final category = (item['category'] ?? item['soilType'] ?? 'মাটি').toString();
+    final ph = (item['phRange'] ?? item['ph'] ?? '').toString();
+    final crops = (item['suitableCrops'] ?? item['crops'] ?? '').toString();
+    final characteristics = (item['characteristics'] ?? item['description'] ?? '').toString();
+    final fertilizer = (item['fertilizerManagement'] ?? item['fertilizer'] ?? '').toString();
+    final imageUrl = (item['imageUrl'] ?? item['img'] ?? '').toString();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _showSoilDetailModal(context, data),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 8,
-                offset: Offset(0, 3),
-              ),
-            ],
+        border: Border.all(color: const Color(0xFFE4EDE4), width: 1.1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ৪. Cloudflare R2 ছবি (CachedNetworkImage + Shimmer)
-              if (imageUrl.isNotEmpty)
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Shimmer.fromColors(
-                      baseColor: Colors.grey.shade200,
-                      highlightColor: Colors.grey.shade100,
-                      child: Container(height: 140, color: Colors.white),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      height: 140,
-                      color: const Color(0xFFE8F5E9),
-                      child: const Center(
-                        child: Icon(Icons.terrain_rounded, size: 48, color: Color(0xFF2E7D32)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ইমেজ ও ব্যানার হেডার (ক্লিকেবল ইমেজ -> ছবিতে ট্যাপ করলেই ডিটেইলস পপআপ ওপেন হবে)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showSoilDetailModal(context, item),
+            child: SizedBox(
+              height: 160.0,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildCardImage(imageUrl, title),
+
+                  // ক্যাটাগরি ব্যাজ (IgnorePointer)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.65),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.terrain_rounded, color: Colors.amberAccent, size: 13),
+                            const SizedBox(width: 4),
+                            Text(
+                              category.isNotEmpty ? category : 'মাটির ধরন',
+                              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // টাইটেল এবং ক্যাটাগরি ব্যাজ
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF263238),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  // pH মান ব্যাজ (IgnorePointer)
+                  if (ph.isNotEmpty)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F5E9),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF81C784), width: 1),
-                          ),
-                          child: Text(
-                            category,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B5E20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-
-                    // pH লেভেল ও ফসল চিপস
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE0F2F1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: const Color(0xFF2E7D32).withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.science_rounded, size: 13, color: Color(0xFF00695C)),
+                              const Icon(Icons.science_rounded, color: Colors.white, size: 12),
                               const SizedBox(width: 4),
                               Text(
-                                'pH: $ph',
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF00695C),
-                                ),
+                                'pH $ph',
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
+                      ),
+                    ),
+
+                  // স্বচ্ছ ক্লিকেবল লেয়ার
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _showSoilDetailModal(context, item),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (category.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFFB74D)),
+                        ),
+                        child: Text(
+                          category,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFE65100),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // বিবরণ / বৈশিষ্ট্য
+                if (characteristics.isNotEmpty) ...[
+                  Text(
+                    characteristics,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+
+                // উপযোগী ফসল ও pH মান চিপস বক্স
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAF9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE8EFE8)),
+                  ),
+                  child: Column(
+                    children: [
+                      if (crops.isNotEmpty)
+                        Row(
+                          children: [
+                            const Icon(Icons.eco_rounded, size: 15, color: Color(0xFF2E7D32)),
+                            const SizedBox(width: 6),
+                            const Text('উপযোগী ফসল: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                            Expanded(
+                              child: Text(
+                                crops,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (crops.isNotEmpty && ph.isNotEmpty)
+                        const Divider(height: 12, color: Color(0xFFE8EFE8)),
+                      if (ph.isNotEmpty)
+                        Row(
+                          children: [
+                            const Icon(Icons.science_rounded, size: 15, color: Color(0xFF0277BD)),
+                            const SizedBox(width: 6),
+                            const Text('মাটির মান (pH): ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                            Expanded(
+                              child: Text(
+                                ph,
+                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+
+                // সার ও পরিচর্যা পরামর্শ (যদি থাকে)
+                if (fertilizer.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F8F1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.tips_and_updates_outlined, size: 15, color: Color(0xFF2E7D32)),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'উপযোগী: $crops',
-                            maxLines: 1,
+                            'সার ও পরিচর্যা: $fertilizer',
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF546E7A),
+                              fontSize: 11.5,
+                              color: Color(0xFF1B5E20),
+                              height: 1.35,
                             ),
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ],
 
-                    if (characteristics.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        characteristics,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          color: Color(0xFF78909C),
-                          height: 1.35,
+                const SizedBox(height: 12),
+
+                // বাটন: বিস্তারিত তথ্য দেখুন
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: () => _showSoilDetailModal(context, item),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1B5E20),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'বিস্তারিত তথ্য দেখুন',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_ios_rounded, size: 11, color: Colors.white),
+                          ],
                         ),
                       ),
-                    ],
-
-                    const SizedBox(height: 12),
-
-                    // বাটন: সার ও পরিচর্যা দেখুন
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1B5E20),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'সার ও পরিচর্যা দেখুন',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(Icons.arrow_forward_ios_rounded, size: 11, color: Colors.white),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+  /// Cloudflare R2 সহ যেকোনো নেটওয়ার্ক ইমেজ নিরাপদে রেন্ডার করার নন-ব্লকিং হেল্পার
+  Widget _buildCardImage(String imageUrl, String soilName) {
+    const double imageHeight = 160.0;
+    final cleanUrl = imageUrl.trim();
+
+    return SizedBox(
+      height: imageHeight,
+      width: double.infinity,
+      child: cleanUrl.isEmpty
+          ? _buildImagePlaceholder(imageHeight, soilName)
+          : CachedNetworkImage(
+              imageUrl: cleanUrl,
+              height: imageHeight,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              memCacheHeight: 400,
+              fadeInDuration: const Duration(milliseconds: 200),
+              placeholder: (context, url) => Container(
+                color: const Color(0xFFF1F8F1),
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ),
+              errorWidget: (context, errorUrl, error) {
+                return _buildImagePlaceholder(imageHeight, soilName);
+              },
+            ),
+    );
+  }
+
+  /// ডিফল্ট আকর্ষণীয় ইমেজ প্লেসহোল্ডার
+  Widget _buildImagePlaceholder(double height, String soilName) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(18),
-              decoration: const BoxDecoration(
-                color: Color(0xFFE8F5E9),
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2E7D32).withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.terrain_rounded,
-                size: 42,
+                size: 28,
                 color: Color(0xFF2E7D32),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF546E7A),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                soilName.isNotEmpty ? soilName : 'কৃষি কথা – মাটির স্বাস্থ্য',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20),
+                ),
               ),
             ),
           ],
