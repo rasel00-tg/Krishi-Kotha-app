@@ -14456,6 +14456,17 @@
           pendingUploads.soil = { file: null, blobUrl: null, isDeleted: false };
         }
 
+        // Cloudflare R2 Public URL Normalization
+        if (finalImageUrl) {
+          finalImageUrl = finalImageUrl.trim();
+          if (!finalImageUrl.startsWith('http://') && !finalImageUrl.startsWith('https://')) {
+            const r2Base = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/';
+            finalImageUrl = r2Base + finalImageUrl.replace(/^\/+/, '');
+          }
+          const existingInp = document.getElementById('adminSoilExistingImageUrl');
+          if (existingInp) existingInp.value = finalImageUrl;
+        }
+
         const data = {
           title,
           soilName: title,
@@ -14472,13 +14483,17 @@
           fertilizer: fertilizerManagement,
           imageUrl: finalImageUrl,
           img: finalImageUrl,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          image: finalImageUrl,
+          photoUrl: finalImageUrl,
+          imgUrl: finalImageUrl,
+          thumbnail: finalImageUrl,
+          updatedAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
         };
 
         if (id) {
           await firebase.firestore().collection('soil_health').doc(id).set(data, { merge: true });
         } else {
-          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          data.createdAt = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date();
           await firebase.firestore().collection('soil_health').add(data);
         }
 

@@ -3469,7 +3469,7 @@
       <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
       <div
         style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
           <button class="topbar-back-btn" onclick="closeSoilHealthPage()"
             style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
             <i class="fa-solid fa-chevron-left"></i>
@@ -3479,19 +3479,6 @@
             <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাটির ধরন, pH মাত্রা ও সার ব্যবস্থাপনা</p>
           </div>
           <div style="width: 32px;"></div>
-        </div>
-
-        <!-- Search Bar -->
-        <div
-          style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
-          <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
-          <input type="text" id="soilHealthSearchInput" placeholder="মাটির নাম, pH বা ফসল খুঁজুন..."
-            oninput="onSoilHealthSearch(this.value)"
-            style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
-          <button id="soilHealthClearSearchBtn" onclick="clearSoilHealthSearch()"
-            style="display: none; background: none; border: none; color: #9E9E9E; cursor: pointer; font-size: 14px; padding: 4px;">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
         </div>
 
         <!-- Horizontal Category Filter Chips -->
@@ -13812,21 +13799,25 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function onSoilHealthSearch(val) {
-      soilSearchQuery = (val || '').trim().toLowerCase();
-      const clearBtn = document.getElementById('soilHealthClearSearchBtn');
-      if (clearBtn) {
-        clearBtn.style.display = soilSearchQuery ? 'inline-block' : 'none';
-      }
+      // Retained for backward-compat
       renderSoilHealthList();
     }
 
     function clearSoilHealthSearch() {
-      const input = document.getElementById('soilHealthSearchInput');
-      if (input) input.value = '';
-      soilSearchQuery = '';
-      const clearBtn = document.getElementById('soilHealthClearSearchBtn');
-      if (clearBtn) clearBtn.style.display = 'none';
+      // Retained for backward-compat
       renderSoilHealthList();
+    }
+
+    // Helper: Normalize Cloudflare R2 and other image URLs safely
+    function getNormalizedSoilImageUrl(item) {
+      if (!item) return '';
+      let url = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      const r2Base = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/';
+      return r2Base + url.replace(/^\/+/, '');
     }
 
     function renderSoilHealthList() {
@@ -13855,27 +13846,6 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         });
       }
 
-      if (soilSearchQuery) {
-        filtered = filtered.filter(item => {
-          const text = (
-            (item.title || '') + ' ' +
-            (item.soilName || '') + ' ' +
-            (item.name || '') + ' ' +
-            (item.category || '') + ' ' +
-            (item.soilType || '') + ' ' +
-            (item.phRange || '') + ' ' +
-            (item.ph || '') + ' ' +
-            (item.suitableCrops || '') + ' ' +
-            (item.crops || '') + ' ' +
-            (item.characteristics || '') + ' ' +
-            (item.description || '') + ' ' +
-            (item.fertilizerManagement || '') + ' ' +
-            (item.fertilizer || '')
-          ).toLowerCase();
-          return text.includes(soilSearchQuery);
-        });
-      }
-
       const container = document.getElementById('soilHealthListContainer');
       if (!container) return;
 
@@ -13893,9 +13863,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               <i class="fa-solid fa-mountain" style="font-size: 30px; color: #2E7D32;"></i>
             </div>
             <h4 style="font-size: 15px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">কোনো মাটির তথ্য পাওয়া যায়নি</h4>
-            <p style="font-size: 12px; margin: 0 0 16px 0; color: #5B6D5D;">অন্য কোনো ক্যাটাগরি নির্বাচন করুন অথবা সার্চ পরিবর্তন করুন</p>
-            ${(selectedSoilCategory !== 'সব মাটি' || soilSearchQuery) ? `
-              <button type="button" onclick="selectSoilCategory('সব মাটি'); clearSoilHealthSearch();" style="background: #2E7D32; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <p style="font-size: 12px; margin: 0 0 16px 0; color: #5B6D5D;">অন্য কোনো ক্যাটাগরি নির্বাচন করুন</p>
+            ${(selectedSoilCategory !== 'সব মাটি') ? `
+              <button type="button" onclick="selectSoilCategory('সব মাটি')" style="background: #2E7D32; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="fa-solid fa-rotate-right"></i>সব মাটির তথ্য দেখুন
               </button>` : ''}
           </div>
@@ -13910,51 +13880,49 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         const crops = item.suitableCrops || item.crops || '';
         const characteristics = item.characteristics || item.description || '';
         const fertilizer = item.fertilizerManagement || item.fertilizer || '';
-        const imgUrl = (item.imageUrl || item.img || '').trim();
+        const imgUrl = getNormalizedSoilImageUrl(item);
 
         const imgBlock = imgUrl
-          ? `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
-               <img src="${imgUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" 
-                 onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15);\'><i class=\'fa-solid fa-mountain\' style=\'font-size: 22px; color: #2E7D32;\'></i></div><span style=\'font-size: 11px; font-weight: 700; color: #1B5E20;\'>${title}</span></div>';" />
-               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
-                 <i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 4px;"></i>${category}
+          ? `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
+               <img src="${imgUrl}" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; height: 190px; object-fit: cover; display: block; pointer-events: none;" 
+                 onerror="console.warn('Soil image failed to load:', '${imgUrl}'); this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\\'><div style=\\'width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\\'><i class=\\'fa-solid fa-mountain\\' style=\\'font-size: 24px; color: #2E7D32;\\'></i></div><span style=\\'font-size: 13px; font-weight: 700; color: #1B5E20;\\'>${title}</span></div>';" />
+               <!-- Glassmorphic Category Badge (Top-Left) -->
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(18, 48, 23, 0.82); backdrop-filter: blur(8px); color: #E8F5E9; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #81C784;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
                </span>
-               ${ph ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;"><i class="fa-solid fa-vial" style="font-size: 10px; margin-right: 3px;"></i>pH ${ph}</span>` : ''}
+               <!-- pH Badge (Top-Right) -->
+               ${ph ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(0, 105, 92, 0.85); backdrop-filter: blur(8px); color: #E0F2F1; border: 1px solid rgba(255,255,255,0.22); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); pointer-events: none;"><i class="fa-solid fa-flask" style="font-size: 10px; margin-right: 4px; color: #80CBC4;"></i>pH ${ph}</span>` : ''}
              </div>`
-          : `<div style="height: 120px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
-               <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15); pointer-events: none;">
-                 <i class="fa-solid fa-mountain" style="font-size: 22px; color: #2E7D32;"></i>
+          : `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
+               <div style="width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18); pointer-events: none;">
+                 <i class="fa-solid fa-mountain" style="font-size: 24px; color: #2E7D32;"></i>
                </div>
-               <span style="font-size: 11px; font-weight: 700; color: #1B5E20; pointer-events: none;">${title}</span>
-               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
-                 <i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 4px;"></i>${category}
+               <span style="font-size: 13px; font-weight: 700; color: #1B5E20; pointer-events: none;">${title}</span>
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(18, 48, 23, 0.82); backdrop-filter: blur(8px); color: #E8F5E9; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #81C784;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
                </span>
-               ${ph ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;">pH ${ph}</span>` : ''}
+               ${ph ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(0, 105, 92, 0.85); backdrop-filter: blur(8px); color: #E0F2F1; border: 1px solid rgba(255,255,255,0.22); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; pointer-events: none;">pH ${ph}</span>` : ''}
              </div>`;
 
         return `
           <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
             ${imgBlock}
-            <div style="padding: 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <h4 style="font-size: 16px; font-weight: 800; color: #1E281F; margin: 0; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">${title}</h4>
-                ${category ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px;">${category}</span>` : ''}
+            <div style="padding: 14px 14px 16px 14px;">
+              <!-- Distinct Headline with Vertical Accent Bar -->
+              <div style="border-left: 3.5px solid #2E7D32; padding-left: 10px; margin-bottom: 10px; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
+                <h4 style="font-size: 16.5px; font-weight: 700; color: #1B2E1E; margin: 0; line-height: 1.38; letter-spacing: -0.2px;">${title}</h4>
               </div>
 
               ${characteristics ? `<p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 10px;">${characteristics}</p>` : ''}
 
-              <div style="background: #F9FAF9; border: 1px solid #E8EFE8; border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+              <div style="background: #F9FAF9; border: 1px solid #E8EFE8; border-radius: 10px; padding: 10px; margin-bottom: ${fertilizer ? '10px' : '0'};">
                 ${crops ? `<div style="display: flex; align-items: flex-start; font-size: 12px; margin-bottom: ${ph ? '6px' : '0'};"><i class="fa-solid fa-seedling" style="color: #2E7D32; width: 18px; margin-top: 2px;"></i><div><strong style="color: #1E281F; margin-right: 4px;">উপযোগী ফসল:</strong> <span style="color: #4A5B4C;">${crops}</span></div></div>` : ''}
                 ${ph ? `<div style="display: flex; align-items: center; font-size: 12px;"><i class="fa-solid fa-flask" style="color: #00796B; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">pH মাত্রা:</strong> <span style="color: #00796B; font-weight: 600;">${ph}</span></div>` : ''}
               </div>
 
-              ${fertilizer ? `<div style="background: #F1F8F1; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; color: #1B5E20;"><i class="fa-regular fa-lightbulb" style="color: #2E7D32; margin-right: 5px;"></i><strong>সার ব্যবস্থাপনা টিপস:</strong> ${fertilizer}</div>` : ''}
-
-              <div style="margin-top: 12px; text-align: right;">
-                <button type="button" onclick="openSoilHealthDetailsByIndex(${idx})" style="background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                  বিস্তারিত দেখুন <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
-                </button>
-              </div>
+              ${fertilizer ? `<div style="background: #F1F8F1; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; color: #1B5E20;"><i class="fa-regular fa-lightbulb" style="color: #2E7D32; margin-right: 5px;"></i><strong>সার ব্যবস্থাপনা:</strong> ${fertilizer}</div>` : ''}
             </div>
           </div>
         `;
@@ -13980,19 +13948,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const crops = item.suitableCrops || item.crops || 'উপযোগী ফসলের তথ্য শীঘ্রই আসছে';
       const characteristics = item.characteristics || item.description || 'মাটির বিস্তারিত বিবরণ শীঘ্রই হালনাগাদ করা হবে।';
       const fertilizer = item.fertilizerManagement || item.fertilizer || 'মাটির স্বাস্থ্য অনুযায়ী সুষম সার প্রয়োগ করুন।';
-      const imgUrl = (item.imageUrl || item.img || '').trim();
+      const imgUrl = getNormalizedSoilImageUrl(item);
 
       if (hName) hName.innerText = title;
       if (hSub) hSub.innerText = [category, ph ? 'pH: ' + ph : ''].filter(Boolean).join(' • ');
 
       const imgBlock = imgUrl
-        ? `<div style="height: 230px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
-             <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" 
-               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\'><i class=\'fa-solid fa-mountain\' style=\'font-size: 26px; color: #2E7D32;\'></i></div><span style=\'font-size: 13px; font-weight: 700; color: #1B5E20;\'>${title}</span></div>';" />
-             <span style="position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);"><i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 5px;"></i>${category}</span>
-             ${ph ? `<span style="position: absolute; top: 14px; right: 14px; background: rgba(46,125,50,0.92); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"><i class="fa-solid fa-vial" style="margin-right: 4px;"></i>pH ${ph}</span>` : ''}
+        ? `<div style="height: 220px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
+             <img src="${imgUrl}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;" 
+               onerror="console.warn('Soil detail image failed:', '${imgUrl}'); this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\\'><div style=\\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\\'><i class=\\'fa-solid fa-mountain\\' style=\\'font-size: 26px; color: #2E7D32;\\'></i></div><span style=\\'font-size: 13px; font-weight: 700; color: #1B5E20;\\'>${title}</span></div>';" />
+             <span style="position: absolute; top: 14px; left: 14px; background: rgba(18, 48, 23, 0.85); backdrop-filter: blur(8px); color: #E8F5E9; border: 1px solid rgba(255,255,255,0.28); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px;"><i class="fa-solid fa-mountain" style="color: #81C784; margin-right: 5px;"></i>${category}</span>
+             ${ph ? `<span style="position: absolute; top: 14px; right: 14px; background: rgba(0, 105, 92, 0.88); backdrop-filter: blur(8px); color: #E0F2F1; border: 1px solid rgba(255,255,255,0.22); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"><i class="fa-solid fa-flask" style="margin-right: 4px; color: #80CBC4;"></i>pH ${ph}</span>` : ''}
            </div>`
-        : `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        : `<div style="height: 170px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center;">
              <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);">
                <i class="fa-solid fa-mountain" style="font-size: 26px; color: #2E7D32;"></i>
              </div>
