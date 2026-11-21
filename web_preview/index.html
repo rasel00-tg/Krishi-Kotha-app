@@ -2519,9 +2519,9 @@
             </div>
             <span>কৃষি আয়-ব্যয়</span>
           </div>
-          <!-- ৯. মাটির স্বাস্থ্য -->
-          <div class="quick-card" onclick="openServiceModal('soil')">
-            <div class="quick-icon-wrap" style="background: #EFEBE9; color: #6D4C41;">
+          <!-- ৯. মাটির স্বাস্থ্য (ফুল পেজ ও ক্যাটাগরি ফিল্টারিং) -->
+          <div class="quick-card" onclick="openSoilHealthPage()">
+            <div class="quick-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">
               <i class="fa-solid fa-mountain"></i>
             </div>
             <span>মাটির স্বাস্থ্য</span>
@@ -3460,6 +3460,104 @@
       </div>
       <div id="cropCalendarDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN SOIL HEALTH PAGE MATCHING FLUTTER SOIL_HEALTH_SCREEN & CROP CALENDAR -->
+    <div class="full-screen-page" id="soilHealthPage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeSoilHealthPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">মাটির স্বাস্থ্য ও পরিচর্যা</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাটির ধরন, pH মাত্রা ও সার ব্যবস্থাপনা</p>
+          </div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- Search Bar -->
+        <div
+          style="background: #fff; border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 12px;">
+          <i class="fa-solid fa-magnifying-glass" style="color: #2E7D32; font-size: 15px; margin-right: 8px;"></i>
+          <input type="text" id="soilHealthSearchInput" placeholder="মাটির নাম, pH বা ফসল খুঁজুন..."
+            oninput="onSoilHealthSearch(this.value)"
+            style="border: none; background: transparent; outline: none; width: 100%; font-size: 13.5px; color: #1E281F;" />
+          <button id="soilHealthClearSearchBtn" onclick="clearSoilHealthSearch()"
+            style="display: none; background: none; border: none; color: #9E9E9E; cursor: pointer; font-size: 14px; padding: 4px;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Horizontal Category Filter Chips -->
+        <div class="month-chips-scroll" id="soilCategoryChips"
+          style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+          <!-- Dynamically populated soil category chips -->
+        </div>
+      </div>
+
+      <!-- Selected Category Guidance Banner -->
+      <div id="soilCategoryBanner"
+        style="display: none; background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+            <i class="fa-solid fa-mountain"></i>
+          </div>
+          <div>
+            <h4 id="soilBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #1B5E20; margin: 0;">
+            </h4>
+            <p id="soilBannerCategoryDesc" style="font-size: 11px; color: #2E7D32; margin: 2px 0 0 0;">এই মাটির উপযুক্ত ফসল ও সার ব্যবস্থাপনা নিচে প্রদর্শিত হচ্ছে</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Soil Items List Container -->
+      <div id="soilHealthListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <!-- Dynamically rendered soil cards -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN SOIL DETAILS PAGE MATCHING FLUTTER DETAIL VIEW & CROP CALENDAR -->
+    <div class="full-screen-page" id="soilHealthDetailPage"
+      style="background: #F7FAF7; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <div
+        style="background: #1B5E20; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
+        <button onclick="closeSoilHealthDetailPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 id="soilDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">মাটির তথ্য
+          </h3>
+          <p id="soilDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">মাটির ধরন ও সার ব্যবস্থাপনা
+          </p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+      <div id="soilHealthDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+        <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- CUSTOM GLOBAL ALERT MODAL FOR SOIL HEALTH -->
+    <div class="modal-overlay" id="soilCustomAlertModal"
+      style="display: none; z-index: 100020; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+      <div
+        style="background: #fff; border-radius: 16px; width: 330px; max-width: 90vw; padding: 22px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+        <div id="soilAlertIconWrap"
+          style="width: 54px; height: 54px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 14px auto;">
+          <i id="soilAlertIcon" class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <h4 id="soilAlertTitle" style="font-size: 16px; font-weight: 700; color: #D32F2F; margin: 0 0 8px 0;">ত্রুটি</h4>
+        <p id="soilAlertMsg" style="font-size: 13px; color: #546E7A; line-height: 1.45; margin: 0 0 18px 0;"></p>
+        <button id="soilAlertBtn" onclick="closeSoilCustomAlert()"
+          style="background: #2E7D32; color: #fff; border: none; border-radius: 10px; width: 100%; padding: 11px 0; font-size: 13.5px; font-weight: 700; cursor: pointer;">ঠিক আছে</button>
       </div>
     </div>
 
@@ -13526,6 +13624,526 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             renderCalendarCrops();
           }
         }, 800);
+      }
+    }
+
+    // =========================================================================
+    // DEDICATED FULL PAGE SOIL HEALTH LOGIC (MATCHING FLUTTER SCREEN & CROP CALENDAR)
+    // =========================================================================
+    const baseSoilCategories = [
+      'সব মাটি',
+      'দোআঁশ মাটি',
+      'এঁটেল মাটি',
+      'বেলে মাটি',
+      'পলি মাটি',
+      'লাল/পাহাড়ি মাটি',
+      'লবণাক্ত মাটি'
+    ];
+
+    const soilCategorySubtitleMap = {
+      'দোআঁশ মাটি': 'আদর্শ কৃষিজ মাটি (সব ফসলের জন্য উপযোগী)',
+      'এঁটেল মাটি': 'ভারী ও পানি ধারণক্ষম মাটি (ধান ও রবি ফসল)',
+      'বেলে মাটি': 'হালকা ও পানি নিষ্কাশনশীল মাটি (তরমুজ, বাদাম ও আলু)',
+      'পলি মাটি': 'উর্বর পলিগঠিত চর ও নদী অববাহিকার মাটি',
+      'লাল/পাহাড়ি মাটি': 'লৌহসমৃদ্ধ অম্লীয় পাহাড়ি অঞ্চলের মাটি',
+      'লবণাক্ত মাটি': 'উপকূলীয় অঞ্চলের লবণাক্ততামুক্ত সহনশীল চাষ'
+    };
+
+    let selectedSoilCategory = 'সব মাটি';
+    let soilSearchQuery = '';
+    let isSoilDataLoading = true;
+    let soilHealthUnsubscribe = null;
+    let currentSoilItems = [];
+
+    let defaultSoilData = [
+      {
+        id: 'soil_1',
+        title: 'পলি দোআঁশ মাটি',
+        soilName: 'পলি দোআঁশ মাটি',
+        category: 'দোআঁশ মাটি',
+        soilType: 'দোআঁশ মাটি',
+        phRange: '৬.০ - ৭.০',
+        ph: '৬.০ - ৭.০',
+        suitableCrops: 'ধান, গম, পাট, ভুট্টা, আলু, ডাল ও প্রায় সব ধরনের শাকসবজি',
+        crops: 'ধান, গম, পাট, ভুট্টা, আলু, ডাল ও প্রায় সব ধরনের শাকসবজি',
+        characteristics: 'এই মাটিতে বালু, পলি ও কাদার সুষম অনুপাত থাকে। এটি চমৎকার পানি ধারণ ও নিষ্কাশন ক্ষমতাসম্পন্ন এবং পুষ্টি উপাদানে অত্যন্ত সমৃদ্ধ।',
+        fertilizerManagement: 'মাটির উর্বরতা ধরে রাখতে জৈব সার বা কেঁচো সার নিয়মিত প্রয়োগ করুন। ইউরিয়া, টিএসপি ও এমপি সার পরিমিত মাত্রায় ব্যবহার করুন।',
+        imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d69109853?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'soil_2',
+        title: 'ভারী এঁটেল মাটি',
+        soilName: 'ভারী এঁটেল মাটি',
+        category: 'এঁটেল মাটি',
+        soilType: 'এঁটেল মাটি',
+        phRange: '৬.৫ - ৭.৫',
+        ph: '৬.৫ - ৭.৫',
+        suitableCrops: 'রোপা আমন ধান, বোরো ধান, গম ও বিভিন্ন ডাল ফসল',
+        crops: 'রোপা আমন ধান, বোরো ধান, গম ও বিভিন্ন ডাল ফসল',
+        characteristics: 'কাদা কণার পরিমাণ বেশি হওয়ায় মাটির কণাগুলো খুব ঘনভাবে লেগে থাকে। পানি ধারণক্ষমতা অত্যন্ত বেশি হলেও সহজে নিষ্কাশিত হয় না।',
+        fertilizerManagement: 'মাটির গঠন হালকা করার জন্য প্রচুর জৈব সার ও খড়কুটা মিশ্রিত কম্পোস্ট ব্যবহার করুন। নাইট্রোজেন সার কিস্তিতে দিন।',
+        imageUrl: 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'soil_3',
+        title: 'বেলে দোআঁশ মাটি',
+        soilName: 'বেলে দোআঁশ মাটি',
+        category: 'বেলে মাটি',
+        soilType: 'বেলে মাটি',
+        phRange: '৫.৫ - ৬.৫',
+        ph: '৫.৫ - ৬.৫',
+        suitableCrops: 'চিনাবাদাম, তরমুজ, আলু, মিষ্টি আলু ও গাজর',
+        crops: 'চিনাবাদাম, তরমুজ, আলু, মিষ্টি আলু ও গাজর',
+        characteristics: 'মাটি হালকা ও বালুকাময়। দ্রুত পানি শুকিয়ে যায় এবং বায়ু চলাচল খুব ভালো। শিকড় সহজে মাটির গভীরে প্রবেশ করতে পারে।',
+        fertilizerManagement: 'দ্রুত পুষ্টি ধুয়ে যাওয়া রোধে ঘন ঘন সেচ ও জৈব সার দিন। পটাশ ও ম্যাগনেসিয়াম সার সঠিক সময়ে কিস্তিতে প্রয়োগ আবশ্যক।',
+        imageUrl: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'soil_4',
+        title: 'উর্বর পলি মাটি',
+        soilName: 'উর্বর পলি মাটি',
+        category: 'পলি মাটি',
+        soilType: 'পলি মাটি',
+        phRange: '৬.২ - ৭.২',
+        ph: '৬.২ - ৭.২',
+        suitableCrops: 'সরিষা, ভুট্টা, পেঁয়াজ, রসুন ও শীতকালীন সবজি',
+        crops: 'সরিষা, ভুট্টা, পেঁয়াজ, রসুন ও শীতকালীন সবজি',
+        characteristics: 'নদী অববাহিকা ও চরাঞ্চলের এই মাটি নরম, মিহি কণাযুক্ত এবং প্রাকৃতিকভাবে অত্যন্ত উর্বর। পানি ও বাতাস চলাচলের ভারসাম্য চমৎকার।',
+        fertilizerManagement: 'প্রাকৃতিক উর্বরতা বেশি থাকায় রাসায়নিক সারের প্রয়োজন তুলনামূলক কম। শুধু প্রাথমিক ফসফরাস ও পরিমিত ইউরিয়া ব্যবহার করলেই চলে।',
+        imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'soil_5',
+        title: 'লাল বা পাহাড়ি অম্লীয় মাটি',
+        soilName: 'লাল বা পাহাড়ি অম্লীয় মাটি',
+        category: 'লাল/পাহাড়ি মাটি',
+        soilType: 'লাল/পাহাড়ি মাটি',
+        phRange: '৪.৫ - ৫.৮',
+        ph: '৪.৫ - ৫.৮',
+        suitableCrops: 'চা, আনারস, লেবু, আদা, হলুদ, কাসাভা ও কাজুবাদাম',
+        crops: 'চা, আনারস, লেবু, আদা, হলুদ, কাসাভা ও কাজুবাদাম',
+        characteristics: 'উঁচু ও পাহাড়ি অঞ্চলের লৌহ ও অ্যালুমিনিয়াম সমৃদ্ধ লালচে রঙের মাটি। মাটিতে অম্লত্ব বা এসিডিটি বেশি থাকে।',
+        fertilizerManagement: 'অম্লত্ব কমাতে প্রতি ৩-৪ বছর অন্তর ডলোচুন বা কৃষি চুন প্রয়োগ করুন। ফসফেট সারের কার্যকারিতা বাড়াতে জৈব সার সাথে মিশিয়ে দিন।',
+        imageUrl: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'soil_6',
+        title: 'উপকূলীয় লবণাক্ত মাটি',
+        soilName: 'উপকূলীয় লবণাক্ত মাটি',
+        category: 'লবণাক্ত মাটি',
+        soilType: 'লবণাক্ত মাটি',
+        phRange: '৭.২ - ৮.৫',
+        ph: '৭.২ - ৮.৫',
+        suitableCrops: 'লবণাক্ততা সহনশীল ধান (ব্রি ধান ৬৭, ৯৭, ৯৯), সূর্যমুখী ও তরমুজ',
+        crops: 'লবণাক্ততা সহনশীল ধান (ব্রি ধান ৬৭, ৯৭, ৯৯), সূর্যমুখী ও তরমুজ',
+        characteristics: 'সমুদ্রের জোয়ারভাটা ও লবণাক্ত পানির কারণে মাটির উপরিভাগে লবণের স্তর জমে। শুষ্ক মৌসুমে লবণের ঘনত্ব বেড়ে ফসল ক্ষতিগ্রস্ত হতে পারে।',
+        fertilizerManagement: 'লবণাক্ততা কমাতে জমিতে জিপসাম সার এবং বেশি করে পচা গোবর ও সবুজ সার প্রয়োগ করুন। মিষ্টি পানির নালা কেটে নিষ্কাশন ব্যবস্থা রাখুন।',
+        imageUrl: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&w=600&q=80'
+      }
+    ];
+
+    function openSoilHealthPage() {
+      const page = document.getElementById('soilHealthPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      renderSoilCategoryChips();
+      renderSoilHealthList();
+      initFirestoreSoilSync();
+    }
+
+    function closeSoilHealthPage() {
+      const page = document.getElementById('soilHealthPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+    }
+
+    function renderSoilCategoryChips() {
+      const container = document.getElementById('soilCategoryChips');
+      if (!container) return;
+
+      const dynamicCats = new Set(baseSoilCategories);
+      (defaultSoilData || []).forEach(item => {
+        const cat = item.category || item.soilType;
+        if (cat && typeof cat === 'string' && cat.trim()) {
+          dynamicCats.add(cat.trim());
+        }
+      });
+      const allCategories = Array.from(dynamicCats);
+
+      container.innerHTML = allCategories.map(cat => {
+        const isSel = selectedSoilCategory === cat;
+        const icon = cat === 'সব মাটি' ? 'fa-table-cells-large' : 'fa-mountain';
+        return `
+          <button type="button" onclick="selectSoilCategory('${cat}')" style="
+            background: ${isSel ? '#ffffff' : 'rgba(255,255,255,0.18)'};
+            color: ${isSel ? '#1B5E20' : '#ffffff'};
+            border: 1px solid ${isSel ? '#ffffff' : 'rgba(255,255,255,0.32)'};
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            font-weight: ${isSel ? '700' : '500'};
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: ${isSel ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'};
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+          "><i class="fa-solid ${icon}" style="font-size: 11px;"></i>${cat}</button>
+        `;
+      }).join('');
+    }
+
+    function selectSoilCategory(cat) {
+      selectedSoilCategory = cat;
+      renderSoilCategoryChips();
+      renderSoilHealthList();
+    }
+
+    function onSoilHealthSearch(val) {
+      soilSearchQuery = (val || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('soilHealthClearSearchBtn');
+      if (clearBtn) {
+        clearBtn.style.display = soilSearchQuery ? 'inline-block' : 'none';
+      }
+      renderSoilHealthList();
+    }
+
+    function clearSoilHealthSearch() {
+      const input = document.getElementById('soilHealthSearchInput');
+      if (input) input.value = '';
+      soilSearchQuery = '';
+      const clearBtn = document.getElementById('soilHealthClearSearchBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+      renderSoilHealthList();
+    }
+
+    function renderSoilHealthList() {
+      const banner = document.getElementById('soilCategoryBanner');
+      const bTitle = document.getElementById('soilBannerCategoryTitle');
+      const bDesc = document.getElementById('soilBannerCategoryDesc');
+
+      if (selectedSoilCategory !== 'সব মাটি') {
+        if (banner) banner.style.display = 'block';
+        if (bTitle) bTitle.innerText = selectedSoilCategory;
+        if (bDesc) {
+          bDesc.innerText = soilCategorySubtitleMap[selectedSoilCategory] || 'এই মাটির উপযুক্ত ফসল ও সার ব্যবস্থাপনা নিচে প্রদর্শিত হচ্ছে';
+        }
+      } else {
+        if (banner) banner.style.display = 'none';
+      }
+
+      let filtered = [...defaultSoilData];
+
+      if (selectedSoilCategory !== 'সব মাটি') {
+        const target = selectedSoilCategory.toLowerCase();
+        filtered = filtered.filter(item => {
+          const cat = ((item.category || item.soilType || '')).toLowerCase();
+          const title = ((item.title || item.soilName || item.name || '')).toLowerCase();
+          return cat.includes(target) || title.includes(target);
+        });
+      }
+
+      if (soilSearchQuery) {
+        filtered = filtered.filter(item => {
+          const text = (
+            (item.title || '') + ' ' +
+            (item.soilName || '') + ' ' +
+            (item.name || '') + ' ' +
+            (item.category || '') + ' ' +
+            (item.soilType || '') + ' ' +
+            (item.phRange || '') + ' ' +
+            (item.ph || '') + ' ' +
+            (item.suitableCrops || '') + ' ' +
+            (item.crops || '') + ' ' +
+            (item.characteristics || '') + ' ' +
+            (item.description || '') + ' ' +
+            (item.fertilizerManagement || '') + ' ' +
+            (item.fertilizer || '')
+          ).toLowerCase();
+          return text.includes(soilSearchQuery);
+        });
+      }
+
+      const container = document.getElementById('soilHealthListContainer');
+      if (!container) return;
+
+      if (isSoilDataLoading) {
+        container.innerHTML = getPremiumLoaderHtml('মাটির স্বাস্থ্য', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        return;
+      }
+
+      currentSoilItems = filtered;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; color: #758577;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #F1F8F1; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+              <i class="fa-solid fa-mountain" style="font-size: 30px; color: #2E7D32;"></i>
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">কোনো মাটির তথ্য পাওয়া যায়নি</h4>
+            <p style="font-size: 12px; margin: 0 0 16px 0; color: #5B6D5D;">অন্য কোনো ক্যাটাগরি নির্বাচন করুন অথবা সার্চ পরিবর্তন করুন</p>
+            ${(selectedSoilCategory !== 'সব মাটি' || soilSearchQuery) ? `
+              <button type="button" onclick="selectSoilCategory('সব মাটি'); clearSoilHealthSearch();" style="background: #2E7D32; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-rotate-right"></i>সব মাটির তথ্য দেখুন
+              </button>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((item, idx) => {
+        const title = item.title || item.soilName || item.name || 'মাটির তথ্য';
+        const category = item.category || item.soilType || 'মাটির ধরন';
+        const ph = item.phRange || item.ph || '';
+        const crops = item.suitableCrops || item.crops || '';
+        const characteristics = item.characteristics || item.description || '';
+        const fertilizer = item.fertilizerManagement || item.fertilizer || '';
+        const imgUrl = (item.imageUrl || item.img || '').trim();
+
+        const imgBlock = imgUrl
+          ? `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
+               <img src="${imgUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" 
+                 onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15);\'><i class=\'fa-solid fa-mountain\' style=\'font-size: 22px; color: #2E7D32;\'></i></div><span style=\'font-size: 11px; font-weight: 700; color: #1B5E20;\'>${title}</span></div>';" />
+               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 4px;"></i>${category}
+               </span>
+               ${ph ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;"><i class="fa-solid fa-vial" style="font-size: 10px; margin-right: 3px;"></i>pH ${ph}</span>` : ''}
+             </div>`
+          : `<div style="height: 120px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">
+               <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 2px 6px rgba(46,125,50,0.15); pointer-events: none;">
+                 <i class="fa-solid fa-mountain" style="font-size: 22px; color: #2E7D32;"></i>
+               </div>
+               <span style="font-size: 11px; font-weight: 700; color: #1B5E20; pointer-events: none;">${title}</span>
+               <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); pointer-events: none;">
+                 <i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 4px;"></i>${category}
+               </span>
+               ${ph ? `<span style="position: absolute; top: 10px; right: 10px; background: rgba(46,125,50,0.92); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 20px; pointer-events: none;">pH ${ph}</span>` : ''}
+             </div>`;
+
+        return `
+          <div style="background: #fff; border: 1.2px solid #E0EFE0; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+            ${imgBlock}
+            <div style="padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="font-size: 16px; font-weight: 800; color: #1E281F; margin: 0; cursor: pointer;" onclick="openSoilHealthDetailsByIndex(${idx})">${title}</h4>
+                ${category ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px;">${category}</span>` : ''}
+              </div>
+
+              ${characteristics ? `<p style="font-size: 12.5px; color: #4A5B4C; line-height: 1.45; margin-bottom: 10px;">${characteristics}</p>` : ''}
+
+              <div style="background: #F9FAF9; border: 1px solid #E8EFE8; border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+                ${crops ? `<div style="display: flex; align-items: flex-start; font-size: 12px; margin-bottom: ${ph ? '6px' : '0'};"><i class="fa-solid fa-seedling" style="color: #2E7D32; width: 18px; margin-top: 2px;"></i><div><strong style="color: #1E281F; margin-right: 4px;">উপযোগী ফসল:</strong> <span style="color: #4A5B4C;">${crops}</span></div></div>` : ''}
+                ${ph ? `<div style="display: flex; align-items: center; font-size: 12px;"><i class="fa-solid fa-flask" style="color: #00796B; width: 18px;"></i><strong style="color: #1E281F; margin-right: 4px;">pH মাত্রা:</strong> <span style="color: #00796B; font-weight: 600;">${ph}</span></div>` : ''}
+              </div>
+
+              ${fertilizer ? `<div style="background: #F1F8F1; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; color: #1B5E20;"><i class="fa-regular fa-lightbulb" style="color: #2E7D32; margin-right: 5px;"></i><strong>সার ব্যবস্থাপনা টিপস:</strong> ${fertilizer}</div>` : ''}
+
+              <div style="margin-top: 12px; text-align: right;">
+                <button type="button" onclick="openSoilHealthDetailsByIndex(${idx})" style="background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                  বিস্তারিত দেখুন <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openSoilHealthDetailsByIndex(idx) {
+      const item = (typeof currentSoilItems !== 'undefined' && currentSoilItems && currentSoilItems[idx]) || (defaultSoilData || [])[idx];
+      if (!item) return;
+      openSoilHealthDetailsWithItem(item);
+    }
+
+    function openSoilHealthDetailsWithItem(item) {
+      const page = document.getElementById('soilHealthDetailPage');
+      const hName = document.getElementById('soilDetailHeaderName');
+      const hSub = document.getElementById('soilDetailHeaderSubtitle');
+      const content = document.getElementById('soilHealthDetailContent');
+      if (!page || !content) return;
+
+      const title = item.title || item.soilName || item.name || 'মাটির তথ্য';
+      const category = item.category || item.soilType || 'মাটির ধরন';
+      const ph = item.phRange || item.ph || '';
+      const crops = item.suitableCrops || item.crops || 'উপযোগী ফসলের তথ্য শীঘ্রই আসছে';
+      const characteristics = item.characteristics || item.description || 'মাটির বিস্তারিত বিবরণ শীঘ্রই হালনাগাদ করা হবে।';
+      const fertilizer = item.fertilizerManagement || item.fertilizer || 'মাটির স্বাস্থ্য অনুযায়ী সুষম সার প্রয়োগ করুন।';
+      const imgUrl = (item.imageUrl || item.img || '').trim();
+
+      if (hName) hName.innerText = title;
+      if (hSub) hSub.innerText = [category, ph ? 'pH: ' + ph : ''].filter(Boolean).join(' • ');
+
+      const imgBlock = imgUrl
+        ? `<div style="height: 230px; width: 100%; position: relative; overflow: hidden; background: #E8F5E9;">
+             <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" 
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32;\'><div style=\'width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);\'><i class=\'fa-solid fa-mountain\' style=\'font-size: 26px; color: #2E7D32;\'></i></div><span style=\'font-size: 13px; font-weight: 700; color: #1B5E20;\'>${title}</span></div>';" />
+             <span style="position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);"><i class="fa-solid fa-mountain" style="color: #FFD54F; margin-right: 5px;"></i>${category}</span>
+             ${ph ? `<span style="position: absolute; top: 14px; right: 14px; background: rgba(46,125,50,0.92); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"><i class="fa-solid fa-vial" style="margin-right: 4px;"></i>pH ${ph}</span>` : ''}
+           </div>`
+        : `<div style="height: 160px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+             <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(46,125,50,0.18);">
+               <i class="fa-solid fa-mountain" style="font-size: 26px; color: #2E7D32;"></i>
+             </div>
+             <span style="font-size: 13px; font-weight: 700; color: #1B5E20;">${title}</span>
+           </div>`;
+
+      content.innerHTML = `
+        ${imgBlock}
+        <div style="padding: 18px 16px 36px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2 style="font-size: 22px; font-weight: 800; color: #1E281F; margin: 0;">${title}</h2>
+            ${category ? `<span style="background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-mountain" style="font-size: 11px;"></i>${category}</span>` : ''}
+          </div>
+
+          <!-- উপযুক্ত ফসল ও pH কার্ড -->
+          <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 14px; padding: 14px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            ${crops ? `
+              <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: ${ph ? '10px' : '0'};">
+                <div style="background: #E8F5E9; color: #2E7D32; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-seedling"></i></div>
+                <div>
+                  <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">উপযোগী ফসলসমূহ</div>
+                  <div style="font-size: 13px; color: #4A5B4C; margin-top: 2px;">${crops}</div>
+                </div>
+              </div>` : ''}
+            ${(crops && ph) ? `<div style="height: 1px; background: #E8EFE8; margin: 10px 0;"></div>` : ''}
+            ${ph ? `
+              <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="background: #E0F2F1; color: #00695C; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-vial"></i></div>
+                <div>
+                  <div style="font-size: 11.5px; font-weight: 700; color: #1E281F;">মাটির আদর্শ pH মাত্রা</div>
+                  <div style="font-size: 13px; color: #00695C; font-weight: 600; margin-top: 2px;">${ph}</div>
+                </div>
+              </div>` : ''}
+          </div>
+
+          <!-- মাটির বৈশিষ্ট্য ও গঠন -->
+          <div style="background: #fff; border: 1px solid #E2EBE2; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <div style="background: #EFEBE9; color: #5D4037; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;"><i class="fa-solid fa-info"></i></div>
+              <h4 style="font-size: 16px; font-weight: 800; color: #4E342E; margin: 0;">মাটির বৈশিষ্ট্য ও গঠন</h4>
+            </div>
+            <div style="height: 1px; background: #E8EFE8; margin-bottom: 12px;"></div>
+            <div style="font-size: 14px; line-height: 1.68; color: #1E281F; white-space: pre-line; letter-spacing: 0.1px;">
+              ${characteristics}
+            </div>
+          </div>
+
+          <!-- সার ও পুষ্টি ব্যবস্থাপনা -->
+          ${fertilizer ? `
+            <div style="background: #E8F5E9; border: 1px solid #C8E6C9; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #1B5E20; font-size: 14.5px; font-weight: 700;">
+                <i class="fa-solid fa-flask" style="color: #2E7D32; font-size: 15px;"></i>
+                <span>সার ও পুষ্টি ব্যবস্থাপনা নির্দেশনা</span>
+              </div>
+              <div style="font-size: 13.5px; line-height: 1.6; color: #1B5E20; white-space: pre-line;">${fertilizer}</div>
+            </div>
+          ` : ''}
+
+          <div style="margin-top: 20px;">
+            <button type="button" onclick="closeSoilHealthDetailPage()" style="background: #2E7D32; color: #fff; border: none; border-radius: 12px; width: 100%; padding: 12px 0; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
+              ফিরে যান
+            </button>
+          </div>
+        </div>
+      `;
+
+      page.classList.add('active');
+      page.style.display = 'flex';
+      page.style.pointerEvents = 'auto';
+    }
+
+    function closeSoilHealthDetailPage() {
+      const page = document.getElementById('soilHealthDetailPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function initFirestoreSoilSync() {
+      if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
+        if (soilHealthUnsubscribe) {
+          try { soilHealthUnsubscribe(); } catch (_) { }
+        }
+        soilHealthUnsubscribe = db.collection('soil_health').limit(50).onSnapshot(snapshot => {
+          isSoilDataLoading = false;
+          if (snapshot && !snapshot.empty) {
+            const list = [];
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              list.push({ ...d, id: doc.id });
+            });
+            list.sort((a, b) => {
+              const timeA = (a.updatedAt && a.updatedAt.toMillis) ? a.updatedAt.toMillis() : ((a.createdAt && a.createdAt.toMillis) ? a.createdAt.toMillis() : 0);
+              const timeB = (b.updatedAt && b.updatedAt.toMillis) ? b.updatedAt.toMillis() : ((b.createdAt && b.createdAt.toMillis) ? b.createdAt.toMillis() : 0);
+              return timeB - timeA;
+            });
+            defaultSoilData = list;
+          }
+          renderSoilCategoryChips();
+          renderSoilHealthList();
+        }, err => {
+          console.warn('Soil health sync error/offline:', err);
+          isSoilDataLoading = false;
+          renderSoilCategoryChips();
+          renderSoilHealthList();
+        });
+      } else {
+        setTimeout(() => {
+          if (isSoilDataLoading) {
+            isSoilDataLoading = false;
+            renderSoilCategoryChips();
+            renderSoilHealthList();
+          }
+        }, 800);
+      }
+    }
+
+    function showSoilCustomAlert(title, message, type = 'error', btnText = 'ঠিক আছে') {
+      const modal = document.getElementById('soilCustomAlertModal');
+      const t = document.getElementById('soilAlertTitle');
+      const msg = document.getElementById('soilAlertMsg');
+      const btn = document.getElementById('soilAlertBtn');
+      const iconWrap = document.getElementById('soilAlertIconWrap');
+      const icon = document.getElementById('soilAlertIcon');
+      if (!modal) return;
+
+      if (t) t.innerText = title;
+      if (msg) msg.innerText = message;
+      if (btn) btn.innerText = btnText;
+
+      if (type === 'success') {
+        if (iconWrap) { iconWrap.style.background = '#E8F5E9'; iconWrap.style.color = '#2E7D32'; }
+        if (icon) icon.className = 'fa-solid fa-circle-check';
+        if (t) t.style.color = '#2E7D32';
+      } else {
+        if (iconWrap) { iconWrap.style.background = '#FFEBEE'; iconWrap.style.color = '#D32F2F'; }
+        if (icon) icon.className = 'fa-solid fa-circle-xmark';
+        if (t) t.style.color = '#D32F2F';
+      }
+
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+
+    function closeSoilCustomAlert() {
+      const modal = document.getElementById('soilCustomAlertModal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
       }
     }
 
