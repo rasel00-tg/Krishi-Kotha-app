@@ -1189,6 +1189,21 @@
             <div style="font-size: 9.5px; opacity: 0.7;">সেচ ও ফসলের বর্তমান অবস্থা</div>
           </div>
         </li>
+        <li class="menu-item submenu-item" id="submenuItemDealerMonitoring"
+          onclick="switchTab('fertilizer_dealer_monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(46, 125, 50, 0.16); color: #2E7D32; margin-right: -4px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">সার-বীজ ডিলার মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">ডিলারদের তালিকা ও লাইভ তথ্য</div>
+          </div>
+        </li>
       </div>
 
       <!-- ১. ইউজার কন্ট্রোল -->
@@ -3292,6 +3307,147 @@
           </div>
         </div>
       </div>
+
+      <!-- ================= TAB: HOMEPAGE - FERTILIZER & SEED DEALER MONITORING ================= -->
+      <div id="tab-fertilizer-dealer-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • সার-বীজ ডিলার মনিটরিং ও কন্ট্রোল</h2>
+            <p>সকল সরকারি বিসিআইসি ও বিএডিসি অনুমোদিত সার ও বীজ ডিলারের তালিকা, দোকান ও লাইসেন্স স্ট্যাটাস রিয়েল-টাইম পর্যবেক্ষণ।</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="initAdminDealersMonitoringLiveSync(true)"
+              style="background: #fff; color: #1B5E20; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Stat Metric Cards -->
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট ডিলার সংখ্যা</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-store"></i>
+              </div>
+            </div>
+            <div id="adminDealerStatTotal" style="font-size: 24px; font-weight: 800; color: #1B5E20;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">ডাটাবেসের সকল ডিলার</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">সক্রিয় ও অনুমোদিত</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #E1F5FE; color: #0288D1; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-certificate"></i>
+              </div>
+            </div>
+            <div id="adminDealerStatActive" style="font-size: 24px; font-weight: 800; color: #0288D1;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">লাইসেন্সপ্রাপ্ত ও সচল</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">আওতাভুক্ত জেলা</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #FFF3E0; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-map-location-dot"></i>
+              </div>
+            </div>
+            <div id="adminDealerStatDistricts" style="font-size: 24px; font-weight: 800; color: #E65100;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">জেলা কভারেজ</div>
+          </div>
+
+          <div class="stat-card"
+            style="background: #fff; padding: 18px; border-radius: 14px; border: 1px solid #D8E4D8; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">বিসিআইসি / বিএডিসি</span>
+              <div
+                style="width: 36px; height: 36px; border-radius: 8px; background: #F3E5F5; color: #7B1FA2; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-building-wheat"></i>
+              </div>
+            </div>
+            <div id="adminDealerStatGovt" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সরকারি ডিলার পয়েন্ট</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="panel-card" style="margin-bottom: 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <!-- Search Bar -->
+            <div style="flex: 1; min-width: 260px; position: relative;">
+              <input type="text" id="adminDealersSearchInput" class="form-control"
+                placeholder="ডিলারের নাম, দোকান, প্রোপ্রাইটর, ফোন, জেলা অথবা লাইসেন্স নং দিয়ে খুঁজুন..."
+                oninput="onAdminDealersSearch(this.value)"
+                style="padding-left: 38px; width: 100%; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; height: 42px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 14px; top: 13px; color: #90A4AE; font-size: 14px;"></i>
+            </div>
+
+            <!-- Filters Group -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+              <!-- Status Filter -->
+              <select id="adminDealersStatusFilter" class="form-control" onchange="onAdminDealersStatusFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer;">
+                <option value="all">সকল স্ট্যাটাস</option>
+                <option value="active">সক্রিয় / অনুমোদিত</option>
+                <option value="pending">পেন্ডিং যাচাই</option>
+                <option value="inactive">নিষ্ক্রিয় / স্থগিত</option>
+              </select>
+
+              <!-- Category Filter -->
+              <select id="adminDealersCategoryFilter" class="form-control" onchange="onAdminDealersCategoryFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer;">
+                <option value="all">সকল ক্যাটাগরি</option>
+                <option value="bcic">বিসিআইসি সার ডিলার</option>
+                <option value="badc">বিএডিসি বীজ ডিলার</option>
+                <option value="retailer">খুচরা বিক্রেতা</option>
+                <option value="other">অন্যান্য</option>
+              </select>
+
+              <!-- District Filter -->
+              <select id="adminDealersDistrictFilter" class="form-control" onchange="onAdminDealersDistrictFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer; min-width: 140px;">
+                <option value="all">সকল জেলা</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="panel-card">
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+              <thead>
+                <tr style="background: #F1F8E9; color: #1B5E20; text-align: left; font-size: 12.5px;">
+                  <th style="padding: 12px 14px;">ডিলার ও প্রতিষ্ঠানের নাম</th>
+                  <th style="padding: 12px 14px;">প্রোপ্রাইটর ও যোগাযোগ</th>
+                  <th style="padding: 12px 14px;">অবস্থান (জেলা ও উপজেলা)</th>
+                  <th style="padding: 12px 14px;">ডিলার ক্যাটাগরি ও লাইসেন্স</th>
+                  <th style="padding: 12px 14px;">স্ট্যাটাস</th>
+                  <th style="padding: 12px 14px;">নিবন্ধনের তারিখ</th>
+                  <th style="padding: 12px 14px; text-align: center;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminDealersTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">তথ্য লোডিং হচ্ছে...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -5284,6 +5440,7 @@
 
     function switchTab(tabKey) {
       if (tabKey === 'users') tabKey = 'support';
+      if (tabKey === 'fertilizer_dealer_monitoring') tabKey = 'fertilizer-dealer-monitoring';
 
       try {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -5307,6 +5464,7 @@
           'income-expense-history': 'হোমপেজ – কৃষি আয়-ব্যায় হিস্ট্রি কন্ট্রোল',
           'seed-monitoring': 'হোমপেজ • বীজের তথ্য মনিটরিং',
           'irrigation-monitoring': 'হোমপেজ • সেচ ট্র্যাকার মনিটরিং ও কন্ট্রোল',
+          'fertilizer-dealer-monitoring': 'হোমপেজ • সার-বীজ ডিলার মনিটরিং',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -5412,6 +5570,20 @@
           } else {
             renderAdminIrrigationTable();
           }
+        } else if (tabKey === 'fertilizer-dealer-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemDealerMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminDealersFirstLoadDone || adminDealersList.length === 0) {
+            initAdminDealersMonitoringLiveSync(true, false);
+          } else {
+            renderAdminDealersTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -5444,6 +5616,10 @@
         if (tabKey !== 'irrigation-monitoring') {
           const subIrr = document.getElementById('submenuItemIrrigationMonitoring');
           if (subIrr) subIrr.classList.remove('active');
+        }
+        if (tabKey !== 'fertilizer-dealer-monitoring') {
+          const subDealer = document.getElementById('submenuItemDealerMonitoring');
+          if (subDealer) subDealer.classList.remove('active');
         }
 
         if (tabKey !== 'settings-privacy') {
@@ -8709,200 +8885,6 @@
         .replace(/জেলা/g, '')
         .replace(/বিভাগ/g, '')
         .replace(/\s+/g, '')
-        .replace(/য়/g, 'য়')
-        .replace(/ড়/g, 'ড়')
-        .toLowerCase()
-        .trim();
-      const target = clean(dist);
-      const uDist = clean(u.rawDistrict || u.district || '');
-      const uUpazila = clean(u.upazila || '');
-      return uDist.includes(target) || target.includes(uDist) || uUpazila.includes(target);
-    }
-
-    function renderDashboardEnhanced() {
-      // 1. District dropdown population with expanded 64 districts
-      const distSelect = document.getElementById('dashboardDistrictFilter');
-      if (distSelect) {
-        const bdDistricts = [
-          'ঢাকা', 'গাজীপুর', 'নারায়ণগঞ্জ', 'নরসিংদী', 'মানিকগঞ্জ', 'মুন্সীগঞ্জ', 'টাঙ্গাইল', 'কিশোরগঞ্জ', 'ফরিদপুর', 'মাদারীপুর', 'শরীয়তপুর', 'গোপালগঞ্জ', 'রাজবাড়ী',
-          'চট্টগ্রাম', 'কক্সবাজার', 'কুমিল্লা', 'ব্রাহ্মণবাড়িয়া', 'চাঁদপুর', 'ফেনী', 'নোয়াখালী', 'লক্ষ্মীপুর', 'রাঙ্গামাটি', 'খাগড়াছড়ি', 'বান্দরবান',
-          'রাজশাহী', 'বগুড়া', 'পাবনা', 'সিরাজগঞ্জ', 'নাটোর', 'নওগাঁ', 'চাঁপাইনবাবগঞ্জ', 'জয়পুরহাট',
-          'খুলনা', 'যশোর', 'সাতক্ষীরা', 'বাগেরহাট', 'ঝিনাইদহ', 'কুষ্টিয়া', 'মাগুরা', 'মেহেরপুর', 'নড়াইল', 'চুয়াডাঙ্গা',
-          'বরিশাল', 'পটুয়াখালী', 'ভোলা', 'পিরোজপুর', 'বরগুনা', 'ঝালকাঠি',
-          'সিলেট', 'মৌলভীবাজার', 'হবিগঞ্জ', 'সুনামগঞ্জ',
-          'রংপুর', 'দিনাজপুর', 'কুড়িগ্রাম', 'গাইবান্ধা', 'নীলফামারী', 'পঞ্চগড়', 'ঠাকুরগাঁও', 'লালমনিরহাট',
-          'ময়মনসিংহ', 'জামালপুর', 'নেত্রকোণা', 'শেরপুর'
-        ];
-        const currentVal = dashboardSelectedDistrict;
-        const districtsSet = new Set(bdDistricts);
-        if (Array.isArray(users)) {
-          users.forEach(u => {
-            const d = (u.rawDistrict || u.district || '').split(',').pop().trim();
-            if (d && d !== 'অনুল্লিখিত') districtsSet.add(d);
-          });
-        }
-        if (distSelect.options.length <= 1) {
-          distSelect.innerHTML = '<option value="all" style="color: #333;">সকল জেলা</option>' +
-            Array.from(districtsSet).map(d => `<option value="${d}" style="color: #333;" ${currentVal === d ? 'selected' : ''}>${d}</option>`).join('');
-        }
-      }
-
-      // 2. Active Accounts
-      const totalUsers = users ? users.length : 0;
-      const filteredUsers = (dashboardSelectedDistrict === 'all' || dashboardSelectedDistrict === 'সকল জেলা')
-        ? (users || [])
-        : (users || []).filter(u => isUserInDistrict(u, dashboardSelectedDistrict));
-
-      const activeUsers = filteredUsers.filter(u => u.status === 'active' || !u.status);
-      const activeCount = activeUsers.length;
-      const totalFiltered = filteredUsers.length;
-      const activePercent = totalFiltered > 0 ? Math.round((activeCount / totalFiltered) * 100) : 0;
-
-      const activeEl = document.getElementById('dashboardActiveAccountsCount');
-      if (activeEl) activeEl.innerText = toBangla(activeCount) + ' জন';
-
-      const subEl = document.getElementById('dashboardActiveSubtitle');
-      if (subEl) {
-        if (dashboardSelectedDistrict === 'all' || dashboardSelectedDistrict === 'সকল জেলা') {
-          subEl.innerHTML = `<i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> সারাদেশে সক্রিয় (${toBangla(activePercent)}%)`;
-        } else {
-          subEl.innerHTML = `<i class="fa-solid fa-location-dot" style="font-size: 10px; margin-right: 4px;"></i> ${dashboardSelectedDistrict} জেলায় (${toBangla(activePercent)}%) <span onclick="filterDashboardDistrict('all')" style="cursor: pointer; text-decoration: underline; margin-left: 6px; font-weight: 700;">রিসেট</span>`;
-        }
-      }
-
-      // 3. Registered Farmers
-      const farmersEl = document.getElementById('stat-farmers');
-      if (farmersEl) farmersEl.innerText = toBangla(totalUsers) + ' জন';
-
-      // 4. Market Commodities
-      const marketEl = document.getElementById('stat-market');
-      if (marketEl) marketEl.innerText = toBangla(marketPrices ? marketPrices.length : 0) + ' টি';
-
-      // 5. Crops
-      const cropsEl = document.getElementById('stat-crops');
-      if (cropsEl) cropsEl.innerText = toBangla(crops ? crops.length : 0) + ' টি';
-
-      // 6. Support & Communication Card
-      const pendingTickets = (tickets || []).filter(t => t.status === 'pending');
-      const answeredTickets = (tickets || []).filter(t => t.status === 'answered');
-      const pendingEl = document.getElementById('dashboardPendingTicketsCount');
-      if (pendingEl) pendingEl.innerText = toBangla(pendingTickets.length) + ' টি';
-      const ansEl = document.getElementById('dashboardAnsweredTicketsCount');
-      if (ansEl) ansEl.innerText = toBangla(answeredTickets.length) + ' / ' + toBangla((tickets || []).length);
-
-      // 7. Render Animated Circular Doughnut Chart with Tooltips
-      renderDashboardGrowthChart();
-    }
-
-    function renderDashboardGrowthChart() {
-      const container = document.getElementById('dashboardGrowthChartContainer');
-      if (!container) return;
-
-      const totalUsers = users ? users.length : 0;
-      const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
-
-      const activeCount = (users || []).filter(u => u.status === 'active' || !u.status).length;
-      const newUsersCount = (users || []).filter(u => {
-        if (!u.createdAt) return false;
-        const cd = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
-        return cd >= thirtyDaysAgo;
-      }).length;
-      const blockedCount = (users || []).filter(u => u.status === 'temporary_blocked').length;
-      const suspendedCount = (users || []).filter(u => u.status === 'permanently_suspended').length;
-
-      const rawSlices = [
-        { label: 'সক্রিয় একাউন্ট', count: activeCount, color: '#2E7D32', grad1: '#1B5E20', grad2: '#4CAF50' },
-        { label: 'নতুন নিবন্ধন (৩০ দিন)', count: newUsersCount, color: '#1976D2', grad1: '#0D47A1', grad2: '#42A5F5' },
-        { label: 'সাময়িক স্থগিত', count: blockedCount, color: '#E65100', grad1: '#BF360C', grad2: '#FF9800' },
-        { label: 'স্থায়ী স্থগিত', count: suspendedCount, color: '#C62828', grad1: '#B71C1C', grad2: '#EF5350' }
-      ];
-
-      const slices = rawSlices.filter(s => s.count > 0);
-      if (slices.length === 0) {
-        slices.push({ label: 'মোট ব্যবহারকারী', count: Math.max(totalUsers, 1), color: '#2E7D32', grad1: '#1B5E20', grad2: '#4CAF50' });
-      }
-
-      const totalSliceCount = slices.reduce((acc, s) => acc + s.count, 0);
-      const size = 190;
-      const center = size / 2;
-      const radius = 68;
-      const strokeWidth = 24;
-      const circumference = 2 * Math.PI * radius;
-
-      let accumulatedPercent = 0;
-      let circleSegments = '';
-
-      slices.forEach((slice, idx) => {
-        const percent = totalSliceCount > 0 ? (slice.count / totalSliceCount) : 0;
-        const dashArray = `${percent * circumference} ${circumference}`;
-        const dashOffset = -(accumulatedPercent * circumference);
-        accumulatedPercent += percent;
-
-        circleSegments += `
-          <circle cx="${center}" cy="${center}" r="${radius}" fill="none"
-            stroke="${slice.color}" stroke-width="${strokeWidth}"
-            stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}"
-            transform="rotate(-90 ${center} ${center})"
-            style="transition: stroke-width 0.22s ease, opacity 0.22s ease; cursor: pointer;"
-            onmouseover="showChartTooltip(event, '${slice.label}', ${slice.count}, ${percent * 100}, '${slice.color}')"
-            onmouseout="hideChartTooltip()" />
-        `;
-      });
-
-      const legendHtml = slices.map(s => {
-        const pct = totalSliceCount > 0 ? ((s.count / totalSliceCount) * 100).toFixed(1) : '0.0';
-        return `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; margin-bottom: 5px; border-radius: 10px; background: #FAFAFA; border: 1px solid #ECEFF1; transition: background 0.18s ease;"
-               onmouseover="this.style.background='rgba(46,125,50,0.06)'" onmouseout="this.style.background='#FAFAFA'">
-            <div style="display: flex; align-items: center; gap: 9px;">
-              <span style="width: 11px; height: 11px; border-radius: 50%; background: ${s.color}; display: inline-block; box-shadow: 0 1px 4px rgba(0,0,0,0.2);"></span>
-              <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${s.label}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; font-weight: 800; color: var(--text-primary);">${toBangla(s.count)} জন</span>
-              <span style="font-size: 11px; font-weight: 700; color: ${s.color}; background: rgba(0,0,0,0.04); padding: 2px 7px; border-radius: 6px;">${toBangla(pct)}%</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap; padding: 10px 0;">
-          <div style="position: relative; width: ${size}px; height: ${size}px; flex-shrink: 0;">
-            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-              ${circleSegments}
-            </svg>
-            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center;">
-              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">সর্বমোট</span>
-              <span style="font-size: 24px; font-weight: 900; color: var(--text-primary); line-height: 1.1;">${toBangla(totalUsers)}</span>
-              <span style="font-size: 10.5px; color: var(--text-muted);">কৃষক একাউন্ট</span>
-            </div>
-          </div>
-          <div style="flex: 1; min-width: 220px;">
-            ${legendHtml}
-          </div>
-        </div>
-      `;
-    }
-
-    // Interactive Floating Tooltip for Circular Chart
-    window.showChartTooltip = function (e, label, count, percent, color) {
-      let tt = document.getElementById('dashboardChartTooltip');
-      if (!tt) {
-        tt = document.createElement('div');
-        tt.id = 'dashboardChartTooltip';
-        tt.style.cssText = 'position: fixed; z-index: 99999; pointer-events: none; background: #1E293B; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); display: none; transition: opacity 0.15s ease; border-left: 4px solid #4CAF50;';
-        document.body.appendChild(tt);
-      }
-      tt.style.borderLeftColor = color;
-      tt.innerHTML = `<div style="font-weight: 700; color: ${color}; margin-bottom: 2px;">● ${label}</div><div style="color: #E2E8F0; font-weight: 600;">সংখ্যা: ${toBangla(count)} জন (${toBangla(percent.toFixed(1))}%)</div>`;
-      tt.style.left = (e.clientX + 14) + 'px';
-      tt.style.top = (e.clientY - 35) + 'px';
-      tt.style.display = 'block';
-      tt.style.opacity = '1';
-    };
-
-    window.hideChartTooltip = function () {
       const tt = document.getElementById('dashboardChartTooltip');
       if (tt) {
         tt.style.opacity = '0';
@@ -13490,6 +13472,349 @@
       }
     }
 
+    // ==================== ADMIN FERTILIZER & SEED DEALER MONITORING CONTROLLER ====================
+    let adminDealersList = [];
+    let adminDealersStatusFilter = 'all';
+    let adminDealersCategoryFilter = 'all';
+    let adminDealersDistrictFilter = 'all';
+    let adminDealersSearchQuery = '';
+    let adminDealersFirstLoadDone = false;
+
+    function populateAdminDealersDistricts() {
+      const select = document.getElementById('adminDealersDistrictFilter');
+      if (!select) return;
+      const currentVal = select.value || 'all';
+      select.innerHTML = '<option value="all">সকল জেলা</option>';
+
+      const districtSet = new Set();
+      if (typeof BD_LOCATIONS !== 'undefined') {
+        Object.values(BD_LOCATIONS).forEach(arr => {
+          if (Array.isArray(arr)) arr.forEach(d => districtSet.add(d));
+        });
+      }
+      adminDealersList.forEach(d => {
+        if (d.district) districtSet.add(d.district);
+      });
+
+      Array.from(districtSet).sort().forEach(dist => {
+        const opt = document.createElement('option');
+        opt.value = dist;
+        opt.textContent = dist;
+        select.appendChild(opt);
+      });
+      select.value = currentVal;
+    }
+
+    async function initAdminDealersMonitoringLiveSync(forceServer = false, isInitial = false) {
+      if (!window.firebase || !firebase.firestore) return;
+
+      const shouldShowLoading = !isInitial && (forceServer || (typeof currentTab !== 'undefined' && (currentTab === 'fertilizer-dealer-monitoring' || currentTab === 'fertilizer_dealer_monitoring')));
+      if (shouldShowLoading && typeof showAdminLoading === 'function') {
+        showAdminLoading('ডিলারের তথ্য লোড হচ্ছে...', 'সার্ভার থেকে লাইভ সার-বীজ ডিলার তথ্য ফেচ করা হচ্ছে...');
+      }
+
+      try {
+        firebase.firestore().collection('fertilizer_seed_dealers').onSnapshot((snapshot) => {
+          adminDealersFirstLoadDone = true;
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+            hideAdminLoading();
+          }
+
+          const list = [];
+          if (snapshot && !snapshot.empty) {
+            snapshot.forEach((doc) => {
+              const d = doc.data() || {};
+              list.push({
+                id: doc.id,
+                _docRef: doc.ref,
+                dealerName: d.dealerName || d.name || d.shopName || d.businessName || 'অজ্ঞাত ডিলার',
+                proprietor: d.proprietor || d.ownerName || d.contactPerson || 'উল্লেখ নেই',
+                phone: d.phone || d.mobile || d.contact || '',
+                division: d.division || '',
+                district: d.district || '',
+                upazila: d.upazila || d.thana || d.address || '',
+                category: d.category || d.dealerType || d.type || 'সার ও বীজ ডিলার',
+                licenseNo: d.licenseNo || d.license || d.regNo || '',
+                status: d.status || 'সক্রিয়',
+                createdAt: d.createdAt || d.updatedAt || null,
+                raw: d
+              });
+            });
+          }
+
+          // Sort by creation time descending
+          list.sort((a, b) => {
+            const aTime = a.createdAt ? (a.createdAt.seconds || new Date(a.createdAt).getTime() / 1000 || 0) : 0;
+            const bTime = b.createdAt ? (b.createdAt.seconds || new Date(b.createdAt).getTime() / 1000 || 0) : 0;
+            return bTime - aTime;
+          });
+
+          adminDealersList = list;
+          populateAdminDealersDistricts();
+          renderAdminDealersTable();
+        }, (err) => {
+          console.warn('fertilizer_seed_dealers onSnapshot error:', err);
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+            hideAdminLoading();
+          }
+          adminDealersFirstLoadDone = true;
+          renderAdminDealersTable();
+        });
+      } catch (err) {
+        console.warn('initAdminDealersMonitoringLiveSync catch error:', err);
+        if (shouldShowLoading && typeof hideAdminLoading === 'function') {
+          hideAdminLoading();
+        }
+        adminDealersFirstLoadDone = true;
+        renderAdminDealersTable();
+      }
+    }
+
+    function onAdminDealersSearch(val) {
+      adminDealersSearchQuery = (val || '').trim().toLowerCase();
+      renderAdminDealersTable();
+    }
+
+    function onAdminDealersStatusFilterChange(val) {
+      adminDealersStatusFilter = val || 'all';
+      renderAdminDealersTable();
+    }
+
+    function onAdminDealersCategoryFilterChange(val) {
+      adminDealersCategoryFilter = val || 'all';
+      renderAdminDealersTable();
+    }
+
+    function onAdminDealersDistrictFilterChange(val) {
+      adminDealersDistrictFilter = val || 'all';
+      renderAdminDealersTable();
+    }
+
+    function renderAdminDealersTable() {
+      const tbody = document.getElementById('adminDealersTableBody');
+      const totalEl = document.getElementById('adminDealerStatTotal');
+      const actEl = document.getElementById('adminDealerStatActive');
+      const distEl = document.getElementById('adminDealerStatDistricts');
+      const govtEl = document.getElementById('adminDealerStatGovt');
+
+      const totalCount = adminDealersList.length;
+      const activeList = adminDealersList.filter(d => {
+        const s = (d.status || '').toLowerCase();
+        return s === 'active' || s === 'অনুমোদিত' || s === 'সক্রিয়' || s === 'সচল';
+      });
+      const uniqueDistricts = new Set(adminDealersList.map(d => d.district).filter(Boolean));
+      const govtDealers = adminDealersList.filter(d => {
+        const cat = (d.category || '').toLowerCase();
+        const lic = (d.licenseNo || '').toLowerCase();
+        return cat.includes('bcic') || cat.includes('badc') || cat.includes('বিসিআইসি') || cat.includes('বিএডিসি') || lic.length > 0;
+      });
+
+      if (totalEl) totalEl.innerText = `${toBangla(totalCount)} টি`;
+      if (actEl) actEl.innerText = `${toBangla(activeList.length)} টি`;
+      if (distEl) distEl.innerText = `${toBangla(uniqueDistricts.size)} টি`;
+      if (govtEl) govtEl.innerText = `${toBangla(govtDealers.length)} টি`;
+
+      if (!tbody) return;
+
+      const filtered = adminDealersList.filter(d => {
+        // Status filter
+        if (adminDealersStatusFilter !== 'all') {
+          const s = (d.status || '').toLowerCase();
+          if (adminDealersStatusFilter === 'active' && !(s === 'active' || s === 'সক্রিয়' || s === 'অনুমোদিত' || s === 'সচল')) return false;
+          if (adminDealersStatusFilter === 'pending' && !(s === 'pending' || s === 'পেন্ডিং' || s === 'অপেক্ষমাণ')) return false;
+          if (adminDealersStatusFilter === 'inactive' && !(s === 'inactive' || s === 'নিষ্ক্রিয়' || s === 'স্থগিত' || s === 'বাতিল')) return false;
+        }
+
+        // Category filter
+        if (adminDealersCategoryFilter !== 'all') {
+          const cat = (d.category || '').toLowerCase();
+          if (adminDealersCategoryFilter === 'bcic' && !(cat.includes('bcic') || cat.includes('বিসিআইসি'))) return false;
+          if (adminDealersCategoryFilter === 'badc' && !(cat.includes('badc') || cat.includes('বিএডিসি'))) return false;
+          if (adminDealersCategoryFilter === 'retailer' && !(cat.includes('retailer') || cat.includes('খুচরা'))) return false;
+        }
+
+        // District filter
+        if (adminDealersDistrictFilter !== 'all') {
+          if (d.district !== adminDealersDistrictFilter) return false;
+        }
+
+        // Search query
+        if (adminDealersSearchQuery) {
+          const name = (d.dealerName || '').toLowerCase();
+          const prop = (d.proprietor || '').toLowerCase();
+          const phone = (d.phone || '').toLowerCase();
+          const dist = (d.district || '').toLowerCase();
+          const upz = (d.upazila || '').toLowerCase();
+          const cat = (d.category || '').toLowerCase();
+          const lic = (d.licenseNo || '').toLowerCase();
+          return name.includes(adminDealersSearchQuery) ||
+            prop.includes(adminDealersSearchQuery) ||
+            phone.includes(adminDealersSearchQuery) ||
+            dist.includes(adminDealersSearchQuery) ||
+            upz.includes(adminDealersSearchQuery) ||
+            cat.includes(adminDealersSearchQuery) ||
+            lic.includes(adminDealersSearchQuery);
+        }
+
+        return true;
+      });
+
+      if (adminDealersList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 48px 20px; color: #78909C;">
+              <i class="fa-solid fa-store-slash" style="font-size: 38px; color: #B0BEC5; margin-bottom: 12px; display: block;"></i>
+              <div style="font-size: 15px; font-weight: 700; color: #546E7A; margin-bottom: 4px;">এখনো কোনো সার-বীজ ডিলারের তথ্য যুক্ত হয়নি</div>
+              <div style="font-size: 12px; color: #90A4AE;">ডাটাবেসের fertilizer_seed_dealers কালেকশনে কোনো তথ্য পাওয়া যায়নি</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">
+              <i class="fa-solid fa-magnifying-glass" style="font-size: 32px; color: #B0BEC5; margin-bottom: 8px; display: block;"></i>
+              ফিল্টারের সাথে মেলে এমন কোনো ডিলার পাওয়া যায়নি
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      function formatDealerTime(ts) {
+        if (!ts) return 'অজ্ঞাত';
+        let dt;
+        if (ts.seconds) dt = new Date(ts.seconds * 1000);
+        else if (ts instanceof Date) dt = ts;
+        else if (typeof ts === 'number') dt = new Date(ts);
+        else dt = new Date(ts);
+        if (isNaN(dt.getTime())) return 'অজ্ঞাত';
+        const day = String(dt.getDate()).padStart(2, '0');
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        const year = dt.getFullYear();
+        return `${toBangla(day)}/${toBangla(month)}/${toBangla(year)}`;
+      }
+
+      tbody.innerHTML = filtered.map(dealer => {
+        const isAct = (dealer.status || '').toLowerCase() === 'active' || dealer.status === 'অনুমোদিত' || dealer.status === 'সক্রিয়';
+        const statusBadge = isAct
+          ? '<span style="background: #E8F5E9; color: #2E7D32; font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> সক্রিয়</span>'
+          : '<span style="background: #FFF3E0; color: #E65100; font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-clock"></i> পেন্ডিং</span>';
+
+        return `
+          <tr style="border-bottom: 1px solid #ECEFF1; font-size: 13px;">
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-store" style="color: #2E7D32;"></i>
+                <span>${escapeHtml(dealer.dealerName)}</span>
+              </div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 2px;">ID: ${dealer.id}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 600; color: #37474F;">${escapeHtml(dealer.proprietor)}</div>
+              <div style="font-size: 11.5px; color: #0288D1; margin-top: 2px;">
+                <i class="fa-solid fa-phone" style="font-size: 10px;"></i> ${dealer.phone ? toBangla(dealer.phone) : 'ফোন নেই'}
+              </div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 600; color: #263238;">${escapeHtml(dealer.district || 'জেলা উল্লেখ নেই')}</div>
+              <div style="font-size: 11px; color: #78909C;">${escapeHtml(dealer.upazila || dealer.division || '')}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <div style="font-weight: 600; color: #455A64;">${escapeHtml(dealer.category)}</div>
+              <div style="font-size: 11px; color: #689F38;">${dealer.licenseNo ? 'লাইসেন্স: ' + escapeHtml(dealer.licenseNo) : 'লাইসেন্স উল্লেখ নেই'}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              ${statusBadge}
+            </td>
+            <td style="padding: 12px 14px; font-size: 12px; color: #546E7A;">
+              ${formatDealerTime(dealer.createdAt)}
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <button type="button" class="btn" onclick="viewAdminDealerDetails('${dealer.id}')"
+                style="padding: 6px 12px; font-size: 12px; background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                <i class="fa-solid fa-eye"></i> বিস্তারিত
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function viewAdminDealerDetails(dealerId) {
+      const dealer = adminDealersList.find(d => d.id === dealerId);
+      if (!dealer) return;
+
+      const modal = document.getElementById('adminDealerDetailModal');
+      const body = document.getElementById('adminDealerModalBody');
+      const title = document.getElementById('adminDealerModalTitle');
+
+      if (title) title.innerText = dealer.dealerName;
+      if (body) {
+        body.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">প্রতিষ্ঠানের নাম</div>
+              <div style="font-size: 14px; font-weight: 700; color: #1B5E20; margin-top: 2px;">${escapeHtml(dealer.dealerName)}</div>
+            </div>
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">প্রোপ্রাইটর / স্বত্বাধিকারী</div>
+              <div style="font-size: 14px; font-weight: 700; color: #37474F; margin-top: 2px;">${escapeHtml(dealer.proprietor)}</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">যোগাযোগের নম্বর</div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #0288D1; margin-top: 2px;">${dealer.phone ? toBangla(dealer.phone) : 'তথ্য নেই'}</div>
+            </div>
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">ডিলার ক্যাটাগরি</div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #455A64; margin-top: 2px;">${escapeHtml(dealer.category)}</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">জেলা ও বিভাগ</div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #263238; margin-top: 2px;">${escapeHtml(dealer.district)} ${dealer.division ? '(' + escapeHtml(dealer.division) + ')' : ''}</div>
+            </div>
+            <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0;">
+              <div style="font-size: 11px; color: #78909C;">উপজেলা / ঠিকানা</div>
+              <div style="font-size: 13.5px; font-weight: 600; color: #263238; margin-top: 2px;">${escapeHtml(dealer.upazila || 'উল্লেখ নেই')}</div>
+            </div>
+          </div>
+
+          <div style="background: #F8FAF7; padding: 12px; border-radius: 10px; border: 1px solid #E0E0E0; margin-bottom: 16px;">
+            <div style="font-size: 11px; color: #78909C;">লাইসেন্স নম্বর</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: #2E7D32; margin-top: 2px;">${dealer.licenseNo ? escapeHtml(dealer.licenseNo) : 'লাইসেন্স নম্বর উল্লেখ নেই'}</div>
+          </div>
+        `;
+      }
+
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAdminDealerModal() {
+      const modal = document.getElementById('adminDealerDetailModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    window.initAdminDealersMonitoringLiveSync = initAdminDealersMonitoringLiveSync;
+    window.populateAdminDealersDistricts = populateAdminDealersDistricts;
+    window.onAdminDealersSearch = onAdminDealersSearch;
+    window.onAdminDealersStatusFilterChange = onAdminDealersStatusFilterChange;
+    window.onAdminDealersCategoryFilterChange = onAdminDealersCategoryFilterChange;
+    window.onAdminDealersDistrictFilterChange = onAdminDealersDistrictFilterChange;
+    window.renderAdminDealersTable = renderAdminDealersTable;
+    window.viewAdminDealerDetails = viewAdminDealerDetails;
+    window.closeAdminDealerModal = closeAdminDealerModal;
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       // 1. Show Branded Global Loading Popup for System Initialization
@@ -13502,8 +13827,10 @@
       initAdminIncomeExpenseLiveSync(false, true);
       initAdminSeedMonitoringLiveSync(false, true);
       initAdminIrrigationSync(false, true);
+      initAdminDealersMonitoringLiveSync(false, true);
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
+      populateAdminDealersDistricts();
       renderNotifications();
       renderMarketList();
       renderCrops();
@@ -13542,6 +13869,34 @@
         <button type="button" class="btn btn-primary" onclick="closeAdminIeModal()"
           style="padding: 8px 20px; border-radius: 8px; font-size: 13px; background: #00897B; border: none; cursor: pointer;">বন্ধ
           করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN DEALER DETAILS -->
+  <div class="modal-overlay" id="adminDealerDetailModal"
+    style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; border-radius: 16px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ECEFF1; padding-bottom: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            <i class="fa-solid fa-store"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; color: #263238; margin: 0;">ডিলারের বিস্তারিত তথ্য</h3>
+            <span id="adminDealerModalTitle" style="font-size: 12px; color: #78909C;"></span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminDealerModal()"
+          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+      <div id="adminDealerModalBody"></div>
+      <div style="text-align: right; margin-top: 18px;">
+        <button type="button" class="btn btn-primary" onclick="closeAdminDealerModal()"
+          style="padding: 8px 20px; border-radius: 8px; font-size: 13px; background: #2E7D32; border: none; cursor: pointer;">বন্ধ করুন</button>
       </div>
     </div>
   </div>

@@ -7755,6 +7755,23 @@
     };
 
     function openServiceModal(type) {
+      if (type === 'dealers') {
+        showIrrigationCustomAlert(
+          'সার-বীজ ডিলার',
+          'এই ফিচারটি এখনো চালু হয়নি। অনুগ্রহ করে পরবর্তী আপডেটের জন্য অপেক্ষা করুন।',
+          'info',
+          'ঠিক আছে'
+        );
+        const iconWrap = document.getElementById('irrigationAlertIconWrap');
+        const icon = document.getElementById('irrigationAlertIcon');
+        const titleEl = document.getElementById('irrigationAlertTitle');
+        const btn = document.getElementById('irrigationAlertBtn');
+        if (iconWrap) { iconWrap.style.background = '#E8F5E9'; iconWrap.style.color = '#2E7D32'; }
+        if (icon) icon.className = 'fa-solid fa-store';
+        if (titleEl) titleEl.style.color = '#2E7D32';
+        if (btn) btn.style.background = '#2E7D32';
+        return;
+      }
       if (type === 'irrigation') {
         openIrrigationTrackerPage();
         return;
