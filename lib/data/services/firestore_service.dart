@@ -45,6 +45,9 @@ class FirestoreService {
   final List<SupportTicketModel> _fallbackTickets = [];
   final Map<String, List<CommentModel>> _fallbackComments = {};
 
+  // Cached streams to prevent multiple duplicate queries to Firestore
+  Stream<List<NotificationModel>>? _cachedNotificationsStream;
+
   FirestoreService() {
     // Seed initial broadcast events with empty lists
     _cropsController.add(_fallbackCrops);
@@ -62,8 +65,8 @@ class FirestoreService {
   }
 
   // ==================== CROPS ====================
-  Stream<List<CropModel>> getCropsStream({String? category}) {
-    return FirebaseFirestore.instance.collection('crops').snapshots().map((snapshot) {
+  Stream<List<CropModel>> getCropsStream({String? category, int limit = 100}) {
+    return FirebaseFirestore.instance.collection('crops').limit(limit).snapshots().map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
       final List<CropModel> list = [];
       for (final doc in snapshot.docs) {
@@ -104,18 +107,8 @@ class FirestoreService {
   }
 
   // ==================== PESTS & DISEASES ====================
-  Stream<List<PestDiseaseModel>> getPestsStream({String? cropId, String? searchQuery}) {
-    return FirebaseFirestore.instance.collection('pests_diseases').snapshots().timeout(
-      const Duration(seconds: 4),
-      onTimeout: (sink) async {
-        try {
-          final snap = await FirebaseFirestore.instance.collection('pests_diseases').get();
-          sink.add(snap);
-        } catch (e) {
-          sink.addError(e);
-        }
-      },
-    ).map((snapshot) {
+  Stream<List<PestDiseaseModel>> getPestsStream({String? cropId, String? searchQuery, int limit = 100}) {
+    return FirebaseFirestore.instance.collection('pests_diseases').limit(limit).snapshots().map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
       final List<PestDiseaseModel> list = [];
       for (final doc in snapshot.docs) {
@@ -157,9 +150,10 @@ class FirestoreService {
   }
 
   // ==================== MARKET PRICES ====================
-  Stream<List<MarketPriceModel>> getMarketPricesStream({String? district, String? searchQuery}) {
+  Stream<List<MarketPriceModel>> getMarketPricesStream({String? district, String? searchQuery, int limit = 150}) {
     return FirebaseFirestore.instance
         .collection('market_prices')
+        .limit(limit)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
@@ -209,10 +203,11 @@ class FirestoreService {
   }
 
   // ==================== COMMUNITY POSTS ====================
-  Stream<List<CommunityPostModel>> getCommunityPostsStream() {
+  Stream<List<CommunityPostModel>> getCommunityPostsStream({int limit = 50}) {
     return FirebaseFirestore.instance
         .collection('community_posts')
         .orderBy('timestamp', descending: true)
+        .limit(limit)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
@@ -439,21 +434,12 @@ class FirestoreService {
   }
 
   // ==================== NOTIFICATIONS ====================
-  Stream<List<NotificationModel>> getNotificationsStream() {
-    return FirebaseFirestore.instance
+  Stream<List<NotificationModel>> getNotificationsStream({int limit = 50}) {
+    _cachedNotificationsStream ??= FirebaseFirestore.instance
         .collection('notifications')
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
         .snapshots()
-        .timeout(
-          const Duration(seconds: 4),
-          onTimeout: (sink) async {
-            try {
-              final snap = await FirebaseFirestore.instance.collection('notifications').get();
-              sink.add(snap);
-            } catch (e) {
-              sink.addError(e);
-            }
-          },
-        )
         .map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
       final List<NotificationModel> list = [];
@@ -464,9 +450,9 @@ class FirestoreService {
           debugPrint('NotificationModel parse error: $e');
         }
       }
-      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
-    });
+    }).asBroadcastStream();
+    return _cachedNotificationsStream!;
   }
 
   Future<void> markNotificationAsSeen(String id) async {
@@ -543,6 +529,7 @@ class FirestoreService {
   }
 
   void dispose() {
+    _cachedNotificationsStream = null;
     _cropsController.close();
     _pestsController.close();
     _marketController.close();

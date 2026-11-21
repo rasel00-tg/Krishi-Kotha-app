@@ -14,6 +14,7 @@ class _SeedInformationPageState extends State<SeedInformationPage> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
   String _selectedCategory = 'সব';
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _seedStream;
 
   final List<String> _categories = [
     'সব',
@@ -29,6 +30,7 @@ class _SeedInformationPageState extends State<SeedInformationPage> {
   @override
   void initState() {
     super.initState();
+    _seedStream = FirebaseFirestore.instance.collection('seed_information').limit(100).snapshots();
     _searchCtrl.addListener(() {
       setState(() {
         _searchQuery = _searchCtrl.text.trim().toLowerCase();
@@ -166,7 +168,7 @@ class _SeedInformationPageState extends State<SeedInformationPage> {
             // ২. রিয়েল ফায়ারস্টোর ডেটা স্ট্রিমবিল্ডার
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance.collection('seed_information').snapshots(),
+                stream: _seedStream,
                 builder: (context, snapshot) {
                   // ২.১ লোডিং স্টেট: স্ক্রিন ফ্রিজ এড়াতে কোনো showDialog ছাড়াই সেন্টার উইজেট রেন্ডার
                   if (snapshot.connectionState == ConnectionState.waiting) {

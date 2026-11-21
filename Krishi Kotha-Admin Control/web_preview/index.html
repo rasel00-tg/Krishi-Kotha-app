@@ -5683,7 +5683,11 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          renderFarmingCalendar();
+          if (!farmingCalendarFirstLoadDone || farmingCalendarItems.length === 0) {
+            initFarmingCalendarLiveSync();
+          } else {
+            renderFarmingCalendar();
+          }
         } else if (tabKey === 'agri-expert') {
           const sub = document.getElementById('homepageSubmenu');
           const caret = document.getElementById('homepageCaret');
@@ -5703,7 +5707,7 @@
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
           if (!adminIeFirstLoadDone || adminIeRecords.length === 0) {
-            initAdminIncomeExpenseLiveSync(true, false);
+            initAdminIncomeExpenseLiveSync(false, false);
           } else {
             renderIncomeExpenseHistoryAdmin();
           }
@@ -5839,30 +5843,38 @@
       }
     }
 
+    // ================= CENTRAL FIRESTORE LISTENER MANAGER =================
+    window.activeFirestoreListeners = window.activeFirestoreListeners || {};
+
+    function registerFirestoreListener(name, unsubFn) {
+      if (typeof window.activeFirestoreListeners[name] === 'function') {
+        try {
+          window.activeFirestoreListeners[name]();
+        } catch (e) {
+          console.warn('Listener unsubscription error for ' + name + ':', e);
+        }
+      }
+      window.activeFirestoreListeners[name] = unsubFn;
+    }
+
+    function unsubscribeFirestoreListener(name) {
+      if (typeof window.activeFirestoreListeners[name] === 'function') {
+        try {
+          window.activeFirestoreListeners[name]();
+        } catch (e) {}
+        delete window.activeFirestoreListeners[name];
+      }
+    }
+
     function initFirestoreListeners() {
       if (!db) {
         hideAdminLoading();
         return;
       }
 
-      // 1. Notifications Listener
-      db.collection('notifications').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-        notifications = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          notifications.push({
-            id: doc.id,
-            title: d.title || d.heading || '',
-            message: d.message || d.description || d.details || '',
-            type: d.type || 'general',
-            time: formatTime(d.timestamp || d.updatedAt)
-          });
-        });
-        renderNotifications();
-        checkInitialCoreLoadDone();
-      }, err => {
-        console.warn("Notifications orderBy fallback, querying snapshot:", err);
-        db.collection('notifications').onSnapshot(snapshot => {
+      // 1. Notifications Listener (Limited to 50 recent documents)
+      try {
+        const unsubNotif = db.collection('notifications').orderBy('timestamp', 'desc').limit(50).onSnapshot(snapshot => {
           notifications = [];
           snapshot.forEach(doc => {
             const d = doc.data();
@@ -5871,101 +5883,132 @@
               title: d.title || d.heading || '',
               message: d.message || d.description || d.details || '',
               type: d.type || 'general',
-              time: formatTime(d.timestamp || d.updatedAt),
-              rawTime: d.timestamp ? (d.timestamp.toMillis ? d.timestamp.toMillis() : new Date(d.timestamp).getTime()) : 0
+              time: formatTime(d.timestamp || d.updatedAt)
             });
           });
-          notifications.sort((a, b) => b.rawTime - a.rawTime);
           renderNotifications();
           checkInitialCoreLoadDone();
-        });
-      });
-
-      // 2. Market Prices Listener (Robust unfiltered listening to prevent missing index/timestamp blocking)
-      db.collection('market_prices').onSnapshot(snapshot => {
-        marketPrices = [];
-        snapshot.forEach(doc => {
-          const d = doc.data() || {};
-          const crop = (d.cropName && d.cropName.trim()) || (d.crop_name && d.crop_name.trim()) || (d.name && d.name.trim()) || (d.crop && d.crop.trim()) || 'ফসল';
-          const market = (d.marketName && d.marketName.trim()) || (d.market_name && d.market_name.trim()) || (d.market && d.market.trim()) || (d.bazar_name && d.bazar_name.trim()) || 'স্থানীয় বাজার';
-          const district = (d.district && d.district.trim()) || (d.district_name && d.district_name.trim()) || (d.division && d.division.trim()) || '';
-          const unit = (d.unit && d.unit.trim()) || (d.unit_name && d.unit_name.trim()) || 'কেজি';
-          const img = (d.imageUrl && d.imageUrl.trim()) || (d.image_url && d.image_url.trim()) || (d.img && d.img.trim()) || (d.image && d.image.trim()) || '';
-          const trend = (d.trend && d.trend.trim()) || (d.status && d.status.trim()) || 'stable';
-
-          let price = 0;
-          if (d.price !== undefined && d.price !== null && d.price !== '') price = d.price;
-          else if (d.wholesale_price !== undefined && d.wholesale_price !== null && d.wholesale_price !== '') price = d.wholesale_price;
-
-          let retail = 0;
-          if (d.retailPrice !== undefined && d.retailPrice !== null && d.retailPrice !== '') retail = d.retailPrice;
-          else if (d.retail_price !== undefined && d.retail_price !== null && d.retail_price !== '') retail = d.retail_price;
-
-          let rawTime = 0;
-          const ts = d.updatedAt || d.updated_at || d.timestamp || d.date || d.createdAt;
-          if (ts) {
-            if (ts.toMillis) rawTime = ts.toMillis();
-            else if (typeof ts.toDate === 'function') rawTime = ts.toDate().getTime();
-            else if (typeof ts === 'string') rawTime = new Date(ts).getTime() || 0;
-            else if (typeof ts === 'number') rawTime = ts;
-          }
-
-          marketPrices.push({
-            id: doc.id,
-            crop: crop,
-            district: district,
-            market: market,
-            price: price,
-            retail: retail,
-            unit: unit,
-            trend: trend,
-            img: img,
-            updatedAt: ts,
-            rawTime: rawTime
-          });
-        });
-        // Sort newest updated first
-        marketPrices.sort((a, b) => b.rawTime - a.rawTime);
-        renderMarketList();
-        checkInitialCoreLoadDone();
-      }, err => console.error("Market stream error:", err));
-
-      // 3. Crops Listener & Category Discovery
-      db.collection('crops').onSnapshot(snapshot => {
-        crops = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          if (d.category && typeof d.category === 'string') {
-            categoriesSet.add(d.category.trim());
-          }
-          let parsedStages = [];
-          if (Array.isArray(d.stages)) {
-            parsedStages = d.stages.map(s => {
-              if (typeof s === 'string') return { name: s, desc: '' };
-              return { name: s.title || s.name || s.step || s.stage_name || '', desc: s.desc || s.description || s.details || '' };
+        }, err => {
+          console.warn("Notifications orderBy fallback, querying snapshot:", err);
+          const unsubFallback = db.collection('notifications').limit(50).onSnapshot(snapshot => {
+            notifications = [];
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              notifications.push({
+                id: doc.id,
+                title: d.title || d.heading || '',
+                message: d.message || d.description || d.details || '',
+                type: d.type || 'general',
+                time: formatTime(d.timestamp || d.updatedAt),
+                rawTime: d.timestamp ? (d.timestamp.toMillis ? d.timestamp.toMillis() : new Date(d.timestamp).getTime()) : 0
+              });
             });
-          }
-          crops.push({
-            id: doc.id,
-            name: d.title || d.name_bn || d.name || 'ফসল',
-            cat: d.category || 'অন্যান্য',
-            season: d.season || '',
-            soil: d.soil_type || d.soil || '',
-            sowing: d.sowing_time || d.sowing || '',
-            img: d.imageUrl || d.image_url || d.image || '',
-            stages: parsedStages,
-            createdAt: d.createdAt || d.created_at || d.timestamp || null,
-            updatedAt: d.updatedAt || d.updated_at || d.timestamp || null
+            notifications.sort((a, b) => b.rawTime - a.rawTime);
+            renderNotifications();
+            checkInitialCoreLoadDone();
           });
+          registerFirestoreListener('notifications', unsubFallback);
         });
-        refreshCategoryDropdowns();
-        renderCrops();
-        checkInitialCoreLoadDone();
-      }, err => console.error("Crops stream error:", err));
+        registerFirestoreListener('notifications', unsubNotif);
+      } catch (nErr) {
+        console.warn("Notifications listener init error:", nErr);
+      }
 
-      // 3.1 Dedicated Categories Collection Listener
+      // 2. Market Prices Listener (Limited to 100 recent documents)
       try {
-        db.collection('categories').onSnapshot(snapshot => {
+        const unsubMarket = db.collection('market_prices').limit(100).onSnapshot(snapshot => {
+          marketPrices = [];
+          snapshot.forEach(doc => {
+            const d = doc.data() || {};
+            const crop = (d.cropName && d.cropName.trim()) || (d.crop_name && d.crop_name.trim()) || (d.name && d.name.trim()) || (d.crop && d.crop.trim()) || 'ফসল';
+            const market = (d.marketName && d.marketName.trim()) || (d.market_name && d.market_name.trim()) || (d.market && d.market.trim()) || (d.bazar_name && d.bazar_name.trim()) || 'স্থানীয় বাজার';
+            const district = (d.district && d.district.trim()) || (d.district_name && d.district_name.trim()) || (d.division && d.division.trim()) || '';
+            const unit = (d.unit && d.unit.trim()) || (d.unit_name && d.unit_name.trim()) || 'কেজি';
+            const img = (d.imageUrl && d.imageUrl.trim()) || (d.image_url && d.image_url.trim()) || (d.img && d.img.trim()) || (d.image && d.image.trim()) || '';
+            const trend = (d.trend && d.trend.trim()) || (d.status && d.status.trim()) || 'stable';
+
+            let price = 0;
+            if (d.price !== undefined && d.price !== null && d.price !== '') price = d.price;
+            else if (d.wholesale_price !== undefined && d.wholesale_price !== null && d.wholesale_price !== '') price = d.wholesale_price;
+
+            let retail = 0;
+            if (d.retailPrice !== undefined && d.retailPrice !== null && d.retailPrice !== '') retail = d.retailPrice;
+            else if (d.retail_price !== undefined && d.retail_price !== null && d.retail_price !== '') retail = d.retail_price;
+
+            let rawTime = 0;
+            const ts = d.updatedAt || d.updated_at || d.timestamp || d.date || d.createdAt;
+            if (ts) {
+              if (ts.toMillis) rawTime = ts.toMillis();
+              else if (typeof ts.toDate === 'function') rawTime = ts.toDate().getTime();
+              else if (typeof ts === 'string') rawTime = new Date(ts).getTime() || 0;
+              else if (typeof ts === 'number') rawTime = ts;
+            }
+
+            marketPrices.push({
+              id: doc.id,
+              crop: crop,
+              district: district,
+              market: market,
+              price: price,
+              retail: retail,
+              unit: unit,
+              trend: trend,
+              img: img,
+              updatedAt: ts,
+              rawTime: rawTime
+            });
+          });
+          // Sort newest updated first
+          marketPrices.sort((a, b) => b.rawTime - a.rawTime);
+          renderMarketList();
+          checkInitialCoreLoadDone();
+        }, err => console.error("Market stream error:", err));
+        registerFirestoreListener('market_prices', unsubMarket);
+      } catch (mErr) {
+        console.warn("Market listener init error:", mErr);
+      }
+
+      // 3. Crops Listener & Category Discovery (Limited to 100 documents)
+      try {
+        const unsubCrops = db.collection('crops').limit(100).onSnapshot(snapshot => {
+          crops = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            if (d.category && typeof d.category === 'string') {
+              categoriesSet.add(d.category.trim());
+            }
+            let parsedStages = [];
+            if (Array.isArray(d.stages)) {
+              parsedStages = d.stages.map(s => {
+                if (typeof s === 'string') return { name: s, desc: '' };
+                return { name: s.title || s.name || s.step || s.stage_name || '', desc: s.desc || s.description || s.details || '' };
+              });
+            }
+            crops.push({
+              id: doc.id,
+              name: d.title || d.name_bn || d.name || 'ফসল',
+              cat: d.category || 'অন্যান্য',
+              season: d.season || '',
+              soil: d.soil_type || d.soil || '',
+              sowing: d.sowing_time || d.sowing || '',
+              img: d.imageUrl || d.image_url || d.image || '',
+              stages: parsedStages,
+              createdAt: d.createdAt || d.created_at || d.timestamp || null,
+              updatedAt: d.updatedAt || d.updated_at || d.timestamp || null
+            });
+          });
+          refreshCategoryDropdowns();
+          renderCrops();
+          checkInitialCoreLoadDone();
+        }, err => console.error("Crops stream error:", err));
+        registerFirestoreListener('crops', unsubCrops);
+      } catch (cErr) {
+        console.warn("Crops listener init error:", cErr);
+      }
+
+      // 3.1 Dedicated Categories Collection Listener (Limited to 50)
+      try {
+        const unsubCat = db.collection('categories').limit(50).onSnapshot(snapshot => {
           if (snapshot && !snapshot.empty) {
             snapshot.forEach(doc => {
               const d = doc.data() || {};
@@ -5975,63 +6018,74 @@
             refreshCategoryDropdowns();
           }
         }, err => console.warn("Categories stream note:", err));
+        registerFirestoreListener('categories', unsubCat);
       } catch (catErr) {
         console.warn("Categories listener init:", catErr);
       }
 
-      // 4. Pests Listener
-      db.collection('pests_diseases').onSnapshot(snapshot => {
-        pests = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          pests.push({
-            id: doc.id,
-            name: d.title || d.name_bn || d.name || '',
-            crop: d.crop_name_bn || d.crop_name || '',
-            symptoms: d.symptoms || '',
-            cure: d.solution || d.organic_cure || '',
-            chemical: d.chemical_cure || ''
+      // 4. Pests Listener (Limited to 100 documents)
+      try {
+        const unsubPests = db.collection('pests_diseases').limit(100).onSnapshot(snapshot => {
+          pests = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            pests.push({
+              id: doc.id,
+              name: d.title || d.name_bn || d.name || '',
+              crop: d.crop_name_bn || d.crop_name || '',
+              symptoms: d.symptoms || '',
+              cure: d.solution || d.organic_cure || '',
+              chemical: d.chemical_cure || ''
+            });
           });
-        });
-        renderCrops();
-      }, err => console.error("Pests stream error:", err));
+          renderCrops();
+        }, err => console.error("Pests stream error:", err));
+        registerFirestoreListener('pests_diseases', unsubPests);
+      } catch (pErr) {
+        console.warn("Pests listener init error:", pErr);
+      }
 
-      // 5. Users Listener (Enhanced with Account Management fields)
-      db.collection('users').onSnapshot(snapshot => {
-        users = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          users.push({
-            id: doc.id,
-            name: d.name || 'কৃষক ভাই',
-            phone: d.phone || '',
-            email: d.email || '',
-            password: d.password || '',
-            lastPasswordReset: d.lastPasswordReset || d.last_password_reset || d.passwordUpdatedAt || null,
-            failedAttempts: d.failedAttempts || 0,
-            lockUntil: d.lockUntil || null,
-            photoUrl: d.photoUrl || d.image || '',
-            district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
-            rawDistrict: d.district || '',
-            upazila: d.upazila || '',
-            village: d.village || '',
-            occupation: d.occupation || '',
-            crops: d.preferred_crops || [],
-            status: d.status || 'active',
-            blockReason: d.blockReason || '',
-            unblockAt: d.unblockAt,
-            suspendReason: d.suspendReason || '',
-            lastProfileUpdate: d.lastProfileUpdate || d.last_profile_update || null,
-            createdAt: d.createdAt,
-            raw: d
+      // 5. Users Listener (Limited to 100 documents)
+      try {
+        const unsubUsers = db.collection('users').limit(100).onSnapshot(snapshot => {
+          users = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            users.push({
+              id: doc.id,
+              name: d.name || 'কৃষক ভাই',
+              phone: d.phone || '',
+              email: d.email || '',
+              password: d.password || '',
+              lastPasswordReset: d.lastPasswordReset || d.last_password_reset || d.passwordUpdatedAt || null,
+              failedAttempts: d.failedAttempts || 0,
+              lockUntil: d.lockUntil || null,
+              photoUrl: d.photoUrl || d.image || '',
+              district: (d.upazila ? d.upazila + ', ' : '') + (d.district || ''),
+              rawDistrict: d.district || '',
+              upazila: d.upazila || '',
+              village: d.village || '',
+              occupation: d.occupation || '',
+              crops: d.preferred_crops || [],
+              status: d.status || 'active',
+              blockReason: d.blockReason || '',
+              unblockAt: d.unblockAt,
+              suspendReason: d.suspendReason || '',
+              lastProfileUpdate: d.lastProfileUpdate || d.last_profile_update || null,
+              createdAt: d.createdAt,
+              raw: d
+            });
           });
-        });
-        renderUsers();
-        renderUserControlTable();
-        checkInitialCoreLoadDone();
-      }, err => console.error("Users stream error:", err));
+          renderUsers();
+          renderUserControlTable();
+          checkInitialCoreLoadDone();
+        }, err => console.error("Users stream error:", err));
+        registerFirestoreListener('users', unsubUsers);
+      } catch (uErr) {
+        console.warn("Users listener init error:", uErr);
+      }
 
-      // 6. Support Tickets Listener (রিকোয়ারমেন্ট ২: orderBy createdAt descending ও ইন-মেমোরি সর্ট)
+      // 6. Support Tickets Listener (Limited to 50 documents)
       const parseTicketDoc = doc => {
         const d = doc.data() || {};
         return {
@@ -6070,7 +6124,7 @@
       };
 
       try {
-        db.collection('support_tickets').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        const unsubTickets = db.collection('support_tickets').orderBy('createdAt', 'desc').limit(50).onSnapshot(snapshot => {
           tickets = [];
           snapshot.forEach(doc => tickets.push(parseTicketDoc(doc)));
           sortTicketsDescending(tickets);
@@ -6078,33 +6132,36 @@
           renderSupportTicketsTable();
         }, err => {
           console.warn("Tickets orderBy error, falling back to unordered listener:", err);
-          db.collection('support_tickets').onSnapshot(fallbackSnap => {
+          const unsubFbTickets = db.collection('support_tickets').limit(50).onSnapshot(fallbackSnap => {
             tickets = [];
             fallbackSnap.forEach(doc => tickets.push(parseTicketDoc(doc)));
             sortTicketsDescending(tickets);
             renderUsers();
             renderSupportTicketsTable();
           }, fbErr => console.error("Tickets stream fallback error:", fbErr));
+          registerFirestoreListener('support_tickets', unsubFbTickets);
         });
+        registerFirestoreListener('support_tickets', unsubTickets);
       } catch (err) {
         console.warn("Tickets listener initialization error:", err);
       }
 
       // 6.b Support Contact Live Settings Listener
       try {
-        db.collection('app_settings').doc('support_contact').onSnapshot(doc => {
+        const unsubContact = db.collection('app_settings').doc('support_contact').onSnapshot(doc => {
           if (doc.exists) {
             const d = doc.data() || {};
             applySupportContactSettingsToForm(d);
           }
         }, err => console.error("Support contact settings error:", err));
+        registerFirestoreListener('support_contact', unsubContact);
       } catch (e) {
         console.error(e);
       }
 
-      // 7. KrishiMate AI Listener (Stream from disease_prescriptions)
+      // 7. KrishiMate AI Listener (Stream from disease_prescriptions limited to 50)
       try {
-        db.collection('disease_prescriptions').onSnapshot(snapshot => {
+        const unsubKm = db.collection('disease_prescriptions').limit(50).onSnapshot(snapshot => {
           krishiMateList = [];
           snapshot.forEach(doc => {
             const d = doc.data() || {};
@@ -6129,13 +6186,14 @@
           console.warn("KrishiMate stream note:", err);
           renderKrishiMateDashboard();
         });
+        registerFirestoreListener('disease_prescriptions', unsubKm);
       } catch (kmErr) {
         console.warn("KrishiMate listener init error:", kmErr);
       }
 
       // 8. Privacy Policy Settings Listener
       try {
-        db.collection('settings').doc('privacy_policy').onSnapshot(doc => {
+        const unsubPrivacy = db.collection('settings').doc('privacy_policy').onSnapshot(doc => {
           if (doc.exists) {
             const d = doc.data() || {};
             const lastUpdated = d.last_updated || 'সর্বশেষ হালনাগাদ: নভেম্বর ২০২৬ • সংস্করণ ১.০.০';
@@ -6183,13 +6241,14 @@
         }, err => {
           console.warn("Privacy policy listener notice:", err);
         });
+        registerFirestoreListener('privacy_policy', unsubPrivacy);
       } catch (ppErr) {
         console.warn("Privacy policy listener init error:", ppErr);
       }
 
-      // 9. Login Update Requests Listener (Real-time Firestore stream)
+      // 9. Login Update Requests Listener (Limited to 50)
       try {
-        db.collection('login_update_requests').onSnapshot(snapshot => {
+        const unsubLoginReq = db.collection('login_update_requests').limit(50).onSnapshot(snapshot => {
           loginUpdateRequests = [];
           snapshot.forEach(doc => {
             const d = doc.data() || {};
@@ -6212,6 +6271,7 @@
         }, err => {
           console.warn("Login update requests stream error:", err);
         });
+        registerFirestoreListener('login_update_requests', unsubLoginReq);
       } catch (reqErr) {
         console.warn("Login update requests listener init error:", reqErr);
       }
@@ -9348,7 +9408,7 @@
           if (adminFaqsUnsubscribe) {
             try { adminFaqsUnsubscribe(); } catch (_) { }
           }
-          adminFaqsUnsubscribe = db.collection('faqs').onSnapshot(snap => {
+          adminFaqsUnsubscribe = db.collection('faqs').limit(100).onSnapshot(snap => {
             adminFaqsList = [];
             snap.forEach(doc => {
               adminFaqsList.push({ id: doc.id, ...doc.data() });
@@ -9358,6 +9418,7 @@
             console.warn('Admin FAQs snapshot error:', err);
             renderAdminFaqsTable(adminFaqsList);
           });
+          registerFirestoreListener('faqs', adminFaqsUnsubscribe);
         } catch (e) {
           console.warn('Admin FAQs firestore error:', e);
           renderAdminFaqsTable(adminFaqsList);
@@ -12382,6 +12443,8 @@
       }
     }
 
+    let farmingCalendarFirstLoadDone = false;
+
     function initFarmingCalendarLiveSync() {
       if (!db) {
         fcIsLoading = false;
@@ -12389,7 +12452,7 @@
         return;
       }
       try {
-        db.collection('farming_calendar').onSnapshot(snapshot => {
+        const unsub = db.collection('farming_calendar').limit(100).onSnapshot(snapshot => {
           farmingCalendarItems = [];
           if (!snapshot.empty) {
             snapshot.forEach(doc => {
@@ -12410,15 +12473,19 @@
             });
             farmingCalendarItems.sort((a, b) => (a.monthIndex || 99) - (b.monthIndex || 99));
           }
+          farmingCalendarFirstLoadDone = true;
           fcIsLoading = false;
           renderFarmingCalendar();
         }, err => {
           console.warn("Farming calendar stream error:", err);
+          farmingCalendarFirstLoadDone = true;
           fcIsLoading = false;
           renderFarmingCalendar();
         });
+        registerFirestoreListener('farming_calendar', unsub);
       } catch (err) {
         console.warn("Farming calendar stream init catch:", err);
+        farmingCalendarFirstLoadDone = true;
         fcIsLoading = false;
         renderFarmingCalendar();
       }
@@ -12457,30 +12524,8 @@
       }
 
       try {
-        // 2. Force Server-First Fetch (Bypassing Local Cache for Fast & Fresh Data)
-        if (forceServer || !adminIeFirstLoadDone) {
-          try {
-            const serverSnap = await firebase.firestore().collection('agricultural_accounts').get({ source: 'server' });
-            if (serverSnap && !serverSnap.empty) {
-              const list = [];
-              serverSnap.forEach(doc => {
-                list.push({ id: doc.id, ...doc.data() });
-              });
-              list.sort((a, b) => {
-                const aD = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.date || 0);
-                const bD = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.date || 0);
-                return bD - aD;
-              });
-              adminIeRecords = list;
-              renderIncomeExpenseHistoryAdmin();
-            }
-          } catch (serverErr) {
-            console.warn("Direct server fetch note (live listener active):", serverErr);
-          }
-        }
-
-        // 3. Real-Time onSnapshot Listener (Zero-Refresh Continuous Sync)
-        firebase.firestore().collection('agricultural_accounts').onSnapshot(snapshot => {
+        // Real-Time onSnapshot Listener with limit(100)
+        const unsub = firebase.firestore().collection('agricultural_accounts').limit(100).onSnapshot(snapshot => {
           if (snapshot && !snapshot.empty) {
             const list = [];
             snapshot.forEach(doc => {
@@ -12495,7 +12540,6 @@
           } else {
             adminIeRecords = [];
           }
-          // Await full rendering before hiding loading popup
           renderIncomeExpenseHistoryAdmin();
           adminIeFirstLoadDone = true;
           hideAdminLoading();
@@ -12505,6 +12549,7 @@
           adminIeFirstLoadDone = true;
           hideAdminLoading();
         });
+        registerFirestoreListener('income_expense', unsub);
       } catch (err) {
         console.warn("Admin IE catch error:", err);
         renderIncomeExpenseHistoryAdmin();
@@ -12706,9 +12751,9 @@
         showAdminLoading('বীজের তথ্য লোড হচ্ছে...', 'সার্ভার থেকে লাইভ বীজের তথ্য ফেচ করা হচ্ছে...');
       }
 
-      // ১. Dynamic Category Real-time Sync from Firestore
+      // ১. Dynamic Category Real-time Sync from Firestore (Limit 50)
       try {
-        firebase.firestore().collection('seed_categories').onSnapshot((catSnap) => {
+        const unsubCat = firebase.firestore().collection('seed_categories').limit(50).onSnapshot((catSnap) => {
           const list = [];
           const seen = new Set();
           if (catSnap && !catSnap.empty) {
@@ -12736,6 +12781,7 @@
             renderAdminSeedCategoryDropdowns();
           }
         });
+        registerFirestoreListener('seed_categories', unsubCat);
       } catch (catErr) {
         console.warn('Seed categories sync error:', catErr);
         if (adminSeedCategories.length === 0) {
@@ -12744,9 +12790,9 @@
         }
       }
 
-      // ২. Seed Information Real-time Sync
+      // ২. Seed Information Real-time Sync (Limit 100)
       try {
-        firebase.firestore().collection('seed_information').onSnapshot((snapshot) => {
+        const unsubSeed = firebase.firestore().collection('seed_information').limit(100).onSnapshot((snapshot) => {
           const list = [];
           if (snapshot && !snapshot.empty) {
             snapshot.forEach(doc => {
@@ -12770,6 +12816,7 @@
             hideAdminLoading();
           }
         });
+        registerFirestoreListener('seed_information', unsubSeed);
       } catch (err) {
         console.warn('Seed sync error:', err);
         renderAdminSeedTable();
@@ -13341,8 +13388,8 @@
       }
 
       try {
-        // রিকোয়ারমেন্ট ৩: CollectionGroup দিয়ে সব ইউজারের সেচ ট্র্যাকারের ডাটা লাইভ সিঙ্ক
-        firebase.firestore().collectionGroup('irrigation_tracker_crops').onSnapshot((snapshot) => {
+        // রিকোয়ারমেন্ট ৩: CollectionGroup দিয়ে সব ইউজারের সেচ ট্র্যাকারের ডাটা লাইভ সিঙ্ক (Limit 100)
+        const unsub = firebase.firestore().collectionGroup('irrigation_tracker_crops').limit(100).onSnapshot((snapshot) => {
           adminIrrigationFirstLoadDone = true;
           if (shouldShowLoading) hideAdminLoading();
 
@@ -13372,6 +13419,7 @@
           console.warn('CollectionGroup irrigation crops error:', err);
           if (shouldShowLoading) hideAdminLoading();
         });
+        registerFirestoreListener('irrigation_tracker', unsub);
       } catch (err) {
         console.warn('Admin irrigation sync error:', err);
         if (shouldShowLoading) hideAdminLoading();
@@ -13698,7 +13746,7 @@
       }
 
       try {
-        firebase.firestore().collection('fertilizer_seed_dealers').onSnapshot((snapshot) => {
+        const unsub = firebase.firestore().collection('fertilizer_seed_dealers').limit(100).onSnapshot((snapshot) => {
           adminDealersFirstLoadDone = true;
           if (shouldShowLoading && typeof hideAdminLoading === 'function') {
             hideAdminLoading();
@@ -13744,6 +13792,7 @@
           adminDealersFirstLoadDone = true;
           renderAdminDealersTable();
         });
+        registerFirestoreListener('fertilizer_dealers', unsub);
       } catch (err) {
         console.warn('initAdminDealersMonitoringLiveSync catch error:', err);
         if (shouldShowLoading && typeof hideAdminLoading === 'function') {
@@ -14037,7 +14086,7 @@
 
       try {
         const db = firebase.firestore();
-        const collectionRef = db.collection('soil_health');
+        const collectionRef = db.collection('soil_health').limit(100);
 
         adminSoilUnsubscribe = collectionRef.onSnapshot((snapshot) => {
           adminSoilList = [];
@@ -14066,6 +14115,7 @@
             hideAdminLoading();
           }
         });
+        registerFirestoreListener('soil_health', adminSoilUnsubscribe);
       } catch (err) {
         console.warn('initAdminSoilHealthLiveSync catch error:', err);
         if (shouldShowLoading && typeof hideAdminLoading === 'function') {
@@ -14492,14 +14542,10 @@
       showAdminLoading('সিস্টেম প্রস্তুত হচ্ছে...', 'তথ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...');
 
       refreshCategoryDropdowns();
+      // Lazy-loading architecture: Only core dashboard collections (notifications, market, crops, users)
+      // are loaded on initialization. Heavy sub-tabs (farming_calendar, income_expense, seed, irrigation, dealers, soil_health, faqs)
+      // are loaded strictly on-demand when the administrator navigates to their specific tab.
       initFirestoreListeners();
-      initAdminFaqsLiveSync();
-      initFarmingCalendarLiveSync();
-      initAdminIncomeExpenseLiveSync(false, true);
-      initAdminSeedMonitoringLiveSync(false, true);
-      initAdminIrrigationSync(false, true);
-      initAdminDealersMonitoringLiveSync(false, true);
-      initAdminSoilHealthLiveSync(false, true);
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
       populateAdminDealersDistricts();
@@ -14509,11 +14555,9 @@
       renderUsers();
       renderUserControlTable();
       renderKrishiMateDashboard();
-      renderFarmingCalendar();
       setupMarketFormPasteSanitizers();
       updatePolicyCounters();
       updatePolicyPreview();
-      loadPopupNotificationSettings();
     });
   </script>
   <!-- MODAL: ADMIN INCOME-EXPENSE MEMO DETAILS -->

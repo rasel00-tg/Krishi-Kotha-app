@@ -27,9 +27,12 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<MarketPriceModel> _lastLoadedPrices = [];
 
+  late final Stream<QuerySnapshot> _marketStream;
+
   @override
   void initState() {
     super.initState();
+    _marketStream = FirebaseFirestore.instance.collection('market_prices').limit(150).snapshots();
     MarketFavoritesService.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -152,7 +155,7 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
             // ২. রিয়েল-টাইম লাইভ বাজার দর গ্রিড (Firestore StreamBuilder)
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('market_prices').snapshots(),
+                stream: _marketStream,
                 builder: (context, snapshot) {
                   // ১. যদি ডেটা লোড হতে থাকে (ConnectionState.waiting), পেজের সেন্টারে রঙিন লোডিং পপ-আপ প্রদর্শন
                   if ((snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) ||

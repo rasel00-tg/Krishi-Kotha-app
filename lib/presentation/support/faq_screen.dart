@@ -45,7 +45,7 @@ class FaqScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance.collection('faqs').snapshots(),
+                    stream: FirebaseFirestore.instance.collection('faqs').limit(50).snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(

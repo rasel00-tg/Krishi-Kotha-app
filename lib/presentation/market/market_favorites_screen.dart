@@ -18,9 +18,12 @@ class MarketFavoritesScreen extends StatefulWidget {
 }
 
 class _MarketFavoritesScreenState extends State<MarketFavoritesScreen> {
+  late final Stream<QuerySnapshot> _marketStream;
+
   @override
   void initState() {
     super.initState();
+    _marketStream = FirebaseFirestore.instance.collection('market_prices').limit(150).snapshots();
     MarketFavoritesService.init();
   }
 
@@ -60,7 +63,7 @@ class _MarketFavoritesScreenState extends State<MarketFavoritesScreen> {
                     }
 
                     return StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('market_prices').snapshots(),
+                      stream: _marketStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                           return const Center(

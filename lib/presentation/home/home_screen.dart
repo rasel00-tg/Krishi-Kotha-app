@@ -41,11 +41,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? _lastShownVersionId;
   Map<String, dynamic>? _lastPopupData;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _popupSubscription;
+  late final Stream<List<NotificationModel>> _notificationStream;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _notificationStream = widget.firestoreService.getNotificationsStream(limit: 30);
     _listenToStartupPopupNotification();
   }
 
@@ -818,7 +820,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// হেডারের ডান পাশের নোটিফিকেশন আইকন উইথ আনরিড কাউন্ট ব্যাজ
   Widget _buildNotificationButton(BuildContext context) {
     return StreamBuilder<List<NotificationModel>>(
-      stream: widget.firestoreService.getNotificationsStream(),
+      stream: _notificationStream,
       builder: (context, snapshot) {
         final notifications = snapshot.data ?? [];
         final unreadCount = notifications.where((n) => !n.isSeen).length;

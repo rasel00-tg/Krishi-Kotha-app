@@ -22,6 +22,13 @@ class PestCatalogScreen extends StatefulWidget {
 class _PestCatalogScreenState extends State<PestCatalogScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late final Stream<QuerySnapshot> _pestsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _pestsStream = FirebaseFirestore.instance.collection('pests_diseases').limit(100).snapshots();
+  }
 
   @override
   void dispose() {
@@ -32,17 +39,7 @@ class _PestCatalogScreenState extends State<PestCatalogScreen> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('pests_diseases').snapshots().timeout(
-        const Duration(seconds: 4),
-        onTimeout: (sink) async {
-          try {
-            final snap = await FirebaseFirestore.instance.collection('pests_diseases').get();
-            sink.add(snap);
-          } catch (e) {
-            sink.addError(e);
-          }
-        },
-      ),
+      stream: _pestsStream,
       builder: (context, snapshot) {
         final isLoading = snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData;
 

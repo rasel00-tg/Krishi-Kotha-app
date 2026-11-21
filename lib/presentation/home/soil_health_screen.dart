@@ -29,9 +29,12 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
     'লবণাক্ত মাটি',
   ];
 
+  late final Stream<QuerySnapshot> _soilStream;
+
   @override
   void initState() {
     super.initState();
+    _soilStream = FirebaseFirestore.instance.collection('soil_health').limit(100).snapshots();
     _selectedCategory = widget.initialCategory ?? 'সব মাটি';
   }
 
@@ -273,7 +276,7 @@ class _SoilHealthScreenState extends State<SoilHealthScreen> {
       ),
       body: SafeArea(
         child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('soil_health').snapshots(),
+          stream: _soilStream,
           builder: (context, snapshot) {
             final docs = snapshot.data?.docs ?? [];
 

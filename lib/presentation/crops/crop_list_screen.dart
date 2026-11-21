@@ -36,10 +36,14 @@ class _CropListScreenState extends State<CropListScreen> {
   String _searchQuery = '';
   bool _isSearchFocused = false;
   bool _isSearchExpanded = false;
+  late final Stream<QuerySnapshot> _cropsStream;
+  late final Stream<QuerySnapshot> _categoriesStream;
 
   @override
   void initState() {
     super.initState();
+    _cropsStream = FirebaseFirestore.instance.collection('crops').limit(100).snapshots();
+    _categoriesStream = FirebaseFirestore.instance.collection('categories').limit(50).snapshots();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.trim().toLowerCase();
@@ -79,19 +83,7 @@ class _CropListScreenState extends State<CropListScreen> {
             // 3. Dynamic Crop Cards via Firestore StreamBuilder
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('crops').snapshots().timeout(
-                  const Duration(seconds: 3),
-                  onTimeout: (sink) async {
-                    try {
-                      final snap = await FirebaseFirestore.instance
-                          .collection('crops')
-                          .get(const GetOptions(source: Source.serverAndCache));
-                      sink.add(snap);
-                    } catch (e) {
-                      sink.addError(e);
-                    }
-                  },
-                ),
+                stream: _cropsStream,
                 builder: (context, snapshot) {
                   final bool hasData = snapshot.hasData && snapshot.data != null;
                   final bool isLoading = snapshot.connectionState == ConnectionState.waiting && !hasData;
@@ -412,7 +404,7 @@ class _CropListScreenState extends State<CropListScreen> {
   // 2. Section-Colored Category Chips with Individual Soft Palettes & Vibrant Active State
   Widget _buildCategoryChipsRow(CropProvider cropProvider) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+      stream: _categoriesStream,
       builder: (context, catSnapshot) {
         final List<String> dynamicCategories = [
           AppStrings.allCrops,

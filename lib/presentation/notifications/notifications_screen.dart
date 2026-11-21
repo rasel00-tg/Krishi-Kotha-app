@@ -38,7 +38,7 @@ String formatFullDateTimeWithBar(DateTime dt) {
 }
 
 /// ==================== NOTIFICATIONS SCREEN (INBOX) ====================
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   final FirestoreService? firestoreService;
 
   const NotificationsScreen({
@@ -46,7 +46,24 @@ class NotificationsScreen extends StatelessWidget {
     this.firestoreService,
   });
 
-  FirestoreService get _service => firestoreService ?? FirestoreService();
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  late final FirestoreService _service;
+  late final Stream<QuerySnapshot> _notificationsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = widget.firestoreService ?? FirestoreService();
+    _notificationsStream = FirebaseFirestore.instance
+        .collection('notifications')
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,22 +74,7 @@ class NotificationsScreen extends StatelessWidget {
         Navigator.of(context).pop();
       },
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('notifications')
-            .snapshots()
-            .timeout(
-          const Duration(seconds: 4),
-          onTimeout: (sink) async {
-            try {
-              final snap = await FirebaseFirestore.instance
-                  .collection('notifications')
-                  .get();
-              sink.add(snap);
-            } catch (e) {
-              sink.addError(e);
-            }
-          },
-        ),
+        stream: _notificationsStream,
         builder: (context, snapshot) {
           final isLoading =
               snapshot.connectionState == ConnectionState.waiting &&

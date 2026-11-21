@@ -51,9 +51,12 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
     'চৈত্র': 'মার্চ - এপ্রিল',
   };
 
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _calendarStream;
+
   @override
   void initState() {
     super.initState();
+    _calendarStream = FirebaseFirestore.instance.collection('farming_calendar').limit(100).snapshots();
     _selectedMonth = widget.initialMonth ?? 'সব মাস';
   }
 
@@ -280,7 +283,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
             // ৪. রিয়েল-টাইম ফায়ারস্টোর StreamBuilder দিয়ে ফসলের তালিকা
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance.collection('farming_calendar').snapshots(),
+                stream: _calendarStream,
                 builder: (context, snapshot) {
                   if ((snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) ||
                       (!snapshot.hasData && !snapshot.hasError)) {
