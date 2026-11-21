@@ -7,6 +7,7 @@ import '../../data/services/firestore_service.dart';
 import 'crop_calendar_screen.dart';
 import 'income_expense_screen.dart';
 import 'irrigation_tracker_screen.dart';
+import 'soil_health_screen.dart';
 
 class AgriServiceDetailScreen extends StatefulWidget {
   final String serviceId;
@@ -757,6 +758,27 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
             'মাত্র ২৫-৫০ টাকা খরচে উপজেলা পর্যায়ে মাটির পুষ্টি উপাদান পরীক্ষা করা যায়।',
             'নমুনা সংগ্রহের নিয়ম: জমি থেকে ইংরেজি V আকারে ৬ ইঞ্চি গভীর করে মাটি সংগ্রহ করুন।',
           ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SoilHealthScreen()),
+              );
+            },
+            icon: const Icon(Icons.terrain_rounded, size: 18),
+            label: const Text('সম্পূর্ণ মাটির স্বাস্থ্য পেজ দেখুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1B5E20),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+          ),
         ),
       ],
     );
