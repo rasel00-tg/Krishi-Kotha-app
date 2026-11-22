@@ -2541,7 +2541,7 @@
             <span>মৎস্য চাষ</span>
           </div>
           <!-- ১২. ফসল সংরক্ষণ -->
-          <div class="quick-card" onclick="openServiceModal('cold_storage')">
+          <div class="quick-card" onclick="openCropPreservationPage()">
             <div class="quick-icon-wrap" style="background: #D7CCC8; color: #5D4037;">
               <i class="fa-solid fa-boxes-stacked"></i>
             </div>
@@ -3682,6 +3682,73 @@
         <div style="width: 32px;"></div>
       </div>
       <div id="fishFarmingDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+        <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN CROP PRESERVATION PAGE MATCHING FLUTTER CROP_PRESERVATION_SCREEN & CROP CALENDAR -->
+    <div class="full-screen-page" id="cropPreservationPage"
+      style="background: #FAF8F5; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div
+        style="background: linear-gradient(180deg, #5D4037 0%, #3E2723 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(93, 64, 55, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <button class="topbar-back-btn" onclick="closeCropPreservationPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">ফসল সংরক্ষন</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">দানা শস্য, আলু, ফলমূল ও বীজের নিরাপদ সংরক্ষণ ও হিমাগার নির্দেশিকা</p>
+          </div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- Horizontal Category Filter Chips -->
+        <div class="month-chips-scroll" id="preservationCategoryChips"
+          style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+          <!-- Dynamically populated preservation category chips -->
+        </div>
+      </div>
+
+      <!-- Selected Category Guidance Banner -->
+      <div id="preservationCategoryBanner"
+        style="display: none; background: #EFEBE9; border: 1px solid #D7CCC8; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #5D4037; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div>
+            <h4 id="preservationBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #3E2723; margin: 0;">
+            </h4>
+            <p id="preservationBannerCategoryDesc" style="font-size: 11px; color: #5D4037; margin: 2px 0 0 0;">এই ক্যাটাগরির ফসল সংরক্ষণ পদ্ধতি, তাপমাত্রা ও আর্দ্রতা নির্দেশিকা নিচে প্রদর্শিত হচ্ছে</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Crop Preservation Items List Container -->
+      <div id="cropPreservationListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <!-- Dynamically rendered preservation cards -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN CROP PRESERVATION DETAILS PAGE MATCHING FLUTTER DETAIL VIEW -->
+    <div class="full-screen-page" id="cropPreservationDetailPage"
+      style="background: #FAF8F5; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <div
+        style="background: #5D4037; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
+        <button onclick="closeCropPreservationDetailPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 id="preservationDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">ফসল সংরক্ষণের তথ্য</h3>
+          <p id="preservationDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সংরক্ষণ পদ্ধতি ও হিমাগার নির্দেশিকা</p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+      <div id="cropPreservationDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
       </div>
     </div>
@@ -15138,6 +15205,387 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     window.openFishFarmingPage = openFishFarmingPage;
     window.closeFishFarmingPage = closeFishFarmingPage;
     window.renderFishCategoryChips = renderFishCategoryChips;
+
+    /* ==========================================================================
+       CROP PRESERVATION (ফসল সংরক্ষন) CONTROLLER & LIVE FIRESTORE INTEGRATION
+       ========================================================================== */
+    let liveCropPreservationData = []; // STRICT: ZERO DEMO DATA
+    let currentPreservationItems = [];
+    let isPreservationDataLoading = false;
+    let selectedPreservationCategory = 'সব';
+    let cropPreservationUnsubscribe = null;
+
+    const basePreservationCategories = [
+      'সব',
+      'ধান ও চাল',
+      'আলু ও কন্দ',
+      'শাকসবজি',
+      'ফলমূল',
+      'মসলা ও ডাল',
+      'বীজ সংরক্ষন',
+      'হিমাগার ও আধুনিক পদ্ধতি'
+    ];
+
+    const preservationCategorySubtitleMap = {
+      'ধান ও চাল': 'আর্দ্রতা নিয়ন্ত্রণ, গোলাজাতকরণ ও ধানের নিরাপদ সংরক্ষণ নির্দেশিকা',
+      'আলু ও কন্দ': 'হিমাগারে সংরক্ষণ, তাপমাত্রা ও আর্দ্রতা নিয়ন্ত্রণ ও আলো থেকে সুরক্ষা',
+      'শাকসবজি': 'হিমাগার ছাড়াও দেশীয় পদ্ধতিতে তাজা শাকসবজি সংরক্ষণের কৌশল',
+      'ফলমূল': 'আম, কলা, লিচু ও অন্যান্য ফলের দীর্ঘস্থায়ী সংরক্ষণ ও পরিবহন ব্যবস্থা',
+      'মসলা ও ডাল': 'শুকানো, বায়ুরোধক পাত্রে বায়ু নিরোধক মজুদ ও পোকা দমন',
+      'বীজ সংরক্ষন': 'ভবিষ্যৎ ফসলের জন্য বীজের অঙ্কুরোদগম ক্ষমতা ধরে রাখার পদ্ধতি',
+      'হিমাগার ও আধুনিক পদ্ধতি': 'কোল্ড স্টোরেজ ভাড়া, সাইলো, কুল চেইন ও আধুনিক প্যাকিং প্রযুক্তি'
+    };
+
+    function openCropPreservationPage() {
+      const page = document.getElementById('cropPreservationPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      renderCropPreservationCategoryChips();
+      renderCropPreservationList();
+      initFirestoreCropPreservationSync();
+    }
+
+    function closeCropPreservationPage() {
+      const page = document.getElementById('cropPreservationPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+
+      // Read Optimization: Unsubscribe from snapshot when leaving the page
+      if (cropPreservationUnsubscribe) {
+        try { cropPreservationUnsubscribe(); } catch (_) { }
+        cropPreservationUnsubscribe = null;
+      }
+    }
+
+    function renderCropPreservationCategoryChips() {
+      const container = document.getElementById('preservationCategoryChips');
+      if (!container) return;
+
+      const dynamicCats = new Set(basePreservationCategories);
+      (liveCropPreservationData || []).forEach(item => {
+        const cat = item.category;
+        if (cat && typeof cat === 'string' && cat.trim()) {
+          dynamicCats.add(cat.trim());
+        }
+      });
+      const allCategories = Array.from(dynamicCats);
+
+      container.innerHTML = allCategories.map(cat => {
+        const isSel = selectedPreservationCategory === cat;
+        const icon = cat === 'সব' ? 'fa-table-cells-large' : (cat.includes('ধান') ? 'fa-wheat-awn' : (cat.includes('আলু') ? 'fa-carrot' : (cat.includes('শাক') ? 'fa-leaf' : (cat.includes('ফল') ? 'fa-apple-whole' : (cat.includes('বীজ') ? 'fa-seedling' : (cat.includes('হিমাগার') ? 'fa-snowflake' : 'fa-boxes-stacked'))))));
+        return `
+          <button type="button" onclick="selectCropPreservationCategory('${cat}')" style="
+            background: ${isSel ? '#ffffff' : 'rgba(255,255,255,0.18)'};
+            color: ${isSel ? '#5D4037' : '#ffffff'};
+            border: 1px solid ${isSel ? '#ffffff' : 'rgba(255,255,255,0.32)'};
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            font-weight: ${isSel ? '700' : '500'};
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: ${isSel ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'};
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+          "><i class="fa-solid ${icon}" style="font-size: 11px;"></i>${cat}</button>
+        `;
+      }).join('');
+    }
+
+    function selectCropPreservationCategory(cat) {
+      selectedPreservationCategory = cat;
+      renderCropPreservationCategoryChips();
+      renderCropPreservationList();
+    }
+
+    function getNormalizedPreservationImageUrl(item) {
+      if (!item) return '';
+      let url = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      const r2Base = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/';
+      return r2Base + url.replace(/^\/+/, '');
+    }
+
+    function renderCropPreservationList() {
+      const banner = document.getElementById('preservationCategoryBanner');
+      const bTitle = document.getElementById('preservationBannerCategoryTitle');
+      const bDesc = document.getElementById('preservationBannerCategoryDesc');
+
+      if (selectedPreservationCategory !== 'সব') {
+        if (banner) banner.style.display = 'block';
+        if (bTitle) bTitle.innerText = selectedPreservationCategory;
+        if (bDesc) {
+          bDesc.innerText = preservationCategorySubtitleMap[selectedPreservationCategory] || 'এই ক্যাটাগরির ফসল সংরক্ষণ পদ্ধতি, তাপমাত্রা ও আর্দ্রতা নির্দেশিকা নিচে প্রদর্শিত হচ্ছে';
+        }
+      } else {
+        if (banner) banner.style.display = 'none';
+      }
+
+      let filtered = [...liveCropPreservationData];
+
+      if (selectedPreservationCategory !== 'সব') {
+        const target = selectedPreservationCategory.toLowerCase();
+        filtered = filtered.filter(item => {
+          const cat = ((item.category || '')).toLowerCase();
+          const title = ((item.title || item.name || '')).toLowerCase();
+          return cat.includes(target) || title.includes(target);
+        });
+      }
+
+      const container = document.getElementById('cropPreservationListContainer');
+      if (!container) return;
+
+      if (isPreservationDataLoading) {
+        container.innerHTML = getPremiumLoaderHtml('ফসল সংরক্ষন', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        return;
+      }
+
+      currentPreservationItems = filtered;
+
+      // Clean empty state when Firestore has no records (ZERO DEMO DATA)
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 48px 16px; color: #758577;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #EFEBE9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+              <i class="fa-solid fa-boxes-stacked" style="font-size: 30px; color: #5D4037;"></i>
+            </div>
+            <h4 style="font-size: 15.5px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">এখনো কোনো ফসল সংরক্ষনের তথ্য যুক্ত করা হয়নি</h4>
+            <p style="font-size: 12.5px; margin: 0 0 16px 0; color: #5B6D5D;">${(selectedPreservationCategory !== 'সব') ? 'অন্য কোনো ক্যাটাগরি নির্বাচন করুন' : 'শীঘ্রই অ্যাডমিন প্যানেল থেকে তথ্য যুক্ত করা হবে'}</p>
+            ${(selectedPreservationCategory !== 'সব') ? `
+              <button type="button" onclick="selectCropPreservationCategory('সব')" style="background: #5D4037; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-rotate-right"></i>সকল তথ্য দেখুন
+              </button>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((item, idx) => {
+        const title = item.title || item.name || 'ফসল সংরক্ষণের তথ্য';
+        const category = item.category || 'ফসল সংরক্ষণ';
+        const cropType = item.cropType || item.type || item.variety || '';
+        const highlights = item.highlights || '';
+        const description = item.description || '';
+        const imgUrl = getNormalizedPreservationImageUrl(item);
+
+        const imgBlock = imgUrl
+          ? `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: #EFEBE9; cursor: pointer;" onclick="openCropPreservationDetailsByIndex(${idx})">
+               <img src="${imgUrl}" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; height: 190px; object-fit: cover; display: block; pointer-events: none;" 
+                 onerror="console.warn('Preservation image failed to load:', '${imgUrl}'); this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #EFEBE9, #D7CCC8); color: #5D4037;\\'><div style=\\'width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(93,64,55,0.18);\\'><i class=\\'fa-solid fa-boxes-stacked\\' style=\\'font-size: 24px; color: #5D4037;\\'></i></div><span style=\\'font-size: 13px; font-weight: 700; color: #3E2723;\\'>${title}</span></div>';" />
+               <!-- Glassmorphic Category Badge (Top-Left) -->
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(62, 39, 35, 0.85); backdrop-filter: blur(8px); color: #FFF; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #FFCCBC;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
+               </span>
+               <!-- Crop Type Badge (Top-Right) -->
+               ${cropType ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(93, 64, 55, 0.88); backdrop-filter: blur(8px); color: #fff; border: 1px solid rgba(255,255,255,0.25); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); pointer-events: none;"><i class="fa-solid fa-tag" style="font-size: 10px; margin-right: 4px; color: #FFE0B2;"></i>${cropType}</span>` : ''}
+             </div>`
+          : `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #EFEBE9, #D7CCC8); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openCropPreservationDetailsByIndex(${idx})">
+               <div style="width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(93,64,55,0.18); pointer-events: none;">
+                 <i class="fa-solid fa-boxes-stacked" style="font-size: 24px; color: #5D4037;"></i>
+               </div>
+               <span style="font-size: 13px; font-weight: 700; color: #3E2723; pointer-events: none;">${title}</span>
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(62, 39, 35, 0.85); backdrop-filter: blur(8px); color: #FFF; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #FFCCBC;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
+               </span>
+               ${cropType ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(93, 64, 55, 0.88); backdrop-filter: blur(8px); color: #fff; border: 1px solid rgba(255,255,255,0.25); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; pointer-events: none;">${cropType}</span>` : ''}
+             </div>`;
+
+        return `
+          <div style="background: #fff; border: 1.2px solid #EFEBE9; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+            ${imgBlock}
+            <div style="padding: 14px 14px 16px 14px;">
+              <!-- Distinct Headline with Left Brown Accent Bar -->
+              <div style="border-left: 3.5px solid #5D4037; padding-left: 10px; margin-bottom: 10px; cursor: pointer;" onclick="openCropPreservationDetailsByIndex(${idx})">
+                <h4 style="font-size: 16.5px; font-weight: 700; color: #263238; margin: 0; line-height: 1.38; letter-spacing: -0.2px;">${title}</h4>
+              </div>
+
+              ${highlights ? `
+                <div style="display: flex; align-items: flex-start; gap: 6px; margin-bottom: 10px; font-size: 12.5px; color: #3E2723; font-weight: 500;">
+                  <i class="fa-solid fa-circle-check" style="color: #5D4037; margin-top: 3px; font-size: 13px;"></i>
+                  <span>${highlights}</span>
+                </div>` : ''}
+
+              ${description ? `<p style="font-size: 12px; color: #616161; line-height: 1.45; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${description}</p>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCropPreservationDetailsByIndex(idx) {
+      const item = (typeof currentPreservationItems !== 'undefined' && currentPreservationItems && currentPreservationItems[idx]);
+      if (!item) return;
+      openCropPreservationDetailsWithItem(item);
+    }
+
+    function openCropPreservationDetailsWithItem(item) {
+      const page = document.getElementById('cropPreservationDetailPage');
+      const content = document.getElementById('cropPreservationDetailContent');
+      const headerName = document.getElementById('preservationDetailHeaderName');
+      const headerSub = document.getElementById('preservationDetailHeaderSubtitle');
+
+      if (!page || !content) return;
+
+      const title = item.title || item.name || 'ফসল সংরক্ষণের তথ্য';
+      const category = item.category || 'ফসল সংরক্ষণ';
+      const cropType = item.cropType || item.type || item.variety || '';
+      const highlights = item.highlights || '';
+      const description = item.description || 'বিস্তারিত সংরক্ষণ পদ্ধতি শীঘ্রই যুক্ত করা হবে।';
+      const tips = item.tips || item.storageTips || item.temperature || '';
+      const imgUrl = getNormalizedPreservationImageUrl(item);
+
+      if (headerName) headerName.innerText = title;
+      if (headerSub) headerSub.innerText = `${category} ${cropType ? '• ' + cropType : ''}`;
+
+      const imgSection = imgUrl
+        ? `<div style="width: 100%; height: 210px; overflow: hidden; background: #EFEBE9; position: relative;">
+             <img src="${imgUrl}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;"
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:210px;background:linear-gradient(135deg, #EFEBE9, #D7CCC8);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5D4037;\\'><i class=\\'fa-solid fa-boxes-stacked\\' style=\\'font-size:36px;margin-bottom:8px;\\'></i><span style=\\'font-weight:700;font-size:14px;color:#3E2723;\\'>${title}</span></div>';" />
+           </div>`
+        : `<div style="width: 100%; height: 210px; background: linear-gradient(135deg, #EFEBE9, #D7CCC8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #5D4037;">
+             <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(93,64,55,0.2);">
+               <i class="fa-solid fa-boxes-stacked" style="font-size: 26px; color: #5D4037;"></i>
+             </div>
+             <span style="font-weight: 700; font-size: 14.5px; color: #3E2723;">${title}</span>
+           </div>`;
+
+      content.innerHTML = `
+        ${imgSection}
+        <div style="padding: 16px 16px 30px 16px;">
+          <!-- Category & Crop Type Badges -->
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+            <span style="background: #EFEBE9; color: #3E2723; border: 1px solid #D7CCC8; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fa-solid fa-boxes-stacked" style="font-size: 11px;"></i>${category}
+            </span>
+            ${cropType ? `
+              <span style="background: #FBE9E7; color: #D84315; border: 1px solid #FFCCBC; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-tag" style="font-size: 11px;"></i>${cropType}
+              </span>` : ''}
+          </div>
+
+          <!-- Highlights Banner -->
+          ${highlights ? `
+            <div style="background: #EFEBE9; border: 1px solid #D7CCC8; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <i class="fa-solid fa-star" style="color: #5D4037; font-size: 14px; margin-top: 3px;"></i>
+                <div style="font-size: 13px; font-weight: 600; color: #3E2723; line-height: 1.45;">${highlights}</div>
+              </div>
+            </div>` : ''}
+
+          <!-- Preservation Method & Management Section -->
+          <div style="margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: #EFEBE9; color: #5D4037; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                <i class="fa-solid fa-warehouse"></i>
+              </div>
+              <h4 style="font-size: 14.5px; font-weight: 700; color: #3E2723; margin: 0;">সংরক্ষণ পদ্ধতি ও ব্যবস্থাপনা</h4>
+            </div>
+            <div style="background: #fff; border: 1px solid #EFEBE9; border-radius: 12px; padding: 14px; font-size: 13px; color: #37474F; line-height: 1.6; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              ${description}
+            </div>
+          </div>
+
+          <!-- Temperature, Humidity & Storage Safety Tips Section -->
+          ${tips ? `
+            <div style="margin-bottom: 22px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 8px; background: #EFEBE9; color: #5D4037; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                  <i class="fa-solid fa-temperature-half"></i>
+                </div>
+                <h4 style="font-size: 14.5px; font-weight: 700; color: #4E342E; margin: 0;">তাপমাত্রা, আর্দ্রতা ও নিরাপত্তা টিপস</h4>
+              </div>
+              <div style="background: #FAF8F5; border: 1px solid #D7CCC8; border-radius: 12px; padding: 14px; font-size: 13px; color: #4E342E; line-height: 1.6; font-weight: 500;">
+                ${tips}
+              </div>
+            </div>` : ''}
+
+          <div style="text-align: center; margin-top: 10px;">
+            <button type="button" onclick="closeCropPreservationDetailPage()" style="background: #5D4037; color: #fff; border: none; border-radius: 10px; width: 100%; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(93,64,55,0.3);">
+              বন্ধ করুন
+            </button>
+          </div>
+        </div>
+      `;
+
+      page.classList.add('active');
+      page.style.display = 'flex';
+      page.style.pointerEvents = 'auto';
+    }
+
+    function closeCropPreservationDetailPage() {
+      const page = document.getElementById('cropPreservationDetailPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function initFirestoreCropPreservationSync() {
+      if (cropPreservationUnsubscribe) return;
+      try {
+        if (typeof firebase === 'undefined' || !firebase.firestore) return;
+        const db = firebase.firestore();
+        isPreservationDataLoading = true;
+        renderCropPreservationList();
+
+        cropPreservationUnsubscribe = db.collection('crop_preservation').limit(50).onSnapshot(snapshot => {
+          isPreservationDataLoading = false;
+          liveCropPreservationData = [];
+          if (!snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              liveCropPreservationData.push({ id: doc.id, ...d });
+            });
+          }
+          renderCropPreservationCategoryChips();
+          renderCropPreservationList();
+        }, err => {
+          console.warn('Live Firestore crop preservation sync warning:', err);
+          isPreservationDataLoading = false;
+          renderCropPreservationCategoryChips();
+          renderCropPreservationList();
+        });
+      } catch (e) {
+        console.warn('initFirestoreCropPreservationSync error:', e);
+        isPreservationDataLoading = false;
+        setTimeout(() => {
+          if (isPreservationDataLoading) {
+            isPreservationDataLoading = false;
+            renderCropPreservationCategoryChips();
+            renderCropPreservationList();
+          }
+        }, 800);
+      }
+    }
+
+    window.openCropPreservationPage = openCropPreservationPage;
+    window.closeCropPreservationPage = closeCropPreservationPage;
+    window.renderCropPreservationCategoryChips = renderCropPreservationCategoryChips;
+    window.selectCropPreservationCategory = selectCropPreservationCategory;
+    window.renderCropPreservationList = renderCropPreservationList;
+    window.openCropPreservationDetailsByIndex = openCropPreservationDetailsByIndex;
+    window.openCropPreservationDetailsWithItem = openCropPreservationDetailsWithItem;
+    window.closeCropPreservationDetailPage = closeCropPreservationDetailPage;
+    window.initFirestoreCropPreservationSync = initFirestoreCropPreservationSync;
     window.selectFishCategory = selectFishCategory;
     window.renderFishFarmingList = renderFishFarmingList;
     window.openFishDetailsByIndex = openFishDetailsByIndex;

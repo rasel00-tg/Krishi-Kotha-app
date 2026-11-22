@@ -14,6 +14,7 @@ import '../irrigation_tracker_screen.dart';
 import '../soil_health_screen.dart';
 import '../livestock_poultry_screen.dart';
 import '../fish_farming_screen.dart';
+import '../crop_preservation_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -652,14 +653,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.inventory_2_outlined,
         color: const Color(0xFF5D4037),
         bgColor: const Color(0xFFD7CCC8),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'cold_storage',
-          title: AppStrings.serviceColdStorage,
-          icon: Icons.inventory_2_outlined,
-          color: const Color(0xFF5D4037),
-          bgColor: const Color(0xFFD7CCC8),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CropPreservationScreen(),
+            ),
+          );
+        },
       ),
     ];
 

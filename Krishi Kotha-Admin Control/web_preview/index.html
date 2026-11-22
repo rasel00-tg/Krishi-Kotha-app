@@ -1234,6 +1234,17 @@
             <div style="font-size: 9.5px; opacity: 0.7;">মাছ চাষ, পুকুর ব্যবস্থাপনা ও রোগবালাই তথ্য</div>
           </div>
         </li>
+        <li class="menu-item submenu-item" id="submenuItemCropPreservationMonitoring"
+          onclick="switchTab('crop-preservation-monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(93, 64, 55, 0.16); color: #5D4037; margin-right: -4px;">
+            <i class="fa-solid fa-boxes-stacked" style="font-size: 13px;"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">ফসল সংরক্ষন মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">শস্য, আলু, বীজ ও হিমাগার সংরক্ষণ পদ্ধতি</div>
+          </div>
+        </li>
       </div>
 
       <!-- ১. ইউজার কন্ট্রোল -->
@@ -3880,6 +3891,135 @@
           </div>
         </div>
       </div>
+      <!-- TAB: HOMEPAGE CROP PRESERVATION MONITORING -->
+      <div id="tab-crop-preservation-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #5D4037, #3E2723); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • ফসল সংরক্ষন মনিটরিং ও ব্যবস্থাপনা</h2>
+            <p>দানা শস্য, আলু, শাকসবজি, ফলমূল, মসলা ও বীজের নিরাপদ সংরক্ষণ এবং হিমাগার ব্যবস্থাপনা মনিটরিং।</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-primary" onclick="initAdminCropPreservationLiveSync(true)"
+              style="background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+            <button class="btn btn-primary" onclick="openAdminCropPreservationModal()"
+              style="background: #fff; color: #5D4037; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-plus"></i> নতুন তথ্য যুক্ত করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards (4 Cards) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রেকর্ড</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(93, 64, 55, 0.12); color: #5D4037; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-boxes-stacked" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminPreservationStatTotal" style="font-size: 24px; font-weight: 800; color: #5D4037;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল ফসল সংরক্ষণের তথ্য</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">খাদ্যশস্য ও বীজ</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-seedling" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminPreservationStatGrain" style="font-size: 24px; font-weight: 800; color: #E65100;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">ধান, গম, ভুট্টা, ডাল ও বীজ সংরক্ষণ</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">শাকসবজি ও ফলমূল</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(46, 125, 50, 0.12); color: #2E7D32; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-carrot" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminPreservationStatVeg" style="font-size: 24px; font-weight: 800; color: #2E7D32;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">আলু, পেঁয়াজ, টমেটো ও ফল সংরক্ষণ</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">হিমাগার ও প্রযুক্তি</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-snowflake" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminPreservationStatTech" style="font-size: 24px; font-weight: 800; color: #0288D1;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">কোল্ড স্টোরেজ ও আধুনিক পদ্ধতি</div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 16px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <!-- Search Bar -->
+            <div style="flex: 1; min-width: 260px; position: relative;">
+              <input type="text" id="adminPreservationSearchInput" class="form-control"
+                placeholder="ফসলের নাম, ক্যাটাগরি, সংরক্ষণ পদ্ধতি বা টিপস দিয়ে খুঁজুন..."
+                oninput="onAdminCropPreservationSearch(this.value)"
+                style="padding-left: 38px; width: 100%; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; height: 42px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 14px; top: 14px; color: #90A4AE; font-size: 14px;"></i>
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+              <select id="adminPreservationCategoryFilter" class="form-control"
+                onchange="onAdminCropPreservationCategoryFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer; min-width: 170px;">
+                <option value="all">সকল ক্যাটাগরি</option>
+                <option value="ধান ও চাল">ধান ও চাল</option>
+                <option value="আলু ও কন্দ">আলু ও কন্দ</option>
+                <option value="শাকসবজি">শাকসবজি</option>
+                <option value="ফলমূল">ফলমূল</option>
+                <option value="মসলা ও ডাল">মসলা ও ডাল</option>
+                <option value="বীজ সংরক্ষন">বীজ সংরক্ষন</option>
+                <option value="হিমাগার ও আধুনিক পদ্ধতি">হিমাগার ও আধুনিক পদ্ধতি</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="panel-card">
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 950px;">
+              <thead>
+                <tr style="background: #EFEBE9; color: #4E342E; text-align: left; font-size: 12.5px;">
+                  <th style="padding: 12px 14px; width: 60px;">ছবি</th>
+                  <th style="padding: 12px 14px;">নাম ও শিরোনাম</th>
+                  <th style="padding: 12px 14px;">ক্যাটাগরি</th>
+                  <th style="padding: 12px 14px;">সংরক্ষণ সময়কাল/টিপস</th>
+                  <th style="padding: 12px 14px;">বিস্তারিত সংরক্ষণ পদ্ধতি</th>
+                  <th style="padding: 12px 14px; text-align: center; width: 120px;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminPreservationTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 48px 16px; color: #78909C;">
+                    <div style="width: 58px; height: 58px; border-radius: 50%; background: #EFEBE9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                      <i class="fa-solid fa-boxes-stacked" style="font-size: 26px; color: #5D4037;"></i>
+                    </div>
+                    <div style="font-size: 14.5px; font-weight: 700; color: #263238; margin-bottom: 4px;">এখনো কোনো ফসল সংরক্ষনের তথ্য যুক্ত করা হয়নি</div>
+                    <div style="font-size: 12px; color: #78909C;">উপরের "+ নতুন তথ্য যুক্ত করুন" বাটনে ক্লিক করে তথ্য যুক্ত করুন</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -5879,6 +6019,7 @@
       if (tabKey === 'soil_health_monitoring') tabKey = 'soil-health-monitoring';
       if (tabKey === 'livestock_poultry_monitoring') tabKey = 'livestock-poultry-monitoring';
       if (tabKey === 'fish_farming_monitoring') tabKey = 'fish-farming-monitoring';
+      if (tabKey === 'crop_preservation_monitoring') tabKey = 'crop-preservation-monitoring';
 
       try {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -5906,6 +6047,7 @@
           'soil-health-monitoring': 'হোমপেজ • মাটির স্বাস্থ্য মনিটরিং',
           'livestock-poultry-monitoring': 'হোমপেজ • পশু ও হাঁস-মুরগি মনিটরিং',
           'fish-farming-monitoring': 'হোমপেজ • মৎস্য চাষ মনিটরিং',
+          'crop-preservation-monitoring': 'হোমপেজ • ফসল সংরক্ষন মনিটরিং',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -6071,6 +6213,20 @@
           } else {
             renderAdminFishTable();
           }
+        } else if (tabKey === 'crop-preservation-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemCropPreservationMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminPreservationFirstLoadDone || adminPreservationList.length === 0) {
+            initAdminCropPreservationLiveSync(true, false);
+          } else {
+            renderAdminCropPreservationTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -6124,6 +6280,13 @@
           if (subFish) subFish.classList.remove('active');
           if (typeof adminFishUnsubscribe === 'function' && adminFishUnsubscribe) {
             try { adminFishUnsubscribe(); adminFishUnsubscribe = null; } catch (_) {}
+          }
+        }
+        if (tabKey !== 'crop-preservation-monitoring') {
+          const subPres = document.getElementById('submenuItemCropPreservationMonitoring');
+          if (subPres) subPres.classList.remove('active');
+          if (typeof adminPreservationUnsubscribe === 'function' && adminPreservationUnsubscribe) {
+            try { adminPreservationUnsubscribe(); adminPreservationUnsubscribe = null; } catch (_) {}
           }
         }
 
@@ -7336,7 +7499,8 @@
       seed: { file: null, blobUrl: null, isDeleted: false },
       soil: { file: null, blobUrl: null, isDeleted: false },
       livestock: { file: null, blobUrl: null, isDeleted: false },
-      fish: { file: null, blobUrl: null, isDeleted: false }
+      fish: { file: null, blobUrl: null, isDeleted: false },
+      preservation: { file: null, blobUrl: null, isDeleted: false }
     };
 
     // Step 1: Pre-upload Local Memory Hold (Local File Preview Only with Client Auto Compression)
@@ -15985,6 +16149,511 @@
     window.saveAdminFishForm = saveAdminFishForm;
     window.deleteAdminFish = deleteAdminFish;
 
+    // ==================== HOMEPAGE CROP PRESERVATION MONITORING CONTROLLER ====================
+    let adminPreservationList = [];
+    let adminPreservationUnsubscribe = null;
+    let adminPreservationFirstLoadDone = false;
+    let adminPreservationSearchQuery = '';
+    let adminPreservationCategoryFilter = 'all';
+
+    function initAdminCropPreservationLiveSync(forceAlert = false, showLoader = true) {
+      if (adminPreservationUnsubscribe) {
+        try { adminPreservationUnsubscribe(); } catch (_) { }
+        adminPreservationUnsubscribe = null;
+      }
+
+      if (showLoader) {
+        showAdminLoading('ফসল সংরক্ষণের তথ্য সিঙ্ক হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন...');
+      }
+
+      try {
+        const ref = firebase.firestore().collection('crop_preservation').limit(50);
+        adminPreservationUnsubscribe = ref.onSnapshot(
+          (snapshot) => {
+            adminPreservationList = snapshot.docs.map(doc => {
+              const data = doc.data() || {};
+              return { id: doc.id, ...data };
+            });
+
+            adminPreservationFirstLoadDone = true;
+            updateAdminCropPreservationStatCards();
+            renderAdminCropPreservationTable();
+            hideAdminLoading();
+
+            if (forceAlert) {
+              showAdminGlobalPopup({
+                title: 'সিঙ্ক সফল!',
+                message: 'ফসল সংরক্ষণের লাইভ ডেটা সফলভাবে আপডেট হয়েছে!',
+                type: 'success'
+              });
+            }
+          },
+          (err) => {
+            console.error('Crop preservation live sync error:', err);
+            hideAdminLoading();
+            showAdminError('সিঙ্ক ত্রুটি!', 'ফসল সংরক্ষণের তথ্য সিঙ্ক হতে ব্যর্থ হয়েছে: ' + (err.message || err));
+          }
+        );
+
+        if (typeof registerFirestoreListener === 'function') {
+          registerFirestoreListener('crop_preservation', adminPreservationUnsubscribe);
+        }
+      } catch (err) {
+        console.error('Init crop preservation live sync fail:', err);
+        hideAdminLoading();
+      }
+    }
+
+    function updateAdminCropPreservationStatCards() {
+      const totalEl = document.getElementById('adminPreservationStatTotal');
+      const grainEl = document.getElementById('adminPreservationStatGrain');
+      const vegEl = document.getElementById('adminPreservationStatVeg');
+      const techEl = document.getElementById('adminPreservationStatTech');
+      if (!totalEl) return;
+
+      const total = adminPreservationList.length;
+      let grainCount = 0;
+      let vegCount = 0;
+      let techCount = 0;
+
+      adminPreservationList.forEach(item => {
+        const cat = (item.category || '').toLowerCase();
+        const title = (item.title || item.name || '').toLowerCase();
+        const combined = cat + ' ' + title;
+
+        if (combined.includes('ধান') || combined.includes('চাল') || combined.includes('গম') || combined.includes('ভুট্টা') || combined.includes('বীজ') || combined.includes('ডাল') || combined.includes('মসলা')) {
+          grainCount++;
+        }
+        if (combined.includes('আলু') || combined.includes('কন্দ') || combined.includes('সবজি') || combined.includes('ফল') || combined.includes('টমেটো') || combined.includes('পেঁয়াজ') || combined.includes('রসুন')) {
+          vegCount++;
+        }
+        if (combined.includes('হিমাগার') || combined.includes('কোল্ড') || combined.includes('পদ্ধতি') || combined.includes('প্রযুক্তি') || combined.includes('আধুনিক') || combined.includes('ড্রাইং') || combined.includes('সাইলো')) {
+          techCount++;
+        }
+      });
+
+      totalEl.innerText = `${total} টি`;
+      if (grainEl) grainEl.innerText = `${grainCount} টি`;
+      if (vegEl) vegEl.innerText = `${vegCount} টি`;
+      if (techEl) techEl.innerText = `${techCount} টি`;
+    }
+
+    function renderAdminCropPreservationTable() {
+      const tbody = document.getElementById('adminPreservationTableBody');
+      if (!tbody) return;
+
+      let filtered = [...adminPreservationList];
+
+      if (adminPreservationCategoryFilter !== 'all') {
+        const target = adminPreservationCategoryFilter.toLowerCase();
+        filtered = filtered.filter(item => {
+          const cat = (item.category || '').toLowerCase();
+          return cat.includes(target);
+        });
+      }
+
+      if (adminPreservationSearchQuery.trim()) {
+        const q = adminPreservationSearchQuery.toLowerCase().trim();
+        filtered = filtered.filter(item => {
+          const title = (item.title || item.name || '').toLowerCase();
+          const cat = (item.category || '').toLowerCase();
+          const desc = (item.description || '').toLowerCase();
+          const highlights = (item.highlights || '').toLowerCase();
+          return title.includes(q) || cat.includes(q) || desc.includes(q) || highlights.includes(q);
+        });
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 48px 16px; color: #78909C;">
+              <div style="width: 58px; height: 58px; border-radius: 50%; background: #EFEBE9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <i class="fa-solid fa-boxes-stacked" style="font-size: 26px; color: #5D4037;"></i>
+              </div>
+              <div style="font-size: 14.5px; font-weight: 700; color: #263238; margin-bottom: 4px;">এখনো কোনো ফসল সংরক্ষনের তথ্য যুক্ত করা হয়নি</div>
+              <div style="font-size: 12px; color: #78909C;">উপরের "+ নতুন তথ্য যুক্ত করুন" বাটনে ক্লিক করে তথ্য যুক্ত করুন</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        let imgUrl = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+        if (imgUrl && !imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+          imgUrl = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/' + imgUrl.replace(/^\/+/, '');
+        }
+
+        const title = item.title || item.name || 'শিরোনাম নেই';
+        const category = item.category || 'অন্যান্য';
+        const highlights = item.highlights || '-';
+        const desc = item.description || '-';
+
+        let badgeBg = '#EFEBE9';
+        let badgeColor = '#4E342E';
+        if (category.includes('ধান') || category.includes('চাল')) {
+          badgeBg = '#FFF8E1'; badgeColor = '#F57F17';
+        } else if (category.includes('আলু') || category.includes('কন্দ')) {
+          badgeBg = '#FBE9E7'; badgeColor = '#D84315';
+        } else if (category.includes('সবজি') || category.includes('শাকসবজি')) {
+          badgeBg = '#E8F5E9'; badgeColor = '#2E7D32';
+        } else if (category.includes('ফল')) {
+          badgeBg = '#FFF3E0'; badgeColor = '#E65100';
+        } else if (category.includes('বীজ')) {
+          badgeBg = '#EDE7F6'; badgeColor = '#512DA8';
+        } else if (category.includes('হিমাগার') || category.includes('পদ্ধতি')) {
+          badgeBg = '#E1F5FE'; badgeColor = '#0288D1';
+        }
+
+        const imgBlock = imgUrl
+          ? `<img src="${imgUrl}" referrerpolicy="no-referrer" loading="lazy" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1px solid #CFD8DC;" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:48px;height:48px;border-radius:8px;background:#EFEBE9;display:flex;align-items:center;justify-content:center;color:#5D4037;\\'><i class=\\'fa-solid fa-boxes-stacked\\'></i></div>';">`
+          : `<div style="width: 48px; height: 48px; border-radius: 8px; background: #EFEBE9; display: flex; align-items: center; justify-content: center; color: #5D4037;">
+               <i class="fa-solid fa-boxes-stacked"></i>
+             </div>`;
+
+        return `
+          <tr style="border-bottom: 1px solid #ECEFF1; font-size: 13px;">
+            <td style="padding: 12px 14px;">${imgBlock}</td>
+            <td style="padding: 12px 14px; font-weight: 600; color: #263238;">
+              <div>${title}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; background: ${badgeBg}; color: ${badgeColor};">
+                ${category}
+              </span>
+            </td>
+            <td style="padding: 12px 14px; color: #546E7A; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${highlights}">
+              ${highlights}
+            </td>
+            <td style="padding: 12px 14px; color: #546E7A; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${desc}">
+              ${desc}
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <div style="display: flex; gap: 6px; justify-content: center;">
+                <button type="button" onclick="openAdminCropPreservationModal('${item.id}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #D7CCC8; background: #EFEBE9; color: #5D4037; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                  title="এডিট করুন">
+                  <i class="fa-solid fa-pen-to-square" style="font-size: 13px;"></i>
+                </button>
+                <button type="button" onclick="deleteAdminCropPreservation('${item.id}', '${title.replace(/'/g, "\\'")}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #FFCDD2; background: #FFEBEE; color: #D32F2F; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                  title="মুছে ফেলুন">
+                  <i class="fa-solid fa-trash" style="font-size: 13px;"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function onAdminCropPreservationSearch(q) {
+      adminPreservationSearchQuery = q || '';
+      renderAdminCropPreservationTable();
+    }
+
+    function onAdminCropPreservationCategoryFilterChange(cat) {
+      adminPreservationCategoryFilter = cat || 'all';
+      renderAdminCropPreservationTable();
+    }
+
+    function openAdminCropPreservationModal(editId = null) {
+      const modal = document.getElementById('adminCropPreservationModal');
+      const titleEl = document.getElementById('adminPreservationModalTitle');
+      const editIdInput = document.getElementById('adminPreservationEditId');
+      const existingImgInput = document.getElementById('adminPreservationExistingImageUrl');
+      const form = document.getElementById('adminCropPreservationForm');
+
+      const titleInput = document.getElementById('adminPreservationInputTitle');
+      const categorySelect = document.getElementById('adminPreservationSelectCategory');
+      const highlightsInput = document.getElementById('adminPreservationInputHighlights');
+      const descInput = document.getElementById('adminPreservationInputDescription');
+
+      const previewBox = document.getElementById('adminPreservationImgPreviewBox');
+      const previewImg = document.getElementById('adminPreservationImgPreview');
+      const statusEl = document.getElementById('adminPreservationUploadStatus');
+      const pickBtnText = document.getElementById('adminPreservationPickBtnText');
+      const fileInput = document.getElementById('adminPreservationFileInput');
+
+      if (form) form.reset();
+      if (fileInput) fileInput.value = '';
+      if (editIdInput) editIdInput.value = '';
+      if (existingImgInput) existingImgInput.value = '';
+
+      if (pendingUploads.preservation && pendingUploads.preservation.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.preservation.blobUrl); } catch (_) { }
+      }
+      pendingUploads.preservation = { file: null, blobUrl: null, isDeleted: false };
+
+      if (editId) {
+        const item = adminPreservationList.find(x => x.id === editId);
+        if (item) {
+          if (titleEl) titleEl.innerText = 'ফসল সংরক্ষণের তথ্য সম্পাদনা করুন';
+          if (editIdInput) editIdInput.value = item.id;
+          if (titleInput) titleInput.value = item.title || item.name || '';
+          if (categorySelect) categorySelect.value = item.category || '';
+          if (highlightsInput) highlightsInput.value = item.highlights || '';
+          if (descInput) descInput.value = item.description || '';
+
+          let imgUrl = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+          if (imgUrl) {
+            if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+              imgUrl = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/' + imgUrl.replace(/^\/+/, '');
+            }
+            if (existingImgInput) existingImgInput.value = imgUrl;
+            if (previewImg) previewImg.src = imgUrl;
+            if (previewBox) previewBox.style.display = 'block';
+            if (statusEl) statusEl.innerText = 'বর্তমান ছবি সক্রিয় রয়েছে';
+            if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+          } else {
+            if (previewBox) previewBox.style.display = 'none';
+            if (statusEl) statusEl.innerText = 'কোনো ছবি যুক্ত নেই';
+            if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+          }
+        }
+      } else {
+        if (titleEl) titleEl.innerText = 'নতুন ফসল সংরক্ষণের তথ্য যোগ করুন';
+        if (previewBox) previewBox.style.display = 'none';
+        if (statusEl) statusEl.innerText = 'ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন';
+        if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+      }
+
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAdminCropPreservationModal() {
+      const modal = document.getElementById('adminCropPreservationModal');
+      if (modal) modal.style.display = 'none';
+
+      if (pendingUploads.preservation && pendingUploads.preservation.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.preservation.blobUrl); } catch (_) { }
+      }
+      pendingUploads.preservation = { file: null, blobUrl: null, isDeleted: false };
+    }
+
+    async function handleAdminCropPreservationImageSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const previewBox = document.getElementById('adminPreservationImgPreviewBox');
+      const previewImg = document.getElementById('adminPreservationImgPreview');
+      const statusEl = document.getElementById('adminPreservationUploadStatus');
+      const pickBtnText = document.getElementById('adminPreservationPickBtnText');
+
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: #5D4037;"><i class="fa-solid fa-spinner fa-spin"></i> ছবি অপ্টিমাইজ ও কম্প্রেস হচ্ছে...</span>';
+      }
+
+      try {
+        const compressedFile = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const maxDim = 900;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                } else {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // Iterative compression targeting <= 150 KB
+              let quality = 0.82;
+              function exportBlob(q) {
+                canvas.toBlob((blob) => {
+                  if (blob && blob.size > 150 * 1024 && q > 0.5) {
+                    exportBlob(q - 0.1);
+                  } else if (blob) {
+                    const compFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                      type: "image/jpeg",
+                      lastModified: Date.now()
+                    });
+                    compFile._isAlreadyOptimized = true;
+                    resolve(compFile);
+                  } else {
+                    resolve(file);
+                  }
+                }, 'image/jpeg', q);
+              }
+              exportBlob(quality);
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+          };
+          reader.onerror = () => resolve(file);
+          reader.readAsDataURL(file);
+        });
+
+        if (pendingUploads.preservation && pendingUploads.preservation.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.preservation.blobUrl); } catch (_) { }
+        }
+
+        const blobUrl = URL.createObjectURL(compressedFile);
+        pendingUploads.preservation = { file: compressedFile, blobUrl: blobUrl, isDeleted: false };
+
+        if (previewImg) previewImg.src = blobUrl;
+        if (previewBox) previewBox.style.display = 'block';
+
+        const sizeKb = (compressedFile.size / 1024).toFixed(1);
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #2E7D32;"><i class="fa-solid fa-check"></i> অপ্টিমাইজড (${sizeKb} KB) • সাবমিট করলে আপলোড হবে</span>`;
+        }
+        if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+      } catch (err) {
+        console.warn('Preservation image selection error:', err);
+        if (statusEl) statusEl.innerText = 'ছবি প্রসেস ব্যর্থ হয়েছে';
+      }
+    }
+
+    function removeAdminCropPreservationImage() {
+      if (pendingUploads.preservation && pendingUploads.preservation.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.preservation.blobUrl); } catch (_) { }
+      }
+      pendingUploads.preservation = { file: null, blobUrl: null, isDeleted: true };
+
+      const existingImgInput = document.getElementById('adminPreservationExistingImageUrl');
+      if (existingImgInput) existingImgInput.value = '';
+
+      const previewBox = document.getElementById('adminPreservationImgPreviewBox');
+      const previewImg = document.getElementById('adminPreservationImgPreview');
+      const statusEl = document.getElementById('adminPreservationUploadStatus');
+      const pickBtnText = document.getElementById('adminPreservationPickBtnText');
+      const fileInput = document.getElementById('adminPreservationFileInput');
+
+      if (fileInput) fileInput.value = '';
+      if (previewImg) previewImg.src = '';
+      if (previewBox) previewBox.style.display = 'none';
+      if (statusEl) statusEl.innerText = 'ছবি মুছে ফেলা হয়েছে';
+      if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+    }
+
+    async function saveAdminCropPreservationForm(event) {
+      if (event) event.preventDefault();
+
+      const submitBtn = document.getElementById('adminPreservationSubmitBtn');
+      const origText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+
+      try {
+        const id = document.getElementById('adminPreservationEditId').value.trim();
+        const title = document.getElementById('adminPreservationInputTitle').value.trim();
+        const category = document.getElementById('adminPreservationSelectCategory').value.trim();
+        const highlights = document.getElementById('adminPreservationInputHighlights').value.trim();
+        const description = document.getElementById('adminPreservationInputDescription').value.trim();
+        let finalImageUrl = document.getElementById('adminPreservationExistingImageUrl').value.trim();
+
+        if (!title || !category) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = origText; }
+          showAdminError('তথ্য অসম্পূর্ণ!', 'ফসলের নাম এবং ক্যাটাগরি অবশ্যই পূরণ করতে হবে।');
+          return;
+        }
+
+        if (pendingUploads.preservation && pendingUploads.preservation.isDeleted) {
+          finalImageUrl = '';
+        }
+
+        if (pendingUploads.preservation && pendingUploads.preservation.file) {
+          showAdminLoading('ছবি Cloudflare R2-তে আপলোড হচ্ছে...', 'নিরাপদ ক্লাউড স্টোরেজে ট্রান্সফার চলছে...');
+          finalImageUrl = await uploadFileToR2Pipeline(pendingUploads.preservation.file, 'crop_preservation', 'adminPreservationUploadStatus');
+          if (pendingUploads.preservation.blobUrl) {
+            try { URL.revokeObjectURL(pendingUploads.preservation.blobUrl); } catch (_) { }
+          }
+          pendingUploads.preservation = { file: null, blobUrl: null, isDeleted: false };
+        }
+
+        showAdminLoading('ডাটাবেজে সংরক্ষণ করা হচ্ছে...');
+
+        const payload = {
+          title: title,
+          name: title,
+          category: category,
+          highlights: highlights,
+          description: description,
+          imageUrl: finalImageUrl,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (id) {
+          await firebase.firestore().collection('crop_preservation').doc(id).set(payload, { merge: true });
+        } else {
+          payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await firebase.firestore().collection('crop_preservation').add(payload);
+        }
+
+        hideAdminLoading();
+        closeAdminCropPreservationModal();
+
+        showAdminGlobalPopup({
+          title: 'সফল হয়েছে!',
+          message: id ? 'ফসল সংরক্ষণের তথ্য সফলভাবে আপডেট হয়েছে!' : 'নতুন ফসল সংরক্ষণের তথ্য সফলভাবে যুক্ত হয়েছে!',
+          type: 'success'
+        });
+      } catch (err) {
+        console.error('Save crop preservation error:', err);
+        hideAdminLoading();
+        showAdminError('সংরক্ষণ করতে ব্যর্থ!', err.message || err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origText;
+        }
+      }
+    }
+
+    function deleteAdminCropPreservation(id, name) {
+      showAdminConfirm(
+        'ফসল সংরক্ষণের তথ্য ডিলিট',
+        `আপনি কি নিশ্চিত যে "${name}" তথ্যটি স্থায়ীভাবে মুছে ফেলতে চান? এটি অ্যাপ থেকেও মুছে যাবে।`,
+        async () => {
+          showAdminLoading('তথ্য মুছে ফেলা হচ্ছে...');
+          try {
+            await firebase.firestore().collection('crop_preservation').doc(id).delete();
+            hideAdminLoading();
+            showAdminGlobalPopup({
+              title: 'সফল হয়েছে!',
+              message: 'তথ্য সফলভাবে মুছে ফেলা হয়েছে!',
+              type: 'success'
+            });
+          } catch (err) {
+            hideAdminLoading();
+            showAdminError('মুছতে সমস্যা হয়েছে!', err.message || err);
+          }
+        },
+        'মুছে ফেলুন',
+        true
+      );
+    }
+
+    window.initAdminCropPreservationLiveSync = initAdminCropPreservationLiveSync;
+    window.renderAdminCropPreservationTable = renderAdminCropPreservationTable;
+    window.onAdminCropPreservationSearch = onAdminCropPreservationSearch;
+    window.onAdminCropPreservationCategoryFilterChange = onAdminCropPreservationCategoryFilterChange;
+    window.openAdminCropPreservationModal = openAdminCropPreservationModal;
+    window.closeAdminCropPreservationModal = closeAdminCropPreservationModal;
+    window.handleAdminCropPreservationImageSelect = handleAdminCropPreservationImageSelect;
+    window.removeAdminCropPreservationImage = removeAdminCropPreservationImage;
+    window.saveAdminCropPreservationForm = saveAdminCropPreservationForm;
+    window.deleteAdminCropPreservation = deleteAdminCropPreservation;
+
+
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
@@ -16532,6 +17201,124 @@
   </div>
   <!-- MODAL: ADMIN LIVESTOCK & POULTRY (ADD / EDIT) -->
   <!-- MODAL: ADMIN FISH FARMING (ADD / EDIT) -->
+  <!-- MODAL: ADMIN CROP PRESERVATION (ADD / EDIT) -->
+  <div class="modal-overlay" id="adminCropPreservationModal"
+    style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; width: 92%; max-width: 680px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2);">
+      <div
+        style="padding: 18px 24px; border-bottom: 1px solid #ECEFF1; display: flex; justify-content: space-between; align-items: center; background: #FAFAFA;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: rgba(93, 64, 55, 0.12); color: #5D4037; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-boxes-stacked" style="font-size: 16px;"></i>
+          </div>
+          <div>
+            <h3 id="adminPreservationModalTitle" style="font-size: 16px; font-weight: 700; color: #263238; margin: 0;">নতুন ফসল সংরক্ষণের তথ্য যোগ করুন</h3>
+            <span style="font-size: 11.5px; color: #78909C;">সংরক্ষণ সময়কাল, তাপমাত্রা ও নিরাপদ সংরক্ষণ নির্দেশিকা</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminCropPreservationModal()"
+          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 20px 24px; flex: 1;">
+        <form id="adminCropPreservationForm" onsubmit="saveAdminCropPreservationForm(event)" style="display: flex; flex-direction: column; gap: 16px;">
+          <input type="hidden" id="adminPreservationEditId" value="">
+          <input type="hidden" id="adminPreservationExistingImageUrl" value="">
+
+          <!-- নাম/শিরোনাম ও ক্যাটাগরি -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                ফসলের নাম বা শিরোনাম <span style="color: #D32F2F;">*</span>
+              </label>
+              <input type="text" id="adminPreservationInputTitle" class="form-control" required
+                placeholder="যেমন: বীজ ধান সংরক্ষণ বা আলু কোল্ড স্টোরেজ সংরক্ষণ"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                ক্যাটাগরি <span style="color: #D32F2F;">*</span>
+              </label>
+              <select id="adminPreservationSelectCategory" class="form-control" required
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px; background: #fff;">
+                <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+                <option value="ধান ও চাল">ধান ও চাল</option>
+                <option value="আলু ও কন্দ">আলু ও কন্দ</option>
+                <option value="শাকসবজি">শাকসবজি</option>
+                <option value="ফলমূল">ফলমূল</option>
+                <option value="মসলা ও ডাল">মসলা ও ডাল</option>
+                <option value="বীজ সংরক্ষন">বীজ সংরক্ষন</option>
+                <option value="হিমাগার ও আধুনিক পদ্ধতি">হিমাগার ও আধুনিক পদ্ধতি</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- সংরক্ষণ সময়কাল ও বিশেষ টিপস -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              সংরক্ষণ সময়কাল ও মূল বৈশিষ্ট্য (হাইলাইটস)
+            </label>
+            <input type="text" id="adminPreservationInputHighlights" class="form-control"
+              placeholder="যেমন: ৮-১০ মাস সংরক্ষণযোগ্য, ১২% আর্দ্রতায় রাখুন, পোকার আক্রমণ রোধে নিমপাতা ব্যবহার"
+              style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+          </div>
+
+          <!-- বিস্তারিত সংরক্ষণ পদ্ধতি ও তাপমাত্রা -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              বিস্তারিত সংরক্ষণ পদ্ধতি, আর্দ্রতা ও তাপমাত্রা ব্যবস্থাপনা
+            </label>
+            <textarea id="adminPreservationInputDescription" rows="4" class="form-control"
+              placeholder="রোদে শুকানো, বায়ুরোধী পাত্র বা মাটির পাত্রে রাখার নিয়ম, কোল্ড স্টোরেজের আদর্শ তাপমাত্রা ও হিমাগারে রাখার পূর্বশর্ত বিস্তারিত লিখুন..."
+              style="padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; resize: vertical; line-height: 1.4;"></textarea>
+          </div>
+
+          <!-- ছবি আপলোড (Cloudflare R2 Deferred Upload) -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              ফসলের ছবি (Cloudflare R2 অটো-কম্প্রেশন)
+            </label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" onclick="document.getElementById('adminPreservationFileInput').click()"
+                class="btn btn-outline"
+                style="height: 38px; padding: 0 14px; font-size: 12.5px; border-radius: 8px; border: 1.5px solid #5D4037; color: #5D4037; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span id="adminPreservationPickBtnText">ছবি নির্বাচন করুন</span>
+              </button>
+              <input type="file" id="adminPreservationFileInput" accept="image/*" style="display: none;"
+                onchange="handleAdminCropPreservationImageSelect(event)">
+              <span id="adminPreservationUploadStatus" style="font-size: 12px; color: #78909C;">ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন</span>
+            </div>
+
+            <!-- Preview Box -->
+            <div id="adminPreservationImgPreviewBox"
+              style="display: none; margin-top: 10px; position: relative; width: 180px; height: 110px; border-radius: 10px; overflow: hidden; border: 1px solid #CFD8DC; background: #ECEFF1;">
+              <img id="adminPreservationImgPreview" src="" style="width: 100%; height: 100%; object-fit: cover;">
+              <button type="button" onclick="removeAdminCropPreservationImage()"
+                style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid #ECEFF1;">
+            <button type="button" onclick="closeAdminCropPreservationModal()"
+              style="padding: 9px 18px; border-radius: 8px; font-size: 13px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; cursor: pointer;">
+              বাতিল
+            </button>
+            <button type="submit" id="adminPreservationSubmitBtn"
+              style="padding: 9px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; background: #5D4037; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
   <div class="modal-overlay" id="adminFishModal"
     style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
     <div
