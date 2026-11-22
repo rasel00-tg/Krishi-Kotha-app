@@ -13,6 +13,7 @@ import '../seed_information_page.dart';
 import '../irrigation_tracker_screen.dart';
 import '../soil_health_screen.dart';
 import '../livestock_poultry_screen.dart';
+import '../fish_farming_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -635,14 +636,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.set_meal_outlined,
         color: const Color(0xFF0097A7),
         bgColor: const Color(0xFFE0F7FA),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'fisheries',
-          title: AppStrings.serviceFisheries,
-          icon: Icons.set_meal_outlined,
-          color: const Color(0xFF0097A7),
-          bgColor: const Color(0xFFE0F7FA),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FishFarmingScreen(),
+            ),
+          );
+        },
       ),
       // ১২. ফসল সংরক্ষণ
       QuickActionItem(

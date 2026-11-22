@@ -1222,6 +1222,17 @@
             <div style="font-size: 9.5px; opacity: 0.7;">গবাদি পশু, হাঁস-মুরগি পালন ও চিকিৎসা</div>
           </div>
         </li>
+        <li class="menu-item submenu-item" id="submenuItemFishFarmingMonitoring"
+          onclick="switchTab('fish-farming-monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(0, 151, 167, 0.16); color: #0097A7; margin-right: -4px;">
+            <i class="fa-solid fa-fish" style="font-size: 13px;"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">মৎস চাষ মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">মাছ চাষ, পুকুর ব্যবস্থাপনা ও রোগবালাই তথ্য</div>
+          </div>
+        </li>
       </div>
 
       <!-- ১. ইউজার কন্ট্রোল -->
@@ -3745,6 +3756,129 @@
           </div>
         </div>
       </div>
+      <!-- TAB: HOMEPAGE FISH FARMING MONITORING -->
+      <div id="tab-fish-farming-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #00838F, #006064); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • মৎস চাষ মনিটরিং ও ব্যবস্থাপনা</h2>
+            <p>আধুনিক পদ্ধতিতে মাছ চাষ, পুকুর প্রস্তুতি ও ব্যবস্থাপনা এবং মাছের রোগবালাই ও চিকিৎসা তথ্য মনিটরিং।</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-primary" onclick="initAdminFishFarmingLiveSync(true)"
+              style="background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+            <button class="btn btn-primary" onclick="openAdminFishModal()"
+              style="background: #fff; color: #00838F; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-plus"></i> নতুন মাছের তথ্য যোগ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards (4 Cards) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রেকর্ড</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(0, 131, 143, 0.12); color: #00838F; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-fish" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminFishStatTotal" style="font-size: 24px; font-weight: 800; color: #00838F;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল মাছ চাষ ও ব্যবস্থাপনার তথ্য</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">কার্প ও রুই জাতীয়</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(0, 151, 167, 0.12); color: #0097A7; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-water" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminFishStatCarp" style="font-size: 24px; font-weight: 800; color: #0097A7;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">রুই, কাতলা, মৃগেল ও কার্প মিশ্র চাষ</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">চিংড়ি ও ক্যাটফিশ</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-shrimp" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminFishStatShrimp" style="font-size: 24px; font-weight: 800; color: #0288D1;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">গলদা, বাগদা, শিং, মাগুর ও পাবদা</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">রোগ ও পুকুর পরিচর্যা</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(46, 125, 50, 0.12); color: #2E7D32; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-notes-medical" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminFishStatRemedy" style="font-size: 24px; font-weight: 800; color: #2E7D32;">০ টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">পুকুর প্রস্তুতি, পানি ও রোগ প্রতিকার</div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="panel-card" style="margin-bottom: 20px; padding: 16px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <!-- Search Bar -->
+            <div style="flex: 1; min-width: 260px; position: relative;">
+              <input type="text" id="adminFishSearchInput" class="form-control"
+                placeholder="মাছের নাম, প্রজাতি, ক্যাটাগরি বা লক্ষণ দিয়ে খুঁজুন..."
+                oninput="onAdminFishSearch(this.value)"
+                style="padding-left: 38px; width: 100%; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; height: 42px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 14px; top: 14px; color: #90A4AE; font-size: 14px;"></i>
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+              <select id="adminFishCategoryFilter" class="form-control"
+                onchange="onAdminFishCategoryFilterChange(this.value)"
+                style="border-radius: 10px; border: 1px solid #CFD8DC; font-size: 12.5px; height: 42px; padding: 0 12px; background: #fff; cursor: pointer; min-width: 170px;">
+                <option value="all">সকল ক্যাটাগরি</option>
+                <option value="কার্প ও রুই জাতীয়">কার্প ও রুই জাতীয়</option>
+                <option value="তেলাপিয়া ও পাঙ্গাস">তেলাপিয়া ও পাঙ্গাস</option>
+                <option value="শিং-মাগুর ও পাবদা">শিং-মাগুর ও পাবদা</option>
+                <option value="চিংড়ি চাষ">চিংড়ি চাষ</option>
+                <option value="পুকুর ও পানি ব্যবস্থাপনা">পুকুর ও পানি ব্যবস্থাপনা</option>
+                <option value="মাছের রোগ ও প্রতিকার">মাছের রোগ ও প্রতিকার</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="panel-card">
+          <div class="table-responsive" style="overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; min-width: 950px;">
+              <thead>
+                <tr style="background: #E0F7FA; color: #006064; text-align: left; font-size: 12.5px;">
+                  <th style="padding: 12px 14px; width: 60px;">ছবি</th>
+                  <th style="padding: 12px 14px;">নাম ও শিরোনাম</th>
+                  <th style="padding: 12px 14px;">ক্যাটাগরি</th>
+                  <th style="padding: 12px 14px;">প্রজাতি/জাত</th>
+                  <th style="padding: 12px 14px;">মূল তথ্য/হাইলাইটস</th>
+                  <th style="padding: 12px 14px;">পুকুর ও রোগ ব্যবস্থাপনা</th>
+                  <th style="padding: 12px 14px; text-align: center; width: 120px;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminFishTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">তথ্য লোডিং হচ্ছে...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -5741,6 +5875,7 @@
       if (tabKey === 'fertilizer_dealer_monitoring') tabKey = 'fertilizer-dealer-monitoring';
       if (tabKey === 'soil_health_monitoring') tabKey = 'soil-health-monitoring';
       if (tabKey === 'livestock_poultry_monitoring') tabKey = 'livestock-poultry-monitoring';
+      if (tabKey === 'fish_farming_monitoring') tabKey = 'fish-farming-monitoring';
 
       try {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -5767,6 +5902,7 @@
           'fertilizer-dealer-monitoring': 'হোমপেজ • সার-বীজ ডিলার মনিটরিং',
           'soil-health-monitoring': 'হোমপেজ • মাটির স্বাস্থ্য মনিটরিং',
           'livestock-poultry-monitoring': 'হোমপেজ • পশু ও হাঁস-মুরগি মনিটরিং',
+          'fish-farming-monitoring': 'হোমপেজ • মৎস চাষ মনিটরিং',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -5918,6 +6054,20 @@
           } else {
             renderAdminLivestockTable();
           }
+        } else if (tabKey === 'fish-farming-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemFishFarmingMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminFishFirstLoadDone || adminFishList.length === 0) {
+            initAdminFishFarmingLiveSync(true, false);
+          } else {
+            renderAdminFishTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -5964,6 +6114,13 @@
           if (subLive) subLive.classList.remove('active');
           if (typeof adminLivestockUnsubscribe === 'function' && adminLivestockUnsubscribe) {
             try { adminLivestockUnsubscribe(); adminLivestockUnsubscribe = null; } catch (_) {}
+          }
+        }
+        if (tabKey !== 'fish-farming-monitoring') {
+          const subFish = document.getElementById('submenuItemFishFarmingMonitoring');
+          if (subFish) subFish.classList.remove('active');
+          if (typeof adminFishUnsubscribe === 'function' && adminFishUnsubscribe) {
+            try { adminFishUnsubscribe(); adminFishUnsubscribe = null; } catch (_) {}
           }
         }
 
@@ -7175,7 +7332,8 @@
       fc: { file: null, blobUrl: null, isDeleted: false },
       seed: { file: null, blobUrl: null, isDeleted: false },
       soil: { file: null, blobUrl: null, isDeleted: false },
-      livestock: { file: null, blobUrl: null, isDeleted: false }
+      livestock: { file: null, blobUrl: null, isDeleted: false },
+      fish: { file: null, blobUrl: null, isDeleted: false }
     };
 
     // Step 1: Pre-upload Local Memory Hold (Local File Preview Only with Client Auto Compression)
@@ -15307,6 +15465,521 @@
     window.saveAdminLivestockForm = saveAdminLivestockForm;
     window.deleteAdminLivestock = deleteAdminLivestock;
 
+    // ==================== HOMEPAGE FISH FARMING MONITORING CONTROLLER ====================
+    let adminFishList = [];
+    let adminFishUnsubscribe = null;
+    let adminFishFirstLoadDone = false;
+    let adminFishSearchQuery = '';
+    let adminFishCategoryFilter = 'all';
+
+    function initAdminFishFarmingLiveSync(forceAlert = false, showLoader = true) {
+      if (adminFishUnsubscribe) {
+        try { adminFishUnsubscribe(); } catch (_) { }
+        adminFishUnsubscribe = null;
+      }
+
+      if (showLoader) {
+        showAdminLoading('মৎস চাষের তথ্য সিঙ্ক হচ্ছে...', 'অনুগ্রহ করে অপেক্ষা করুন...');
+      }
+
+      try {
+        const ref = firebase.firestore().collection('fish_farming').limit(50);
+        adminFishUnsubscribe = ref.onSnapshot(
+          (snapshot) => {
+            adminFishList = snapshot.docs.map(doc => {
+              const data = doc.data() || {};
+              return { id: doc.id, ...data };
+            });
+
+            adminFishFirstLoadDone = true;
+            updateAdminFishStatCards();
+            renderAdminFishTable();
+            hideAdminLoading();
+
+            if (forceAlert) {
+              showAdminGlobalPopup({
+                title: 'সিঙ্ক সফল!',
+                message: 'মৎস চাষের লাইভ ডেটা সফলভাবে আপডেট হয়েছে!',
+                type: 'success'
+              });
+            }
+          },
+          (err) => {
+            console.error('Fish farming live sync error:', err);
+            hideAdminLoading();
+            showAdminError('সিঙ্ক ত্রুটি!', 'মৎস চাষের তথ্য সিঙ্ক হতে ব্যর্থ হয়েছে: ' + (err.message || err));
+          }
+        );
+
+        if (typeof registerFirestoreListener === 'function') {
+          registerFirestoreListener('fish_farming', adminFishUnsubscribe);
+        }
+      } catch (err) {
+        console.error('Init fish farming live sync fail:', err);
+        hideAdminLoading();
+      }
+    }
+
+    function updateAdminFishStatCards() {
+      const totalEl = document.getElementById('adminFishStatTotal');
+      const carpEl = document.getElementById('adminFishStatCarp');
+      const shrimpEl = document.getElementById('adminFishStatShrimp');
+      const remedyEl = document.getElementById('adminFishStatRemedy');
+      if (!totalEl) return;
+
+      const total = adminFishList.length;
+      let carpCount = 0;
+      let shrimpCount = 0;
+      let remedyCount = 0;
+
+      adminFishList.forEach(item => {
+        const cat = (item.category || '').toLowerCase();
+        const title = (item.title || item.name || '').toLowerCase();
+        const combined = cat + ' ' + title;
+
+        if (combined.includes('কার্প') || combined.includes('রুই') || combined.includes('কাতলা') || combined.includes('মৃগেল') || combined.includes('সিলভার') || combined.includes('গ্রাফ')) {
+          carpCount++;
+        }
+        if (combined.includes('চিংড়ি') || combined.includes('শিং') || combined.includes('মাগুর') || combined.includes('পাবদা') || combined.includes('ক্যাটফিশ') || combined.includes('গুলশা')) {
+          shrimpCount++;
+        }
+        if (combined.includes('পুকুর') || combined.includes('পানি') || combined.includes('রোগ') || combined.includes('প্রতিকার') || combined.includes('চিকিৎসা') || combined.includes('চুন') || combined.includes('জীবাণু')) {
+          remedyCount++;
+        }
+      });
+
+      totalEl.innerText = `${total} টি`;
+      if (carpEl) carpEl.innerText = `${carpCount} টি`;
+      if (shrimpEl) shrimpEl.innerText = `${shrimpCount} টি`;
+      if (remedyEl) remedyEl.innerText = `${remedyCount} টি`;
+    }
+
+    function renderAdminFishTable() {
+      const tbody = document.getElementById('adminFishTableBody');
+      if (!tbody) return;
+
+      let filtered = [...adminFishList];
+
+      if (adminFishCategoryFilter !== 'all') {
+        const target = adminFishCategoryFilter.toLowerCase();
+        filtered = filtered.filter(item => {
+          const cat = (item.category || '').toLowerCase();
+          return cat.includes(target);
+        });
+      }
+
+      if (adminFishSearchQuery.trim()) {
+        const q = adminFishSearchQuery.toLowerCase().trim();
+        filtered = filtered.filter(item => {
+          const title = (item.title || item.name || '').toLowerCase();
+          const cat = (item.category || '').toLowerCase();
+          const species = (item.species || item.breed || item.type || '').toLowerCase();
+          const desc = (item.description || '').toLowerCase();
+          const highlights = (item.highlights || '').toLowerCase();
+          const tips = (item.tips || '').toLowerCase();
+          return title.includes(q) || cat.includes(q) || species.includes(q) || desc.includes(q) || highlights.includes(q) || tips.includes(q);
+        });
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #78909C;">
+              <i class="fa-solid fa-fish" style="font-size: 28px; margin-bottom: 8px; color: #B0BEC5; display: block;"></i>
+              কোনো তথ্য পাওয়া যায়নি
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        let imgUrl = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+        if (imgUrl && !imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+          imgUrl = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/' + imgUrl.replace(/^\/+/, '');
+        }
+
+        const title = item.title || item.name || 'শিরোনাম নেই';
+        const category = item.category || 'অন্যান্য';
+        const species = item.species || item.breed || item.type || '-';
+        const highlights = item.highlights || '-';
+        const desc = item.description || '-';
+
+        let badgeBg = '#E0F7FA';
+        let badgeColor = '#006064';
+        if (category.includes('রুই') || category.includes('কার্প')) {
+          badgeBg = '#E0F2F1'; badgeColor = '#004D40';
+        } else if (category.includes('তেলাপিয়া') || category.includes('পাঙ্গাস')) {
+          badgeBg = '#E1F5FE'; badgeColor = '#01579B';
+        } else if (category.includes('চিংড়ি')) {
+          badgeBg = '#FFF3E0'; badgeColor = '#E65100';
+        } else if (category.includes('শিং') || category.includes('মাগুর')) {
+          badgeBg = '#F3E5F5'; badgeColor = '#4A148C';
+        } else if (category.includes('রোগ')) {
+          badgeBg = '#FFEBEE'; badgeColor = '#C62828';
+        } else if (category.includes('পুকুর')) {
+          badgeBg = '#E8F5E9'; badgeColor = '#1B5E20';
+        }
+
+        const imgBlock = imgUrl
+          ? `<img src="${imgUrl}" referrerpolicy="no-referrer" loading="lazy" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1px solid #CFD8DC;" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:48px;height:48px;border-radius:8px;background:#E0F7FA;display:flex;align-items:center;justify-content:center;color:#00838F;\\'><i class=\\'fa-solid fa-fish\\'></i></div>';">`
+          : `<div style="width: 48px; height: 48px; border-radius: 8px; background: #E0F7FA; display: flex; align-items: center; justify-content: center; color: #00838F;">
+               <i class="fa-solid fa-fish"></i>
+             </div>`;
+
+        return `
+          <tr style="border-bottom: 1px solid #ECEFF1; font-size: 13px;">
+            <td style="padding: 12px 14px;">${imgBlock}</td>
+            <td style="padding: 12px 14px; font-weight: 600; color: #263238;">
+              <div>${title}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; background: ${badgeBg}; color: ${badgeColor};">
+                ${category}
+              </span>
+            </td>
+            <td style="padding: 12px 14px; color: #455A64;">${species}</td>
+            <td style="padding: 12px 14px; color: #546E7A; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${highlights}">
+              ${highlights}
+            </td>
+            <td style="padding: 12px 14px; color: #546E7A; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${desc}">
+              ${desc}
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <div style="display: flex; gap: 6px; justify-content: center;">
+                <button type="button" onclick="openAdminFishModal('${item.id}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #B2EBF2; background: #E0F7FA; color: #00838F; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                  title="এডিট করুন">
+                  <i class="fa-solid fa-pen-to-square" style="font-size: 13px;"></i>
+                </button>
+                <button type="button" onclick="deleteAdminFish('${item.id}', '${title.replace(/'/g, "\\'")}')"
+                  style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #FFCDD2; background: #FFEBEE; color: #D32F2F; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                  title="মুছে ফেলুন">
+                  <i class="fa-solid fa-trash" style="font-size: 13px;"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function onAdminFishSearch(q) {
+      adminFishSearchQuery = q || '';
+      renderAdminFishTable();
+    }
+
+    function onAdminFishCategoryFilterChange(cat) {
+      adminFishCategoryFilter = cat || 'all';
+      renderAdminFishTable();
+    }
+
+    function openAdminFishModal(editId = null) {
+      const modal = document.getElementById('adminFishModal');
+      const titleEl = document.getElementById('adminFishModalTitle');
+      const editIdInput = document.getElementById('adminFishEditId');
+      const existingImgInput = document.getElementById('adminFishExistingImageUrl');
+      const form = document.getElementById('adminFishForm');
+
+      const titleInput = document.getElementById('adminFishInputTitle');
+      const categorySelect = document.getElementById('adminFishSelectCategory');
+      const speciesInput = document.getElementById('adminFishInputSpecies');
+      const highlightsInput = document.getElementById('adminFishInputHighlights');
+      const descInput = document.getElementById('adminFishInputDescription');
+      const tipsInput = document.getElementById('adminFishInputTips');
+
+      const previewBox = document.getElementById('adminFishImgPreviewBox');
+      const previewImg = document.getElementById('adminFishImgPreview');
+      const statusEl = document.getElementById('adminFishUploadStatus');
+      const pickBtnText = document.getElementById('adminFishPickBtnText');
+      const fileInput = document.getElementById('adminFishFileInput');
+
+      if (form) form.reset();
+      if (fileInput) fileInput.value = '';
+      if (editIdInput) editIdInput.value = '';
+      if (existingImgInput) existingImgInput.value = '';
+
+      if (pendingUploads.fish && pendingUploads.fish.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.fish.blobUrl); } catch (_) { }
+      }
+      pendingUploads.fish = { file: null, blobUrl: null, isDeleted: false };
+
+      if (editId) {
+        const item = adminFishList.find(x => x.id === editId);
+        if (item) {
+          if (titleEl) titleEl.innerText = 'মাছের তথ্য সম্পাদনা করুন';
+          if (editIdInput) editIdInput.value = item.id;
+          if (titleInput) titleInput.value = item.title || item.name || '';
+          if (categorySelect) categorySelect.value = item.category || '';
+          if (speciesInput) speciesInput.value = item.species || item.breed || item.type || '';
+          if (highlightsInput) highlightsInput.value = item.highlights || '';
+          if (descInput) descInput.value = item.description || '';
+          if (tipsInput) tipsInput.value = item.tips || '';
+
+          let imgUrl = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+          if (imgUrl) {
+            if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+              imgUrl = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/' + imgUrl.replace(/^\/+/, '');
+            }
+            if (existingImgInput) existingImgInput.value = imgUrl;
+            if (previewImg) previewImg.src = imgUrl;
+            if (previewBox) previewBox.style.display = 'block';
+            if (statusEl) statusEl.innerText = 'বর্তমান ছবি সক্রিয় রয়েছে';
+            if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+          } else {
+            if (previewBox) previewBox.style.display = 'none';
+            if (statusEl) statusEl.innerText = 'কোনো ছবি যুক্ত নেই';
+            if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+          }
+        }
+      } else {
+        if (titleEl) titleEl.innerText = 'নতুন মাছের তথ্য যোগ করুন';
+        if (previewBox) previewBox.style.display = 'none';
+        if (statusEl) statusEl.innerText = 'ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন';
+        if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+      }
+
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAdminFishModal() {
+      const modal = document.getElementById('adminFishModal');
+      if (modal) modal.style.display = 'none';
+
+      if (pendingUploads.fish && pendingUploads.fish.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.fish.blobUrl); } catch (_) { }
+      }
+      pendingUploads.fish = { file: null, blobUrl: null, isDeleted: false };
+    }
+
+    async function handleAdminFishImageSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const previewBox = document.getElementById('adminFishImgPreviewBox');
+      const previewImg = document.getElementById('adminFishImgPreview');
+      const statusEl = document.getElementById('adminFishUploadStatus');
+      const pickBtnText = document.getElementById('adminFishPickBtnText');
+
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: #00838F;"><i class="fa-solid fa-spinner fa-spin"></i> ছবি অপ্টিমাইজ ও কম্প্রেস হচ্ছে...</span>';
+      }
+
+      try {
+        const compressedFile = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const maxDim = 900;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                } else {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // Iterative compression targeting <= 150 KB
+              let quality = 0.82;
+              function exportBlob(q) {
+                canvas.toBlob((blob) => {
+                  if (blob && blob.size > 150 * 1024 && q > 0.5) {
+                    exportBlob(q - 0.1);
+                  } else if (blob) {
+                    const compFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                      type: "image/jpeg",
+                      lastModified: Date.now()
+                    });
+                    compFile._isAlreadyOptimized = true;
+                    resolve(compFile);
+                  } else {
+                    resolve(file);
+                  }
+                }, 'image/jpeg', q);
+              }
+              exportBlob(quality);
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+          };
+          reader.onerror = () => resolve(file);
+          reader.readAsDataURL(file);
+        });
+
+        if (pendingUploads.fish && pendingUploads.fish.blobUrl) {
+          try { URL.revokeObjectURL(pendingUploads.fish.blobUrl); } catch (_) { }
+        }
+
+        const blobUrl = URL.createObjectURL(compressedFile);
+        pendingUploads.fish = { file: compressedFile, blobUrl: blobUrl, isDeleted: false };
+
+        if (previewImg) previewImg.src = blobUrl;
+        if (previewBox) previewBox.style.display = 'block';
+
+        const sizeKb = (compressedFile.size / 1024).toFixed(1);
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #2E7D32;"><i class="fa-solid fa-check"></i> অপ্টিমাইজড (${sizeKb} KB) • সাবমিট করলে আপলোড হবে</span>`;
+        }
+        if (pickBtnText) pickBtnText.innerText = 'ছবি পরিবর্তন করুন';
+      } catch (err) {
+        console.warn('Fish image selection error:', err);
+        if (statusEl) statusEl.innerText = 'ছবি প্রসেস ব্যর্থ হয়েছে';
+      }
+    }
+
+    function removeAdminFishImage() {
+      if (pendingUploads.fish && pendingUploads.fish.blobUrl) {
+        try { URL.revokeObjectURL(pendingUploads.fish.blobUrl); } catch (_) { }
+      }
+      pendingUploads.fish = { file: null, blobUrl: null, isDeleted: true };
+
+      const existingImgInput = document.getElementById('adminFishExistingImageUrl');
+      if (existingImgInput) existingImgInput.value = '';
+
+      const previewBox = document.getElementById('adminFishImgPreviewBox');
+      const previewImg = document.getElementById('adminFishImgPreview');
+      const statusEl = document.getElementById('adminFishUploadStatus');
+      const pickBtnText = document.getElementById('adminFishPickBtnText');
+      const fileInput = document.getElementById('adminFishFileInput');
+
+      if (fileInput) fileInput.value = '';
+      if (previewImg) previewImg.src = '';
+      if (previewBox) previewBox.style.display = 'none';
+      if (statusEl) statusEl.innerText = 'ছবি মুছে ফেলা হয়েছে';
+      if (pickBtnText) pickBtnText.innerText = 'ছবি নির্বাচন করুন';
+    }
+
+    async function saveAdminFishForm(event) {
+      if (event) event.preventDefault();
+
+      const submitBtn = document.getElementById('adminFishSubmitBtn');
+      const origText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+
+      try {
+        const id = document.getElementById('adminFishEditId').value.trim();
+        const title = document.getElementById('adminFishInputTitle').value.trim();
+        const category = document.getElementById('adminFishSelectCategory').value.trim();
+        const species = document.getElementById('adminFishInputSpecies').value.trim();
+        const highlights = document.getElementById('adminFishInputHighlights').value.trim();
+        const description = document.getElementById('adminFishInputDescription').value.trim();
+        const tips = document.getElementById('adminFishInputTips').value.trim();
+        let finalImageUrl = document.getElementById('adminFishExistingImageUrl').value.trim();
+
+        if (!title || !category) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = origText; }
+          showAdminError('তথ্য অসম্পূর্ণ!', 'মাছের নাম এবং ক্যাটাগরি অবশ্যই পূরণ করতে হবে।');
+          return;
+        }
+
+        if (pendingUploads.fish && pendingUploads.fish.isDeleted) {
+          finalImageUrl = '';
+        }
+
+        if (pendingUploads.fish && pendingUploads.fish.file) {
+          showAdminLoading('ছবি Cloudflare R2-তে আপলোড হচ্ছে...', 'নিরাপদ ক্লাউড স্টোরেজে ট্রান্সফার চলছে...');
+          finalImageUrl = await uploadFileToR2Pipeline(pendingUploads.fish.file, 'fish_farming', 'adminFishUploadStatus');
+          if (pendingUploads.fish.blobUrl) {
+            try { URL.revokeObjectURL(pendingUploads.fish.blobUrl); } catch (_) { }
+          }
+          pendingUploads.fish = { file: null, blobUrl: null, isDeleted: false };
+        }
+
+        showAdminLoading('ডাটাবেজে সংরক্ষণ করা হচ্ছে...');
+
+        const payload = {
+          title: title,
+          name: title,
+          category: category,
+          species: species,
+          breed: species,
+          highlights: highlights,
+          description: description,
+          tips: tips,
+          imageUrl: finalImageUrl,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (id) {
+          await firebase.firestore().collection('fish_farming').doc(id).set(payload, { merge: true });
+        } else {
+          payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await firebase.firestore().collection('fish_farming').add(payload);
+        }
+
+        hideAdminLoading();
+        closeAdminFishModal();
+
+        showAdminGlobalPopup({
+          title: 'সফল হয়েছে!',
+          message: id ? 'মৎস চাষের তথ্য সফলভাবে আপডেট হয়েছে!' : 'নতুন মাছের তথ্য সফলভাবে যুক্ত হয়েছে!',
+          type: 'success'
+        });
+      } catch (err) {
+        console.error('Save fish farming error:', err);
+        hideAdminLoading();
+        showAdminError('সংরক্ষণ করতে ব্যর্থ!', err.message || err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origText;
+        }
+      }
+    }
+
+    function deleteAdminFish(id, name) {
+      showAdminConfirm(
+        'মাছের তথ্য ডিলিট',
+        `আপনি কি নিশ্চিত যে "${name}" তথ্যটি স্থায়ীভাবে মুছে ফেলতে চান? এটি অ্যাপ থেকেও মুছে যাবে।`,
+        async () => {
+          showAdminLoading('তথ্য মুছে ফেলা হচ্ছে...');
+          try {
+            await firebase.firestore().collection('fish_farming').doc(id).delete();
+            hideAdminLoading();
+            showAdminGlobalPopup({
+              title: 'সফল হয়েছে!',
+              message: 'তথ্য সফলভাবে মুছে ফেলা হয়েছে!',
+              type: 'success'
+            });
+          } catch (err) {
+            hideAdminLoading();
+            showAdminError('মুছতে সমস্যা হয়েছে!', err.message || err);
+          }
+        },
+        'মুছে ফেলুন',
+        true
+      );
+    }
+
+    window.initAdminFishFarmingLiveSync = initAdminFishFarmingLiveSync;
+    window.renderAdminFishTable = renderAdminFishTable;
+    window.onAdminFishSearch = onAdminFishSearch;
+    window.onAdminFishCategoryFilterChange = onAdminFishCategoryFilterChange;
+    window.openAdminFishModal = openAdminFishModal;
+    window.closeAdminFishModal = closeAdminFishModal;
+    window.handleAdminFishImageSelect = handleAdminFishImageSelect;
+    window.removeAdminFishImage = removeAdminFishImage;
+    window.saveAdminFishForm = saveAdminFishForm;
+    window.deleteAdminFish = deleteAdminFish;
+
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       // 1. Show Branded Global Loading Popup for System Initialization
@@ -15852,6 +16525,143 @@
     </div>
   </div>
   <!-- MODAL: ADMIN LIVESTOCK & POULTRY (ADD / EDIT) -->
+  <!-- MODAL: ADMIN FISH FARMING (ADD / EDIT) -->
+  <div class="modal-overlay" id="adminFishModal"
+    style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div
+      style="background: #fff; width: 92%; max-width: 680px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2);">
+      <div
+        style="padding: 18px 24px; border-bottom: 1px solid #ECEFF1; display: flex; justify-content: space-between; align-items: center; background: #FAFAFA;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: rgba(0, 131, 143, 0.12); color: #00838F; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-fish" style="font-size: 16px;"></i>
+          </div>
+          <div>
+            <h3 id="adminFishModalTitle" style="font-size: 16px; font-weight: 700; color: #263238; margin: 0;">নতুন মাছের তথ্য যোগ করুন</h3>
+            <span style="font-size: 11.5px; color: #78909C;">মাছের প্রজাতি, পুকুর প্রস্তুতি, খাদ্য ও রোগ ব্যবস্থাপনা নির্দেশিকা</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminFishModal()"
+          style="background: none; border: none; font-size: 20px; color: #90A4AE; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 20px 24px; flex: 1;">
+        <form id="adminFishForm" onsubmit="saveAdminFishForm(event)" style="display: flex; flex-direction: column; gap: 16px;">
+          <input type="hidden" id="adminFishEditId" value="">
+          <input type="hidden" id="adminFishExistingImageUrl" value="">
+
+          <!-- নাম/শিরোনাম ও ক্যাটাগরি -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                মাছের নাম বা শিরোনাম <span style="color: #D32F2F;">*</span>
+              </label>
+              <input type="text" id="adminFishInputTitle" class="form-control" required
+                placeholder="যেমন: রুই ও কাতলা মিশ্র চাষ পদ্ধতি"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                ক্যাটাগরি <span style="color: #D32F2F;">*</span>
+              </label>
+              <select id="adminFishSelectCategory" class="form-control" required
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px; background: #fff;">
+                <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+                <option value="কার্প ও রুই জাতীয়">কার্প ও রুই জাতীয়</option>
+                <option value="তেলাপিয়া ও পাঙ্গাস">তেলাপিয়া ও পাঙ্গাস</option>
+                <option value="শিং-মাগুর ও পাবদা">শিং-মাগুর ও পাবদা</option>
+                <option value="চিংড়ি চাষ">চিংড়ি চাষ</option>
+                <option value="পুকুর ও পানি ব্যবস্থাপনা">পুকুর ও পানি ব্যবস্থাপনা</option>
+                <option value="মাছের রোগ ও প্রতিকার">মাছের রোগ ও প্রতিকার</option>
+                <option value="অন্যান্য">অন্যান্য</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- জাত/প্রজাতি ও মূল বৈশিষ্ট্য বা লক্ষণ -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                জাত বা প্রজাতি
+              </label>
+              <input type="text" id="adminFishInputSpecies" class="form-control"
+                placeholder="যেমন: দেশি রুই, থাই পাঙ্গাস, গলদা চিংড়ি"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                মূল বৈশিষ্ট্য বা লক্ষণ (হাইলাইটস)
+              </label>
+              <input type="text" id="adminFishInputHighlights" class="form-control"
+                placeholder="যেমন: দ্রুত বর্ধনশীল, বছরে ৩ গুণ লাভ, রোগ সহনশীল"
+                style="height: 40px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; padding: 0 12px;">
+            </div>
+          </div>
+
+          <!-- বিস্তারিত বিবরণ ও পুকুর প্রস্তুতি -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              পুকুর প্রস্তুতি ও চাষ ব্যবস্থাপনা
+            </label>
+            <textarea id="adminFishInputDescription" rows="3" class="form-control"
+              placeholder="পুকুর শুকানো, চুন প্রয়োগ, সার দেওয়া, পোনা মজুদের হার ও পানি ব্যবস্থাপনা বিস্তারিত লিখুন..."
+              style="padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; resize: vertical; line-height: 1.4;"></textarea>
+          </div>
+
+          <!-- খাদ্য তালিকা ও রোগ প্রতিকার -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              খাদ্য তালিকা, শীতকালীন যত্ন ও রোগ প্রতিকার টিপস
+            </label>
+            <textarea id="adminFishInputTips" rows="3" class="form-control"
+              placeholder="সম্পূরক খাদ্যের অনুপাত, ফুলকা পচা ও ঘা রোগের চিকিৎসা, চুন ও পটাশ প্রয়োগের সঠিক মাত্রা..."
+              style="padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid #CFD8DC; width: 100%; box-sizing: border-box; resize: vertical; line-height: 1.4;"></textarea>
+          </div>
+
+          <!-- ছবি আপলোড (Cloudflare R2 Deferred Upload) -->
+          <div>
+            <label style="display: block; font-size: 12.5px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+              মাছের ছবি (Cloudflare R2 অটো-কম্প্রেশন)
+            </label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" onclick="document.getElementById('adminFishFileInput').click()"
+                class="btn btn-outline"
+                style="height: 38px; padding: 0 14px; font-size: 12.5px; border-radius: 8px; border: 1.5px solid #00838F; color: #00838F; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span id="adminFishPickBtnText">ছবি নির্বাচন করুন</span>
+              </button>
+              <input type="file" id="adminFishFileInput" accept="image/*" style="display: none;"
+                onchange="handleAdminFishImageSelect(event)">
+              <span id="adminFishUploadStatus" style="font-size: 12px; color: #78909C;">ডিভাইস থেকে লোকাল ছবি নির্বাচন করুন</span>
+            </div>
+
+            <!-- Preview Box -->
+            <div id="adminFishImgPreviewBox"
+              style="display: none; margin-top: 10px; position: relative; width: 180px; height: 110px; border-radius: 10px; overflow: hidden; border: 1px solid #CFD8DC; background: #ECEFF1;">
+              <img id="adminFishImgPreview" src="" style="width: 100%; height: 100%; object-fit: cover;">
+              <button type="button" onclick="removeAdminFishImage()"
+                style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 14px; border-top: 1px solid #ECEFF1;">
+            <button type="button" onclick="closeAdminFishModal()"
+              style="padding: 9px 18px; border-radius: 8px; font-size: 13px; border: 1px solid #CFD8DC; background: #fff; color: #546E7A; cursor: pointer;">
+              বাতিল
+            </button>
+            <button type="submit" id="adminFishSubmitBtn"
+              style="padding: 9px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; background: #00838F; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-check"></i> সংরক্ষণ করুন
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
   <div class="modal-overlay" id="adminLivestockModal"
     style="display: none; z-index: 100010; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
     <div

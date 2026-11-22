@@ -2534,7 +2534,7 @@
             <span>পশু ও হাঁস-মুরগি</span>
           </div>
           <!-- ১১. মৎস্য চাষ -->
-          <div class="quick-card" onclick="openServiceModal('fisheries')">
+          <div class="quick-card" onclick="openFishFarmingPage()">
             <div class="quick-icon-wrap" style="background: #E0F7FA; color: #0097A7;">
               <i class="fa-solid fa-fish"></i>
             </div>
@@ -3613,6 +3613,75 @@
         <div style="width: 32px;"></div>
       </div>
       <div id="livestockPoultryDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+        <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN FISH FARMING PAGE MATCHING FLUTTER FISH_FARMING_SCREEN & CROP CALENDAR -->
+    <div class="full-screen-page" id="fishFarmingPage"
+      style="background: #F7FCFC; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div
+        style="background: linear-gradient(180deg, #00838F 0%, #006064 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(0, 131, 143, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <button class="topbar-back-btn" onclick="closeFishFarmingPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">মৎস চাষ</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">আধুনিক পদ্ধতিতে মাছ চাষ, পুকুর ব্যবস্থাপনা ও রোগবালাই প্রতিকার</p>
+          </div>
+          <div style="width: 32px;"></div>
+        </div>
+
+        <!-- Horizontal Category Filter Chips -->
+        <div class="month-chips-scroll" id="fishCategoryChips"
+          style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none;">
+          <!-- Dynamically populated fish category chips -->
+        </div>
+      </div>
+
+      <!-- Selected Category Guidance Banner -->
+      <div id="fishCategoryBanner"
+        style="display: none; background: #E0F7FA; border: 1px solid #B2EBF2; border-radius: 12px; margin: 12px 16px 0 16px; padding: 10px 14px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 10px; background: #00838F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+            <i class="fa-solid fa-fish"></i>
+          </div>
+          <div>
+            <h4 id="fishBannerCategoryTitle" style="font-size: 13.5px; font-weight: 700; color: #006064; margin: 0;">
+            </h4>
+            <p id="fishBannerCategoryDesc" style="font-size: 11px; color: #00838F; margin: 2px 0 0 0;">এই ক্যাটাগরির উন্নত জাত, পুকুর প্রস্তুতি ও রোগ ব্যবস্থাপনা তথ্য নিচে প্রদর্শিত হচ্ছে</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fish Items List Container -->
+      <div id="fishFarmingListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <!-- Dynamically rendered fish cards -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN FISH DETAILS PAGE MATCHING FLUTTER DETAIL VIEW & CROP CALENDAR -->
+    <div class="full-screen-page" id="fishFarmingDetailPage"
+      style="background: #F7FCFC; z-index: 100015; overflow: hidden; display: none; flex-direction: column;">
+      <div
+        style="background: #00838F; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;">
+        <button onclick="closeFishFarmingDetailPage()"
+          style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div style="text-align: center; flex: 1;">
+          <h3 id="fishDetailHeaderName" style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">মৎস চাষের তথ্য
+          </h3>
+          <p id="fishDetailHeaderSubtitle" style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">চাষ নির্দেশিকা ও রোগ প্রতিকার
+          </p>
+        </div>
+        <div style="width: 32px;"></div>
+      </div>
+      <div id="fishFarmingDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
       </div>
     </div>
@@ -14696,6 +14765,471 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     window.openLivestockDetailsWithItem = openLivestockDetailsWithItem;
     window.closeLivestockPoultryDetailPage = closeLivestockPoultryDetailPage;
     window.initFirestoreLivestockSync = initFirestoreLivestockSync;
+
+    // =========================================================================
+    // DEDICATED FISH FARMING PAGE LOGIC (MATCHING FLUTTER FISH_FARMING_SCREEN)
+    // =========================================================================
+    let currentFishItems = [];
+    let fishFarmingUnsubscribe = null;
+    let isFishDataLoading = false;
+    let selectedFishCategory = 'সব';
+
+    const baseFishCategories = [
+      'সব',
+      'কার্প ও রুই জাতীয়',
+      'তেলাপিয়া ও পাঙ্গাস',
+      'শিং-মাগুর ও পাবদা',
+      'চিংড়ি চাষ',
+      'পুকুর ও পানি ব্যবস্থাপনা',
+      'মাছের রোগ ও প্রতিকার'
+    ];
+
+    const fishCategorySubtitleMap = {
+      'কার্প ও রুই জাতীয়': 'রুই, কাতলা, মৃগেল ও কার্প মিশ্র চাষ পদ্ধতি ও পোনা মজুদ',
+      'তেলাপিয়া ও পাঙ্গাস': 'মনোসেক্স তেলাপিয়া ও থাই পাঙ্গাস চাষ এবং নিবিড় ব্যবস্থাপনা',
+      'শিং-মাগুর ও পাবদা': 'উচ্চমূল্যের দেশি শিং, মাগুর ও পাবদা চাষের আধুনিক কৌশল',
+      'চিংড়ি চাষ': 'গলদা ও বাগদা চিংড়ির লাভজনক চাষ, ঘের প্রস্তুতি ও খাদ্য',
+      'পুকুর ও পানি ব্যবস্থাপনা': 'পুকুর প্রস্তুতি, চুন-সার প্রয়োগ ও পানির গুণাগুণ নিয়ন্ত্রণ',
+      'মাছের রোগ ও প্রতিকার': 'ফুলকা পচা, ঘা রোগ ও শীতকালীন মড়ক প্রতিরোধ নির্দেশিকা'
+    };
+
+    const defaultFishData = [
+      {
+        id: 'fish_1',
+        title: 'রুই, কাতলা ও মৃগেল মাছের মিশ্র চাষ পদ্ধতি',
+        category: 'কার্প ও রুই জাতীয়',
+        species: 'দেশি রুই, কাতলা ও মৃগেল কার্প',
+        highlights: 'পুকুরের সকল স্তরের খাদ্য ব্যবহার করে সর্বোচ্চ ফলন নিশ্চিত করে',
+        description: 'মিশ্র চাষে পুকুরের ওপরের স্তরের জন্য কাতলা ও সিলভার কার্প, মধ্য স্তরের জন্য রুই এবং তলদেশের জন্য মৃগেল ও কার্পিও মজুদ করা হয়। শতাংশ প্রতি ৩৫-৪০টি পোনা ছাড়া আদর্শ। নিয়মিত প্রাকৃতিক খাদ্যের উপস্থিতি পরীক্ষা করতে হবে।',
+        tips: 'পুকুর তৈরির সময় শতাংশে ১ কেজি চুন প্রয়োগ করুন। পোনা মজুদের পর খৈল, কুঁড়ো ও ফিশমিল দিয়ে তৈরি সম্পূরক খাদ্য দৈনিক মাছের মোট ওজনের ৩-৫% হারে দিন।',
+        imageUrl: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_2',
+        title: 'উন্নত জাতের মনোসেক্স তেলাপিয়া চাষ নির্দেশিকা',
+        category: 'তেলাপিয়া ও পাঙ্গাস',
+        species: 'মনোসেক্স গিফট তেলাপিয়া (GIFT)',
+        highlights: 'মাত্র ৪-৫ মাসে প্রতিটি মাছের ওজন ৪০০-৫০০ গ্রাম হয়',
+        description: 'মনোসেক্স তেলাপিয়া দ্রুত বাড়ে এবং প্রজননজনিত অতিরিক্ত পোনা উৎপাদনে পুষ্টি অপচয় হয় না। পুকুর ছাড়াও বায়োফ্লক ও খাঁচায় সফলভাবে চাষ করা যায়। পানির দ্রবীভূত অক্সিজেন ৫ পিপিএমের ওপরে রাখতে হবে।',
+        tips: 'শতাংশে ২০০-২৫০টি পোনা মজুদ করা যায়। দিনে দুইবার ৩০% আমিষযুক্ত বাণিজ্যিক ভাসমান ফিড সরবরাহ করতে হবে। অ্যামোনিয়া নিয়ন্ত্রণে প্রোবায়োটিক ব্যবহার ফলপ্রসূ।',
+        imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_3',
+        title: 'আধুনিক পদ্ধতিতে শিং ও মাগুর মাছ চাষ',
+        category: 'শিং-মাগুর ও পাবদা',
+        species: 'দেশি শিং ও আফ্রিকান/দেশি মাগুর',
+        highlights: 'স্বল্প গভীরতার পুকুর ও চৌবাচ্চায় অধিক ঘনত্বে চাষযোগ্য',
+        description: 'শিং ও মাগুর বায়ুশ্বাসী মাছ হওয়ায় অল্প অক্সিজেনেও বেঁচে থাকে। পুকুরের পাড় দিয়ে জাল দিয়ে বেড়া দেওয়া জরুরি যাতে বৃষ্টির দিনে মাছ উঠে যেতে না পারে। তলার কাদা পরিষ্কার রাখা আবশ্যক।',
+        tips: 'শতাংশে ৪০০-৫০০টি আঙুল সাইজের সুস্থ পোনা মজুদ করুন। রাতে খাবার গ্রহণের প্রবণতা বেশি থাকায় সন্ধ্যায় দানাদার খাদ্য দিন। ফুলকা ও শরীরে ছত্রাক রোধে পটাশ দিন।',
+        imageUrl: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_4',
+        title: 'গলদা ও বাগদা চিংড়ি চাষ ও ঘের প্রস্তুতি',
+        category: 'চিংড়ি চাষ',
+        species: 'গলদা (মিঠা পানি) ও বাগদা (লোনা পানি)',
+        highlights: 'উচ্চ আন্তর্জাতিক রফতানি মূল্য ও অধিক মুনাফাজনক',
+        description: 'চিংড়ি চাষের জন্য তলদেশের স্বাস্থ্য সুরক্ষা সবচেয়ে গুরুত্বপূর্ণ। ঘেরের পানি প্রবেশ ও নিষ্কাশন ব্যবস্থা পৃথক হতে হবে। পানির লবণাক্ততা ও অ্যালকালিনিটি নিয়মিত পরীক্ষা করতে হয়।',
+        tips: 'পোনা ছাড়ার আগে ঘেরে শেল্টার (আশ্রয়স্থল) তৈরি করে দিতে হবে যাতে খোলস বদলের সময় অন্য চিংড়ি ক্ষতি না করে। উচ্চ প্রোটিনযুক্ত চিংড়ির বিশেষ পিলেট খাদ্য দিন।',
+        imageUrl: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_5',
+        title: 'পাবদা মাছের নিবিড় ও আধা-নিবিড় চাষ পদ্ধতি',
+        category: 'শিং-মাগুর ও পাবদা',
+        species: 'দেশি পাবদা (Ompok pabda)',
+        highlights: 'সুস্বাদু কাটা কম মাছ, বাজারে ব্যাপক চাহিদা ও প্রিমিয়াম মূল্য',
+        description: 'পাবদা মাছ অত্যন্ত নরম প্রকৃতির এবং খাদ্য নির্বাচনে সংবেদনশীল। পুকুরে পর্যাপ্ত প্রাকৃতিক খাদ্য জুপ্ল্যাঙ্কটন নিশ্চিত করতে হবে। পোনা মজুদের পর প্রথম মাসে ক্যানিবালিজম রোধে নিয়মিত খাবার দিতে হবে।',
+        tips: 'শতাংশে ২০০-২৫০টি পোনা দেওয়া যায়। প্রোটিন সমৃদ্ধ ভাসমান ও ডুবন্ত ফিডের সমন্বয় রাখুন। প্রতি মাসে পানির ২৫% পরিবর্তন করলে বৃদ্ধি ত্বরান্বিত হয়।',
+        imageUrl: 'https://images.unsplash.com/photo-1576836165612-8bc9b07e7778?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_6',
+        title: 'মাছ চাষের পুকুর প্রস্তুতি ও চুন-সার প্রয়োগ গাইড',
+        category: 'পুকুর ও পানি ব্যবস্থাপনা',
+        species: 'সকল ধরনের মাছের পুকুর',
+        highlights: 'সঠিক প্রস্তুতি মাছের রোগবালাই ৮০% কমিয়ে দেয়',
+        description: 'পুরোনো পুকুরের তলার পচা কাদা তুলে ফেলে শতাংশে ১-২ কেজি চুন ছিটিয়ে রোদ খাওয়াতে হবে। এরপর জলজ বিষমুক্ত পানি ঢুকিয়ে শতাংশে ইউরিয়া ১০০ গ্রাম ও টিএসপি ১০০ গ্রাম দিলে প্ল্যাঙ্কটন জন্মায়।',
+        tips: 'পানির রং হালকা সবুজ বা বাদামি হলে বুঝতে হবে পোনা ছাড়ার উপযোগী হয়েছে। পানির স্বচ্ছতা সেচি ডিস্ক দিয়ে ২৫-৩০ সেন্টিমিটারের মধ্যে রাখা উচিত।',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_7',
+        title: 'মাছের ঘা রোগ ও লেজ-পাখনা পচা রোগের প্রতিকার',
+        category: 'মাছের রোগ ও প্রতিকার',
+        species: 'রুই, কার্প, শিং ও পাঙ্গাস',
+        highlights: 'শরীরে লাল দাগ, ক্ষত ও খসখসে ভাব দেখা দিলে দ্রুত ব্যবস্থা নিন',
+        description: 'শীতের শুরুতে ব্যাকটেরিয়া ও পরজীবী আক্রমণে মাছের ক্ষত রোগ (EUS) দেখা দেয়। আক্রান্ত মাছ পানির ওপরে খাবি খায় ও খাওয়া বন্ধ করে দেয়। পুকুরে অতিরিক্ত কাদা থাকলে রোগের তীব্রতা বাড়ে।',
+        tips: 'শতাংশে প্রতি ফুট পানির জন্য ২৫০ গ্রাম চুন ও ২৫০ গ্রাম লবণ একসাথে গুলে ছিটিয়ে দিন। তীব্র আক্রমণে প্রতি শতাংশে ১-২ গ্রাম পটাশিয়াম পারম্যাঙ্গানেট প্রয়োগ করুন।',
+        imageUrl: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80'
+      },
+      {
+        id: 'fish_8',
+        title: 'শীতকালীন মাছের বিশেষ যত্ন ও খাদ্য ব্যবস্থাপনা',
+        category: 'পুকুর ও পানি ব্যবস্থাপনা',
+        species: 'পুকুরের সকল চাষযোগ্য মাছ',
+        highlights: 'তাপমাত্রা কমলে মাছের বিপাক ক্রিয়া ও খাদ্য গ্রহণ কমে যায়',
+        description: 'শীতকালে পানির তাপমাত্রা ১৮ ডিগ্রির নিচে নামলে খাদ্যের পরিমাণ অর্ধেক করে দিতে হবে। অতিরিক্ত খাবার পানির তলায় পচে অ্যামোনিয়া গ্যাস সৃষ্টি করে মাছের মৃত্যু ডেকে আনতে পারে।',
+        tips: 'সপ্তাহে অন্তত একদিন সকালে পুকুরে নতুন গভীর নলকূপের হালকা গরম পানি সরবরাহ করুন। সকালের দিকে জাল টেনে গ্যাস বের করে দেওয়া অত্যন্ত উপকারী।',
+        imageUrl: 'https://images.unsplash.com/photo-1498084393756-2383789bd031?auto=format&fit=crop&w=800&q=80'
+      }
+    ];
+
+    function openFishFarmingPage() {
+      const page = document.getElementById('fishFarmingPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      renderFishCategoryChips();
+      renderFishFarmingList();
+      initFirestoreFishSync();
+    }
+
+    function closeFishFarmingPage() {
+      const page = document.getElementById('fishFarmingPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+
+      // Read Optimization: Unsubscribe from snapshot when leaving the page
+      if (fishFarmingUnsubscribe) {
+        try { fishFarmingUnsubscribe(); } catch (_) { }
+        fishFarmingUnsubscribe = null;
+      }
+    }
+
+    function renderFishCategoryChips() {
+      const container = document.getElementById('fishCategoryChips');
+      if (!container) return;
+
+      const dynamicCats = new Set(baseFishCategories);
+      (defaultFishData || []).forEach(item => {
+        const cat = item.category;
+        if (cat && typeof cat === 'string' && cat.trim()) {
+          dynamicCats.add(cat.trim());
+        }
+      });
+      const allCategories = Array.from(dynamicCats);
+
+      container.innerHTML = allCategories.map(cat => {
+        const isSel = selectedFishCategory === cat;
+        const icon = cat === 'সব' ? 'fa-table-cells-large' : (cat.includes('কার্প') || cat.includes('রুই') ? 'fa-water' : (cat.includes('চিংড়ি') ? 'fa-shrimp' : (cat.includes('রোগ') ? 'fa-briefcase-medical' : 'fa-fish')));
+        return `
+          <button type="button" onclick="selectFishCategory('${cat}')" style="
+            background: ${isSel ? '#ffffff' : 'rgba(255,255,255,0.18)'};
+            color: ${isSel ? '#006064' : '#ffffff'};
+            border: 1px solid ${isSel ? '#ffffff' : 'rgba(255,255,255,0.32)'};
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 12.5px;
+            font-weight: ${isSel ? '700' : '500'};
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: ${isSel ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'};
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+          "><i class="fa-solid ${icon}" style="font-size: 11px;"></i>${cat}</button>
+        `;
+      }).join('');
+    }
+
+    function selectFishCategory(cat) {
+      selectedFishCategory = cat;
+      renderFishCategoryChips();
+      renderFishFarmingList();
+    }
+
+    function getNormalizedFishImageUrl(item) {
+      if (!item) return '';
+      let url = (item.imageUrl || item.image || item.photoUrl || item.imgUrl || item.thumbnail || item.img || '').toString().trim();
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      const r2Base = 'https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/';
+      return r2Base + url.replace(/^\/+/, '');
+    }
+
+    function renderFishFarmingList() {
+      const banner = document.getElementById('fishCategoryBanner');
+      const bTitle = document.getElementById('fishBannerCategoryTitle');
+      const bDesc = document.getElementById('fishBannerCategoryDesc');
+
+      if (selectedFishCategory !== 'সব') {
+        if (banner) banner.style.display = 'block';
+        if (bTitle) bTitle.innerText = selectedFishCategory;
+        if (bDesc) {
+          bDesc.innerText = fishCategorySubtitleMap[selectedFishCategory] || 'এই ক্যাটাগরির উন্নত জাত, পুকুর প্রস্তুতি ও রোগ ব্যবস্থাপনা তথ্য নিচে প্রদর্শিত হচ্ছে';
+        }
+      } else {
+        if (banner) banner.style.display = 'none';
+      }
+
+      let filtered = [...defaultFishData];
+
+      if (selectedFishCategory !== 'সব') {
+        const target = selectedFishCategory.toLowerCase();
+        filtered = filtered.filter(item => {
+          const cat = ((item.category || '')).toLowerCase();
+          const title = ((item.title || item.name || '')).toLowerCase();
+          return cat.includes(target) || title.includes(target);
+        });
+      }
+
+      const container = document.getElementById('fishFarmingListContainer');
+      if (!container) return;
+
+      if (isFishDataLoading) {
+        container.innerHTML = getPremiumLoaderHtml('মৎস চাষ', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        return;
+      }
+
+      currentFishItems = filtered;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; color: #758577;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #E0F7FA; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+              <i class="fa-solid fa-fish" style="font-size: 30px; color: #00838F;"></i>
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">কোনো তথ্য পাওয়া যায়নি</h4>
+            <p style="font-size: 12px; margin: 0 0 16px 0; color: #5B6D5D;">অন্য কোনো ক্যাটাগরি নির্বাচন করুন</p>
+            ${(selectedFishCategory !== 'সব') ? `
+              <button type="button" onclick="selectFishCategory('সব')" style="background: #00838F; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-rotate-right"></i>সকল তথ্য দেখুন
+              </button>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((item, idx) => {
+        const title = item.title || item.name || 'মৎস চাষের তথ্য';
+        const category = item.category || 'মৎস চাষ';
+        const species = item.species || item.breed || item.type || '';
+        const highlights = item.highlights || '';
+        const description = item.description || '';
+        const imgUrl = getNormalizedFishImageUrl(item);
+
+        const imgBlock = imgUrl
+          ? `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: #E0F7FA; cursor: pointer;" onclick="openFishDetailsByIndex(${idx})">
+               <img src="${imgUrl}" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; height: 190px; object-fit: cover; display: block; pointer-events: none;" 
+                 onerror="console.warn('Fish image failed to load:', '${imgUrl}'); this.onerror=null; this.parentElement.innerHTML='<div style=\\'height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #E0F7FA, #B2EBF2); color: #00838F;\\'><div style=\\'width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,131,143,0.18);\\'><i class=\\'fa-solid fa-fish\\' style=\\'font-size: 24px; color: #00838F;\\'></i></div><span style=\\'font-size: 13px; font-weight: 700; color: #006064;\\'>${title}</span></div>';" />
+               <!-- Glassmorphic Category Badge (Top-Left) -->
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(0, 77, 64, 0.85); backdrop-filter: blur(8px); color: #FFF; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #80DEEA;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
+               </span>
+               <!-- Species Badge (Top-Right) -->
+               ${species ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(0, 131, 143, 0.88); backdrop-filter: blur(8px); color: #fff; border: 1px solid rgba(255,255,255,0.25); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); pointer-events: none;"><i class="fa-solid fa-tag" style="font-size: 10px; margin-right: 4px; color: #E0F7FA;"></i>${species}</span>` : ''}
+             </div>`
+          : `<div style="height: 190px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, #E0F7FA, #B2EBF2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="openFishDetailsByIndex(${idx})">
+               <div style="width: 48px; height: 48px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,131,143,0.18); pointer-events: none;">
+                 <i class="fa-solid fa-fish" style="font-size: 24px; color: #00838F;"></i>
+               </div>
+               <span style="font-size: 13px; font-weight: 700; color: #006064; pointer-events: none;">${title}</span>
+               <span style="position: absolute; top: 12px; left: 12px; background: rgba(0, 77, 64, 0.85); backdrop-filter: blur(8px); color: #FFF; border: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;">
+                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #80DEEA;"></span>
+                 <span style="letter-spacing: 0.2px;">${category}</span>
+               </span>
+               ${species ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(0, 131, 143, 0.88); backdrop-filter: blur(8px); color: #fff; border: 1px solid rgba(255,255,255,0.25); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; pointer-events: none;">${species}</span>` : ''}
+             </div>`;
+
+        return `
+          <div style="background: #fff; border: 1.2px solid #E0F2F1; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+            ${imgBlock}
+            <div style="padding: 14px 14px 16px 14px;">
+              <!-- Distinct Headline with Left Cyan Accent Bar -->
+              <div style="border-left: 3.5px solid #00838F; padding-left: 10px; margin-bottom: 10px; cursor: pointer;" onclick="openFishDetailsByIndex(${idx})">
+                <h4 style="font-size: 16.5px; font-weight: 700; color: #263238; margin: 0; line-height: 1.38; letter-spacing: -0.2px;">${title}</h4>
+              </div>
+
+              ${highlights ? `
+                <div style="display: flex; align-items: flex-start; gap: 6px; margin-bottom: 10px; font-size: 12.5px; color: #006064; font-weight: 500;">
+                  <i class="fa-solid fa-circle-check" style="color: #00838F; margin-top: 3px; font-size: 13px;"></i>
+                  <span>${highlights}</span>
+                </div>` : ''}
+
+              ${description ? `<p style="font-size: 12px; color: #616161; line-height: 1.45; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${description}</p>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openFishDetailsByIndex(idx) {
+      const item = (typeof currentFishItems !== 'undefined' && currentFishItems && currentFishItems[idx]) || (defaultFishData || [])[idx];
+      if (!item) return;
+      openFishDetailsWithItem(item);
+    }
+
+    function openFishDetailsWithItem(item) {
+      const page = document.getElementById('fishFarmingDetailPage');
+      const content = document.getElementById('fishFarmingDetailContent');
+      const headerName = document.getElementById('fishDetailHeaderName');
+      const headerSub = document.getElementById('fishDetailHeaderSubtitle');
+
+      if (!page || !content) return;
+
+      const title = item.title || item.name || 'মৎস চাষের তথ্য';
+      const category = item.category || 'মৎস চাষ';
+      const species = item.species || item.breed || item.type || '';
+      const highlights = item.highlights || '';
+      const description = item.description || 'বিস্তারিত বিবরণ শীঘ্রই যুক্ত করা হবে।';
+      const tips = item.tips || item.feedInfo || 'সঠিক খাদ্য ও নিয়মিত পুকুর পরিচর্যা নিশ্চিত করুন।';
+      const imgUrl = getNormalizedFishImageUrl(item);
+
+      if (headerName) headerName.innerText = title;
+      if (headerSub) headerSub.innerText = `${category} ${species ? '• ' + species : ''}`;
+
+      const imgSection = imgUrl
+        ? `<div style="width: 100%; height: 210px; overflow: hidden; background: #E0F7FA; position: relative;">
+             <img src="${imgUrl}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;"
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:210px;background:linear-gradient(135deg, #E0F7FA, #B2EBF2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#00838F;\\'><i class=\\'fa-solid fa-fish\\' style=\\'font-size:36px;margin-bottom:8px;\\'></i><span style=\\'font-weight:700;font-size:14px;color:#006064;\\'>${title}</span></div>';" />
+           </div>`
+        : `<div style="width: 100%; height: 210px; background: linear-gradient(135deg, #E0F7FA, #B2EBF2); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #00838F;">
+             <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,131,143,0.2);">
+               <i class="fa-solid fa-fish" style="font-size: 26px; color: #00838F;"></i>
+             </div>
+             <span style="font-weight: 700; font-size: 14.5px; color: #006064;">${title}</span>
+           </div>`;
+
+      content.innerHTML = `
+        ${imgSection}
+        <div style="padding: 16px 16px 30px 16px;">
+          <!-- Category & Species Badges -->
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+            <span style="background: #E0F7FA; color: #006064; border: 1px solid #B2EBF2; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fa-solid fa-fish" style="font-size: 11px;"></i>${category}
+            </span>
+            ${species ? `
+              <span style="background: #E0F2F1; color: #004D40; border: 1px solid #B2DFDB; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-tag" style="font-size: 11px;"></i>${species}
+              </span>` : ''}
+          </div>
+
+          <!-- Highlights Banner -->
+          ${highlights ? `
+            <div style="background: #E0F7FA; border: 1px solid #80DEEA; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <i class="fa-solid fa-star" style="color: #00838F; font-size: 14px; margin-top: 3px;"></i>
+                <div style="font-size: 13px; font-weight: 600; color: #006064; line-height: 1.45;">${highlights}</div>
+              </div>
+            </div>` : ''}
+
+          <!-- Pond Preparation & Management Section -->
+          <div style="margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: #E0F7FA; color: #00838F; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                <i class="fa-solid fa-water"></i>
+              </div>
+              <h4 style="font-size: 14.5px; font-weight: 700; color: #004D40; margin: 0;">পুকুর প্রস্তুতি ও চাষ ব্যবস্থাপনা</h4>
+            </div>
+            <div style="background: #fff; border: 1px solid #E0F2F1; border-radius: 12px; padding: 14px; font-size: 13px; color: #37474F; line-height: 1.6; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              ${description}
+            </div>
+          </div>
+
+          <!-- Feed & Disease Remedies Section -->
+          ${tips ? `
+            <div style="margin-bottom: 22px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 8px; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                  <i class="fa-solid fa-notes-medical"></i>
+                </div>
+                <h4 style="font-size: 14.5px; font-weight: 700; color: #1B5E20; margin: 0;">খাদ্য তালিকা ও রোগ প্রতিকার টিপস</h4>
+              </div>
+              <div style="background: #F1F8E9; border: 1px solid #DCEDC8; border-radius: 12px; padding: 14px; font-size: 13px; color: #2E7D32; line-height: 1.6; font-weight: 500;">
+                ${tips}
+              </div>
+            </div>` : ''}
+
+          <div style="text-align: center; margin-top: 10px;">
+            <button type="button" onclick="closeFishFarmingDetailPage()" style="background: #00838F; color: #fff; border: none; border-radius: 10px; width: 100%; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,131,143,0.3);">
+              বন্ধ করুন
+            </button>
+          </div>
+        </div>
+      `;
+
+      page.classList.add('active');
+      page.style.display = 'flex';
+      page.style.pointerEvents = 'auto';
+    }
+
+    function closeFishFarmingDetailPage() {
+      const page = document.getElementById('fishFarmingDetailPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+    }
+
+    function initFirestoreFishSync() {
+      if (fishFarmingUnsubscribe) return;
+      try {
+        if (typeof firebase === 'undefined' || !firebase.firestore) return;
+        const db = firebase.firestore();
+        isFishDataLoading = true;
+        renderFishFarmingList();
+
+        fishFarmingUnsubscribe = db.collection('fish_farming').limit(50).onSnapshot(snapshot => {
+          isFishDataLoading = false;
+          if (!snapshot.empty) {
+            const list = [];
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              list.push({ id: doc.id, ...d });
+            });
+            if (list.length > 0) {
+              defaultFishData.length = 0;
+              list.forEach(item => defaultFishData.push(item));
+            }
+          }
+          renderFishCategoryChips();
+          renderFishFarmingList();
+        }, err => {
+          console.warn('Live Firestore fish sync warning:', err);
+          isFishDataLoading = false;
+          renderFishCategoryChips();
+          renderFishFarmingList();
+        });
+      } catch (e) {
+        console.warn('initFirestoreFishSync error:', e);
+        isFishDataLoading = false;
+        setTimeout(() => {
+          if (isFishDataLoading) {
+            isFishDataLoading = false;
+            renderFishCategoryChips();
+            renderFishFarmingList();
+          }
+        }, 800);
+      }
+    }
+
+    window.openFishFarmingPage = openFishFarmingPage;
+    window.closeFishFarmingPage = closeFishFarmingPage;
+    window.renderFishCategoryChips = renderFishCategoryChips;
+    window.selectFishCategory = selectFishCategory;
+    window.renderFishFarmingList = renderFishFarmingList;
+    window.openFishDetailsByIndex = openFishDetailsByIndex;
+    window.openFishDetailsWithItem = openFishDetailsWithItem;
+    window.closeFishFarmingDetailPage = closeFishFarmingDetailPage;
+    window.initFirestoreFishSync = initFirestoreFishSync;
+
 
     // =========================================================================
     // DEDICATED IRRIGATION TRACKER LOGIC (MATCHING FLUTTER SCREEN)
