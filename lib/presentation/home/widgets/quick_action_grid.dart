@@ -12,6 +12,7 @@ import '../income_expense_screen.dart';
 import '../seed_information_page.dart';
 import '../irrigation_tracker_screen.dart';
 import '../soil_health_screen.dart';
+import '../livestock_poultry_screen.dart';
 import '../../support/expert_helpline_screen.dart';
 import '../../crops/disease_detection_screen.dart';
 
@@ -618,14 +619,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.pets_outlined,
         color: const Color(0xFFD84315),
         bgColor: const Color(0xFFFBE9E7),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'livestock',
-          title: AppStrings.serviceLivestock,
-          icon: Icons.pets_outlined,
-          color: const Color(0xFFD84315),
-          bgColor: const Color(0xFFFBE9E7),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LivestockPoultryScreen(),
+            ),
+          );
+        },
       ),
       // ১১. মৎস্য চাষ
       QuickActionItem(
