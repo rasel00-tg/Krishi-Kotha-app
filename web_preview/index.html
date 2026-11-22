@@ -3629,7 +3629,7 @@
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div style="text-align: center; flex: 1;">
-            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">মৎস চাষ</h3>
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">মৎস্য চাষ</h3>
             <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">আধুনিক পদ্ধতিতে মাছ চাষ, পুকুর ব্যবস্থাপনা ও রোগবালাই প্রতিকার</p>
           </div>
           <div style="width: 32px;"></div>
@@ -14770,6 +14770,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     // DEDICATED FISH FARMING PAGE LOGIC (MATCHING FLUTTER FISH_FARMING_SCREEN)
     // =========================================================================
     let currentFishItems = [];
+    let liveFishData = []; // Zero demo data: Loaded purely from Firestore 'fish_farming'
     let fishFarmingUnsubscribe = null;
     let isFishDataLoading = false;
     let selectedFishCategory = 'সব';
@@ -14792,89 +14793,6 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       'পুকুর ও পানি ব্যবস্থাপনা': 'পুকুর প্রস্তুতি, চুন-সার প্রয়োগ ও পানির গুণাগুণ নিয়ন্ত্রণ',
       'মাছের রোগ ও প্রতিকার': 'ফুলকা পচা, ঘা রোগ ও শীতকালীন মড়ক প্রতিরোধ নির্দেশিকা'
     };
-
-    const defaultFishData = [
-      {
-        id: 'fish_1',
-        title: 'রুই, কাতলা ও মৃগেল মাছের মিশ্র চাষ পদ্ধতি',
-        category: 'কার্প ও রুই জাতীয়',
-        species: 'দেশি রুই, কাতলা ও মৃগেল কার্প',
-        highlights: 'পুকুরের সকল স্তরের খাদ্য ব্যবহার করে সর্বোচ্চ ফলন নিশ্চিত করে',
-        description: 'মিশ্র চাষে পুকুরের ওপরের স্তরের জন্য কাতলা ও সিলভার কার্প, মধ্য স্তরের জন্য রুই এবং তলদেশের জন্য মৃগেল ও কার্পিও মজুদ করা হয়। শতাংশ প্রতি ৩৫-৪০টি পোনা ছাড়া আদর্শ। নিয়মিত প্রাকৃতিক খাদ্যের উপস্থিতি পরীক্ষা করতে হবে।',
-        tips: 'পুকুর তৈরির সময় শতাংশে ১ কেজি চুন প্রয়োগ করুন। পোনা মজুদের পর খৈল, কুঁড়ো ও ফিশমিল দিয়ে তৈরি সম্পূরক খাদ্য দৈনিক মাছের মোট ওজনের ৩-৫% হারে দিন।',
-        imageUrl: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_2',
-        title: 'উন্নত জাতের মনোসেক্স তেলাপিয়া চাষ নির্দেশিকা',
-        category: 'তেলাপিয়া ও পাঙ্গাস',
-        species: 'মনোসেক্স গিফট তেলাপিয়া (GIFT)',
-        highlights: 'মাত্র ৪-৫ মাসে প্রতিটি মাছের ওজন ৪০০-৫০০ গ্রাম হয়',
-        description: 'মনোসেক্স তেলাপিয়া দ্রুত বাড়ে এবং প্রজননজনিত অতিরিক্ত পোনা উৎপাদনে পুষ্টি অপচয় হয় না। পুকুর ছাড়াও বায়োফ্লক ও খাঁচায় সফলভাবে চাষ করা যায়। পানির দ্রবীভূত অক্সিজেন ৫ পিপিএমের ওপরে রাখতে হবে।',
-        tips: 'শতাংশে ২০০-২৫০টি পোনা মজুদ করা যায়। দিনে দুইবার ৩০% আমিষযুক্ত বাণিজ্যিক ভাসমান ফিড সরবরাহ করতে হবে। অ্যামোনিয়া নিয়ন্ত্রণে প্রোবায়োটিক ব্যবহার ফলপ্রসূ।',
-        imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_3',
-        title: 'আধুনিক পদ্ধতিতে শিং ও মাগুর মাছ চাষ',
-        category: 'শিং-মাগুর ও পাবদা',
-        species: 'দেশি শিং ও আফ্রিকান/দেশি মাগুর',
-        highlights: 'স্বল্প গভীরতার পুকুর ও চৌবাচ্চায় অধিক ঘনত্বে চাষযোগ্য',
-        description: 'শিং ও মাগুর বায়ুশ্বাসী মাছ হওয়ায় অল্প অক্সিজেনেও বেঁচে থাকে। পুকুরের পাড় দিয়ে জাল দিয়ে বেড়া দেওয়া জরুরি যাতে বৃষ্টির দিনে মাছ উঠে যেতে না পারে। তলার কাদা পরিষ্কার রাখা আবশ্যক।',
-        tips: 'শতাংশে ৪০০-৫০০টি আঙুল সাইজের সুস্থ পোনা মজুদ করুন। রাতে খাবার গ্রহণের প্রবণতা বেশি থাকায় সন্ধ্যায় দানাদার খাদ্য দিন। ফুলকা ও শরীরে ছত্রাক রোধে পটাশ দিন।',
-        imageUrl: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_4',
-        title: 'গলদা ও বাগদা চিংড়ি চাষ ও ঘের প্রস্তুতি',
-        category: 'চিংড়ি চাষ',
-        species: 'গলদা (মিঠা পানি) ও বাগদা (লোনা পানি)',
-        highlights: 'উচ্চ আন্তর্জাতিক রফতানি মূল্য ও অধিক মুনাফাজনক',
-        description: 'চিংড়ি চাষের জন্য তলদেশের স্বাস্থ্য সুরক্ষা সবচেয়ে গুরুত্বপূর্ণ। ঘেরের পানি প্রবেশ ও নিষ্কাশন ব্যবস্থা পৃথক হতে হবে। পানির লবণাক্ততা ও অ্যালকালিনিটি নিয়মিত পরীক্ষা করতে হয়।',
-        tips: 'পোনা ছাড়ার আগে ঘেরে শেল্টার (আশ্রয়স্থল) তৈরি করে দিতে হবে যাতে খোলস বদলের সময় অন্য চিংড়ি ক্ষতি না করে। উচ্চ প্রোটিনযুক্ত চিংড়ির বিশেষ পিলেট খাদ্য দিন।',
-        imageUrl: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_5',
-        title: 'পাবদা মাছের নিবিড় ও আধা-নিবিড় চাষ পদ্ধতি',
-        category: 'শিং-মাগুর ও পাবদা',
-        species: 'দেশি পাবদা (Ompok pabda)',
-        highlights: 'সুস্বাদু কাটা কম মাছ, বাজারে ব্যাপক চাহিদা ও প্রিমিয়াম মূল্য',
-        description: 'পাবদা মাছ অত্যন্ত নরম প্রকৃতির এবং খাদ্য নির্বাচনে সংবেদনশীল। পুকুরে পর্যাপ্ত প্রাকৃতিক খাদ্য জুপ্ল্যাঙ্কটন নিশ্চিত করতে হবে। পোনা মজুদের পর প্রথম মাসে ক্যানিবালিজম রোধে নিয়মিত খাবার দিতে হবে।',
-        tips: 'শতাংশে ২০০-২৫০টি পোনা দেওয়া যায়। প্রোটিন সমৃদ্ধ ভাসমান ও ডুবন্ত ফিডের সমন্বয় রাখুন। প্রতি মাসে পানির ২৫% পরিবর্তন করলে বৃদ্ধি ত্বরান্বিত হয়।',
-        imageUrl: 'https://images.unsplash.com/photo-1576836165612-8bc9b07e7778?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_6',
-        title: 'মাছ চাষের পুকুর প্রস্তুতি ও চুন-সার প্রয়োগ গাইড',
-        category: 'পুকুর ও পানি ব্যবস্থাপনা',
-        species: 'সকল ধরনের মাছের পুকুর',
-        highlights: 'সঠিক প্রস্তুতি মাছের রোগবালাই ৮০% কমিয়ে দেয়',
-        description: 'পুরোনো পুকুরের তলার পচা কাদা তুলে ফেলে শতাংশে ১-২ কেজি চুন ছিটিয়ে রোদ খাওয়াতে হবে। এরপর জলজ বিষমুক্ত পানি ঢুকিয়ে শতাংশে ইউরিয়া ১০০ গ্রাম ও টিএসপি ১০০ গ্রাম দিলে প্ল্যাঙ্কটন জন্মায়।',
-        tips: 'পানির রং হালকা সবুজ বা বাদামি হলে বুঝতে হবে পোনা ছাড়ার উপযোগী হয়েছে। পানির স্বচ্ছতা সেচি ডিস্ক দিয়ে ২৫-৩০ সেন্টিমিটারের মধ্যে রাখা উচিত।',
-        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_7',
-        title: 'মাছের ঘা রোগ ও লেজ-পাখনা পচা রোগের প্রতিকার',
-        category: 'মাছের রোগ ও প্রতিকার',
-        species: 'রুই, কার্প, শিং ও পাঙ্গাস',
-        highlights: 'শরীরে লাল দাগ, ক্ষত ও খসখসে ভাব দেখা দিলে দ্রুত ব্যবস্থা নিন',
-        description: 'শীতের শুরুতে ব্যাকটেরিয়া ও পরজীবী আক্রমণে মাছের ক্ষত রোগ (EUS) দেখা দেয়। আক্রান্ত মাছ পানির ওপরে খাবি খায় ও খাওয়া বন্ধ করে দেয়। পুকুরে অতিরিক্ত কাদা থাকলে রোগের তীব্রতা বাড়ে।',
-        tips: 'শতাংশে প্রতি ফুট পানির জন্য ২৫০ গ্রাম চুন ও ২৫০ গ্রাম লবণ একসাথে গুলে ছিটিয়ে দিন। তীব্র আক্রমণে প্রতি শতাংশে ১-২ গ্রাম পটাশিয়াম পারম্যাঙ্গানেট প্রয়োগ করুন।',
-        imageUrl: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80'
-      },
-      {
-        id: 'fish_8',
-        title: 'শীতকালীন মাছের বিশেষ যত্ন ও খাদ্য ব্যবস্থাপনা',
-        category: 'পুকুর ও পানি ব্যবস্থাপনা',
-        species: 'পুকুরের সকল চাষযোগ্য মাছ',
-        highlights: 'তাপমাত্রা কমলে মাছের বিপাক ক্রিয়া ও খাদ্য গ্রহণ কমে যায়',
-        description: 'শীতকালে পানির তাপমাত্রা ১৮ ডিগ্রির নিচে নামলে খাদ্যের পরিমাণ অর্ধেক করে দিতে হবে। অতিরিক্ত খাবার পানির তলায় পচে অ্যামোনিয়া গ্যাস সৃষ্টি করে মাছের মৃত্যু ডেকে আনতে পারে।',
-        tips: 'সপ্তাহে অন্তত একদিন সকালে পুকুরে নতুন গভীর নলকূপের হালকা গরম পানি সরবরাহ করুন। সকালের দিকে জাল টেনে গ্যাস বের করে দেওয়া অত্যন্ত উপকারী।',
-        imageUrl: 'https://images.unsplash.com/photo-1498084393756-2383789bd031?auto=format&fit=crop&w=800&q=80'
-      }
-    ];
 
     function openFishFarmingPage() {
       const page = document.getElementById('fishFarmingPage');
@@ -14913,7 +14831,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!container) return;
 
       const dynamicCats = new Set(baseFishCategories);
-      (defaultFishData || []).forEach(item => {
+      (liveFishData || []).forEach(item => {
         const cat = item.category;
         if (cat && typeof cat === 'string' && cat.trim()) {
           dynamicCats.add(cat.trim());
@@ -14977,7 +14895,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (banner) banner.style.display = 'none';
       }
 
-      let filtered = [...defaultFishData];
+      let filtered = [...liveFishData];
 
       if (selectedFishCategory !== 'সব') {
         const target = selectedFishCategory.toLowerCase();
@@ -14992,20 +14910,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!container) return;
 
       if (isFishDataLoading) {
-        container.innerHTML = getPremiumLoaderHtml('মৎস চাষ', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
+        container.innerHTML = getPremiumLoaderHtml('মৎস্য চাষ', 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন');
         return;
       }
 
       currentFishItems = filtered;
 
+      // Clean empty state when Firestore has no records
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; padding: 40px 16px; color: #758577;">
+          <div style="text-align: center; padding: 48px 16px; color: #758577;">
             <div style="width: 70px; height: 70px; border-radius: 50%; background: #E0F7FA; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
               <i class="fa-solid fa-fish" style="font-size: 30px; color: #00838F;"></i>
             </div>
-            <h4 style="font-size: 15px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">কোনো তথ্য পাওয়া যায়নি</h4>
-            <p style="font-size: 12px; margin: 0 0 16px 0; color: #5B6D5D;">অন্য কোনো ক্যাটাগরি নির্বাচন করুন</p>
+            <h4 style="font-size: 15.5px; font-weight: 700; color: #1E281F; margin: 0 0 6px 0;">এখনো কোনো মৎস্য চাষের তথ্য যুক্ত করা হয়নি</h4>
+            <p style="font-size: 12.5px; margin: 0 0 16px 0; color: #5B6D5D;">${(selectedFishCategory !== 'সব') ? 'অন্য কোনো ক্যাটাগরি নির্বাচন করুন' : 'শীঘ্রই অ্যাডমিন প্যানেল থেকে তথ্য যুক্ত করা হবে'}</p>
             ${(selectedFishCategory !== 'সব') ? `
               <button type="button" onclick="selectFishCategory('সব')" style="background: #00838F; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="fa-solid fa-rotate-right"></i>সকল তথ্য দেখুন
@@ -15016,8 +14935,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       container.innerHTML = filtered.map((item, idx) => {
-        const title = item.title || item.name || 'মৎস চাষের তথ্য';
-        const category = item.category || 'মৎস চাষ';
+        const title = item.title || item.name || 'মৎস্য চাষের তথ্য';
+        const category = item.category || 'মৎস্য চাষ';
         const species = item.species || item.breed || item.type || '';
         const highlights = item.highlights || '';
         const description = item.description || '';
@@ -15070,7 +14989,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openFishDetailsByIndex(idx) {
-      const item = (typeof currentFishItems !== 'undefined' && currentFishItems && currentFishItems[idx]) || (defaultFishData || [])[idx];
+      const item = (typeof currentFishItems !== 'undefined' && currentFishItems && currentFishItems[idx]);
       if (!item) return;
       openFishDetailsWithItem(item);
     }
@@ -15083,8 +15002,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (!page || !content) return;
 
-      const title = item.title || item.name || 'মৎস চাষের তথ্য';
-      const category = item.category || 'মৎস চাষ';
+      const title = item.title || item.name || 'মৎস্য চাষের তথ্য';
+      const category = item.category || 'মৎস্য চাষ';
       const species = item.species || item.breed || item.type || '';
       const highlights = item.highlights || '';
       const description = item.description || 'বিস্তারিত বিবরণ শীঘ্রই যুক্ত করা হবে।';
@@ -15188,16 +15107,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         fishFarmingUnsubscribe = db.collection('fish_farming').limit(50).onSnapshot(snapshot => {
           isFishDataLoading = false;
+          liveFishData = [];
           if (!snapshot.empty) {
-            const list = [];
             snapshot.forEach(doc => {
               const d = doc.data() || {};
-              list.push({ id: doc.id, ...d });
+              liveFishData.push({ id: doc.id, ...d });
             });
-            if (list.length > 0) {
-              defaultFishData.length = 0;
-              list.forEach(item => defaultFishData.push(item));
-            }
           }
           renderFishCategoryChips();
           renderFishFarmingList();

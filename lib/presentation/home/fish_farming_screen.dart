@@ -39,90 +39,6 @@ class _FishFarmingScreenState extends State<FishFarmingScreen> {
 
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _fishStream;
 
-  // Fallback high-quality initial data if Firestore collection is fresh
-  static const List<Map<String, dynamic>> _defaultFishData = [
-    {
-      'id': 'fish_1',
-      'title': 'রুই, কাতলা ও মৃগেল মাছের মিশ্র চাষ পদ্ধতি',
-      'category': 'কার্প ও রুই জাতীয়',
-      'species': 'দেশি রুই, কাতলা ও মৃগেল কার্প',
-      'highlights': 'পুকুরের সকল স্তরের খাদ্য ব্যবহার করে সর্বোচ্চ ফলন নিশ্চিত করে',
-      'description': 'মিশ্র চাষে পুকুরের ওপরের স্তরের জন্য কাতলা ও সিলভার কার্প, মধ্য স্তরের জন্য রুই এবং তলদেশের জন্য মৃগেল ও কার্পিও মজুদ করা হয়। শতাংশ প্রতি ৩৫-৪০টি পোনা ছাড়া আদর্শ। নিয়মিত প্রাকৃতিক খাদ্যের উপস্থিতি পরীক্ষা করতে হবে।',
-      'tips': 'পুকুর তৈরির সময় শতাংশে ১ কেজি চুন প্রয়োগ করুন। পোনা মজুদের পর খৈল, কুঁড়ো ও ফিশমিল দিয়ে তৈরি সম্পূরক খাদ্য দৈনিক মাছের মোট ওজনের ৩-৫% হারে দিন।',
-      'imageUrl': 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_2',
-      'title': 'উন্নত জাতের মনোসেক্স তেলাপিয়া চাষ নির্দেশিকা',
-      'category': 'তেলাপিয়া ও পাঙ্গাস',
-      'species': 'মনোসেক্স গিফট তেলাপিয়া (GIFT)',
-      'highlights': 'মাত্র ৪-৫ মাসে প্রতিটি মাছের ওজন ৪০০-৫০০ গ্রাম হয়',
-      'description': 'মনোসেক্স তেলাপিয়া দ্রুত বাড়ে এবং প্রজননজনিত অতিরিক্ত পোনা উৎপাদনে পুষ্টি অপচয় হয় না। পুকুর ছাড়াও বায়োফ্লক ও খাঁচায় সফলভাবে চাষ করা যায়। পানির দ্রবীভূত অক্সিজেন ৫ পিপিএমের ওপরে রাখতে হবে।',
-      'tips': 'শতাংশে ২০০-২৫০টি পোনা মজুদ করা যায়। দিনে দুইবার ৩০% আমিষযুক্ত বাণিজ্যিক ভাসমান ফিড সরবরাহ করতে হবে। অ্যামোনিয়া নিয়ন্ত্রণে প্রোবায়োটিক ব্যবহার ফলপ্রসূ।',
-      'imageUrl': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_3',
-      'title': 'আধুনিক পদ্ধতিতে শিং ও মাগুর মাছ চাষ',
-      'category': 'শিং-মাগুর ও পাবদা',
-      'species': 'দেশি শিং ও আফ্রিকান/দেশি মাগুর',
-      'highlights': 'স্বল্প গভীরতার পুকুর ও চৌবাচ্চায় অধিক ঘনত্বে চাষযোগ্য',
-      'description': 'শিং ও মাগুর বায়ুশ্বাসী মাছ হওয়ায় অল্প অক্সিজেনেও বেঁচে থাকে। পুকুরের পাড় দিয়ে জাল দিয়ে বেড়া দেওয়া জরুরি যাতে বৃষ্টির দিনে মাছ উঠে যেতে না পারে। তলার কাদা পরিষ্কার রাখা আবশ্যক।',
-      'tips': 'শতাংশে ৪০০-৫০০টি আঙুল সাইজের সুস্থ পোনা মজুদ করুন। রাতে খাবার গ্রহণের প্রবণতা বেশি থাকায় সন্ধ্যায় দানাদার খাদ্য দিন। ফুলকা ও শরীরে ছত্রাক রোধে পটাশ দিন।',
-      'imageUrl': 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_4',
-      'title': 'গলদা ও বাগদা চিংড়ি চাষ ও ঘের প্রস্তুতি',
-      'category': 'চিংড়ি চাষ',
-      'species': 'গলদা (মিঠা পানি) ও বাগদা (লোনা পানি)',
-      'highlights': 'উচ্চ আন্তর্জাতিক রফতানি মূল্য ও অধিক মুনাফাজনক',
-      'description': 'চিংড়ি চাষের জন্য তলদেশের স্বাস্থ্য সুরক্ষা সবচেয়ে গুরুত্বপূর্ণ। ঘেরের পানি প্রবেশ ও নিষ্কাশন ব্যবস্থা পৃথক হতে হবে। পানির লবণাক্ততা ও অ্যালকালিনিটি নিয়মিত পরীক্ষা করতে হয়।',
-      'tips': 'পোনা ছাড়ার আগে ঘেরে শেল্টার (আশ্রয়স্থল) তৈরি করে দিতে হবে যাতে খোলস বদলের সময় অন্য চিংড়ি ক্ষতি না করে। উচ্চ প্রোটিনযুক্ত চিংড়ির বিশেষ পিলেট খাদ্য দিন।',
-      'imageUrl': 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_5',
-      'title': 'পাবদা মাছের নিবিড় ও আধা-নিবিড় চাষ পদ্ধতি',
-      'category': 'শিং-মাগুর ও পাবদা',
-      'species': 'দেশি পাবদা (Ompok pabda)',
-      'highlights': 'সুস্বাদু কাটা কম মাছ, বাজারে ব্যাপক চাহিদা ও প্রিমিয়াম মূল্য',
-      'description': 'পাবদা মাছ অত্যন্ত নরম প্রকৃতির এবং খাদ্য নির্বাচনে সংবেদনশীল। পুকুরে পর্যাপ্ত প্রাকৃতিক খাদ্য জুপ্ল্যাঙ্কটন নিশ্চিত করতে হবে। পোনা মজুদের পর প্রথম মাসে ক্যানিবালিজম (একটি মাছ আরেকটিকে খাওয়া) রোধে নিয়মিত খাবার দিতে হবে।',
-      'tips': 'শতাংশে ২০০-২৫০টি পোনা দেওয়া যায়। প্রোটিন সমৃদ্ধ ভাসমান ও ডুবন্ত ফিডের সমন্বয় রাখুন। প্রতি মাসে পানির ২৫% পরিবর্তন করলে বৃদ্ধি ত্বরান্বিত হয়।',
-      'imageUrl': 'https://images.unsplash.com/photo-1576836165612-8bc9b07e7778?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_6',
-      'title': 'মাছ চাষের পুকুর প্রস্তুতি ও চুন-সার প্রয়োগ গাইড',
-      'category': 'পুকুর ও পানি ব্যবস্থাপনা',
-      'species': 'সকল ধরনের মাছের পুকুর',
-      'highlights': 'সঠিক প্রস্তুতি মাছের রোগবালাই ৮০% কমিয়ে দেয়',
-      'description': 'পুরোনো পুকুরের তলার পচা কাদা তুলে ফেলে শতাংশে ১-২ কেজি চুন ছিটিয়ে রোদ খাওয়াতে হবে। এরপর জলজ বিষমুক্ত পানি ঢুকিয়ে শতাংশে ইউরিয়া ১০০ গ্রাম ও টিএসপি ১০০ গ্রাম দিলে প্ল্যাঙ্কটন জন্মায়।',
-      'tips': 'পানির রং হালকা সবুজ বা বাদামি হলে বুঝতে হবে পোনা ছাড়ার উপযোগী হয়েছে। পানির স্বচ্ছতা সেচি ডিস্ক দিয়ে ২৫-৩০ সেন্টিমিটারের মধ্যে রাখা উচিত।',
-      'imageUrl': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_7',
-      'title': 'মাছের ঘা রোগ ও লেজ-পাখনা পচা রোগের প্রতিকার',
-      'category': 'মাছের রোগ ও প্রতিকার',
-      'species': 'রুই, কার্প, শিং ও পাঙ্গাস',
-      'highlights': 'শরীরে লাল দাগ, ক্ষত ও খসখসে ভাব দেখা দিলে দ্রুত ব্যবস্থা নিন',
-      'description': 'শীতের শুরুতে ব্যাকটেরিয়া ও পরজীবী আক্রমণে মাছের ক্ষত রোগ (EUS) দেখা দেয়। আক্রান্ত মাছ পানির ওপরে খাবি খায় ও খাওয়া বন্ধ করে দেয়। পুকুরে অতিরিক্ত কাদা থাকলে রোগের তীব্রতা বাড়ে।',
-      'tips': 'শতাংশে প্রতি ফুট পানির জন্য ২৫০ গ্রাম চুন ও ২৫০ গ্রাম লবণ একসাথে গুলে ছিটিয়ে দিন। তীব্র আক্রমণে প্রতি শতাংশে ১-২ গ্রাম পটাশিয়াম পারম্যাঙ্গানেট প্রয়োগ করুন।',
-      'imageUrl': 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      'id': 'fish_8',
-      'title': 'শীতকালীন মাছের বিশেষ যত্ন ও খাদ্য ব্যবস্থাপনা',
-      'category': 'পুকুর ও পানি ব্যবস্থাপনা',
-      'species': 'পুকুরের সকল চাষযোগ্য মাছ',
-      'highlights': 'তাপমাত্রা কমলে মাছের বিপাক ক্রিয়া ও খাদ্য গ্রহণ কমে যায়',
-      'description': 'শীতকালে পানির তাপমাত্রা ১৮ ডিগ্রির নিচে নামলে খাদ্যের পরিমাণ অর্ধেক করে দিতে হবে। অতিরিক্ত খাবার পানির তলায় পচে অ্যামোনিয়া গ্যাস সৃষ্টি করে মাছের মৃত্যু ডেকে আনতে পারে।',
-      'tips': 'সপ্তাহে অন্তত একদিন সকালে পুকুরে নতুন গভীর নলকূপের হালকা গরম পানি সরবরাহ করুন। সকালের দিকে জাল টেনে গ্যাস বের করে দেওয়া অত্যন্ত উপকারী।',
-      'imageUrl': 'https://images.unsplash.com/photo-1498084393756-2383789bd031?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -154,7 +70,7 @@ class _FishFarmingScreenState extends State<FishFarmingScreen> {
   }
 
   void _showFishDetailModal(BuildContext context, Map<String, dynamic> data) {
-    final title = (data['title'] ?? data['name'] ?? 'মৎস চাষের তথ্য').toString();
+    final title = (data['title'] ?? data['name'] ?? 'মৎস্য চাষের তথ্য').toString();
     final category = (data['category'] ?? 'অন্যান্য').toString();
     final species = (data['species'] ?? data['breed'] ?? data['type'] ?? 'উল্লেখ নেই').toString();
     final highlights = (data['highlights'] ?? 'জরুরি লক্ষণ বা বৈশিষ্ট্য').toString();
@@ -380,7 +296,7 @@ class _FishFarmingScreenState extends State<FishFarmingScreen> {
         title: Column(
           children: [
             const Text(
-              'মৎস চাষ',
+              'মৎস্য চাষ',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 17.5,
@@ -565,31 +481,24 @@ class _FishFarmingScreenState extends State<FishFarmingScreen> {
     );
   }
 
-  /// মাছ চাষের কার্ড তালিকা বিল্ডার
+  /// মাছ চাষের কার্ড তালিকা বিল্ডার (শুধুমাত্র Firestore লাইভ ডেটা, কোনো ডেমো ডেটা নেই)
   Widget _buildFishList(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(
         child: PremiumLoadingWidget(
-          title: 'মৎস চাষের তথ্য লোড হচ্ছে...',
+          title: 'মৎস্য চাষের তথ্য লোড হচ্ছে...',
           subtitle: 'অনুগ্রহ করে অপেক্ষা করুন',
         ),
       );
     }
 
-    // ফায়ারস্টোর ডেটা
+    // ফায়ারস্টোর লাইভ ডেটা
     final firestoreDocs = snapshot.data?.docs ?? [];
-    List<Map<String, dynamic>> items = [];
-
-    if (firestoreDocs.isNotEmpty) {
-      items = firestoreDocs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
-      }).toList();
-    } else {
-      // ফায়ারস্টোর ফাঁকা থাকলে অফলাইন ফলব্যাক ডেটা
-      items = List.from(_defaultFishData);
-    }
+    List<Map<String, dynamic>> items = firestoreDocs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
 
     // ক্যাটাগরি ফিল্টারিং
     if (_selectedCategory != 'সব') {
@@ -601,49 +510,58 @@ class _FishFarmingScreenState extends State<FishFarmingScreen> {
       }).toList();
     }
 
+    // লাইভ ডেটা না থাকলে ক্লিন এম্পটি স্টেট মেসেজ
     if (items.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 65,
-              height: 65,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F7FA),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.set_meal_outlined, size: 30, color: Color(0xFF00838F)),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'কোনো তথ্য পাওয়া যায়নি',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF263238),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'অন্য কোনো ক্যাটাগরি নির্বাচন করুন',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            ),
-            if (_selectedCategory != 'সব') ...[
-              const SizedBox(height: 14),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00838F),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 65,
+                height: 65,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE0F7FA),
+                  shape: BoxShape.circle,
                 ),
-                onPressed: () => setState(() => _selectedCategory = 'সব'),
-                icon: const Icon(Icons.rotate_right_rounded, size: 16),
-                label: const Text('সকল তথ্য দেখুন', style: TextStyle(fontSize: 12.5)),
+                child: const Icon(Icons.set_meal_outlined, size: 30, color: Color(0xFF00838F)),
               ),
+              const SizedBox(height: 14),
+              const Text(
+                'এখনো কোনো মৎস্য চাষের তথ্য যুক্ত করা হয়নি',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF263238),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _selectedCategory != 'সব'
+                    ? 'অন্য কোনো ক্যাটাগরি নির্বাচন করুন'
+                    : 'শীঘ্রই অ্যাডমিন প্যানেল থেকে তথ্য যুক্ত করা হবে',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
+              ),
+              if (_selectedCategory != 'সব') ...[
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00838F),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                  ),
+                  onPressed: () => setState(() => _selectedCategory = 'সব'),
+                  icon: const Icon(Icons.rotate_right_rounded, size: 16),
+                  label: const Text('সকল তথ্য দেখুন', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       );
     }
