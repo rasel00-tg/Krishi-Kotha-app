@@ -3836,14 +3836,14 @@
       </div>
 
       <!-- Single Primary Modern Colorful Add Reminder Button (Fixed Bottom Area) -->
-      <div style="padding: 12px 16px; background: #ffffff; border-top: 1px solid #E8F5E9; box-shadow: 0 -4px 16px rgba(0,0,0,0.06); flex-shrink: 0; z-index: 10;">
+      <div style="padding: 12px 16px; background: #ffffff; border-top: 1px solid #E8F5E9; box-shadow: 0 -4px 16px rgba(0,0,0,0.06); flex-shrink: 0; z-index: 100020; position: relative; pointer-events: auto !important;">
         <button type="button" onclick="checkAuthAndOpenReminderModal()"
-          style="width: 100%; height: 54px; border: none; border-radius: 16px; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); color: #ffffff; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(46,125,50,0.35); transition: transform 0.15s ease, box-shadow 0.15s ease;"
+          style="width: 100%; height: 54px; border: none; border-radius: 16px; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); color: #ffffff; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(46,125,50,0.35); pointer-events: auto !important; position: relative; z-index: 100021 !important; transition: transform 0.15s ease, box-shadow 0.15s ease;"
           onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onmouseleave="this.style.transform='scale(1)'">
-          <span style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+          <span style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 15px; pointer-events: none;">
             <i class="fa-solid fa-plus"></i>
           </span>
-          <span>নতুন রিমাইন্ডার যোগ করুন</span>
+          <span style="pointer-events: none;">নতুন রিমাইন্ডার যোগ করুন</span>
         </button>
       </div>
     </div>
@@ -6523,16 +6523,31 @@
         </div>
       </div>
 
+      <!-- Custom Date & Time Picker Triggers -->
       <div style="display: flex; gap: 10px; margin-bottom: 14px;">
         <div style="flex: 1;">
           <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">তারিখ নির্বাচন *</label>
-          <input type="date" id="agriReminderInputDate"
-            style="width: 100%; padding: 10px 12px; border: 1px solid #CCC; border-radius: 12px; font-size: 13px; outline: none; box-sizing: border-box; pointer-events: auto !important; cursor: pointer;" />
+          <div onclick="openCustomDatePicker()"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1.5px solid #C8E6C9; background: #F1F8E9; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-sizing: border-box; pointer-events: auto !important;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="fa-regular fa-calendar-days" style="color: #2E7D32; font-size: 16px;"></i>
+              <span id="agriReminderDisplayDate" style="font-size: 13px; font-weight: 700; color: #1B5E20;">24 Nov 2026</span>
+            </div>
+            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: #2E7D32;"></i>
+          </div>
+          <input type="hidden" id="agriReminderInputDate" value="" />
         </div>
         <div style="flex: 1;">
           <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">সময় নির্বাচন *</label>
-          <input type="time" id="agriReminderInputTime"
-            style="width: 100%; padding: 10px 12px; border: 1px solid #CCC; border-radius: 12px; font-size: 13px; outline: none; box-sizing: border-box; pointer-events: auto !important; cursor: pointer;" />
+          <div onclick="openCustomTimePicker()"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1.5px solid #C8E6C9; background: #F1F8E9; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-sizing: border-box; pointer-events: auto !important;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="fa-regular fa-clock" style="color: #2E7D32; font-size: 16px;"></i>
+              <span id="agriReminderDisplayTime" style="font-size: 13px; font-weight: 700; color: #1B5E20;">07:30 AM</span>
+            </div>
+            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: #2E7D32;"></i>
+          </div>
+          <input type="hidden" id="agriReminderInputTime" value="" />
         </div>
       </div>
 
@@ -6547,6 +6562,174 @@
         <i class="fa-solid fa-check"></i>
         <span>রিমাইন্ডার সংরক্ষণ করুন</span>
       </button>
+    </div>
+  </div>
+
+  <!-- CUSTOM MASTER DATE PICKER POPUP (Z-INDEX: 50000) -->
+  <div id="agriCustomDatePickerModal" class="modal-overlay" onclick="closeCustomDatePicker()"
+    style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 50000 !important; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; pointer-events: none;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="background: #ffffff; width: 100%; max-width: 380px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); pointer-events: auto !important; position: relative; z-index: 50001 !important; display: flex; flex-direction: column; animation: popIn 0.2s ease-out; box-sizing: border-box;">
+      
+      <!-- Top Colored Header -->
+      <div style="background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); padding: 18px 20px; color: #ffffff;">
+        <span style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.85); font-weight: 600;">তারিখ নির্বাচন করুন</span>
+        <div id="customDatePickerHeaderDate" style="font-size: 22px; font-weight: 800; margin-top: 4px; letter-spacing: -0.3px;">24 Nov 2026, Tue</div>
+      </div>
+
+      <div style="padding: 16px 18px 18px 18px;">
+        <!-- Quick Select Chips: আজ, আগামীকাল, ৩ দিন পর, ৭ দিন পর -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px;">
+          <button type="button" onclick="quickSelectDate(0)"
+            style="padding: 6px 12px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            আজ
+          </button>
+          <button type="button" onclick="quickSelectDate(1)"
+            style="padding: 6px 12px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            আগামীকাল
+          </button>
+          <button type="button" onclick="quickSelectDate(3)"
+            style="padding: 6px 12px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            ৩ দিন পর
+          </button>
+          <button type="button" onclick="quickSelectDate(7)"
+            style="padding: 6px 12px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            ৭ দিন পর
+          </button>
+        </div>
+
+        <!-- Month & Year Navigator -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <button type="button" onclick="changeCustomDatePickerMonth(-1)"
+            style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #F1F8E9; color: #1B5E20; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span id="customDatePickerMonthYear" style="font-size: 15px; font-weight: 800; color: #1B5E20;">November 2026</span>
+          <button type="button" onclick="changeCustomDatePickerMonth(1)"
+            style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #F1F8E9; color: #1B5E20; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Weekdays Header (শনি, রবি, সোম, মঙ্গল, বুধ, বৃহঃ, শুক্র) -->
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 700; color: #78909C; margin-bottom: 6px;">
+          <span>শনি</span><span>রবি</span><span>সোম</span><span>মঙ্গল</span><span>বুধ</span><span>বৃহঃ</span><span>শুক্র</span>
+        </div>
+
+        <!-- Days Grid -->
+        <div id="customDatePickerDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 16px;">
+          <!-- Dynamically Rendered -->
+        </div>
+
+        <!-- Bottom Action Buttons: বাতিল ও নিশ্চিত করুন -->
+        <div style="display: flex; gap: 10px;">
+          <button type="button" onclick="closeCustomDatePicker()"
+            style="flex: 1; height: 42px; border-radius: 12px; border: 1.5px solid #CFD8DC; background: #ECEFF1; color: #546E7A; font-size: 14px; font-weight: 700; cursor: pointer;">
+            বাতিল
+          </button>
+          <button type="button" onclick="confirmCustomDatePicker()"
+            style="flex: 1.4; height: 42px; border-radius: 12px; border: none; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); color: #ffffff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.3);">
+            নিশ্চিত করুন
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM MASTER TIME / TIMER PICKER POPUP (Z-INDEX: 50000) -->
+  <div id="agriCustomTimePickerModal" class="modal-overlay" onclick="closeCustomTimePicker()"
+    style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 50000 !important; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; pointer-events: none;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="background: #ffffff; width: 100%; max-width: 380px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); pointer-events: auto !important; position: relative; z-index: 50001 !important; display: flex; flex-direction: column; animation: popIn 0.2s ease-out; box-sizing: border-box;">
+      
+      <!-- Top Colored Header with Big Digital Clock Display -->
+      <div style="background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); padding: 18px 20px; color: #ffffff; text-align: center;">
+        <span style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.85); font-weight: 600;">সময় নির্বাচন করুন</span>
+        <div id="customTimePickerDigitalDisplay" style="font-size: 34px; font-weight: 800; font-family: monospace, sans-serif; letter-spacing: 2px; margin-top: 4px;">07 : 30 AM</div>
+      </div>
+
+      <div style="padding: 16px 18px 18px 18px;">
+        <!-- Quick Preset Chips: ভোর 06:00, সকাল 08:00, দুপুর 12:00, বিকাল 04:00, সন্ধ্যা 07:00 -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;">
+          <button type="button" onclick="quickSelectTime(6, 0, 'AM')"
+            style="padding: 5px 10px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            ভোর 06:00
+          </button>
+          <button type="button" onclick="quickSelectTime(8, 0, 'AM')"
+            style="padding: 5px 10px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            সকাল 08:00
+          </button>
+          <button type="button" onclick="quickSelectTime(12, 0, 'PM')"
+            style="padding: 5px 10px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            দুপুর 12:00
+          </button>
+          <button type="button" onclick="quickSelectTime(4, 0, 'PM')"
+            style="padding: 5px 10px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            বিকাল 04:00
+          </button>
+          <button type="button" onclick="quickSelectTime(7, 0, 'PM')"
+            style="padding: 5px 10px; border-radius: 20px; border: 1px solid #C8E6C9; background: #F1F8E9; color: #1B5E20; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+            সন্ধ্যা 07:00
+          </button>
+        </div>
+
+        <!-- Interactive Stepper: Hours, Minutes, and AM/PM Toggle -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; background: #F7FAF7; border-radius: 18px; padding: 14px 12px; margin-bottom: 14px; border: 1px solid #E8F5E9;">
+          <!-- Hours Column -->
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button type="button" onclick="adjustCustomTimeHour(1)"
+              style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">+</button>
+            <span id="customTimeHourDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace;">07</span>
+            <button type="button" onclick="adjustCustomTimeHour(-1)"
+              style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">-</button>
+            <span style="font-size: 11px; color: #78909C; font-weight: 600; margin-top: 4px;">ঘণ্টা</span>
+          </div>
+
+          <div style="font-size: 26px; font-weight: 800; color: #1B5E20; margin-bottom: 18px;">:</div>
+
+          <!-- Minutes Column -->
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button type="button" onclick="adjustCustomTimeMinute(5)"
+              style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">+</button>
+            <span id="customTimeMinuteDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace;">30</span>
+            <button type="button" onclick="adjustCustomTimeMinute(-5)"
+              style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">-</button>
+            <span style="font-size: 11px; color: #78909C; font-weight: 600; margin-top: 4px;">মিনিট</span>
+          </div>
+
+          <!-- AM/PM Toggle Column -->
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 6px;">
+            <button type="button" id="customTimeAmBtn" onclick="setCustomTimePeriod('AM')"
+              style="padding: 7px 12px; border-radius: 10px; border: none; background: #2E7D32; color: #ffffff; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: all 0.2s;">AM</button>
+            <button type="button" id="customTimePmBtn" onclick="setCustomTimePeriod('PM')"
+              style="padding: 7px 12px; border-radius: 10px; border: 1px solid #CCC; background: #FFFFFF; color: #666666; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: all 0.2s;">PM</button>
+          </div>
+        </div>
+
+        <!-- Quick Minute Chips: 00, 15, 30, 45 -->
+        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 16px;">
+          <button type="button" onclick="setCustomTimeMinute(0)"
+            style="flex: 1; padding: 5px 0; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #455A64; font-size: 12px; font-weight: 700; cursor: pointer;">:00</button>
+          <button type="button" onclick="setCustomTimeMinute(15)"
+            style="flex: 1; padding: 5px 0; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #455A64; font-size: 12px; font-weight: 700; cursor: pointer;">:15</button>
+          <button type="button" onclick="setCustomTimeMinute(30)"
+            style="flex: 1; padding: 5px 0; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #455A64; font-size: 12px; font-weight: 700; cursor: pointer;">:30</button>
+          <button type="button" onclick="setCustomTimeMinute(45)"
+            style="flex: 1; padding: 5px 0; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #455A64; font-size: 12px; font-weight: 700; cursor: pointer;">:45</button>
+        </div>
+
+        <!-- Bottom Action Buttons: বাতিল ও সময় সেট করুন -->
+        <div style="display: flex; gap: 10px;">
+          <button type="button" onclick="closeCustomTimePicker()"
+            style="flex: 1; height: 42px; border-radius: 12px; border: 1.5px solid #CFD8DC; background: #ECEFF1; color: #546E7A; font-size: 14px; font-weight: 700; cursor: pointer;">
+            বাতিল
+          </button>
+          <button type="button" onclick="confirmCustomTimePicker()"
+            style="flex: 1.4; height: 42px; border-radius: 12px; border: none; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); color: #ffffff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.3);">
+            সময় সেট করুন
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -22928,6 +23111,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.style.pointerEvents = 'auto';
         window.history.pushState({ page: 'agriReminder' }, '');
       }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
       initWebAgriReminderLiveSync();
     }
 
@@ -22938,7 +23123,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.style.display = 'none';
         page.style.pointerEvents = 'none';
       }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
       closeAgriReminderFormModal();
+      closeCustomDatePicker();
+      closeCustomTimePicker();
       if (webAgriReminderUnsub) {
         try { webAgriReminderUnsub(); } catch (_) {}
         webAgriReminderUnsub = null;
@@ -23238,9 +23427,19 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const da = String(defaultDate.getDate()).padStart(2, '0');
       if (dateInput) dateInput.value = `${yr}-${mo}-${da}`;
 
+      const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dispDate = document.getElementById('agriReminderDisplayDate');
+      if (dispDate) dispDate.textContent = `${da} ${monthNamesShort[defaultDate.getMonth()]} ${yr}`;
+
       const hr = String(defaultDate.getHours()).padStart(2, '0');
       const mi = String(defaultDate.getMinutes()).padStart(2, '0');
       if (timeInput) timeInput.value = `${hr}:${mi}`;
+
+      let h12 = defaultDate.getHours();
+      const period = h12 >= 12 ? 'PM' : 'AM';
+      h12 = h12 % 12 || 12;
+      const dispTime = document.getElementById('agriReminderDisplayTime');
+      if (dispTime) dispTime.textContent = `${String(h12).padStart(2, '0')}:${mi} ${period}`;
 
       const rType = targetDoc ? targetDoc.reminderType : 'temporary';
       const rInterval = targetDoc ? targetDoc.repeatInterval : 'none';
@@ -23477,6 +23676,297 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       webAgriReminderList = [];
     }
+
+    // ==========================================
+    // CUSTOM MASTER DATE PICKER POPUP LOGIC
+    // ==========================================
+    const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthNamesEnShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayNamesEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    let customPickerSelectedDate = new Date();
+    let customPickerViewYear = customPickerSelectedDate.getFullYear();
+    let customPickerViewMonth = customPickerSelectedDate.getMonth();
+
+    function openCustomDatePicker() {
+      const curVal = document.getElementById('agriReminderInputDate')?.value;
+      if (curVal) {
+        const parts = curVal.split('-');
+        if (parts.length === 3) {
+          customPickerSelectedDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+      } else {
+        customPickerSelectedDate = new Date();
+      }
+      customPickerViewYear = customPickerSelectedDate.getFullYear();
+      customPickerViewMonth = customPickerSelectedDate.getMonth();
+      renderCustomCalendar();
+
+      const modal = document.getElementById('agriCustomDatePickerModal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function closeCustomDatePicker() {
+      const modal = document.getElementById('agriCustomDatePickerModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
+    function changeCustomDatePickerMonth(offset) {
+      customPickerViewMonth += offset;
+      if (customPickerViewMonth < 0) {
+        customPickerViewMonth = 11;
+        customPickerViewYear -= 1;
+      } else if (customPickerViewMonth > 11) {
+        customPickerViewMonth = 0;
+        customPickerViewYear += 1;
+      }
+      renderCustomCalendar();
+    }
+
+    function quickSelectDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      customPickerSelectedDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      customPickerViewYear = customPickerSelectedDate.getFullYear();
+      customPickerViewMonth = customPickerSelectedDate.getMonth();
+      renderCustomCalendar();
+    }
+
+    function selectCalendarDate(yr, mo, da) {
+      customPickerSelectedDate = new Date(yr, mo, da);
+      renderCustomCalendar();
+    }
+
+    function renderCustomCalendar() {
+      const hdrEl = document.getElementById('customDatePickerHeaderDate');
+      if (hdrEl) {
+        const dNum = String(customPickerSelectedDate.getDate()).padStart(2, '0');
+        const mStr = monthNamesEnShort[customPickerSelectedDate.getMonth()];
+        const yNum = customPickerSelectedDate.getFullYear();
+        const dayStr = dayNamesEn[customPickerSelectedDate.getDay()];
+        hdrEl.textContent = `${dNum} ${mStr} ${yNum}, ${dayStr}`;
+      }
+
+      const myEl = document.getElementById('customDatePickerMonthYear');
+      if (myEl) {
+        myEl.textContent = `${monthNamesEn[customPickerViewMonth]} ${customPickerViewYear}`;
+      }
+
+      const gridEl = document.getElementById('customDatePickerDaysGrid');
+      if (!gridEl) return;
+
+      const firstDay = new Date(customPickerViewYear, customPickerViewMonth, 1);
+      // Week starts Saturday: Saturday=0, Sunday=1, ..., Friday=6
+      const startCol = (firstDay.getDay() + 1) % 7;
+      const totalDays = new Date(customPickerViewYear, customPickerViewMonth + 1, 0).getDate();
+
+      const today = new Date();
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+      let html = '';
+      for (let i = 0; i < startCol; i++) {
+        html += '<div style="height: 36px;"></div>';
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const thisDateTime = new Date(customPickerViewYear, customPickerViewMonth, day).getTime();
+        const isPast = thisDateTime < todayStart;
+        const isSelected = customPickerSelectedDate.getFullYear() === customPickerViewYear &&
+                           customPickerSelectedDate.getMonth() === customPickerViewMonth &&
+                           customPickerSelectedDate.getDate() === day;
+        const isToday = today.getFullYear() === customPickerViewYear &&
+                        today.getMonth() === customPickerViewMonth &&
+                        today.getDate() === day;
+
+        if (isPast) {
+          html += `<div style="height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #B0BEC5; opacity: 0.45; cursor: not-allowed; border-radius: 50%; user-select: none;">${day}</div>`;
+        } else if (isSelected) {
+          html += `<div onclick="selectCalendarDate(${customPickerViewYear}, ${customPickerViewMonth}, ${day})"
+            style="height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 800; background: linear-gradient(135deg, #1B5E20, #00897B); color: #ffffff; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(27,94,32,0.35); user-select: none;">${day}</div>`;
+        } else if (isToday) {
+          html += `<div onclick="selectCalendarDate(${customPickerViewYear}, ${customPickerViewMonth}, ${day})"
+            style="height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; border: 1.5px solid #2E7D32; color: #1B5E20; background: #F1F8E9; border-radius: 50%; cursor: pointer; user-select: none;">${day}</div>`;
+        } else {
+          html += `<div onclick="selectCalendarDate(${customPickerViewYear}, ${customPickerViewMonth}, ${day})"
+            style="height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #263238; border-radius: 50%; cursor: pointer; transition: background 0.15s; user-select: none;"
+            onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='transparent'">${day}</div>`;
+        }
+      }
+
+      gridEl.innerHTML = html;
+    }
+
+    function confirmCustomDatePicker() {
+      const yr = customPickerSelectedDate.getFullYear();
+      const mo = String(customPickerSelectedDate.getMonth() + 1).padStart(2, '0');
+      const da = String(customPickerSelectedDate.getDate()).padStart(2, '0');
+
+      const dateInput = document.getElementById('agriReminderInputDate');
+      if (dateInput) dateInput.value = `${yr}-${mo}-${da}`;
+
+      const dispDate = document.getElementById('agriReminderDisplayDate');
+      if (dispDate) dispDate.textContent = `${da} ${monthNamesEnShort[customPickerSelectedDate.getMonth()]} ${yr}`;
+
+      closeCustomDatePicker();
+    }
+
+    // ==========================================
+    // CUSTOM MASTER TIME PICKER POPUP LOGIC
+    // ==========================================
+    let customPickerHour = 7;
+    let customPickerMinute = 30;
+    let customPickerPeriod = 'AM';
+
+    function openCustomTimePicker() {
+      const curTime = document.getElementById('agriReminderInputTime')?.value;
+      if (curTime && curTime.includes(':')) {
+        const parts = curTime.split(':');
+        let h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        if (!isNaN(h) && !isNaN(m)) {
+          customPickerPeriod = h >= 12 ? 'PM' : 'AM';
+          customPickerHour = h % 12 || 12;
+          customPickerMinute = m;
+        }
+      } else {
+        const d = new Date();
+        d.setHours(d.getHours() + 1);
+        let h = d.getHours();
+        customPickerPeriod = h >= 12 ? 'PM' : 'AM';
+        customPickerHour = h % 12 || 12;
+        customPickerMinute = Math.floor(d.getMinutes() / 5) * 5;
+      }
+
+      updateCustomTimePickerUI();
+
+      const modal = document.getElementById('agriCustomTimePickerModal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function closeCustomTimePicker() {
+      const modal = document.getElementById('agriCustomTimePickerModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
+    function adjustCustomTimeHour(step) {
+      customPickerHour += step;
+      if (customPickerHour > 12) customPickerHour = 1;
+      if (customPickerHour < 1) customPickerHour = 12;
+      updateCustomTimePickerUI();
+    }
+
+    function adjustCustomTimeMinute(step) {
+      customPickerMinute += step;
+      if (customPickerMinute >= 60) customPickerMinute -= 60;
+      if (customPickerMinute < 0) customPickerMinute += 60;
+      updateCustomTimePickerUI();
+    }
+
+    function setCustomTimeMinute(min) {
+      customPickerMinute = min;
+      updateCustomTimePickerUI();
+    }
+
+    function setCustomTimePeriod(period) {
+      customPickerPeriod = period;
+      updateCustomTimePickerUI();
+    }
+
+    function quickSelectTime(hr, min, period) {
+      customPickerHour = hr;
+      customPickerMinute = min;
+      customPickerPeriod = period;
+      updateCustomTimePickerUI();
+    }
+
+    function updateCustomTimePickerUI() {
+      const hStr = String(customPickerHour).padStart(2, '0');
+      const mStr = String(customPickerMinute).padStart(2, '0');
+
+      const digEl = document.getElementById('customTimePickerDigitalDisplay');
+      if (digEl) digEl.textContent = `${hStr} : ${mStr} ${customPickerPeriod}`;
+
+      const hEl = document.getElementById('customTimeHourDisplay');
+      if (hEl) hEl.textContent = hStr;
+
+      const mEl = document.getElementById('customTimeMinuteDisplay');
+      if (mEl) mEl.textContent = mStr;
+
+      const amBtn = document.getElementById('customTimeAmBtn');
+      const pmBtn = document.getElementById('customTimePmBtn');
+      if (amBtn && pmBtn) {
+        if (customPickerPeriod === 'AM') {
+          amBtn.style.background = '#2E7D32';
+          amBtn.style.color = '#ffffff';
+          amBtn.style.border = 'none';
+          pmBtn.style.background = '#FFFFFF';
+          pmBtn.style.color = '#666666';
+          pmBtn.style.border = '1px solid #CCC';
+        } else {
+          pmBtn.style.background = '#2E7D32';
+          pmBtn.style.color = '#ffffff';
+          pmBtn.style.border = 'none';
+          amBtn.style.background = '#FFFFFF';
+          amBtn.style.color = '#666666';
+          amBtn.style.border = '1px solid #CCC';
+        }
+      }
+    }
+
+    function confirmCustomTimePicker() {
+      let h24 = customPickerHour % 12;
+      if (customPickerPeriod === 'PM') h24 += 12;
+      const h24Str = String(h24).padStart(2, '0');
+      const mStr = String(customPickerMinute).padStart(2, '0');
+
+      const timeInput = document.getElementById('agriReminderInputTime');
+      if (timeInput) timeInput.value = `${h24Str}:${mStr}`;
+
+      const dispTime = document.getElementById('agriReminderDisplayTime');
+      if (dispTime) dispTime.textContent = `${String(customPickerHour).padStart(2, '0')}:${mStr} ${customPickerPeriod}`;
+
+      closeCustomTimePicker();
+    }
+
+    // Expose functions globally to window for reliable inline execution
+    window.openAgriReminderPage = openAgriReminderPage;
+    window.closeAgriReminderPage = closeAgriReminderPage;
+    window.checkAuthAndOpenReminderModal = checkAuthAndOpenReminderModal;
+    window.openAgriReminderFormModal = openAgriReminderFormModal;
+    window.closeAgriReminderFormModal = closeAgriReminderFormModal;
+    window.selectAgriReminderType = selectAgriReminderType;
+    window.selectAgriReminderInterval = selectAgriReminderInterval;
+    window.saveAgriReminderFromModal = saveAgriReminderFromModal;
+    window.toggleAgriReminderStatus = toggleAgriReminderStatus;
+    window.deleteAgriReminder = deleteAgriReminder;
+
+    window.openCustomDatePicker = openCustomDatePicker;
+    window.closeCustomDatePicker = closeCustomDatePicker;
+    window.changeCustomDatePickerMonth = changeCustomDatePickerMonth;
+    window.quickSelectDate = quickSelectDate;
+    window.selectCalendarDate = selectCalendarDate;
+    window.confirmCustomDatePicker = confirmCustomDatePicker;
+
+    window.openCustomTimePicker = openCustomTimePicker;
+    window.closeCustomTimePicker = closeCustomTimePicker;
+    window.adjustCustomTimeHour = adjustCustomTimeHour;
+    window.adjustCustomTimeMinute = adjustCustomTimeMinute;
+    window.setCustomTimeMinute = setCustomTimeMinute;
+    window.setCustomTimePeriod = setCustomTimePeriod;
+    window.quickSelectTime = quickSelectTime;
+    window.confirmCustomTimePicker = confirmCustomTimePicker;
 
   </script>
 </body>

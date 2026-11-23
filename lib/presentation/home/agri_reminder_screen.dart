@@ -594,14 +594,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               const SizedBox(height: 6),
                               InkWell(
                                 onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    useRootNavigator: true,
-                                    initialDate: selectedDate,
-                                    firstDate: DateTime.now().subtract(
-                                        const Duration(days: 1)),
-                                    lastDate: DateTime.now()
-                                        .add(const Duration(days: 365)),
+                                  final picked = await _showCustomDatePickerPopup(
+                                    context,
+                                    selectedDate,
                                   );
                                   if (picked != null) {
                                     setModalState(() {
@@ -657,10 +652,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               const SizedBox(height: 6),
                               InkWell(
                                 onTap: () async {
-                                  final picked = await showTimePicker(
-                                    context: context,
-                                    useRootNavigator: true,
-                                    initialTime: selectedTime,
+                                  final picked = await _showCustomTimePickerPopup(
+                                    context,
+                                    selectedTime,
                                   );
                                   if (picked != null) {
                                     setModalState(() {
@@ -943,6 +937,840 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
         );
       }
     }
+  }
+
+  // ==========================================
+  // CUSTOM MASTER DATE PICKER POPUP
+  // ==========================================
+  Future<DateTime?> _showCustomDatePickerPopup(
+    BuildContext context,
+    DateTime initialDate,
+  ) async {
+    return showDialog<DateTime>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        DateTime selected = initialDate;
+        DateTime displayedMonth = DateTime(initialDate.year, initialDate.month, 1);
+
+        return StatefulBuilder(
+          builder: (context, setPopupState) {
+            final monthNames = [
+              'January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            final weekDays = ['শনি', 'রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র'];
+
+            final dNum = selected.day.toString().padLeft(2, '0');
+            final mShort = DateFormat('MMM').format(selected);
+            final dayShort = DateFormat('EEE').format(selected);
+            final headerText = '$dNum $mShort ${selected.year}, $dayShort';
+
+            final firstDayOfMonth = DateTime(displayedMonth.year, displayedMonth.month, 1);
+            // Saturday is column 0.
+            final startCol = (firstDayOfMonth.weekday == DateTime.saturday)
+                ? 0
+                : (firstDayOfMonth.weekday == DateTime.sunday ? 1 : firstDayOfMonth.weekday + 1);
+
+            final daysInMonth = DateTime(displayedMonth.year, displayedMonth.month + 1, 0).day;
+            final today = DateTime.now();
+            final todayDateOnly = DateTime(today.year, today.month, today.day);
+
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 380),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF00897B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'তারিখ নির্বাচন করুন',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                letterSpacing: 0.8,
+                                color: Colors.white.withOpacity(0.85),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              headerText,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Quick Select Chips
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _quickDateChip('আজ', () {
+                                    setPopupState(() {
+                                      selected = DateTime.now();
+                                      displayedMonth = DateTime(selected.year, selected.month, 1);
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickDateChip('আগামীকাল', () {
+                                    setPopupState(() {
+                                      selected = DateTime.now().add(const Duration(days: 1));
+                                      displayedMonth = DateTime(selected.year, selected.month, 1);
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickDateChip('৩ দিন পর', () {
+                                    setPopupState(() {
+                                      selected = DateTime.now().add(const Duration(days: 3));
+                                      displayedMonth = DateTime(selected.year, selected.month, 1);
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickDateChip('৭ দিন পর', () {
+                                    setPopupState(() {
+                                      selected = DateTime.now().add(const Duration(days: 7));
+                                      displayedMonth = DateTime(selected.year, selected.month, 1);
+                                    });
+                                  }),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Month & Year Navigator
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_left, color: Color(0xFF1B5E20)),
+                                  onPressed: () {
+                                    setPopupState(() {
+                                      displayedMonth = DateTime(displayedMonth.year, displayedMonth.month - 1, 1);
+                                    });
+                                  },
+                                ),
+                                Text(
+                                  '${monthNames[displayedMonth.month - 1]} ${displayedMonth.year}',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF1B5E20),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.chevron_right, color: Color(0xFF1B5E20)),
+                                  onPressed: () {
+                                    setPopupState(() {
+                                      displayedMonth = DateTime(displayedMonth.year, displayedMonth.month + 1, 1);
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+
+                            // Weekday Row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: weekDays.map((d) {
+                                return Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      d,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF78909C),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Calendar Grid
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 7,
+                                mainAxisSpacing: 4,
+                                crossAxisSpacing: 4,
+                              ),
+                              itemCount: startCol + daysInMonth,
+                              itemBuilder: (context, index) {
+                                if (index < startCol) {
+                                  return const SizedBox.shrink();
+                                }
+                                final day = index - startCol + 1;
+                                final cellDate = DateTime(displayedMonth.year, displayedMonth.month, day);
+                                final isPast = cellDate.isBefore(todayDateOnly);
+                                final isSelected = selected.year == cellDate.year &&
+                                    selected.month == cellDate.month &&
+                                    selected.day == cellDate.day;
+                                final isToday = today.year == cellDate.year &&
+                                    today.month == cellDate.month &&
+                                    today.day == cellDate.day;
+
+                                if (isPast) {
+                                  return Center(
+                                    child: Text(
+                                      '$day',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.blueGrey.shade200,
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                if (isSelected) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFF1B5E20), Color(0xFF00897B)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Color(0x551B5E20),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '$day',
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                if (isToday) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setPopupState(() => selected = cellDate);
+                                    },
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: const Color(0xFFF1F8E9),
+                                        border: Border.all(color: const Color(0xFF2E7D32), width: 1.5),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '$day',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF1B5E20),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                return InkWell(
+                                  onTap: () {
+                                    setPopupState(() => selected = cellDate);
+                                  },
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Center(
+                                    child: Text(
+                                      '$day',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF263238),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Actions
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 42,
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFECEFF1),
+                                        side: const BorderSide(color: Color(0xFFCFD8DC), width: 1.5),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      onPressed: () => Navigator.pop(dialogContext, null),
+                                      child: const Text(
+                                        'বাতিল',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF546E7A),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  flex: 1,
+                                  child: SizedBox(
+                                    height: 42,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2E7D32),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        elevation: 2,
+                                      ),
+                                      onPressed: () => Navigator.pop(dialogContext, selected),
+                                      child: const Text(
+                                        'নিশ্চিত করুন',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _quickDateChip(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F8E9),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFC8E6C9)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1B5E20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // CUSTOM MASTER TIME PICKER POPUP
+  // ==========================================
+  Future<TimeOfDay?> _showCustomTimePickerPopup(
+    BuildContext context,
+    TimeOfDay initialTime,
+  ) async {
+    return showDialog<TimeOfDay>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        int hour = initialTime.hourOfPeriod == 0 ? 12 : initialTime.hourOfPeriod;
+        int minute = initialTime.minute;
+        DayPeriod period = initialTime.period;
+
+        return StatefulBuilder(
+          builder: (context, setPopupState) {
+            final hStr = hour.toString().padLeft(2, '0');
+            final mStr = minute.toString().padLeft(2, '0');
+            final pStr = period == DayPeriod.am ? 'AM' : 'PM';
+
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 380),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with Digital Display
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF00897B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'সময় নির্বাচন করুন',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                letterSpacing: 0.8,
+                                color: Colors.white.withOpacity(0.85),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$hStr : $mStr $pStr',
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 2,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Quick Presets
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _quickTimeChip('ভোর 06:00', () {
+                                    setPopupState(() {
+                                      hour = 6;
+                                      minute = 0;
+                                      period = DayPeriod.am;
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickTimeChip('সকাল 08:00', () {
+                                    setPopupState(() {
+                                      hour = 8;
+                                      minute = 0;
+                                      period = DayPeriod.am;
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickTimeChip('দুপুর 12:00', () {
+                                    setPopupState(() {
+                                      hour = 12;
+                                      minute = 0;
+                                      period = DayPeriod.pm;
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickTimeChip('বিকাল 04:00', () {
+                                    setPopupState(() {
+                                      hour = 4;
+                                      minute = 0;
+                                      period = DayPeriod.pm;
+                                    });
+                                  }),
+                                  const SizedBox(width: 6),
+                                  _quickTimeChip('সন্ধ্যা 07:00', () {
+                                    setPopupState(() {
+                                      hour = 7;
+                                      minute = 0;
+                                      period = DayPeriod.pm;
+                                    });
+                                  }),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Interactive Steppers
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF7FAF7),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: const Color(0xFFE8F5E9)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Hour Stepper
+                                  Column(
+                                    children: [
+                                      _stepperButton(Icons.add, () {
+                                        setPopupState(() {
+                                          hour = hour >= 12 ? 1 : hour + 1;
+                                        });
+                                      }),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Text(
+                                          hStr,
+                                          style: const TextStyle(
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF1B5E20),
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                      _stepperButton(Icons.remove, () {
+                                        setPopupState(() {
+                                          hour = hour <= 1 ? 12 : hour - 1;
+                                        });
+                                      }),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'ঘণ্টা',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF78909C),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+                                    child: Text(
+                                      ':',
+                                      style: TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF1B5E20),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Minute Stepper
+                                  Column(
+                                    children: [
+                                      _stepperButton(Icons.add, () {
+                                        setPopupState(() {
+                                          minute = (minute + 5) % 60;
+                                        });
+                                      }),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Text(
+                                          mStr,
+                                          style: const TextStyle(
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF1B5E20),
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                      _stepperButton(Icons.remove, () {
+                                        setPopupState(() {
+                                          minute = (minute - 5 < 0) ? 55 : minute - 5;
+                                        });
+                                      }),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'মিনিট',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF78909C),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(width: 14),
+
+                                  // AM/PM Toggle
+                                  Column(
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          setPopupState(() => period = DayPeriod.am);
+                                        },
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: period == DayPeriod.am
+                                                ? const Color(0xFF2E7D32)
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: period == DayPeriod.am
+                                                  ? const Color(0xFF2E7D32)
+                                                  : Colors.grey.shade300,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'AM',
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: period == DayPeriod.am
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      InkWell(
+                                        onTap: () {
+                                          setPopupState(() => period = DayPeriod.pm);
+                                        },
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: period == DayPeriod.pm
+                                                ? const Color(0xFF2E7D32)
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: period == DayPeriod.pm
+                                                  ? const Color(0xFF2E7D32)
+                                                  : Colors.grey.shade300,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'PM',
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: period == DayPeriod.pm
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Quick Minute Chips: :00, :15, :30, :45
+                            Row(
+                              children: [0, 15, 30, 45].map((m) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                                    child: InkWell(
+                                      onTap: () {
+                                        setPopupState(() => minute = m);
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: minute == m ? const Color(0xFFE8F5E9) : Colors.white,
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: minute == m ? const Color(0xFF2E7D32) : const Color(0xFFCFD8DC),
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            ':${m.toString().padLeft(2, '0')}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: minute == m ? const Color(0xFF1B5E20) : const Color(0xFF455A64),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Actions
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 42,
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFECEFF1),
+                                        side: const BorderSide(color: Color(0xFFCFD8DC), width: 1.5),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      onPressed: () => Navigator.pop(dialogContext, null),
+                                      child: const Text(
+                                        'বাতিল',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF546E7A),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 42,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2E7D32),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        elevation: 2,
+                                      ),
+                                      onPressed: () {
+                                        int finalHour = hour % 12;
+                                        if (period == DayPeriod.pm) finalHour += 12;
+                                        Navigator.pop(dialogContext, TimeOfDay(hour: finalHour, minute: minute));
+                                      },
+                                      child: const Text(
+                                        'সময় সেট করুন',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _quickTimeChip(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F8E9),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFC8E6C9)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1B5E20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _stepperButton(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 38,
+        height: 32,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F5E9),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18, color: const Color(0xFF1B5E20)),
+      ),
+    );
   }
 
   Future<void> _deleteReminder(DocumentSnapshot doc) async {
