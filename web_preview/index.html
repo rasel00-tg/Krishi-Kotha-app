@@ -8892,6 +8892,10 @@
       }
       const bNav = document.querySelector('.bottom-nav');
       if (bNav) bNav.style.display = 'flex';
+
+      // Read Optimization: Unsubscribe from seed_information listener
+      unregisterActiveListener('seed_information');
+      webSeedListenerAttached = false;
     }
 
     function renderWebSeedCategories() {
@@ -8956,7 +8960,7 @@
       try {
         if (window.firebase && firebase.firestore) {
           webSeedListenerAttached = true;
-          firebase.firestore().collection('seed_information').onSnapshot((snapshot) => {
+          const unsub = firebase.firestore().collection('seed_information').limit(50).onSnapshot((snapshot) => {
             webSeedLoading = false;
             webSeedData = [];
             snapshot.forEach(doc => {
@@ -8971,6 +8975,7 @@
             webSeedLoading = false;
             loadCachedWebSeeds();
           });
+          registerActiveListener('seed_information', unsub);
         } else {
           loadCachedWebSeeds();
         }
@@ -10604,6 +10609,24 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       switchTab(idx);
     }
 
+
+    /* ==========================================================================
+       CENTRAL FIRESTORE LISTENER REGISTRY & STRICT READ OPTIMIZER
+       ========================================================================== */
+    window.activeFirestoreListeners = window.activeFirestoreListeners || {};
+    function registerActiveListener(name, unsub) {
+      if (typeof window.activeFirestoreListeners[name] === 'function') {
+        try { window.activeFirestoreListeners[name](); } catch (_) { }
+      }
+      window.activeFirestoreListeners[name] = unsub;
+    }
+    function unregisterActiveListener(name) {
+      if (typeof window.activeFirestoreListeners[name] === 'function') {
+        try { window.activeFirestoreListeners[name](); } catch (_) { }
+        delete window.activeFirestoreListeners[name];
+      }
+    }
+
     // Tabs switching (Global Navigation Active)
     function switchTab(index) {
       // Auto-close all full-screen modals & overlay traps so user immediately navigates to clicked tab without any blockage
@@ -10630,12 +10653,23 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (topBar) {
         topBar.style.display = (index === 1 || index === 2 || index === 3 || index === 4) ? 'none' : 'flex';
       }
+      // Read Optimization: Unsubscribe inactive tab listeners when switching
+      if (index !== 1) {
+        unregisterActiveListener('crops');
+        unregisterActiveListener('categories');
+      }
+      if (index !== 2) {
+        unregisterActiveListener('market_prices');
+      }
+
       if (index === 1) {
         if (cropsData && cropsData.length > 0) {
           applyCropsFilter();
         } else {
           fetchCropsViaRest();
         }
+        // Lazy Load: Attach crops & categories realtime sync with limit(50) only on active tab
+        if (typeof initCropsLiveSync === 'function') initCropsLiveSync();
       }
       if (index === 2) {
         const container = document.getElementById('marketPricesContainer');
@@ -10647,6 +10681,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
           fetchMarketViaRest();
         }
+        // Lazy Load: Attach market prices realtime sync with limit(100) only on active tab
+        if (typeof initMarketLiveSync === 'function') initMarketLiveSync();
       }
       if (index === 3) {
         // Tab 3: Fertilizer Calculator (clean inputs preserved)
@@ -13607,6 +13643,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       const bNav = document.querySelector('.bottom-nav');
       if (bNav) bNav.style.display = 'flex';
+
+      // Read Optimization: Unsubscribe from farming_calendar on close
+      unregisterActiveListener('farming_calendar');
     }
 
     function renderCalendarMonthChips() {
@@ -13864,7 +13903,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function initFirestoreCalendarSync() {
       if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
-        db.collection('farming_calendar').onSnapshot(snapshot => {
+        const unsub = db.collection('farming_calendar').limit(100).onSnapshot(snapshot => {
           isCalendarDataLoading = false;
           if (snapshot && !snapshot.empty) {
             const list = [];
@@ -13880,6 +13919,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           isCalendarDataLoading = false;
           renderCalendarCrops();
         });
+        registerActiveListener('farming_calendar', unsub);
       } else {
         setTimeout(() => {
           if (isCalendarDataLoading) {
@@ -15677,6 +15717,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
       const bNav = document.querySelector('.bottom-nav');
       if (bNav) bNav.style.display = 'flex';
+
+      // Read Optimization: Unsubscribe from irrigation crops listener and clear background timer
+      unregisterActiveListener('irrigation_tracker_crops');
+      if (irrigationHourlyTimer) {
+        clearInterval(irrigationHourlyTimer);
+        irrigationHourlyTimer = null;
+      }
     }
 
     function syncIrrigationTopWeatherBanner() {
@@ -15743,8 +15790,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       // Firestore Real-time stream sync (কঠোরভাবে ডেডিকেটেড পাথ: users/{userId}/irrigation_tracker_crops)
       if (window.firebase && firebase.firestore && typeof db !== 'undefined' && db) {
-        db.collection('users').doc(userId).collection('irrigation_tracker_crops')
+        const unsub = db.collection('users').doc(userId).collection('irrigation_tracker_crops')
           .orderBy('createdAt', 'desc')
+          .limit(50)
           .onSnapshot(snapshot => {
             if (getIrrigationUserId() !== userId) {
               irrigationCrops = [];
@@ -15770,6 +15818,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             irrigationCrops = [];
             renderIrrigationCropsList();
           });
+        registerActiveListener('irrigation_tracker_crops', unsub);
       } else {
         irrigationCrops = [];
         renderIrrigationCropsList();
@@ -19725,7 +19774,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (liveFaqsUnsubscribe) {
             try { liveFaqsUnsubscribe(); } catch (_) { }
           }
-          liveFaqsUnsubscribe = db.collection('faqs').onSnapshot(snap => {
+          liveFaqsUnsubscribe = db.collection('faqs').limit(50).onSnapshot(snap => {
             const list = [];
             snap.forEach(doc => {
               const d = doc.data() || {};
@@ -19854,7 +19903,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (directTicketsUnsubscribe) {
             try { directTicketsUnsubscribe(); } catch (_) { }
           }
-          directTicketsUnsubscribe = db.collection('support_tickets').onSnapshot(snap => {
+          directTicketsUnsubscribe = db.collection('support_tickets').limit(50).onSnapshot(snap => {
             const list = [];
             snap.forEach(doc => {
               const d = doc.data() || {};
@@ -20397,7 +20446,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           try { supportTicketsUnsubscribe(); } catch (_) { }
         }
         try {
-          supportTicketsUnsubscribe = db.collection('support_tickets').onSnapshot(snap => {
+          supportTicketsUnsubscribe = db.collection('support_tickets').limit(50).onSnapshot(snap => {
             const list = [];
             snap.forEach(doc => {
               const d = doc.data() || {};
@@ -21001,6 +21050,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         page.classList.add('active');
         window.history.pushState({ page: 'notifications' }, '');
       }
+      // Lazy Load: Attach notifications listener with limit(50) on open
+      if (typeof initNotificationsLiveSync === 'function') initNotificationsLiveSync();
     }
 
     function closeNotificationsPage() {
@@ -21008,6 +21059,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (page && page.classList.contains('active')) {
         page.classList.remove('active');
       }
+      // Read Optimization: Unsubscribe from notifications on close
+      unregisterActiveListener('notifications');
     }
 
     window.addEventListener('popstate', function (e) {
@@ -22127,8 +22180,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // 1. Live Notifications Realtime Sync (Safe direct listening without orderBy to prevent missing index/type hang)
-      db.collection('notifications').onSnapshot(snapshot => {
+      // 1. Core single document listeners (System Control & Popup Notification)
+      // Notifications, Crops, Market, Pests, Support, etc. are lazy-loaded on demand when their tab/modal is opened.
+    }
+
+    /* ==========================================================================
+       LAZY-LOADED FIRESTORE REALTIME SYNC MODULES (WITH STRICT LIMITS)
+       ========================================================================== */
+    function initNotificationsLiveSync() {
+      if (!db) return;
+      const unsub = db.collection('notifications').limit(50).onSnapshot(snapshot => {
         if (!snapshot.empty) {
           const liveList = [];
           snapshot.forEach(doc => {
@@ -22154,15 +22215,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             let rawTime = 0;
             const ts = d.timestamp || d.updatedAt;
             if (ts) {
-              if (ts.toMillis) {
-                rawTime = ts.toMillis();
-              } else if (typeof ts.toDate === 'function') {
-                rawTime = ts.toDate().getTime();
-              } else if (typeof ts === 'string') {
-                rawTime = new Date(ts).getTime() || 0;
-              } else if (typeof ts === 'number') {
-                rawTime = ts;
-              }
+              if (ts.toMillis) rawTime = ts.toMillis();
+              else if (typeof ts.toDate === 'function') rawTime = ts.toDate().getTime();
+              else if (typeof ts === 'string') rawTime = new Date(ts).getTime() || 0;
+              else if (typeof ts === 'number') rawTime = ts;
             }
 
             liveList.push({
@@ -22180,7 +22236,6 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               bgColor: bgColor
             });
           });
-          // Application-level sorting
           liveList.sort((a, b) => b.rawTime - a.rawTime);
           notificationsList = liveList;
           updateNotificationBadge();
@@ -22190,12 +22245,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           updateNotificationBadge();
           renderNotifications();
         }
-      }, err => {
-        console.error("Notifications sync error:", err);
-      });
+      }, err => console.warn("Notifications sync notice:", err));
+      registerActiveListener('notifications', unsub);
+    }
 
-      // 2. Live Crops Realtime Sync (Single Source of Truth)
-      db.collection('crops').onSnapshot(snapshot => {
+    function initCropsLiveSync() {
+      if (!db) return;
+      const unsubCrops = db.collection('crops').limit(50).onSnapshot(snapshot => {
         if (!snapshot.empty) {
           const liveCrops = [];
           snapshot.forEach(doc => {
@@ -22211,13 +22267,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 if (typeof s === 'string') return { name: s, desc: '', irrigation: '', fertilizer: '' };
                 if (typeof s === 'object' && s !== null) {
                   return {
-                    name: (s.title || s.name || s.step || s.stage_name || s.step_name || `ধাপ ${toBangla(idx + 1)}`).toString().trim(),
+                    name: (s.title || s.name || s.step || s.stage_name || s.step_name || 'ধাপ ' + toBangla(idx + 1)).toString().trim(),
                     desc: (s.desc || s.description || s.details || s.step_desc || s.content || '').toString().trim(),
                     irrigation: (s.irrigation || s.water || '').toString().trim(),
                     fertilizer: (s.fertilizer || s.sar || '').toString().trim()
                   };
                 }
-                return { name: `ধাপ ${toBangla(idx + 1)}`, desc: '', irrigation: '', fertilizer: '' };
+                return { name: 'ধাপ ' + toBangla(idx + 1), desc: '', irrigation: '', fertilizer: '' };
               });
             }
 
@@ -22247,7 +22303,6 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               rawTime: rawTime
             });
           });
-          // Sort newest/updated crops to the top
           liveCrops.sort((a, b) => b.rawTime - a.rawTime);
           cropsData = liveCrops;
           renderCropCategoryChips();
@@ -22260,10 +22315,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         console.error("Crops sync error:", err);
         fetchCropsViaRest();
       });
+      registerActiveListener('crops', unsubCrops);
 
-      // 2.1 Live Categories Realtime Discovery
       try {
-        db.collection('categories').onSnapshot(snap => {
+        const unsubCat = db.collection('categories').limit(50).onSnapshot(snap => {
           if (snap && !snap.empty) {
             snap.forEach(doc => {
               const d = doc.data() || {};
@@ -22273,65 +22328,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             renderCropCategoryChips();
           }
         }, err => console.warn("Categories sync note:", err));
+        registerActiveListener('categories', unsubCat);
       } catch (catErr) {
         console.warn("Categories listener error:", catErr);
       }
+    }
 
-      // 3. Live Market Prices Realtime Sync
-      function firstNonEmptyStr(arr, fallback = '') {
-        for (let item of arr) {
-          if (item !== undefined && item !== null && typeof item === 'string') {
-            const s = item.trim();
-            if (s.length > 0) return s;
-          } else if (item !== undefined && item !== null && typeof item === 'number') {
-            return String(item);
-          }
-        }
-        return fallback;
-      }
-
-      function parseMarketDoc(d, id) {
-        const crop = firstNonEmptyStr([d.cropName, d.crop_name, d.crop, d.name_bn, d.name, d.title], 'ফসল');
-        const market = firstNonEmptyStr([d.marketName, d.market_name, d.market, d.bazar_name, d.bazar, d.hat], 'স্থানীয় বাজার');
-        const district = firstNonEmptyStr([d.district, d.district_name, d.districtName, d.division, d.location, d.jela, d.zila], '');
-        const unit = firstNonEmptyStr([d.unit, d.unit_name, d.poriman], 'কেজি');
-        const img = firstNonEmptyStr([d.imageUrl, d.image_url, d.img, d.image], '');
-        const trend = firstNonEmptyStr([d.trend, d.status], 'stable').toLowerCase();
-
-        let price = '০';
-        if (d.price !== undefined && d.price !== null && d.price !== '') price = d.price;
-        else if (d.wholesale_price !== undefined && d.wholesale_price !== null && d.wholesale_price !== '') price = d.wholesale_price;
-        else if (d.wholesalePrice !== undefined && d.wholesalePrice !== null && d.wholesalePrice !== '') price = d.wholesalePrice;
-        else if (d.rate !== undefined && d.rate !== null && d.rate !== '') price = d.rate;
-        else if (d.bazar_dor !== undefined && d.bazar_dor !== null && d.bazar_dor !== '') price = d.bazar_dor;
-
-        let retail = '০';
-        if (d.retailPrice !== undefined && d.retailPrice !== null && d.retailPrice !== '') retail = d.retailPrice;
-        else if (d.retail_price !== undefined && d.retail_price !== null && d.retail_price !== '') retail = d.retail_price;
-        else if (d.retail !== undefined && d.retail !== null && d.retail !== '') retail = d.retail;
-        else if (d.khuchra !== undefined && d.khuchra !== null && d.khuchra !== '') retail = d.khuchra;
-
-        const tsObj = parseTimestampToDate(d.updatedAt || d.timestamp || d.date || d.created_at || d.createdAt);
-        const dateStr = tsObj ? formatBengaliFullDateTime(tsObj) : 'আজকের লাইভ রেট';
-        const rawTime = tsObj ? tsObj.getTime() : 0;
-
-        return {
-          id: id,
-          crop: crop,
-          market: market,
-          district: district,
-          division: (d.division || d.division_name || '').trim(),
-          price: price,
-          retail: retail,
-          unit: unit,
-          trend: trend,
-          img: img,
-          date: dateStr,
-          rawTime: rawTime
-        };
-      }
-
-      db.collection('market_prices').onSnapshot(snapshot => {
+    function initMarketLiveSync() {
+      if (!db) return;
+      const unsub = db.collection('market_prices').limit(100).onSnapshot(snapshot => {
         if (!snapshot.empty) {
           const livePrices = [];
           snapshot.forEach(doc => {
@@ -22344,83 +22349,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           marketPrices = [];
           filterMarketPrices();
         }
-      }, err => {
-        console.error("Market sync error:", err);
-        if (!marketPrices || marketPrices.length === 0) {
-          const c = document.getElementById('marketPricesContainer');
-          if (c) c.innerHTML = '<div style="color:#D32F2F; text-align:center; padding:24px; font-weight:bold;">Firestore Error: ' + (err.message || err) + '</div>';
-        }
-      });
-
-      // 4. Live Pests & Diseases Realtime Sync
-      db.collection('pests_diseases').onSnapshot(snapshot => {
-        if (!snapshot.empty) {
-          const livePests = [];
-          snapshot.forEach(doc => {
-            const d = doc.data();
-            livePests.push({
-              id: d.id || doc.id,
-              name: (d.title || d.name_bn || d.name || d.heading || 'বালাই ও রোগ').trim(),
-              crop: (d.crop_name_bn || d.crop_name || d.crop || d.category || 'সাধারণ ফসল').trim(),
-              symptoms: (d.symptoms || d.description || '').trim(),
-              organic: (d.solution || d.organic_cure || d.cure || '').trim(),
-              chemical: (d.chemical_cure || d.chemical || '').trim(),
-              img: (d.imageUrl || d.image_url || d.image || '').trim()
-            });
-          });
-          pestsData = livePests;
-        }
-      }, err => console.warn("Pests sync notice:", err));
-
-      // 5. Live Community Posts Realtime Sync
-      db.collection('community_posts').onSnapshot(snap => {
-        if (snap && !snap.empty) {
-          const posts = [];
-          snap.forEach(doc => {
-            const d = doc.data();
-            posts.push({
-              id: doc.id,
-              author: d.authorName || d.author || 'কৃষক ভাই',
-              phone: d.authorPhone || d.phone || '',
-              time: d.timestamp ? formatBengaliFullDateTime(parseTimestampToDate(d.timestamp)) : 'সম্প্রতি',
-              content: d.content || '',
-              likes: Number(d.likesCount || d.likes || 0),
-              isLiked: false,
-              comments: Number(d.commentsCount || d.comments || 0),
-              img: d.imageUrl || d.image_url || d.img || null,
-              rawTime: d.timestamp ? (parseTimestampToDate(d.timestamp)?.getTime() || 0) : 0
-            });
-          });
-          posts.sort((a, b) => b.rawTime - a.rawTime);
-          communityPosts = posts;
-          renderCommunityPosts();
-        } else {
-          communityPosts = [];
-          renderCommunityPosts();
-        }
-      }, err => console.warn('Community posts sync note:', err));
-
-      // 6. Live Privacy Policy Realtime Sync
-      try {
-        db.collection('settings').doc('privacy_policy').onSnapshot(doc => {
-          if (doc && doc.exists) {
-            const d = doc.data() || {};
-            renderLivePrivacyPolicy(d);
-          }
-        }, err => console.warn('Privacy policy sync note:', err));
-      } catch (ppErr) {
-        console.warn('Privacy policy listener init note:', ppErr);
-      }
-
-      // 7. Live Support & Contact Realtime Sync
-      try {
-        initSupportTicketsLiveSync();
-        initLiveSupportSettings();
-        initLiveFaqsListener();
-        initDirectComplaintTicketsLiveSync();
-      } catch (stErr) {
-        console.warn('Support sync listeners init note:', stErr);
-      }
+      }, err => console.error("Market sync error:", err));
+      registerActiveListener('market_prices', unsub);
     }
 
     function escapeHtml(str) {

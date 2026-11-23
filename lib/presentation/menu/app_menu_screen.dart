@@ -21,6 +21,16 @@ import 'privacy_policy_screen.dart';
 class AppMenuScreen extends StatelessWidget {
   const AppMenuScreen({super.key});
 
+  // Read Optimization: Cache user profile stream per uid
+  static final Map<String, Stream<DocumentSnapshot<Map<String, dynamic>>>> _userStreams = {};
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> _getUserStream(String uid) {
+    return _userStreams.putIfAbsent(
+      uid,
+      () => FirebaseFirestore.instance.collection('users').doc(uid).snapshots().asBroadcastStream(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -351,7 +361,7 @@ class AppMenuScreen extends StatelessWidget {
     final String? uid = activeUid ?? (user != null ? (user.uid ?? user.userId) : null);
     if (FirebaseService.isFirebaseInitialized && uid != null && uid.isNotEmpty) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        stream: _getUserStream(uid),
         builder: (context, snapshot) {
           String name = user?.name ?? 'কৃষক ভাই';
           String district = user?.district ?? '';

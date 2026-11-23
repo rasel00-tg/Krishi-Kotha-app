@@ -6,6 +6,13 @@ import '../../core/constants/app_colors.dart';
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
+  // Read Optimization: Cache privacy policy stream
+  static final Stream<DocumentSnapshot<Map<String, dynamic>>> _cachedPolicyStream =
+      FirebaseFirestore.instance
+          .collection('settings')
+          .doc('privacy_policy')
+          .snapshots();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,10 +36,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         centerTitle: false,
       ),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('settings')
-            .doc('privacy_policy')
-            .snapshots(),
+        stream: _cachedPolicyStream,
         builder: (context, snapshot) {
           final data = snapshot.hasData ? snapshot.data?.data() : null;
           final lastUpdated = data?['last_updated']?.toString() ?? 'সর্বশেষ হালনাগাদ: অক্টোবর ২০২৬ • সংস্করণ ১.০.০';

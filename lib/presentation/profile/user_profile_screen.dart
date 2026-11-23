@@ -15,6 +15,16 @@ import '../navigation/main_navigation_screen.dart';
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
 
+  // Read Optimization: Cache user profile stream per activeUid
+  static final Map<String, Stream<DocumentSnapshot<Map<String, dynamic>>>> _cachedStreams = {};
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> _getUserProfileStream(String uid) {
+    return _cachedStreams.putIfAbsent(
+      uid,
+      () => FirebaseFirestore.instance.collection('users').doc(uid).snapshots().asBroadcastStream(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -198,7 +208,7 @@ class UserProfileScreen extends StatelessWidget {
               activeUid.isNotEmpty &&
               !activeUid.startsWith('guest_'))
           ? StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: FirebaseFirestore.instance.collection('users').doc(activeUid).snapshots(),
+              stream: _getUserProfileStream(activeUid),
               builder: (context, snapshot) {
                 final data = snapshot.data?.data();
                 return buildProfileBody(data);

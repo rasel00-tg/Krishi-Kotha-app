@@ -15,6 +15,12 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  // Read Optimization: Cache app_config stream
+  static final Stream<DocumentSnapshot<Map<String, dynamic>>> _appConfigStream =
+      FirebaseFirestore.instance
+          .collection('settings')
+          .doc('app_config')
+          .snapshots();
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -514,10 +520,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                 // রিয়েল-টাইম ডেটা স্ট্রিম (StreamBuilder)
                 StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('settings')
-                      .doc('app_config')
-                      .snapshots(),
+                  stream: _appConfigStream,
                   builder: (context, snapshot) {
                     final appVer = (snapshot.hasData &&
                             snapshot.data?.data() != null &&

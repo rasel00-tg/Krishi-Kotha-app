@@ -37,6 +37,20 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
 
   String? _selectedCategory;
   bool _isSubmitting = false;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _cachedMyTicketsStream;
+  String? _cachedTicketsUserId;
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _getMyTicketsStream(String uid) {
+    if (_cachedMyTicketsStream == null || _cachedTicketsUserId != uid) {
+      _cachedTicketsUserId = uid;
+      _cachedMyTicketsStream = FirebaseFirestore.instance
+          .collection('support_tickets')
+          .where('userId', isEqualTo: uid)
+          .limit(50)
+          .snapshots();
+    }
+    return _cachedMyTicketsStream!;
+  }
 
   // Locked typography for input fields to prevent font jumping / scaling
   static const TextStyle _lockedInputStyle = TextStyle(
@@ -735,10 +749,7 @@ class _DirectComplaintScreenState extends State<DirectComplaintScreen> {
         ),
         const SizedBox(height: 12),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('support_tickets')
-              .where('userId', isEqualTo: currentUserId)
-              .snapshots(),
+          stream: _getMyTicketsStream(currentUserId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
               return Container(

@@ -6068,7 +6068,11 @@
           renderCrops();
         } else if (tabKey === 'support') {
           renderSupportTicketsTable();
-          initAdminFaqsLiveSync();
+          if (!window.activeFirestoreListeners['faqs'] || !adminFaqsUnsubscribe || adminFaqsList.length === 0) {
+            initAdminFaqsLiveSync();
+          } else {
+            renderAdminFaqsTable(adminFaqsList);
+          }
         } else if (tabKey === 'krishimate-ai') {
           renderKrishiMateDashboard();
         } else if (tabKey === 'user-control') {
@@ -6101,7 +6105,7 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!farmingCalendarFirstLoadDone || farmingCalendarItems.length === 0) {
+          if (!window.activeFirestoreListeners['farming_calendar'] || !farmingCalendarFirstLoadDone || farmingCalendarItems.length === 0) {
             initFarmingCalendarLiveSync();
           } else {
             renderFarmingCalendar();
@@ -6124,8 +6128,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminIeFirstLoadDone || adminIeRecords.length === 0) {
-            initAdminIncomeExpenseLiveSync(false, false);
+          if (!window.activeFirestoreListeners['income_expense'] || !adminIeFirstLoadDone || adminIeRecords.length === 0) {
+            initAdminIncomeExpenseLiveSync(false);
           } else {
             renderIncomeExpenseHistoryAdmin();
           }
@@ -6138,8 +6142,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminSeedFirstLoadDone || adminSeedList.length === 0) {
-            initAdminSeedMonitoringLiveSync(true, false);
+          if (!window.activeFirestoreListeners['seed_information'] || !adminSeedFirstLoadDone || adminSeedList.length === 0) {
+            initAdminSeedMonitoringLiveSync(false, adminSeedFirstLoadDone);
           } else {
             renderAdminSeedTable();
           }
@@ -6152,8 +6156,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminIrrigationFirstLoadDone || adminIrrigationList.length === 0) {
-            initAdminIrrigationSync(true, false);
+          if (!window.activeFirestoreListeners['irrigation_tracker'] || !adminIrrigationFirstLoadDone || adminIrrigationList.length === 0) {
+            initAdminIrrigationSync(false, adminIrrigationFirstLoadDone);
           } else {
             renderAdminIrrigationTable();
           }
@@ -6166,8 +6170,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminDealersFirstLoadDone || adminDealersList.length === 0) {
-            initAdminDealersMonitoringLiveSync(true, false);
+          if (!window.activeFirestoreListeners['fertilizer_dealers'] || !adminDealersFirstLoadDone || adminDealersList.length === 0) {
+            initAdminDealersMonitoringLiveSync(false, adminDealersFirstLoadDone);
           } else {
             renderAdminDealersTable();
           }
@@ -6180,8 +6184,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminSoilFirstLoadDone || adminSoilList.length === 0) {
-            initAdminSoilHealthLiveSync(true, false);
+          if (!adminSoilUnsubscribe || !adminSoilFirstLoadDone || adminSoilList.length === 0) {
+            initAdminSoilHealthLiveSync(false, adminSoilFirstLoadDone);
           } else {
             renderAdminSoilTable();
           }
@@ -6194,8 +6198,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminLivestockFirstLoadDone || adminLivestockList.length === 0) {
-            initAdminLivestockLiveSync(true, false);
+          if (!adminLivestockUnsubscribe || !adminLivestockFirstLoadDone || adminLivestockList.length === 0) {
+            initAdminLivestockLiveSync(false, adminLivestockFirstLoadDone);
           } else {
             renderAdminLivestockTable();
           }
@@ -6208,8 +6212,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminFishFirstLoadDone || adminFishList.length === 0) {
-            initAdminFishFarmingLiveSync(true, false);
+          if (!adminFishUnsubscribe || !adminFishFirstLoadDone || adminFishList.length === 0) {
+            initAdminFishFarmingLiveSync(false, !adminFishFirstLoadDone);
           } else {
             renderAdminFishTable();
           }
@@ -6222,8 +6226,8 @@
           if (subItem) subItem.classList.add('active');
           const parent = document.getElementById('menuHomepageParent');
           if (parent) parent.classList.add('active');
-          if (!adminPreservationFirstLoadDone || adminPreservationList.length === 0) {
-            initAdminCropPreservationLiveSync(true, false);
+          if (!adminPreservationUnsubscribe || !adminPreservationFirstLoadDone || adminPreservationList.length === 0) {
+            initAdminCropPreservationLiveSync(false, !adminPreservationFirstLoadDone);
           } else {
             renderAdminCropPreservationTable();
           }
@@ -6243,6 +6247,7 @@
         if (tabKey !== 'farming-calendar') {
           const subCrop = document.getElementById('submenuItemCropCalendar');
           if (subCrop) subCrop.classList.remove('active');
+          unsubscribeFirestoreListener('farming_calendar');
         }
         if (tabKey !== 'agri-expert') {
           const subExp = document.getElementById('submenuItemAgriExpert');
@@ -6251,26 +6256,36 @@
         if (tabKey !== 'income-expense-history') {
           const subIe = document.getElementById('submenuItemIncomeExpenseHistory');
           if (subIe) subIe.classList.remove('active');
+          unsubscribeFirestoreListener('income_expense');
         }
         if (tabKey !== 'seed-monitoring') {
           const subSeed = document.getElementById('submenuItemSeedMonitoring');
           if (subSeed) subSeed.classList.remove('active');
+          unsubscribeFirestoreListener('seed_categories');
+          unsubscribeFirestoreListener('seed_information');
         }
         if (tabKey !== 'irrigation-monitoring') {
           const subIrr = document.getElementById('submenuItemIrrigationMonitoring');
           if (subIrr) subIrr.classList.remove('active');
+          unsubscribeFirestoreListener('irrigation_tracker');
         }
         if (tabKey !== 'fertilizer-dealer-monitoring') {
           const subDealer = document.getElementById('submenuItemDealerMonitoring');
           if (subDealer) subDealer.classList.remove('active');
+          unsubscribeFirestoreListener('fertilizer_dealers');
         }
         if (tabKey !== 'soil-health-monitoring') {
           const subSoil = document.getElementById('submenuItemSoilHealthMonitoring');
           if (subSoil) subSoil.classList.remove('active');
+          unsubscribeFirestoreListener('soil_health');
+          if (typeof adminSoilUnsubscribe === 'function' && adminSoilUnsubscribe) {
+            try { adminSoilUnsubscribe(); adminSoilUnsubscribe = null; } catch (_) {}
+          }
         }
         if (tabKey !== 'livestock-poultry-monitoring') {
           const subLive = document.getElementById('submenuItemLivestockPoultryMonitoring');
           if (subLive) subLive.classList.remove('active');
+          unsubscribeFirestoreListener('livestock_poultry');
           if (typeof adminLivestockUnsubscribe === 'function' && adminLivestockUnsubscribe) {
             try { adminLivestockUnsubscribe(); adminLivestockUnsubscribe = null; } catch (_) {}
           }
@@ -6278,6 +6293,7 @@
         if (tabKey !== 'fish-farming-monitoring') {
           const subFish = document.getElementById('submenuItemFishFarmingMonitoring');
           if (subFish) subFish.classList.remove('active');
+          unsubscribeFirestoreListener('fish_farming');
           if (typeof adminFishUnsubscribe === 'function' && adminFishUnsubscribe) {
             try { adminFishUnsubscribe(); adminFishUnsubscribe = null; } catch (_) {}
           }
@@ -6285,8 +6301,15 @@
         if (tabKey !== 'crop-preservation-monitoring') {
           const subPres = document.getElementById('submenuItemCropPreservationMonitoring');
           if (subPres) subPres.classList.remove('active');
+          unsubscribeFirestoreListener('crop_preservation');
           if (typeof adminPreservationUnsubscribe === 'function' && adminPreservationUnsubscribe) {
             try { adminPreservationUnsubscribe(); adminPreservationUnsubscribe = null; } catch (_) {}
+          }
+        }
+        if (tabKey !== 'support') {
+          unsubscribeFirestoreListener('faqs');
+          if (typeof adminFaqsUnsubscribe === 'function' && adminFaqsUnsubscribe) {
+            try { adminFaqsUnsubscribe(); adminFaqsUnsubscribe = null; } catch (_) {}
           }
         }
 

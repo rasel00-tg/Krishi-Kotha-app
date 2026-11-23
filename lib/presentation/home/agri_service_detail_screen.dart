@@ -44,6 +44,18 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
   double _totalIncome = 0;
   double _totalExpense = 0;
   double _netProfit = 0;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _seedBankStream;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.serviceId == 'seed_bank' || widget.serviceId == 'seed_info') {
+      _seedBankStream = FirebaseFirestore.instance
+          .collection('seed_information')
+          .limit(50)
+          .snapshots();
+    }
+  }
 
   void _calculateLedger() {
     final income = double.tryParse(_incomeCtrl.text) ?? 0;
@@ -991,8 +1003,12 @@ class _AgriServiceDetailScreenState extends State<AgriServiceDetailScreen> {
 
   // 13. SEED BANK (Real Firestore StreamBuilder - No hardcoded demo data)
   Widget _buildSeedBankContent() {
+    _seedBankStream ??= FirebaseFirestore.instance
+        .collection('seed_information')
+        .limit(50)
+        .snapshots();
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('seed_information').snapshots(),
+      stream: _seedBankStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(

@@ -53,6 +53,8 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
   bool _isRefreshing = false;
   Timer? _hourlyCheckTimer;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSubscription;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _cachedIrrigationStream;
+  String? _cachedIrrigationUid;
 
   // ব্যাকগ্রাউন্ডে একই ফসলের ডুপ্লিকেট আওয়ারলি এআই কল রোধে ট্র্যাকিং সেট
   final Set<String> _updatingCropDocIds = {};
@@ -1800,6 +1802,18 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
     final weatherProvider = Provider.of<WeatherProvider>(context);
     final weather = weatherProvider.weatherInfo ?? _currentWeather;
 
+    // Read Optimization: Cache stream per activeUid with limit(50)
+    if (_cachedIrrigationStream == null || _cachedIrrigationUid != activeUid) {
+      _cachedIrrigationUid = activeUid;
+      _cachedIrrigationStream = FirebaseFirestore.instance
+          .collection('users')
+          .doc(activeUid)
+          .collection('irrigation_tracker_crops')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .snapshots(includeMetadataChanges: true);
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
       appBar: AppBar(
@@ -1849,12 +1863,7 @@ class _IrrigationTrackerScreenState extends State<IrrigationTrackerScreen> {
       ),
       body: SafeArea(
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(activeUid)
-              .collection('irrigation_tracker_crops')
-              .orderBy('createdAt', descending: true)
-              .snapshots(includeMetadataChanges: true),
+          stream: _cachedIrrigationStream,
           builder: (context, snapshot) {
             final fbUserNow = FirebaseAuth.instance.currentUser;
             final authProviderNow = Provider.of<AuthProvider>(context, listen: false);

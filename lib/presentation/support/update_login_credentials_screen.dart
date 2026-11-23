@@ -37,6 +37,16 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
   bool _isUpdatedSuccess = false;
   String? _successUpdatedId;
   DateTime? _successUpdateTime;
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? _verifiedUserStream;
+  String? _cachedVerifiedUid;
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> _getVerifiedUserStream(String uid) {
+    if (_verifiedUserStream == null || _cachedVerifiedUid != uid) {
+      _cachedVerifiedUid = uid;
+      _verifiedUserStream = FirebaseFirestore.instance.collection('users').doc(uid).snapshots();
+    }
+    return _verifiedUserStream!;
+  }
 
   @override
   void dispose() {
@@ -650,7 +660,7 @@ class _UpdateLoginCredentialsScreenState extends State<UpdateLoginCredentialsScr
                 if (_verifiedUserId != null && _verifiedUserName != null) ...[
                   const SizedBox(height: 14),
                   StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance.collection('users').doc(_verifiedUserId).snapshots(),
+                    stream: _getVerifiedUserStream(_verifiedUserId!),
                     builder: (context, snapshot) {
                       final liveName = snapshot.data?.data()?['name'] ?? _verifiedUserName!;
                       return Container(

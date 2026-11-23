@@ -30,6 +30,12 @@ class PhoneLoginScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
+  // Read Optimization: Cache app_config stream
+  static final Stream<DocumentSnapshot<Map<String, dynamic>>> _appConfigStream =
+      FirebaseFirestore.instance
+          .collection('settings')
+          .doc('app_config')
+          .snapshots();
   // 0 = ইমেইল, 1 = নাম্বার
   int _loginTabIndex = 0;
 
@@ -1265,10 +1271,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
                   // ================= ফুটার সেকশন: ডায়নামিক অ্যাপ ভার্সন ও গোপনীয়তা নীতি =================
                   StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collection('settings')
-                        .doc('app_config')
-                        .snapshots(),
+                    stream: _appConfigStream,
                     builder: (context, snapshot) {
                       final appVer = (snapshot.hasData &&
                               snapshot.data?.data() != null &&

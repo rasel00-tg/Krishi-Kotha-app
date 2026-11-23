@@ -357,6 +357,7 @@ class FirestoreService {
     return FirebaseFirestore.instance
         .collection('weather_alerts')
         .orderBy('timestamp', descending: true)
+        .limit(50)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isEmpty) return const [];
@@ -378,18 +379,17 @@ class FirestoreService {
       return _supportController.stream.map((tickets) =>
           tickets.where((t) => t.authorId == userId || t.userId == userId).toList());
     }
+    // Read Optimization: Query directly by userId with limit(50) instead of unbounded scan
     return FirebaseFirestore.instance
         .collection('support_tickets')
+        .where('userId', isEqualTo: userId)
+        .limit(50)
         .snapshots()
         .map((snapshot) {
       final List<SupportTicketModel> list = [];
       for (final doc in snapshot.docs) {
         try {
-          final data = doc.data();
-          final docUid = data['userId']?.toString() ?? data['authorId']?.toString() ?? '';
-          if (docUid == userId) {
-            list.add(SupportTicketModel.fromFirestore(doc));
-          }
+          list.add(SupportTicketModel.fromFirestore(doc));
         } catch (e) {
           debugPrint('SupportTicketModel parse error: $e');
         }
@@ -510,6 +510,9 @@ class FirestoreService {
     if (month != null && month.isNotEmpty && month != 'সব মাস') {
       query = query.where('month', isEqualTo: month);
     }
+    
+    // Read Optimization: Limit calendar query to 100 documents
+    query = query.limit(100);
     
     return query.snapshots().map((snapshot) {
       final list = snapshot.docs.map((doc) {

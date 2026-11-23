@@ -24,6 +24,20 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
   final TextEditingController _newEmailController = TextEditingController();
 
   bool _isSubmitting = false;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _cachedRequestsStream;
+  String? _cachedRequestsUid;
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _getRequestsStream(String uid) {
+    if (_cachedRequestsStream == null || _cachedRequestsUid != uid) {
+      _cachedRequestsUid = uid;
+      _cachedRequestsStream = FirebaseFirestore.instance
+          .collection('login_update_requests')
+          .where('userId', isEqualTo: uid)
+          .limit(10)
+          .snapshots();
+    }
+    return _cachedRequestsStream!;
+  }
 
   @override
   void dispose() {
@@ -455,10 +469,7 @@ class _UpdateLoginIdScreenState extends State<UpdateLoginIdScreen> {
                     currentEmail: currentEmail,
                   ))
             : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('login_update_requests')
-                    .where('userId', isEqualTo: activeUid)
-                    .snapshots(),
+                stream: _getRequestsStream(activeUid),
                 builder: (context, snapshot) {
                   // ফ্লিকারিং প্রতিরোধ: ফায়ারস্টোর ডেটা আসার পূর্ব মুহূর্ত পর্যন্ত সেন্ট্রালাইজড লোডার প্রদর্শিত হবে
                   if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {

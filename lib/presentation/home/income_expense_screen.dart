@@ -52,6 +52,17 @@ class _IncomeExpensePageState extends State<IncomeExpensePage> {
   final TextEditingController _irrigationCtrl = TextEditingController();
   final TextEditingController _laborCtrl = TextEditingController();
   final TextEditingController _transportCtrl = TextEditingController();
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _accountsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Read Optimization: Initialize stream once with limit(100)
+    _accountsStream = FirebaseFirestore.instance
+        .collection('agricultural_accounts')
+        .limit(100)
+        .snapshots();
+  }
 
   @override
   void dispose() {
@@ -848,9 +859,7 @@ class _IncomeExpensePageState extends State<IncomeExpensePage> {
     final userIdentifier = _getUserIdentifier();
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('agricultural_accounts')
-          .snapshots(),
+      stream: _accountsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(

@@ -9,6 +9,13 @@ import '../../core/widgets/app_unified_dialog.dart';
 class DirectContactScreen extends StatelessWidget {
   const DirectContactScreen({super.key});
 
+  // Read Optimization: Cache support_contact stream
+  static final Stream<DocumentSnapshot<Map<String, dynamic>>> _supportContactStream =
+      FirebaseFirestore.instance
+          .collection('app_settings')
+          .doc('support_contact')
+          .snapshots();
+
   void _showFeatureNotAvailableDialog(BuildContext context) {
     AppUnifiedDialog.showWarning(
       context,
@@ -121,7 +128,7 @@ class DirectContactScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
               child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance.collection('app_settings').doc('support_contact').snapshots(),
+                stream: _supportContactStream,
                 builder: (context, snapshot) {
                   final settings = snapshot.data?.data();
                   final hotlinePhone = settings?['hotline_phone']?.toString().trim();

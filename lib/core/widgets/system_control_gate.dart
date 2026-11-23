@@ -76,13 +76,16 @@ class SystemControlGate extends StatelessWidget {
     return true;
   }
 
+  static final Stream<DocumentSnapshot<Map<String, dynamic>>> _cachedSystemControlStream =
+      FirebaseFirestore.instance
+          .collection('app_settings')
+          .doc('system_control')
+          .snapshots();
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('app_settings')
-          .doc('system_control')
-          .snapshots(),
+      stream: _cachedSystemControlStream,
       builder: (context, snapshot) {
         // ফায়ারস্টোরে কোনো মেইন্টেনেন্স বা আপডেট সক্রিয় না থাকলে অথবা কোনো ত্রুটি/নাল থাকলে
         // কোনো Stack, ModalBarrier বা IgnorePointer ছাড়াই সরাসরি মূল child উইজেট রিটার্ন করা

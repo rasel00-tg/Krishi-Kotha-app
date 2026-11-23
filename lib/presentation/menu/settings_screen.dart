@@ -21,10 +21,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _marketUpdates = true;
   bool _offlineCache = true;
   bool _biometricEnabled = false;
+  late final Stream<DocumentSnapshot<Map<String, dynamic>>> _appConfigStream;
 
   @override
   void initState() {
     super.initState();
+    // Read Optimization: Cache app_config stream once in initState
+    _appConfigStream = FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app_config')
+        .snapshots();
     _loadBiometricState();
   }
 
@@ -246,10 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Section: App Version with Real-time Firestore StreamBuilder
           _buildSectionHeader('অ্যাপ তথ্য'),
           StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('settings')
-                .doc('app_config')
-                .snapshots(),
+            stream: _appConfigStream,
             builder: (context, snapshot) {
               final appVer = (snapshot.hasData &&
                       snapshot.data?.data() != null &&

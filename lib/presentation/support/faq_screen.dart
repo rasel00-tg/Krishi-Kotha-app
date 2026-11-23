@@ -7,6 +7,10 @@ import '../../core/constants/app_colors.dart';
 class FaqScreen extends StatelessWidget {
   const FaqScreen({super.key});
 
+  // Read Optimization: Cache faqs stream with limit(50)
+  static final Stream<QuerySnapshot<Map<String, dynamic>>> _faqsStream =
+      FirebaseFirestore.instance.collection('faqs').limit(50).snapshots();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +49,7 @@ class FaqScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance.collection('faqs').limit(50).snapshots(),
+                    stream: _faqsStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
