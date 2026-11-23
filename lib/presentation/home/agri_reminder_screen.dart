@@ -68,7 +68,6 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
           .collection('users')
           .doc(uid)
           .collection('agri_reminders')
-          .orderBy('createdAt', descending: true)
           .limit(10)
           .snapshots();
     }
@@ -791,11 +790,12 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
 
                             // Strict verify limit before insert (if new)
                             if (!isEdit) {
-                              final existingDocs = await remindersCol
-                                  .where('isActive', isEqualTo: true)
-                                  .get();
-                              if (existingDocs.docs.length >=
-                                  maxRemindersLimit) {
+                              final existingDocs =
+                                  await remindersCol.limit(10).get();
+                              final activeCount = existingDocs.docs
+                                  .where((d) => (d.data())['isActive'] == true)
+                                  .length;
+                              if (activeCount >= maxRemindersLimit) {
                                 if (mounted) {
                                   GlobalPopup.showNotice(
                                     context,
@@ -2134,23 +2134,41 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                         }
 
                         if (snapshot.hasError) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text(
-                                'ডেটা লোড করতে সমস্যা হয়েছে: ${snapshot.error}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    color: Colors.red, fontSize: 13),
-                              ),
+                          debugPrint('Reminders stream error: ${snapshot.error}');
+                          return const Center(
+                            child: EmptyStateWidget(
+                              icon: Icons.notifications_none_rounded,
+                              message: 'কোনো রিমাইন্ডার নেই',
+                              subtitle:
+                                  'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।',
                             ),
                           );
                         }
 
                         final docs = snapshot.data?.docs ?? [];
 
+                        // Client-Side in-memory sorting by updatedAt / createdAt descending
+                        final sortedDocs =
+                            List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(
+                                docs);
+                        sortedDocs.sort((a, b) {
+                          final aData = a.data();
+                          final bData = b.data();
+                          final aTime = (aData['updatedAt'] as Timestamp?)
+                                  ?.millisecondsSinceEpoch ??
+                              (aData['createdAt'] as Timestamp?)
+                                  ?.millisecondsSinceEpoch ??
+                              0;
+                          final bTime = (bData['updatedAt'] as Timestamp?)
+                                  ?.millisecondsSinceEpoch ??
+                              (bData['createdAt'] as Timestamp?)
+                                  ?.millisecondsSinceEpoch ??
+                              0;
+                          return bTime.compareTo(aTime);
+                        });
+
                         // Client-Side in-memory filtering (Zero Extra Firestore Reads)
-                        final filteredDocs = docs.where((doc) {
+                        final filteredDocs = sortedDocs.where((doc) {
                           final data = doc.data();
                           final type = data['reminderType']?.toString() ??
                               'temporary';
@@ -2163,22 +2181,21 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                         }).toList();
 
                         if (filteredDocs.isEmpty) {
-                          IconData emptyIcon = Icons.alarm_off_rounded;
-                          String emptyTitle =
-                              'বর্তমানে কোনো রিমাইন্ডার সেট করা নেই';
+                          IconData emptyIcon = Icons.notifications_none_rounded;
+                          String emptyTitle = 'কোনো রিমাইন্ডার নেই';
                           String emptySub =
-                              'নতুন রিমাইন্ডার সেট করতে নিচের "নতুন রিমাইন্ডার যোগ করুন" বাটনে চাপুন';
+                              'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।';
 
                           if (_activeFilter == 'temporary') {
-                            emptyIcon = Icons.event_busy_rounded;
+                            emptyIcon = Icons.calendar_today_rounded;
                             emptyTitle = 'কোনো অস্থায়ী রিমাইন্ডার নেই';
                             emptySub =
-                                'এককালীন কোনো কাজের সতর্কবার্তা পেতে নতুন রিমাইন্ডার যোগ করুন';
+                                'এককালীন কোনো কাজের সতর্কবার্তা পেতে নতুন রিমাইন্ডার যোগ করুন।';
                           } else if (_activeFilter == 'regular') {
-                            emptyIcon = Icons.repeat_on_rounded;
+                            emptyIcon = Icons.repeat_rounded;
                             emptyTitle = 'কোনো নিয়মিত রিমাইন্ডার নেই';
                             emptySub =
-                                'দৈনিক বা সাপ্তাহিক কাজের জন্য নিয়মিত রিমাইন্ডার সেট করুন';
+                                'দৈনিক বা সাপ্তাহিক কাজের জন্য নিয়মিত রিমাইন্ডার সেট করুন।';
                           }
 
                           return Center(
