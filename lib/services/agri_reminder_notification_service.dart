@@ -5,6 +5,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../data/services/auth_service.dart';
 
 class AgriReminderNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -17,7 +18,30 @@ class AgriReminderNotificationService {
 
   static bool _isInitialized = false;
 
-  /// Initialize local notification plugin and Dhaka timezone
+  /// Resolves active logged-in User ID from either FirebaseAuth or cached AuthService
+  static Future<String?> getActiveUserId() async {
+    try {
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser != null &&
+          fbUser.uid.isNotEmpty &&
+          !fbUser.uid.startsWith('guest_')) {
+        return fbUser.uid;
+      }
+    } catch (_) {}
+
+    try {
+      final user = await AuthService().loadCachedUser();
+      if (user != null &&
+          user.uid.isNotEmpty &&
+          !user.uid.startsWith('guest_')) {
+        return user.uid;
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  /// Initialize local notification plugin, timezone and user reminder sync
   static Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -81,16 +105,25 @@ class AgriReminderNotificationService {
       _isInitialized = true;
       debugPrint('AgriReminderNotificationService initialized successfully.');
 
-      // 5. Auth State Changes Listener:
-      // When user logs out, cancel all reminders immediately.
-      // When user logs in, resync their active reminders from Firestore.
+      // 5. Initial Sync: Check if an active logged-in user exists and sync reminders
+      final activeUid = await getActiveUserId();
+      if (activeUid != null) {
+        debugPrint('Active user ($activeUid) detected on startup: Syncing agri reminders.');
+        await syncUserReminders(activeUid);
+      }
+
+      // 6. Reactive FirebaseAuth state listener (with fallback check to avoid premature cancellation)
       FirebaseAuth.instance.authStateChanges().listen((User? user) async {
-        if (user == null) {
-          debugPrint('User logged out: Cancelling all active agri reminders.');
-          await cancelAllUserReminders();
-        } else {
-          debugPrint('User logged in (${user.uid}): Syncing active agri reminders.');
+        if (user != null && !user.uid.startsWith('guest_')) {
+          debugPrint('FirebaseAuth user logged in (${user.uid}): Syncing active agri reminders.');
           await syncUserReminders(user.uid);
+        } else {
+          // Verify with cached user before cancelling to protect custom/phone logins
+          final cachedUid = await getActiveUserId();
+          if (cachedUid == null) {
+            debugPrint('No active user found: Cancelling all local agri reminders.');
+            await cancelAllUserReminders();
+          }
         }
       });
     } catch (e) {

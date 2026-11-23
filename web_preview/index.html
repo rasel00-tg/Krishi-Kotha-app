@@ -20994,6 +20994,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       closeSupportContactPage();
       closeUpdateCredentialsPage();
 
+      if (typeof clearWebRemindersOnLogout === 'function') {
+        try { clearWebRemindersOnLogout(); } catch (_) { }
+      }
+      if (typeof closeAgriReminderPage === 'function') {
+        try { closeAgriReminderPage(); } catch (_) { }
+      }
+
       if (userDocUnsubscribe) {
         try { userDocUnsubscribe(); } catch (_) { }
         userDocUnsubscribe = null;
@@ -22833,14 +22840,75 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     let webReminderIntervalTimer = null;
     const MAX_AGRI_REMINDERS = 5;
 
-    function getWebActiveUserId() {
-      if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) {
-        return firebase.auth().currentUser.uid;
-      }
-      if (typeof currentUser !== 'undefined' && currentUser && currentUser.uid && !currentUser.uid.startsWith('guest_')) {
-        return currentUser.uid;
-      }
+    function getWebActiveUserData() {
+      // 1. Check cached user from localStorage (primary persistent store in web)
+      try {
+        const cached = localStorage.getItem('krishi_kotha_cached_user');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const uid = parsed ? (parsed.uid || parsed.id) : null;
+          if (uid && !String(uid).startsWith('guest_')) {
+            return {
+              uid: String(uid),
+              name: parsed.name || parsed.displayName || 'কৃষক',
+              email: parsed.email || parsed.phone || ''
+            };
+          }
+        }
+      } catch (_) {}
+
+      // 2. Check global currentUser object
+      try {
+        if (typeof currentUser !== 'undefined' && currentUser) {
+          const uid = currentUser.uid || currentUser.id;
+          if (uid && !String(uid).startsWith('guest_')) {
+            return {
+              uid: String(uid),
+              name: currentUser.name || currentUser.displayName || 'কৃষক',
+              email: currentUser.email || currentUser.phone || ''
+            };
+          }
+        }
+      } catch (_) {}
+
+      // 3. Check window.currentLoggedInUser
+      try {
+        if (window.currentLoggedInUser) {
+          const uid = window.currentLoggedInUser.uid || window.currentLoggedInUser.id;
+          if (uid && !String(uid).startsWith('guest_')) {
+            return {
+              uid: String(uid),
+              name: window.currentLoggedInUser.name || window.currentLoggedInUser.displayName || 'কৃষক',
+              email: window.currentLoggedInUser.email || window.currentLoggedInUser.phone || ''
+            };
+          }
+        }
+      } catch (_) {}
+
+      // 4. Check Firebase Auth currentUser
+      try {
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+          const fbU = firebase.auth().currentUser;
+          if (fbU.uid && !fbU.uid.startsWith('guest_')) {
+            return {
+              uid: fbU.uid,
+              name: fbU.displayName || 'কৃষক',
+              email: fbU.email || fbU.phoneNumber || ''
+            };
+          }
+        }
+      } catch (_) {}
+
       return null;
+    }
+
+    function getWebActiveUserId() {
+      const u = getWebActiveUserData();
+      return u ? u.uid : null;
+    }
+
+    function openRegistrationModal() {
+      openAuthModal('login');
     }
 
     function openAgriReminderPage() {
@@ -22885,7 +22953,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               <p style="font-size: 13px; color: #666; max-width: 300px; margin: 0 auto 16px auto; line-height: 1.4;">
                 রিমাইন্ডার সেট এবং ব্যাকগ্রাউন্ড নোটিফিকেশন পেতে অনুগ্রহ করে আপনার একাউন্টে লগইন করুন।
               </p>
-              <button onclick="openRegistrationModal()"
+              <button onclick="openAuthModal('login')"
                 style="background: #2E7D32; color: #fff; font-size: 13.5px; font-weight: 700; border: none; padding: 10px 22px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(46,125,50,0.25);">
                 লগইন করুন
               </button>
@@ -23113,7 +23181,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           title: 'লগইন প্রয়োজন',
           message: 'রিমাইন্ডার সেট করতে আপনার একাউন্টে লগইন করুন।',
           btnText: 'লগইন করুন',
-          onConfirm: () => openRegistrationModal()
+          onConfirm: () => openAuthModal('login')
         });
         return;
       }
@@ -23239,7 +23307,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     async function saveAgriReminderFromModal() {
-      const uid = getWebActiveUserId();
+      const uData = getWebActiveUserData();
+      const uid = uData ? uData.uid : null;
       if (!uid) {
         showGlobalPopup({ title: 'লগইন প্রয়োজন', message: 'রিমাইন্ডার সংরক্ষণ করতে লগইন করুন।' });
         return;
@@ -23286,8 +23355,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const payload = {
         notificationId: notifId,
         userId: uid,
-        userName: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.name || currentUser.displayName) : '') || 'কৃষক',
-        userEmail: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.email || currentUser.phone) : '') || '',
+        userName: (uData && uData.name) ? uData.name : 'কৃষক',
+        userEmail: (uData && uData.email) ? uData.email : '',
         title: title,
         category: category,
         reminderType: webAgriReminderSelectedType,

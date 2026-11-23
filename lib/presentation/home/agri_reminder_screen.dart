@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/empty_state_widget.dart';
 import '../../global_popup/global_popup.dart';
+import '../../providers/auth_provider.dart';
+import '../../data/services/auth_service.dart';
 import '../../services/agri_reminder_notification_service.dart';
 import '../auth/phone_login_screen.dart';
 
@@ -19,7 +22,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   // Active category filter: 'all', 'temporary', 'regular'
   String _activeFilter = 'all';
 
-  // Cached Stream initialized in initState() for Zero Redundant Reads
+  // Cached Stream initialized once per active user for Zero Redundant Reads
   Stream<QuerySnapshot<Map<String, dynamic>>>? _remindersStream;
   String? _currentUserId;
 
@@ -38,24 +41,105 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   @override
   void initState() {
     super.initState();
-    _initUserStream();
+    _resolveInitialUser();
   }
 
-  void _initUserStream() {
-    final user = FirebaseAuth.instance.currentUser;
-    _currentUserId = user?.uid;
+  /// Initial fallback to cached user in SharedPreferences
+  Future<void> _resolveInitialUser() async {
+    try {
+      final cached = await AuthService().loadCachedUser();
+      if (cached != null &&
+          cached.uid.isNotEmpty &&
+          !cached.uid.startsWith('guest_')) {
+        if (mounted && _currentUserId != cached.uid) {
+          setState(() {
+            _ensureStream(cached.uid);
+          });
+        }
+      }
+    } catch (_) {}
+  }
 
-    if (user != null) {
+  /// Ensure Firestore stream is only initialized once per active user ID
+  void _ensureStream(String uid) {
+    if (_currentUserId != uid || _remindersStream == null) {
+      _currentUserId = uid;
       _remindersStream = FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .doc(uid)
           .collection('agri_reminders')
           .orderBy('createdAt', descending: true)
           .limit(10)
           .snapshots();
-    } else {
-      _remindersStream = null;
     }
+  }
+
+  /// Unified helper to resolve active logged-in User ID
+  String? _getActiveUserId(BuildContext context) {
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.user != null &&
+          auth.user!.uid.isNotEmpty &&
+          !auth.user!.uid.startsWith('guest_')) {
+        return auth.user!.uid;
+      }
+    } catch (_) {}
+
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null &&
+        fbUser.uid.isNotEmpty &&
+        !fbUser.uid.startsWith('guest_')) {
+      return fbUser.uid;
+    }
+
+    if (_currentUserId != null &&
+        _currentUserId!.isNotEmpty &&
+        !_currentUserId!.startsWith('guest_')) {
+      return _currentUserId;
+    }
+
+    return null;
+  }
+
+  String _getUserName(BuildContext context) {
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.user != null && auth.user!.name.trim().isNotEmpty) {
+        return auth.user!.name.trim();
+      }
+    } catch (_) {}
+
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null &&
+        fbUser.displayName != null &&
+        fbUser.displayName!.trim().isNotEmpty) {
+      return fbUser.displayName!.trim();
+    }
+
+    return 'কৃষক';
+  }
+
+  String _getUserEmailOrPhone(BuildContext context) {
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.user != null) {
+        if (auth.user!.email.trim().isNotEmpty) return auth.user!.email.trim();
+        if (auth.user!.phone.trim().isNotEmpty) return auth.user!.phone.trim();
+      }
+    } catch (_) {}
+
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      if (fbUser.email != null && fbUser.email!.trim().isNotEmpty) {
+        return fbUser.email!.trim();
+      }
+      if (fbUser.phoneNumber != null &&
+          fbUser.phoneNumber!.trim().isNotEmpty) {
+        return fbUser.phoneNumber!.trim();
+      }
+    }
+
+    return '';
   }
 
   Color _getCategoryColor(String category) {
@@ -97,8 +181,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   }
 
   void _checkAuthAndShowAddModal(int currentCount) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    final activeUid = _getActiveUserId(context);
+
+    if (activeUid == null) {
       GlobalPopup.showConfirm(
         context,
         title: 'লগইন প্রয়োজন',
@@ -112,9 +197,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
             MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
           ).then((_) {
             if (mounted) {
-              setState(() {
-                _initUserStream();
-              });
+              _resolveInitialUser();
             }
           });
         },
@@ -133,13 +216,11 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
       return;
     }
 
-    _showReminderFormModal();
+    _showReminderFormModal(activeUid: activeUid);
   }
 
-  void _showReminderFormModal({DocumentSnapshot? doc}) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
+  void _showReminderFormModal(
+      {required String activeUid, DocumentSnapshot? doc}) {
     final isEdit = doc != null;
     final Map<String, dynamic> data =
         isEdit ? (doc.data() as Map<String, dynamic>? ?? {}) : {};
@@ -163,7 +244,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
         selectedDate = (data['scheduledDateTime'] as Timestamp).toDate();
       } else if (data['scheduledDateTime'] is String) {
         selectedDate =
-            DateTime.tryParse(data['scheduledDateTime'] as String) ?? selectedDate;
+            DateTime.tryParse(data['scheduledDateTime'] as String) ??
+                selectedDate;
       }
     }
 
@@ -205,7 +287,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Modal Header
+                    // Modal Header Drag Handle
                     Center(
                       child: Container(
                         width: 44,
@@ -260,8 +342,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFF2E7D32), width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF2E7D32), width: 1.5),
                         ),
                       ),
                     ),
@@ -333,7 +415,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: reminderType == 'temporary'
                                     ? const Color(0xFFE8F5E9)
@@ -342,7 +425,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                   color: reminderType == 'temporary'
                                       ? const Color(0xFF2E7D32)
                                       : Colors.grey.shade300,
-                                  width: reminderType == 'temporary' ? 1.5 : 1,
+                                  width:
+                                      reminderType == 'temporary' ? 1.5 : 1,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -386,7 +470,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: reminderType == 'regular'
                                     ? const Color(0xFFE8F5E9)
@@ -641,8 +726,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFF2E7D32), width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF2E7D32), width: 1.5),
                         ),
                       ),
                     ),
@@ -667,7 +752,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             GlobalPopup.showNotice(
                               context,
                               title: 'শিরোনাম প্রয়োজন',
-                              message: 'অনুগ্রহ করে রিমাইন্ডারের একটি শিরোনাম লিখুন।',
+                              message:
+                                  'অনুগ্রহ করে রিমাইন্ডারের একটি শিরোনাম লিখুন।',
                             );
                             return;
                           }
@@ -693,12 +779,15 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               : (DateTime.now().millisecondsSinceEpoch %
                                   1000000);
 
+                          final uName = _getUserName(context);
+                          final uEmail = _getUserEmailOrPhone(context);
+
                           Navigator.pop(bottomSheetCtx);
 
                           try {
                             final userRef = FirebaseFirestore.instance
                                 .collection('users')
-                                .doc(user.uid);
+                                .doc(activeUid);
                             final remindersCol =
                                 userRef.collection('agri_reminders');
 
@@ -707,7 +796,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               final existingDocs = await remindersCol
                                   .where('isActive', isEqualTo: true)
                                   .get();
-                              if (existingDocs.docs.length >= maxRemindersLimit) {
+                              if (existingDocs.docs.length >=
+                                  maxRemindersLimit) {
                                 if (mounted) {
                                   GlobalPopup.showNotice(
                                     context,
@@ -722,9 +812,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
 
                             final payload = {
                               'notificationId': notifId,
-                              'userId': user.uid,
-                              'userName': user.displayName ?? 'কৃষক',
-                              'userEmail': user.email ?? (user.phoneNumber ?? ''),
+                              'userId': activeUid,
+                              'userName': uName,
+                              'userEmail': uEmail,
                               'title': title,
                               'category': selectedCategory,
                               'reminderType': reminderType,
@@ -796,8 +886,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
 
   Future<void> _toggleReminderStatus(
       DocumentSnapshot doc, bool newStatus) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final activeUid = _getActiveUserId(context);
+    if (activeUid == null) return;
 
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final notifId = data['notificationId'] is int
@@ -808,7 +898,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .doc(activeUid)
           .collection('agri_reminders')
           .doc(doc.id)
           .update({
@@ -852,8 +942,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   }
 
   Future<void> _deleteReminder(DocumentSnapshot doc) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final activeUid = _getActiveUserId(context);
+    if (activeUid == null) return;
 
     final confirm = await GlobalPopup.showConfirm(
       context,
@@ -875,7 +965,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .doc(activeUid)
           .collection('agri_reminders')
           .doc(doc.id)
           .delete();
@@ -966,7 +1056,28 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    // 1. Reactive AuthProvider resolution
+    final auth = Provider.of<AuthProvider>(context);
+    final fbUser = FirebaseAuth.instance.currentUser;
+
+    final String? activeUid = (auth.user != null &&
+            auth.user!.uid.isNotEmpty &&
+            !auth.user!.uid.startsWith('guest_'))
+        ? auth.user!.uid
+        : ((fbUser != null &&
+                fbUser.uid.isNotEmpty &&
+                !fbUser.uid.startsWith('guest_'))
+            ? fbUser.uid
+            : (_currentUserId != null &&
+                    _currentUserId!.isNotEmpty &&
+                    !_currentUserId!.startsWith('guest_')
+                ? _currentUserId
+                : null));
+
+    // 2. Ensure stream is active when activeUid is resolved
+    if (activeUid != null) {
+      _ensureStream(activeUid);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF7),
@@ -1018,7 +1129,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ১. কালারিং টপবার হেডার (Colored Header matching Crop Calendar with Counter & Filter Chips)
+            // ১. কালারিং টপবার হেডার (Colored Header with Counter & Filter Chips)
             Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -1158,7 +1269,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
 
             // ২. স্ক্রলযোগ্য বডি (StreamBuilder List View)
             Expanded(
-              child: user == null
+              child: activeUid == null
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
@@ -1202,7 +1313,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                           const PhoneLoginScreen()),
                                 ).then((_) {
                                   if (mounted) {
-                                    setState(() => _initUserStream());
+                                    _resolveInitialUser();
                                   }
                                 });
                               },
@@ -1300,7 +1411,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             final category =
                                 data['category']?.toString() ?? 'সাধারণ';
                             final reminderType =
-                                data['reminderType']?.toString() ?? 'temporary';
+                                data['reminderType']?.toString() ??
+                                    'temporary';
                             final repeatInterval =
                                 data['repeatInterval']?.toString() ?? 'none';
                             final note = data['note']?.toString() ?? '';
@@ -1317,7 +1429,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               if (data['scheduledDateTime'] is Timestamp) {
                                 dt = (data['scheduledDateTime'] as Timestamp)
                                     .toDate();
-                              } else if (data['scheduledDateTime'] is String) {
+                              } else if (data['scheduledDateTime']
+                                  is String) {
                                 dt = DateTime.tryParse(
                                     data['scheduledDateTime'] as String);
                               }
@@ -1376,10 +1489,12 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                       Row(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: catColor.withOpacity(0.12),
+                                              color:
+                                                  catColor.withOpacity(0.12),
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
@@ -1387,7 +1502,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(catIcon,
-                                                    size: 13, color: catColor),
+                                                    size: 13,
+                                                    color: catColor),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   category,
@@ -1403,8 +1519,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                           ),
                                           const SizedBox(width: 8),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
                                               color: reminderType == 'regular'
                                                   ? const Color(0xFFE8F5E9)
@@ -1415,7 +1532,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                             child: Text(
                                               typeLabel,
                                               style: TextStyle(
-                                                color: reminderType == 'regular'
+                                                color: reminderType ==
+                                                        'regular'
                                                     ? const Color(0xFF1B5E20)
                                                     : Colors.orange.shade900,
                                                 fontSize: 10.5,
@@ -1430,9 +1548,11 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                         scale: 0.85,
                                         child: Switch(
                                           value: isActive,
-                                          activeColor: const Color(0xFF2E7D32),
+                                          activeColor:
+                                              const Color(0xFF2E7D32),
                                           onChanged: (val) =>
-                                              _toggleReminderStatus(doc, val),
+                                              _toggleReminderStatus(
+                                                  doc, val),
                                         ),
                                       ),
                                     ],
@@ -1503,6 +1623,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                                 horizontal: 6, vertical: 4),
                                             onPressed: () =>
                                                 _showReminderFormModal(
+                                                    activeUid: activeUid,
                                                     doc: doc),
                                           ),
                                           const SizedBox(width: 4),
