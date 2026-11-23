@@ -8,15 +8,14 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/empty_state_widget.dart';
 import '../../core/widgets/premium_loading_widget.dart';
 import '../../core/utils/date_formatter.dart';
-import '../../core/utils/bangla_number_converter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/notification_model.dart';
 import '../../data/services/firestore_service.dart';
 import '../../global_popup/global_popup.dart';
 
-/// Formats DateTime into exact Bengali date-time format: e.g. "১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM"
+/// Formats DateTime into Bengali month name with English digits: e.g. "15 নভেম্বর 2026 | 06:19 PM"
 String formatFullDateTimeWithBar(DateTime dt) {
-  final day = BanglaNumberConverter.toBangla(dt.day);
+  final day = dt.day.toString();
   const monthNames = {
     '1': 'জানুয়ারি',
     '2': 'ফেব্রুয়ারি',
@@ -32,10 +31,9 @@ String formatFullDateTimeWithBar(DateTime dt) {
     '12': 'ডিসেম্বর',
   };
   final month = monthNames[dt.month.toString()] ?? '';
-  final year = BanglaNumberConverter.toBangla(dt.year);
+  final year = dt.year.toString();
   final timeStr = DateFormat('hh:mm a').format(dt);
-  final timeBn = BanglaNumberConverter.toBangla(timeStr);
-  return '$day $month $year | $timeBn';
+  return '$day $month $year | $timeStr';
 }
 
 /// ==================== NOTIFICATIONS SCREEN (INBOX) ====================
@@ -55,10 +53,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   late final FirestoreService _service;
   late final Stream<QuerySnapshot> _notificationsStream;
 
+  // ক্যাটাগরি ফিল্টার: 'all' (সব), 'unread' (আনরিড), 'read' (রিড)
+  String _activeFilter = 'all';
+
   @override
   void initState() {
     super.initState();
     _service = widget.firestoreService ?? FirestoreService();
+    // Read Optimization: Cache stream once in initState with .limit(50)
     _notificationsStream = FirebaseFirestore.instance
         .collection('notifications')
         .orderBy('timestamp', descending: true)
@@ -82,6 +84,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           final isLoading =
               snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData;
+
+          final docs = snapshot.data?.docs ?? [];
+          final List<NotificationModel> allNotifications = [];
+          for (final doc in docs) {
+            try {
+              allNotifications.add(NotificationModel.fromFirestore(doc));
+            } catch (e) {
+              debugPrint('NotificationModel parse error for doc ${doc.id}: $e');
+            }
+          }
+          allNotifications.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+          // Calculate counts (English digits)
+          final int totalCount = allNotifications.length;
+          final int unreadCount = allNotifications.where((n) => !n.isSeen).length;
+          final int readCount = allNotifications.where((n) => n.isSeen).length;
+
+          // Client-side filtering (Zero extra Firestore reads)
+          final List<NotificationModel> filteredNotifications;
+          if (_activeFilter == 'unread') {
+            filteredNotifications =
+                allNotifications.where((n) => !n.isSeen).toList();
+          } else if (_activeFilter == 'read') {
+            filteredNotifications =
+                allNotifications.where((n) => n.isSeen).toList();
+          } else {
+            filteredNotifications = allNotifications;
+          }
 
           Widget bodyContent;
           if (isLoading) {
@@ -151,85 +181,84 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ),
             );
-          } else {
-            final docs = snapshot.data?.docs ?? [];
-            if (docs.isEmpty) {
-              bodyContent = Center(
-                child: EmptyStateWidget(
-                  icon: Icons.notifications_none_rounded,
-                  message: 'বর্তমানে কোনো নোটিফিকেশন নেই',
-                  subtitle:
-                      'নতুন কোনো বিজ্ঞপ্তি বা সতর্কতা এলে এখানে প্রদর্শিত হবে',
-                  action: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () {
-                      (context as Element).markNeedsBuild();
-                    },
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('রিফ্রেশ করুন'),
-                  ),
-                ),
-              );
-            } else {
-              final List<NotificationModel> notifications = [];
-              for (final doc in docs) {
-                try {
-                  notifications.add(NotificationModel.fromFirestore(doc));
-                } catch (e) {
-                  debugPrint(
-                      'NotificationModel parse error for doc ${doc.id}: $e');
-                }
-              }
-              notifications.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          } else if (filteredNotifications.isEmpty) {
+            IconData emptyIcon = Icons.notifications_none_rounded;
+            String emptyMessage = 'বর্তমানে কোনো নোটিফিকেশন নেই';
+            String emptySubtitle = 'নতুন কোনো বিজ্ঞপ্তি বা সতর্কতা এলে এখানে প্রদর্শিত হবে';
 
-              // 1. Notification List UI with ListView.separated and light grey Divider
-              bodyContent = ListView.separated(
-                itemCount: notifications.length,
-                separatorBuilder: (_, __) => Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Colors.grey.shade200,
-                ),
-                itemBuilder: (context, index) {
-                  final item = notifications[index];
-                  return _buildNotificationItem(context, item);
-                },
-              );
+            if (_activeFilter == 'unread') {
+              emptyIcon = Icons.mark_email_read_rounded;
+              emptyMessage = 'কোনো আনরিড নোটিফিকেশন নেই';
+              emptySubtitle = 'আপনার সকল নোটিফিকেশন পড়া সম্পন্ন হয়েছে';
+            } else if (_activeFilter == 'read') {
+              emptyIcon = Icons.drafts_rounded;
+              emptyMessage = 'কোনো রিড নোটিফিকেশন নেই';
+              emptySubtitle = 'পঠিত নোটিফিকেশনগুলো এখানে সংরক্ষিত থাকবে';
             }
+
+            bodyContent = Center(
+              child: EmptyStateWidget(
+                icon: emptyIcon,
+                message: emptyMessage,
+                subtitle: emptySubtitle,
+              ),
+            );
+          } else {
+            bodyContent = ListView.separated(
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              itemCount: filteredNotifications.length,
+              separatorBuilder: (_, __) => Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.grey.shade200,
+              ),
+              itemBuilder: (context, index) {
+                final item = filteredNotifications[index];
+                return _buildNotificationItem(context, item);
+              },
+            );
           }
 
           return Stack(
             fit: StackFit.expand,
             children: [
               Scaffold(
-                backgroundColor: Colors.white,
+                backgroundColor: const Color(0xFFF7FAF7),
                 appBar: AppBar(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFF1B5E20),
                   elevation: 0,
                   leading: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 19),
                     tooltip: 'ফিরে যান',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  title: const Text(
-                    'নোটিফিকেশন',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  title: Column(
+                    children: [
+                      const Text(
+                        'নোটিফিকেশন',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'সকল আপডেট ও জরুরি বার্তা',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 11,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
+                  centerTitle: true,
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.done_all_rounded,
-                          color: Colors.white),
+                          color: Colors.white, size: 21),
                       tooltip: 'সব পঠিত হিসেবে চিহ্নিত করুন',
                       onPressed: () async {
                         final confirm = await GlobalPopup.showConfirm(
@@ -257,7 +286,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     const SizedBox(width: 4),
                   ],
                 ),
-                body: bodyContent,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      // ১. কালারিং টপবার (Colored Top Bar with Category Filter Chips)
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1B5E20).withOpacity(0.25),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+                        child: Row(
+                          children: [
+                            _buildFilterChip(
+                              'all',
+                              'সব',
+                              totalCount,
+                              Icons.notifications_none_rounded,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              'unread',
+                              'আনরিড',
+                              unreadCount,
+                              Icons.mark_email_unread_rounded,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              'read',
+                              'রিড',
+                              readCount,
+                              Icons.mark_email_read_rounded,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // ২. নোটিফিকেশন লিস্ট
+                      Expanded(child: bodyContent),
+                    ],
+                  ),
+                ),
               ),
               if (isLoading)
                 const Positioned.fill(
@@ -266,6 +349,90 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  /// Category Filter Chip (সব, আনরিড, রিড with English badge counts)
+  Widget _buildFilterChip(
+    String key,
+    String label,
+    int count,
+    IconData icon,
+  ) {
+    final isSelected = _activeFilter == key;
+
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          if (_activeFilter != key) {
+            setState(() => _activeFilter = key);
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.18),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? Colors.white : Colors.white.withOpacity(0.32),
+              width: 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF1B5E20)
+                      : Colors.white.withOpacity(0.28),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count', // English digit
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -422,7 +589,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 }
 
-/// ==================== NOTIFICATION DETAILS PAGE ====================
+/// ==================== NOTIFICATION DETAILS PAGE (LEGACY COMPATIBILITY) ====================
 class NotificationDetailScreen extends StatelessWidget {
   final NotificationModel notification;
 
@@ -432,117 +599,121 @@ class NotificationDetailScreen extends StatelessWidget {
   });
 
   String _getCategoryLabel(NotificationModel item) {
-    final t = item.type.toLowerCase();
-    if (t == 'weather' || t.contains('সতর্কতা') || t.contains('আবহাওয়া')) {
-      return 'আবহাওয়া বার্তা';
-    } else if (t == 'crop' || t.contains('ফসল') || t.contains('বালাই')) {
-      return 'ফসল ও রোগবালাই';
-    } else if (t == 'market' || t.contains('বাজার') || t.contains('দর')) {
-      return 'বাজার দর আপডেট';
+    switch (item.type.toLowerCase()) {
+      case 'weather':
+      case 'alert':
+        return 'আবহাওয়া সতর্কবার্তা';
+      case 'fertilizer':
+      case 'dealer':
+        return 'সার ও ডিলার আপডেট';
+      case 'disease':
+      case 'pest':
+        return 'রোগবালাই সতর্কতা';
+      case 'market':
+      case 'price':
+        return 'বাজার দর আপডেট';
+      case 'farming':
+      case 'crop':
+        return 'ফসল ও চাষাবাদ';
+      case 'general':
+      default:
+        return 'সাধারণ বিজ্ঞপ্তি';
     }
-    return 'সাধারণ বিজ্ঞপ্তি';
   }
 
   @override
   Widget build(BuildContext context) {
-    final categoryColor = notification.iconColor;
-    final categoryLabel = _getCategoryLabel(notification);
+    final catColor = notification.iconColor;
+    final catLabel = _getCategoryLabel(notification);
+    final fullDateTime = formatFullDateTimeWithBar(notification.timestamp);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          tooltip: 'ফিরে যান',
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'বিজ্ঞপ্তির বিবরণ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 19,
+        title: Text(
+          catLabel,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ১. একেবারে উপরে স্ক্রিনের প্রস্থ অনুযায়ী বড় করে ব্যানার ছবি (Image)
             if (notification.imageUrl.isNotEmpty)
               CachedNetworkImage(
                 imageUrl: notification.imageUrl,
                 width: double.infinity,
-                height: 240,
+                height: 220,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
                   baseColor: Colors.grey.shade200,
                   highlightColor: Colors.grey.shade50,
                   child: Container(
                     width: double.infinity,
-                    height: 240,
+                    height: 220,
                     color: Colors.white,
                   ),
                 ),
                 errorWidget: (context, url, error) =>
-                    _buildDefaultBanner(categoryColor),
+                    _buildDefaultBanner(catColor),
               )
             else
-              _buildDefaultBanner(categoryColor),
-
-            // Content Container
+              _buildDefaultBanner(catColor),
             Padding(
-              padding: const EdgeInsets.all(18.0),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category Pill Badge
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: categoryColor.withOpacity(0.1),
+                      color: catColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: categoryColor.withOpacity(0.25),
-                        width: 1,
+                        color: catColor.withOpacity(0.25),
+                        width: 0.8,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(notification.icon,
-                            size: 14, color: categoryColor),
-                        const SizedBox(width: 6),
+                        Icon(notification.icon, size: 14, color: catColor),
+                        const SizedBox(width: 5),
                         Text(
-                          categoryLabel,
+                          catLabel,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: categoryColor,
+                            color: catColor,
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // ২. ছবির নিচে বড় ও বোল্ড ফন্টে হেডলাইন (Title)
                   Text(
                     notification.title,
                     style: TextStyle(
-                      fontSize: 21,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: categoryColor,
+                      color: catColor,
                       height: 1.35,
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // ৩. হেডলাইনের নিচে সম্পূর্ণ তারিখ ও সময় (যেমন: "১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM")
                   Row(
                     children: [
                       Icon(
@@ -552,7 +723,7 @@ class NotificationDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        formatFullDateTimeWithBar(notification.timestamp),
+                        fullDateTime,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -561,7 +732,6 @@ class NotificationDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 14),
                   Divider(
                     height: 1,
@@ -569,8 +739,6 @@ class NotificationDetailScreen extends StatelessWidget {
                     color: Colors.grey.shade200,
                   ),
                   const SizedBox(height: 16),
-
-                  // ৪. সম্পূর্ণ বিস্তারিত লেখা (Full Description)
                   Text(
                     notification.message,
                     style: const TextStyle(
@@ -579,7 +747,6 @@ class NotificationDetailScreen extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-
                   const SizedBox(height: 32),
                 ],
               ),
@@ -587,8 +754,6 @@ class NotificationDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      // ৫. পেজের নিচের দিকে বড় কালারফুল অ্যাকশন বাটন (রেড কালার)
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -607,8 +772,7 @@ class NotificationDetailScreen extends StatelessWidget {
             height: 52,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color(0xFFD32F2F), // Vibrant Red like reference
+                backgroundColor: const Color(0xFF1B5E20),
                 foregroundColor: Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -626,13 +790,11 @@ class NotificationDetailScreen extends StatelessWidget {
                   }
                 }
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'এই বিজ্ঞপ্তির সকল বিস্তারিত তথ্য এখানে দেওয়া হয়েছে।'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 2),
-                    ),
+                  GlobalPopup.showNotice(
+                    context,
+                    title: 'বিজ্ঞপ্তি তথ্য',
+                    message:
+                        'এই বিজ্ঞপ্তির সকল বিস্তারিত তথ্য এখানে দেওয়া হয়েছে।',
                   );
                 }
               },

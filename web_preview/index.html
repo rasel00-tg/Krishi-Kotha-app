@@ -3190,24 +3190,50 @@
     </div>
 
     <!-- DEDICATED FULL SCREEN NOTIFICATIONS PAGE -->
-    <div class="full-screen-page" id="notificationsPage">
-      <!-- Dedicated AppBar with Left Back Button & Title "নোটিফিকেশন" -->
-      <div class="app-bar" style="box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <button class="icon-btn" onclick="closeNotificationsPage()" title="ফিরে যান">
-              <i class="fa-solid fa-arrow-left"></i>
-            </button>
-            <h2 style="font-size: 18px; font-weight: 700; color: #fff; margin: 0;">নোটিফিকেশন</h2>
+    <div class="full-screen-page" id="notificationsPage"
+      style="background: #F7FAF7; z-index: 1000; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Header & Topbar matching Crop Calendar / Soil Health -->
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeNotificationsPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center;"
+            title="ফিরে যান">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin: 0;">নোটিফিকেশন</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সকল আপডেট ও জরুরি বার্তা</p>
           </div>
-          <button onclick="markAllNotificationsAsRead()" class="icon-btn" title="সব পঠিত হিসেবে চিহ্নিত করুন">
+          <button onclick="markAllNotificationsAsRead()"
+            style="background: rgba(255, 255, 255, 0.15); border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; cursor: pointer; transition: background 0.2s;"
+            title="সব পঠিত হিসেবে চিহ্নিত করুন">
             <i class="fa-solid fa-check-double"></i>
+          </button>
+        </div>
+
+        <!-- Horizontal Category Filter Chips (All, Unread, Read) with badge counts in English (0-9) -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="notifFilterAll" onclick="setNotifFilter('all')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; color: #1B5E20; box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: all 0.2s ease;">
+            <span>সব</span>
+            <span id="notifBadgeAll" style="background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button id="notifFilterUnread" onclick="setNotifFilter('unread')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
+            <span>আনরিড</span>
+            <span id="notifBadgeUnread" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button id="notifFilterRead" onclick="setNotifFilter('read')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
+            <span>রিড</span>
+            <span id="notifBadgeRead" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
           </button>
         </div>
       </div>
 
       <!-- Full Screen Scrollable Notifications Body -->
-      <div style="flex: 1; overflow-y: auto; padding: 16px 16px 40px 16px;">
+      <div style="flex: 1; overflow-y: auto; padding: 12px 16px 40px 16px;">
         <div class="notif-list" id="notificationsList" style="max-height: none;">
           <!-- Dynamically populated -->
         </div>
@@ -21011,35 +21037,94 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       return 'সাধারণ বিজ্ঞপ্তি';
     }
 
+    let currentNotifFilter = 'all';
+
+    function setNotifFilter(filter) {
+      currentNotifFilter = filter;
+      updateNotifFilterChipsUI();
+      renderNotifications();
+    }
+
+    function updateNotifFilterChipsUI() {
+      const allBtn = document.getElementById('notifFilterAll');
+      const unreadBtn = document.getElementById('notifFilterUnread');
+      const readBtn = document.getElementById('notifFilterRead');
+      const allBadge = document.getElementById('notifBadgeAll');
+      const unreadBadge = document.getElementById('notifBadgeUnread');
+      const readBadge = document.getElementById('notifBadgeRead');
+
+      const total = (notificationsList || []).length;
+      const unread = (notificationsList || []).filter(n => !n.isSeen).length;
+      const read = total - unread;
+
+      if (allBadge) allBadge.textContent = String(total);
+      if (unreadBadge) unreadBadge.textContent = String(unread);
+      if (readBadge) readBadge.textContent = String(read);
+
+      const activeStyle = "flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; color: #1B5E20; box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: all 0.2s ease;";
+      const activeBadgeStyle = "background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;";
+
+      const inactiveStyle = "flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;";
+      const inactiveBadgeStyle = "background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;";
+
+      if (allBtn) allBtn.style.cssText = currentNotifFilter === 'all' ? activeStyle : inactiveStyle;
+      if (allBadge) allBadge.style.cssText = currentNotifFilter === 'all' ? activeBadgeStyle : inactiveBadgeStyle;
+
+      if (unreadBtn) unreadBtn.style.cssText = currentNotifFilter === 'unread' ? activeStyle : inactiveStyle;
+      if (unreadBadge) unreadBadge.style.cssText = currentNotifFilter === 'unread' ? activeBadgeStyle : inactiveBadgeStyle;
+
+      if (readBtn) readBtn.style.cssText = currentNotifFilter === 'read' ? activeStyle : inactiveStyle;
+      if (readBadge) readBadge.style.cssText = currentNotifFilter === 'read' ? activeBadgeStyle : inactiveBadgeStyle;
+    }
+
     function formatExactDateTimeWithBar(rawTime) {
-      if (!rawTime) return '১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM';
+      if (!rawTime) return '15 নভেম্বর 2026 | 06:19 PM';
       const d = new Date(rawTime);
-      if (isNaN(d.getTime())) return '১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM';
+      if (isNaN(d.getTime())) return '15 নভেম্বর 2026 | 06:19 PM';
       const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-      const day = toBengaliDigits(d.getDate());
+      const day = String(d.getDate()).padStart(2, '0');
       const month = months[d.getMonth()];
-      const year = toBengaliDigits(d.getFullYear());
+      const year = d.getFullYear();
       let hours = d.getHours();
-      const minutes = toBengaliDigits(String(d.getMinutes()).padStart(2, '0'));
+      const minutes = String(d.getMinutes()).padStart(2, '0');
       const ampm = hours >= 12 ? 'PM' : 'AM';
       hours = hours % 12;
       hours = hours ? hours : 12;
-      const hoursBn = toBengaliDigits(String(hours).padStart(2, '0'));
-      return `${day} ${month} ${year} | ${hoursBn}:${minutes} ${ampm}`;
+      const hoursStr = String(hours).padStart(2, '0');
+      return `${day} ${month} ${year} | ${hoursStr}:${minutes} ${ampm}`;
     }
 
     function renderNotifications() {
       const container = document.getElementById('notificationsList');
       if (!container) return;
-      if (!notificationsList || !notificationsList.length) {
+
+      updateNotifFilterChipsUI();
+
+      let list = notificationsList || [];
+      if (currentNotifFilter === 'unread') {
+        list = list.filter(n => !n.isSeen);
+      } else if (currentNotifFilter === 'read') {
+        list = list.filter(n => n.isSeen);
+      }
+
+      if (!list || !list.length) {
+        let emptyIcon = 'fa-regular fa-bell-slash';
+        let emptyText = 'বর্তমানে কোনো নোটিফিকেশন নেই';
+        if (currentNotifFilter === 'unread') {
+          emptyIcon = 'fa-regular fa-circle-check';
+          emptyText = 'কোনো আনরিড নোটিফিকেশন নেই';
+        } else if (currentNotifFilter === 'read') {
+          emptyIcon = 'fa-regular fa-envelope-open';
+          emptyText = 'কোনো রিড নোটিফিকেশন নেই';
+        }
         container.innerHTML = `
           <div style="text-align: center; padding: 48px 20px; color: var(--text-secondary);">
-            <i class="fa-regular fa-bell-slash" style="font-size: 40px; color: #bbb; margin-bottom: 12px; display: block;"></i>
-            <span style="font-size: 15px; font-weight: 600;">বর্তমানে কোনো নোটিফিকেশন নেই</span>
+            <i class="${emptyIcon}" style="font-size: 40px; color: #bbb; margin-bottom: 12px; display: block;"></i>
+            <span style="font-size: 15px; font-weight: 600;">${emptyText}</span>
           </div>`;
         return;
       }
-      container.innerHTML = notificationsList.map(n => {
+      container.innerHTML = list.map(n => {
         const catLabel = getNotifCategoryLabel(n.type);
         const cardBg = n.isSeen ? '#FFFFFF' : '#F7FCF7';
         return `
@@ -21087,6 +21172,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function openNotificationsPage() {
+      currentNotifFilter = 'all';
+      updateNotifFilterChipsUI();
       renderNotifications();
       const page = document.getElementById('notificationsPage');
       if (page) {
