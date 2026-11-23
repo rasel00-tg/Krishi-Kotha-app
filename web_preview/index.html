@@ -7806,6 +7806,7 @@
           firebase.initializeApp(firebaseConfig);
         }
         db = firebase.firestore();
+        window.db = db;
       }
     } catch (e) {
       console.warn("User app Firebase init note:", e);
@@ -22429,6 +22430,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
         if (!db) {
           db = firebase.firestore();
+        window.db = db;
         }
         console.log("Firebase Firestore live sync active in User App Web Preview");
       }
@@ -23184,6 +23186,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (!uid) {
         webAgriReminderList = [];
+        window._currentAgriReminderCount = 0;
         updateWebReminderFilterChipsUI();
         if (counterEl) counterEl.textContent = '0/' + MAX_AGRI_REMINDERS;
         if (container) {
@@ -23216,40 +23219,51 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
       if (webAgriReminderUnsub) {
         try { webAgriReminderUnsub(); } catch (_) {}
+        webAgriReminderUnsub = null;
       }
 
-      if (window.db) {
-        webAgriReminderUnsub = db.collection('users')
-          .doc(uid)
-          .collection('agri_reminders')
-          .limit(10)
-          .onSnapshot(snapshot => {
-            const list = [];
-            if (snapshot && !snapshot.empty) {
-              snapshot.forEach(doc => {
-                const d = doc.data() || {};
-                list.push({
-                  id: doc.id,
-                  ...d
+      try {
+        const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+        if (firestoreDb) {
+          webAgriReminderUnsub = firestoreDb.collection('users')
+            .doc(uid)
+            .collection('agri_reminders')
+            .limit(10)
+            .onSnapshot(snapshot => {
+              const list = [];
+              const totalCount = snapshot ? snapshot.size : 0;
+              window._currentAgriReminderCount = totalCount;
+
+              if (snapshot && !snapshot.empty) {
+                snapshot.forEach(doc => {
+                  const d = doc.data() || {};
+                  list.push({
+                    id: doc.id,
+                    ...d
+                  });
                 });
+              }
+              // Sort by updatedAt/createdAt descending
+              list.sort((a, b) => {
+                const aTime = (a.updatedAt && a.updatedAt.seconds) || (a.createdAt && a.createdAt.seconds) || (a.scheduledDateTime ? new Date(a.scheduledDateTime).getTime() : 0);
+                const bTime = (b.updatedAt && b.updatedAt.seconds) || (b.createdAt && b.createdAt.seconds) || (b.scheduledDateTime ? new Date(b.scheduledDateTime).getTime() : 0);
+                return bTime - aTime;
               });
-            }
-            // Sort by updatedAt/createdAt descending
-            list.sort((a, b) => {
-              const aTime = (a.updatedAt && a.updatedAt.seconds) || (a.createdAt && a.createdAt.seconds) || (a.scheduledDateTime ? new Date(a.scheduledDateTime).getTime() : 0);
-              const bTime = (b.updatedAt && b.updatedAt.seconds) || (b.createdAt && b.createdAt.seconds) || (b.scheduledDateTime ? new Date(b.scheduledDateTime).getTime() : 0);
-              return bTime - aTime;
+              webAgriReminderList = list;
+              updateWebReminderFilterChipsUI();
+              renderAgriReminderList();
+              startWebRemindersChecker();
+            }, err => {
+              console.error('Web reminder live sync error:', err);
+              // Even on error, render clean empty state so screen is never blank
+              renderAgriReminderList();
             });
-            webAgriReminderList = list;
-            updateWebReminderFilterChipsUI();
-            renderAgriReminderList();
-            startWebRemindersChecker();
-          }, err => {
-            console.warn('Web reminder live sync error/notice:', err);
-            // Even on error, render clean empty state so screen is never blank
-            renderAgriReminderList();
-          });
-      } else {
+        } else {
+          console.warn('Firestore instance not available for reminders sync');
+          renderAgriReminderList();
+        }
+      } catch (e) {
+        console.error('initWebAgriReminderLiveSync exception:', e);
         renderAgriReminderList();
       }
     }
@@ -23270,7 +23284,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const regBadge = document.getElementById('webReminderBadgeRegular');
       const counterEl = document.getElementById('webAgriReminderLimitCounter');
 
-      const total = webAgriReminderList.length;
+      const total = (typeof window._currentAgriReminderCount === 'number') ? window._currentAgriReminderCount : webAgriReminderList.length;
       const tempCount = webAgriReminderList.filter(r => r.reminderType === 'temporary').length;
       const regCount = webAgriReminderList.filter(r => r.reminderType === 'regular').length;
 
@@ -23445,7 +23459,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           return;
         }
 
-        if (Array.isArray(webAgriReminderList) && webAgriReminderList.length >= MAX_AGRI_REMINDERS) {
+        const currentCount = (typeof window._currentAgriReminderCount === 'number')
+          ? window._currentAgriReminderCount
+          : (Array.isArray(webAgriReminderList) ? webAgriReminderList.length : 0);
+
+        if (currentCount >= MAX_AGRI_REMINDERS) {
           showGlobalPopup({
             title: 'রিমাইন্ডার সীমা পূর্ণ',
             message: 'আপনি সর্বোচ্চ ' + MAX_AGRI_REMINDERS + ' টি রিমাইন্ডার সেট করতে পারবেন। নতুন রিমাইন্ডার যুক্ত করতে পুরোনো একটি ডিলিট করুন।',
@@ -23596,7 +23614,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    let isWebAgriReminderSubmitting = false;
+
     async function saveAgriReminderFromModal() {
+      if (isWebAgriReminderSubmitting) return;
+
       const uData = getWebActiveUserData();
       const uid = uData ? uData.uid : null;
       if (!uid) {
@@ -23626,14 +23648,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      // Check max limit if not edit
-      if (!docId && webAgriReminderList.length >= MAX_AGRI_REMINDERS) {
+      // Check max limit if not edit (Layer 1 Guard)
+      const currentLiveCount = (typeof window._currentAgriReminderCount === 'number')
+        ? window._currentAgriReminderCount
+        : (Array.isArray(webAgriReminderList) ? webAgriReminderList.length : 0);
+
+      if (!docId && currentLiveCount >= MAX_AGRI_REMINDERS) {
         showGlobalPopup({
           title: 'রিমাইন্ডার সীমা পূর্ণ',
           message: 'আপনি সর্বোচ্চ ' + MAX_AGRI_REMINDERS + ' টি রিমাইন্ডার সেট করতে পারবেন। নতুন রিমাইন্ডার যুক্ত করতে পুরোনো একটি ডিলিট করুন।'
         });
         return;
       }
+
+      // Lock double-submit
+      isWebAgriReminderSubmitting = true;
 
       // Show Master Global Loading overlay immediately before any await
       showGlobalLoading('রিমাইন্ডার সেভ হচ্ছে...');
@@ -23679,7 +23708,25 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       };
 
       try {
-        const colRef = db.collection('users').doc(uid).collection('agri_reminders');
+        const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+        if (!firestoreDb) throw new Error('Firestore database is not connected');
+
+        const colRef = firestoreDb.collection('users').doc(uid).collection('agri_reminders');
+
+        // CRITICAL LAYER 2: Direct live Firestore check right before write
+        if (!docId) {
+          const existingSnap = await colRef.limit(5).get();
+          if (existingSnap.size >= MAX_AGRI_REMINDERS) {
+            isWebAgriReminderSubmitting = false;
+            hideGlobalLoading();
+            showGlobalPopup({
+              title: 'রিমাইন্ডার সীমা পূর্ণ',
+              message: 'আপনি সর্বোচ্চ ' + MAX_AGRI_REMINDERS + ' টি রিমাইন্ডার সেট করতে পারবেন। নতুন রিমাইন্ডার যুক্ত করতে পুরোনো একটি ডিলিট করুন।'
+            });
+            return;
+          }
+        }
+
         if (docId) {
           await colRef.doc(docId).update(payload);
         } else {
@@ -23689,11 +23736,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
         hideGlobalLoading();
         closeAgriReminderFormModal();
+        isWebAgriReminderSubmitting = false;
         showGlobalPopup({
           title: 'সফল',
           message: docId ? 'রিমাইন্ডার সফলভাবে আপডেট করা হয়েছে।' : 'রিমাইন্ডার সফলভাবে সেভ করা হয়েছে।'
         });
       } catch (err) {
+        isWebAgriReminderSubmitting = false;
         hideGlobalLoading();
         showGlobalPopup({
           title: 'ত্রুটি',
@@ -23707,7 +23756,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (!uid) return;
 
       try {
-        await db.collection('users').doc(uid).collection('agri_reminders').doc(id).update({
+        const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+        if (!firestoreDb) return;
+        await firestoreDb.collection('users').doc(uid).collection('agri_reminders').doc(id).update({
           isActive: newStatus,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -23726,7 +23777,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         btnText: 'হ্যাঁ, মুছুন',
         onConfirm: async () => {
           try {
-            await db.collection('users').doc(uid).collection('agri_reminders').doc(id).delete();
+            const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+            if (!firestoreDb) return;
+            await firestoreDb.collection('users').doc(uid).collection('agri_reminders').doc(id).delete();
             showGlobalPopup({ title: 'সফল', message: 'রিমাইন্ডারটি সফলভাবে মুছে ফেলা হয়েছে।' });
           } catch (err) {
             showGlobalPopup({ title: 'ত্রুটি', message: 'ডিলিট করতে সমস্যা হয়েছে: ' + err.message });

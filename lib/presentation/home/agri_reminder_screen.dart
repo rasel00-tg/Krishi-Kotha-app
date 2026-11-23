@@ -259,6 +259,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     }
 
     TimeOfDay selectedTime = TimeOfDay.fromDateTime(selectedDate);
+    bool isSubmitting = false;
 
     showModalBottomSheet(
       context: context,
@@ -756,6 +757,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                           elevation: 2,
                         ),
                         onPressed: () async {
+                          if (isSubmitting) return;
+
                           final title = titleController.text.trim();
                           if (title.isEmpty) {
                             GlobalPopup.showNotice(
@@ -766,6 +769,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             );
                             return;
                           }
+
+                          isSubmitting = true;
 
                           // Construct final scheduled datetime
                           final fullScheduledDateTime = DateTime(
@@ -801,14 +806,12 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             final remindersCol =
                                 userRef.collection('agri_reminders');
 
-                            // Strict verify limit before insert (if new)
+                            // Strict 2nd-layer limit verification directly from Firestore before insert (if new)
                             if (!isEdit) {
                               final existingDocs =
-                                  await remindersCol.limit(10).get();
-                              final activeCount = existingDocs.docs
-                                  .where((d) => (d.data())['isActive'] == true)
-                                  .length;
-                              if (activeCount >= maxRemindersLimit) {
+                                  await remindersCol.limit(5).get();
+                              if (existingDocs.docs.length >= maxRemindersLimit) {
+                                isSubmitting = false;
                                 GlobalPopup.hideLoading(context);
                                 if (mounted) {
                                   GlobalPopup.showNotice(
@@ -863,6 +866,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               repeatInterval: repeatInterval,
                             );
 
+                            isSubmitting = false;
                             GlobalPopup.hideLoading(context);
                             Navigator.pop(bottomSheetCtx);
 
@@ -876,6 +880,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               );
                             }
                           } catch (e) {
+                            isSubmitting = false;
                             GlobalPopup.hideLoading(context);
                             if (mounted) {
                               GlobalPopup.showNotice(
@@ -1911,6 +1916,221 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     );
   }
 
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(60),
+      child: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFF1B5E20),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'ফিরে যান',
+        ),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'কৃষি রিমাইন্ডার',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 17.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'সময়মতো কৃষি কাজের সতর্কবার্তা',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 11,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        actions: const [
+          SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader({
+    required int totalCount,
+    required int tempCount,
+    required int regCount,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1B5E20).withOpacity(0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.only(
+          left: 16, right: 16, top: 4, bottom: 14),
+      child: Column(
+        children: [
+          // রিমাইন্ডার লিমিট কাউন্টার ব্যাজ (English Digits: e.g. 2/5)
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.alarm_on_rounded,
+                      size: 14, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Text(
+                    'মোট রিমাইন্ডার: $totalCount/$maxRemindersLimit',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ৩টি ফিল্টার চিপস (সব, অস্থায়ী, নিয়মিত)
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterChip(
+                  'সব',
+                  'all',
+                  totalCount,
+                  Colors.white,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFilterChip(
+                  'অস্থায়ী',
+                  'temporary',
+                  tempCount,
+                  Colors.white,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFilterChip(
+                  'নিয়মিত',
+                  'regular',
+                  regCount,
+                  Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomAddButton(int currentCount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _checkAuthAndShowAddModal(currentCount),
+            borderRadius: BorderRadius.circular(16),
+            child: Ink(
+              height: 54,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1B5E20),
+                    Color(0xFF2E7D32),
+                    Color(0xFF00897B),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2E7D32).withOpacity(0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.22),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'নতুন রিমাইন্ডার যোগ করুন',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 1. Reactive AuthProvider resolution
@@ -1936,647 +2156,450 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
       _ensureStream(activeUid);
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: AppBar(
-          elevation: 0,
-          backgroundColor: const Color(0xFF1B5E20),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.white, size: 20),
-            onPressed: () => Navigator.pop(context),
-            tooltip: 'ফিরে যান',
-          ),
-          title: Column(
-            mainAxisSize: MainAxisSize.min,
+    if (activeUid == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF7FAF7),
+        appBar: _buildAppBar(),
+        body: SafeArea(
+          child: Column(
             children: [
-              const Text(
-                'কৃষি রিমাইন্ডার',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'সময়মতো কৃষি কাজের সতর্কবার্তা',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
-                  fontSize: 11,
-                  fontWeight: FontWeight.normal,
+              _buildHeader(totalCount: 0, tempCount: 0, regCount: 0),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.lock_person_rounded,
+                            size: 54, color: Colors.grey.shade400),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'লগইন প্রয়োজন',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1B5E20),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'রিমাইন্ডার সেট এবং ব্যাকগ্রাউন্ড নোটিফিকেশন পেতে অনুগ্রহ করে আপনার একাউন্টে লগইন করুন।',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade600),
+                        ),
+                        const SizedBox(height: 18),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D32),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 22, vertical: 11),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const PhoneLoginScreen()),
+                            ).then((_) {
+                              if (mounted) {
+                                _resolveInitialUser();
+                              }
+                            });
+                          },
+                          icon: const Icon(Icons.login_rounded, size: 18),
+                          label: const Text('লগইন করুন',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-          centerTitle: true,
-          actions: const [
-            SizedBox(width: 48),
-          ],
         ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ১. কালারিং টপবার হেডার (Colored Header with Counter & Filter Chips)
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1B5E20).withOpacity(0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, top: 4, bottom: 14),
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: _remindersStream,
-                builder: (context, snapshot) {
-                  final allDocs = snapshot.data?.docs ?? [];
-                  final totalCount = allDocs.length;
-                  final tempCount = allDocs
-                      .where((d) =>
-                          (d.data()['reminderType']?.toString() ?? '') ==
-                          'temporary')
-                      .length;
-                  final regCount = allDocs
-                      .where((d) =>
-                          (d.data()['reminderType']?.toString() ?? '') ==
-                          'regular')
-                      .length;
+        bottomNavigationBar: _buildBottomAddButton(0),
+      );
+    }
 
-                  return Column(
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _remindersStream,
+      builder: (context, snapshot) {
+        final allDocs = snapshot.data?.docs ?? [];
+        final totalCount = allDocs.length;
+        final tempCount = allDocs
+            .where((d) =>
+                (d.data()['reminderType']?.toString() ?? '') ==
+                'temporary')
+            .length;
+        final regCount = allDocs
+            .where((d) =>
+                (d.data()['reminderType']?.toString() ?? '') ==
+                'regular')
+            .length;
+
+        Widget bodyContent;
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          bodyContent = const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFF2E7D32),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          debugPrint('Reminders stream error: ${snapshot.error}');
+          bodyContent = const Center(
+            child: EmptyStateWidget(
+              icon: Icons.notifications_none_rounded,
+              message: 'কোনো রিমাইন্ডার নেই',
+              subtitle:
+                  'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।',
+            ),
+          );
+        } else {
+          // Client-Side in-memory sorting by updatedAt / createdAt descending
+          final sortedDocs =
+              List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(
+                  allDocs);
+          sortedDocs.sort((a, b) {
+            final aData = a.data();
+            final bData = b.data();
+            final aTime = (aData['updatedAt'] as Timestamp?)
+                    ?.millisecondsSinceEpoch ??
+                (aData['createdAt'] as Timestamp?)
+                    ?.millisecondsSinceEpoch ??
+                0;
+            final bTime = (bData['updatedAt'] as Timestamp?)
+                    ?.millisecondsSinceEpoch ??
+                (bData['createdAt'] as Timestamp?)
+                    ?.millisecondsSinceEpoch ??
+                0;
+            return bTime.compareTo(aTime);
+          });
+
+          // Client-Side in-memory filtering (Zero Extra Firestore Reads)
+          final filteredDocs = sortedDocs.where((doc) {
+            final data = doc.data();
+            final type = data['reminderType']?.toString() ??
+                'temporary';
+            if (_activeFilter == 'temporary') {
+              return type == 'temporary';
+            } else if (_activeFilter == 'regular') {
+              return type == 'regular';
+            }
+            return true;
+          }).toList();
+
+          if (filteredDocs.isEmpty) {
+            IconData emptyIcon = Icons.notifications_none_rounded;
+            String emptyTitle = 'কোনো রিমাইন্ডার নেই';
+            String emptySub =
+                'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।';
+
+            if (_activeFilter == 'temporary') {
+              emptyIcon = Icons.calendar_today_rounded;
+              emptyTitle = 'কোনো অস্থায়ী রিমাইন্ডার নেই';
+              emptySub =
+                  'এককালীন কোনো কাজের সতর্কবার্তা পেতে নতুন রিমাইন্ডার যোগ করুন।';
+            } else if (_activeFilter == 'regular') {
+              emptyIcon = Icons.repeat_rounded;
+              emptyTitle = 'কোনো নিয়মিত রিমাইন্ডার নেই';
+              emptySub =
+                  'দৈনিক বা সাপ্তাহিক কাজের জন্য নিয়মিত রিমাইন্ডার সেট করুন।';
+            }
+
+            bodyContent = Center(
+              child: EmptyStateWidget(
+                icon: emptyIcon,
+                message: emptyTitle,
+                subtitle: emptySub,
+              ),
+            );
+          } else {
+            bodyContent = ListView.separated(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
+              itemCount: filteredDocs.length,
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final doc = filteredDocs[index];
+                final data = doc.data();
+
+                final title =
+                    data['title']?.toString() ?? 'রিমাইন্ডার';
+                final category =
+                    data['category']?.toString() ?? 'সাধারণ';
+                final reminderType =
+                    data['reminderType']?.toString() ??
+                        'temporary';
+                final repeatInterval =
+                    data['repeatInterval']?.toString() ?? 'none';
+                final note = data['note']?.toString() ?? '';
+                final isActive = data['isActive'] == true;
+
+                final catColor = _getCategoryColor(category);
+                final catIcon = _getCategoryIcon(category);
+
+                // Format scheduled date time
+                String dateTimeText =
+                    data['timeText']?.toString() ?? '';
+                if (reminderType == 'temporary' && data['scheduledDateTime'] != null) {
+                  DateTime? dt;
+                  if (data['scheduledDateTime'] is Timestamp) {
+                    dt = (data['scheduledDateTime'] as Timestamp)
+                        .toDate();
+                  } else if (data['scheduledDateTime']
+                      is String) {
+                    dt = DateTime.tryParse(
+                        data['scheduledDateTime'] as String);
+                  }
+                  if (dt != null) {
+                    final dateStr =
+                        DateFormat('dd/MM/yyyy').format(dt);
+                    final hour = dt.hour % 12 == 0
+                        ? 12
+                        : dt.hour % 12;
+                    final min =
+                        dt.minute.toString().padLeft(2, '0');
+                    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+                    dateTimeText =
+                        '$dateStr | ${hour.toString().padLeft(2, '0')}:$min $ampm';
+                  }
+                }
+
+                String typeLabel = 'অস্থায়ী (একবার)';
+                if (reminderType == 'regular') {
+                  if (repeatInterval == 'daily') {
+                    typeLabel = 'নিয়মিত (প্রতিদিন)';
+                  } else if (repeatInterval == 'weekly') {
+                    typeLabel = 'নিয়মিত (প্রতি সপ্তাহে)';
+                  } else {
+                    typeLabel = 'নিয়মিত';
+                  }
+                }
+
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isActive
+                          ? catColor.withOpacity(0.3)
+                          : Colors.grey.shade300,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // রিমাইন্ডার লিমিট কাউন্টার ব্যাজ (English Digits: e.g. 2/5)
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                      // Top Row: Category badge & Active Toggle
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
                             children: [
-                              const Icon(Icons.alarm_on_rounded,
-                                  size: 14, color: Colors.white),
-                              const SizedBox(width: 6),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color:
+                                      catColor.withOpacity(0.12),
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(catIcon,
+                                        size: 13,
+                                        color: catColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      category,
+                                      style: TextStyle(
+                                        color: catColor,
+                                        fontSize: 11,
+                                        fontWeight:
+                                            FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: reminderType == 'regular'
+                                      ? const Color(0xFFE8F5E9)
+                                      : Colors.orange.shade50,
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  typeLabel,
+                                  style: TextStyle(
+                                    color: reminderType ==
+                                            'regular'
+                                        ? const Color(0xFF1B5E20)
+                                        : Colors.orange.shade900,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Active Switch
+                          Transform.scale(
+                            scale: 0.85,
+                            child: Switch(
+                              value: isActive,
+                              activeColor:
+                                  const Color(0xFF2E7D32),
+                              onChanged: (val) =>
+                                  _toggleReminderStatus(
+                                      doc, val),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Title
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
+                          color: isActive
+                              ? Colors.black87
+                              : Colors.grey.shade500,
+                          decoration: isActive
+                              ? null
+                              : TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Note (if any)
+                      if (note.isNotEmpty) ...[
+                        Text(
+                          note,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.grey.shade700,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+
+                      // Date & Time + Action Buttons
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.schedule_rounded,
+                                  size: 14,
+                                  color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
                               Text(
-                                'মোট রিমাইন্ডার: $totalCount/$maxRemindersLimit',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                dateTimeText,
+                                style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  fontFeatures: [FontFeature.tabularFigures()],
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade800,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
                                   height: 1.3,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ৩টি ফিল্টার চিপস (সব, অস্থায়ী, নিয়মিত)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildFilterChip(
-                              'সব',
-                              'all',
-                              totalCount,
-                              Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildFilterChip(
-                              'অস্থায়ী',
-                              'temporary',
-                              tempCount,
-                              Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildFilterChip(
-                              'নিয়মিত',
-                              'regular',
-                              regCount,
-                              Colors.white,
-                            ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 19,
+                                    color: Color(0xFF0288D1)),
+                                tooltip: 'সম্পাদনা করুন',
+                                constraints:
+                                    const BoxConstraints(),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                onPressed: () =>
+                                    _showReminderFormModal(
+                                        activeUid: activeUid,
+                                        doc: doc),
+                              ),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 19,
+                                    color: Colors.red.shade700),
+                                tooltip: 'মুছে ফেলুন',
+                                constraints:
+                                    const BoxConstraints(),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                onPressed: () =>
+                                    _deleteReminder(doc),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
-                  );
-                },
-              ),
-            ),
-
-            // ২. স্ক্রলযোগ্য বডি (StreamBuilder List View)
-            Expanded(
-              child: activeUid == null
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.lock_person_rounded,
-                                size: 54, color: Colors.grey.shade400),
-                            const SizedBox(height: 14),
-                            const Text(
-                              'লগইন প্রয়োজন',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1B5E20),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'রিমাইন্ডার সেট এবং ব্যাকগ্রাউন্ড নোটিফিকেশন পেতে অনুগ্রহ করে আপনার একাউন্টে লগইন করুন।',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 13, color: Colors.grey.shade600),
-                            ),
-                            const SizedBox(height: 18),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E7D32),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 22, vertical: 11),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const PhoneLoginScreen()),
-                                ).then((_) {
-                                  if (mounted) {
-                                    _resolveInitialUser();
-                                  }
-                                });
-                              },
-                              icon: const Icon(Icons.login_rounded, size: 18),
-                              label: const Text('লগইন করুন',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                      stream: _remindersStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFF2E7D32),
-                            ),
-                          );
-                        }
-
-                        if (snapshot.hasError) {
-                          debugPrint('Reminders stream error: ${snapshot.error}');
-                          return const Center(
-                            child: EmptyStateWidget(
-                              icon: Icons.notifications_none_rounded,
-                              message: 'কোনো রিমাইন্ডার নেই',
-                              subtitle:
-                                  'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।',
-                            ),
-                          );
-                        }
-
-                        final docs = snapshot.data?.docs ?? [];
-
-                        // Client-Side in-memory sorting by updatedAt / createdAt descending
-                        final sortedDocs =
-                            List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(
-                                docs);
-                        sortedDocs.sort((a, b) {
-                          final aData = a.data();
-                          final bData = b.data();
-                          final aTime = (aData['updatedAt'] as Timestamp?)
-                                  ?.millisecondsSinceEpoch ??
-                              (aData['createdAt'] as Timestamp?)
-                                  ?.millisecondsSinceEpoch ??
-                              0;
-                          final bTime = (bData['updatedAt'] as Timestamp?)
-                                  ?.millisecondsSinceEpoch ??
-                              (bData['createdAt'] as Timestamp?)
-                                  ?.millisecondsSinceEpoch ??
-                              0;
-                          return bTime.compareTo(aTime);
-                        });
-
-                        // Client-Side in-memory filtering (Zero Extra Firestore Reads)
-                        final filteredDocs = sortedDocs.where((doc) {
-                          final data = doc.data();
-                          final type = data['reminderType']?.toString() ??
-                              'temporary';
-                          if (_activeFilter == 'temporary') {
-                            return type == 'temporary';
-                          } else if (_activeFilter == 'regular') {
-                            return type == 'regular';
-                          }
-                          return true;
-                        }).toList();
-
-                        if (filteredDocs.isEmpty) {
-                          IconData emptyIcon = Icons.notifications_none_rounded;
-                          String emptyTitle = 'কোনো রিমাইন্ডার নেই';
-                          String emptySub =
-                              'এখনো কোনো কৃষি রিমাইন্ডার সেট করা হয়নি। নিচের বাটনে চাপ দিয়ে নতুন রিমাইন্ডার যোগ করুন।';
-
-                          if (_activeFilter == 'temporary') {
-                            emptyIcon = Icons.calendar_today_rounded;
-                            emptyTitle = 'কোনো অস্থায়ী রিমাইন্ডার নেই';
-                            emptySub =
-                                'এককালীন কোনো কাজের সতর্কবার্তা পেতে নতুন রিমাইন্ডার যোগ করুন।';
-                          } else if (_activeFilter == 'regular') {
-                            emptyIcon = Icons.repeat_rounded;
-                            emptyTitle = 'কোনো নিয়মিত রিমাইন্ডার নেই';
-                            emptySub =
-                                'দৈনিক বা সাপ্তাহিক কাজের জন্য নিয়মিত রিমাইন্ডার সেট করুন।';
-                          }
-
-                          return Center(
-                            child: EmptyStateWidget(
-                              icon: emptyIcon,
-                              message: emptyTitle,
-                              subtitle: emptySub,
-                            ),
-                          );
-                        }
-
-                        return ListView.separated(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          itemCount: filteredDocs.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final doc = filteredDocs[index];
-                            final data = doc.data();
-
-                            final title =
-                                data['title']?.toString() ?? 'রিমাইন্ডার';
-                            final category =
-                                data['category']?.toString() ?? 'সাধারণ';
-                            final reminderType =
-                                data['reminderType']?.toString() ??
-                                    'temporary';
-                            final repeatInterval =
-                                data['repeatInterval']?.toString() ?? 'none';
-                            final note = data['note']?.toString() ?? '';
-                            final isActive = data['isActive'] == true;
-
-                            final catColor = _getCategoryColor(category);
-                            final catIcon = _getCategoryIcon(category);
-
-                            // Format scheduled date time
-                            String dateTimeText =
-                                data['timeText']?.toString() ?? '';
-                            if (reminderType == 'temporary' && data['scheduledDateTime'] != null) {
-                              DateTime? dt;
-                              if (data['scheduledDateTime'] is Timestamp) {
-                                dt = (data['scheduledDateTime'] as Timestamp)
-                                    .toDate();
-                              } else if (data['scheduledDateTime']
-                                  is String) {
-                                dt = DateTime.tryParse(
-                                    data['scheduledDateTime'] as String);
-                              }
-                              if (dt != null) {
-                                final dateStr =
-                                    DateFormat('dd/MM/yyyy').format(dt);
-                                final hour = dt.hour % 12 == 0
-                                    ? 12
-                                    : dt.hour % 12;
-                                final min =
-                                    dt.minute.toString().padLeft(2, '0');
-                                final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-                                dateTimeText =
-                                    '$dateStr | ${hour.toString().padLeft(2, '0')}:$min $ampm';
-                              }
-                            }
-
-                            String typeLabel = 'অস্থায়ী (একবার)';
-                            if (reminderType == 'regular') {
-                              if (repeatInterval == 'daily') {
-                                typeLabel = 'নিয়মিত (প্রতিদিন)';
-                              } else if (repeatInterval == 'weekly') {
-                                typeLabel = 'নিয়মিত (প্রতি সপ্তাহে)';
-                              } else {
-                                typeLabel = 'নিয়মিত';
-                              }
-                            }
-
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isActive
-                                      ? catColor.withOpacity(0.3)
-                                      : Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(14),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top Row: Category badge & Active Toggle
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  catColor.withOpacity(0.12),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(catIcon,
-                                                    size: 13,
-                                                    color: catColor),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  category,
-                                                  style: TextStyle(
-                                                    color: catColor,
-                                                    fontSize: 11,
-                                                    fontWeight:
-                                                        FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: reminderType == 'regular'
-                                                  ? const Color(0xFFE8F5E9)
-                                                  : Colors.orange.shade50,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              typeLabel,
-                                              style: TextStyle(
-                                                color: reminderType ==
-                                                        'regular'
-                                                    ? const Color(0xFF1B5E20)
-                                                    : Colors.orange.shade900,
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      // Active Switch
-                                      Transform.scale(
-                                        scale: 0.85,
-                                        child: Switch(
-                                          value: isActive,
-                                          activeColor:
-                                              const Color(0xFF2E7D32),
-                                          onChanged: (val) =>
-                                              _toggleReminderStatus(
-                                                  doc, val),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-
-                                  // Title
-                                  Text(
-                                    title,
-                                    style: TextStyle(
-                                      fontSize: 15.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: isActive
-                                          ? Colors.black87
-                                          : Colors.grey.shade500,
-                                      decoration: isActive
-                                          ? null
-                                          : TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-
-                                  // Note (if any)
-                                  if (note.isNotEmpty) ...[
-                                    Text(
-                                      note,
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        color: Colors.grey.shade700,
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                  ],
-
-                                  // Date & Time + Action Buttons
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.schedule_rounded,
-                                              size: 14,
-                                              color: Colors.grey.shade600),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            dateTimeText,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey.shade800,
-                                              fontFeatures: const [FontFeature.tabularFigures()],
-                                              height: 1.3,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(
-                                                Icons.edit_outlined,
-                                                size: 19,
-                                                color: Color(0xFF0288D1)),
-                                            tooltip: 'সম্পাদনা করুন',
-                                            constraints:
-                                                const BoxConstraints(),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 4),
-                                            onPressed: () =>
-                                                _showReminderFormModal(
-                                                    activeUid: activeUid,
-                                                    doc: doc),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          IconButton(
-                                            icon: Icon(
-                                                Icons.delete_outline_rounded,
-                                                size: 19,
-                                                color: Colors.red.shade700),
-                                            tooltip: 'মুছে ফেলুন',
-                                            constraints:
-                                                const BoxConstraints(),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 4),
-                                            onPressed: () =>
-                                                _deleteReminder(doc),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: _remindersStream,
-            builder: (context, snapshot) {
-              final allDocs = snapshot.data?.docs ?? [];
-              final totalCount = allDocs.length;
-              return Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _checkAuthAndShowAddModal(totalCount),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Ink(
-                    height: 54,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF1B5E20),
-                          Color(0xFF2E7D32),
-                          Color(0xFF00897B),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2E7D32).withOpacity(0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.22),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'নতুন রিমাইন্ডার যোগ করুন',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
+                );
+              },
+            );
+          }
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF7FAF7),
+          appBar: _buildAppBar(),
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(
+                  totalCount: totalCount,
+                  tempCount: tempCount,
+                  regCount: regCount,
                 ),
-              );
-            },
+                Expanded(child: bodyContent),
+              ],
+            ),
           ),
-        ),
-      ),
+          bottomNavigationBar: _buildBottomAddButton(totalCount),
+        );
+      },
     );
   }
 }
