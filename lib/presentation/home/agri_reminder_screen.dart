@@ -254,6 +254,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (bottomSheetCtx) {
         return StatefulBuilder(
@@ -594,6 +596,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                 onTap: () async {
                                   final picked = await showDatePicker(
                                     context: context,
+                                    useRootNavigator: true,
                                     initialDate: selectedDate,
                                     firstDate: DateTime.now().subtract(
                                         const Duration(days: 1)),
@@ -656,6 +659,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                 onTap: () async {
                                   final picked = await showTimePicker(
                                     context: context,
+                                    useRootNavigator: true,
                                     initialTime: selectedTime,
                                   );
                                   if (picked != null) {
@@ -1115,14 +1119,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
             ],
           ),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add_alert_rounded,
-                  color: Colors.white, size: 22),
-              tooltip: 'নতুন রিমাইন্ডার',
-              onPressed: () => _checkAuthAndShowAddModal(0),
-            ),
-            const SizedBox(width: 4),
+          actions: const [
+            SizedBox(width: 48),
           ],
         ),
       ),
@@ -1170,63 +1168,31 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                   return Column(
                     children: [
                       // রিমাইন্ডার লিমিট কাউন্টার ব্যাজ (English Digits: e.g. 2/5)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.18),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.alarm_on_rounded,
-                                    size: 14, color: Colors.white),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'মোট রিমাইন্ডার: $totalCount/$maxRemindersLimit',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.alarm_on_rounded,
+                                  size: 14, color: Colors.white),
+                              const SizedBox(width: 6),
+                              Text(
+                                'মোট রিমাইন্ডার: $totalCount/$maxRemindersLimit',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () =>
-                                _checkAuthAndShowAddModal(totalCount),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.add_circle_outline_rounded,
-                                      size: 14, color: Color(0xFF1B5E20)),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    '+ নতুন রিমাইন্ডার',
-                                    style: TextStyle(
-                                      color: Color(0xFF1B5E20),
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                       const SizedBox(height: 12),
 
@@ -1373,7 +1339,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                           String emptyTitle =
                               'বর্তমানে কোনো রিমাইন্ডার সেট করা নেই';
                           String emptySub =
-                              'নতুন রিমাইন্ডার সেট করতে "+ নতুন রিমাইন্ডার" চাপুন';
+                              'নতুন রিমাইন্ডার সেট করতে নিচের "নতুন রিমাইন্ডার যোগ করুন" বাটনে চাপুন';
 
                           if (_activeFilter == 'temporary') {
                             emptyIcon = Icons.event_busy_rounded;
@@ -1653,6 +1619,88 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.grey.shade200, width: 1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: _remindersStream,
+            builder: (context, snapshot) {
+              final allDocs = snapshot.data?.docs ?? [];
+              final totalCount = allDocs.length;
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _checkAuthAndShowAddModal(totalCount),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Ink(
+                    height: 54,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF1B5E20),
+                          Color(0xFF2E7D32),
+                          Color(0xFF00897B),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2E7D32).withOpacity(0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.22),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'নতুন রিমাইন্ডার যোগ করুন',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
