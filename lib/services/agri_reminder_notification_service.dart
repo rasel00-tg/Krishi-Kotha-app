@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -6,10 +8,14 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/services/auth_service.dart';
+import '../presentation/home/agri_reminder_alarm_screen.dart';
 
 class AgriReminderNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   static const String channelId = 'krishi_kotha_agri_reminders';
   static const String channelName = 'কৃষি রিমাইন্ডার';
@@ -76,10 +82,21 @@ class AgriReminderNotificationService {
         initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
           debugPrint('Notification clicked: ${response.payload}');
+          _handleNotificationPayload(response.payload);
         },
       );
 
-      // 4. Create high-importance Android notification channel
+      // Check if application was launched via notification response
+      final launchDetails =
+          await _notificationsPlugin.getNotificationAppLaunchDetails();
+      if (launchDetails != null &&
+          launchDetails.didNotificationLaunchApp &&
+          launchDetails.notificationResponse != null) {
+        _handleNotificationPayload(
+            launchDetails.notificationResponse!.payload);
+      }
+
+      // 4. Create high-importance Android notification channel with Alarm attributes
       if (!kIsWeb && Platform.isAndroid) {
         final androidImplementation = _notificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -93,6 +110,7 @@ class AgriReminderNotificationService {
             importance: Importance.max,
             playSound: true,
             enableVibration: true,
+            audioAttributesUsage: AudioAttributesUsage.alarm,
           );
           await androidImplementation.createNotificationChannel(channel);
 
@@ -131,6 +149,30 @@ class AgriReminderNotificationService {
     }
   }
 
+  /// Handles notification response and navigates to Full-Screen Alarm Screen
+  static void _handleNotificationPayload(String? payload) {
+    if (payload == null || payload.trim().isEmpty) return;
+    try {
+      final data = json.decode(payload) as Map<String, dynamic>;
+      openAlarmScreenDirectly(data);
+    } catch (e) {
+      debugPrint('Error handling reminder launch payload: $e');
+    }
+  }
+
+  /// Directly opens the AgriReminderAlarmScreen using root navigator
+  static void openAlarmScreenDirectly(Map<String, dynamic> reminderData) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => AgriReminderAlarmScreen(reminderData: reminderData),
+          ),
+        );
+      }
+    });
+  }
+
   /// Schedule a reminder notification locally on device
   static Future<bool> scheduleReminder({
     required int notificationId,
@@ -139,6 +181,9 @@ class AgriReminderNotificationService {
     required DateTime scheduledDateTime,
     required String reminderType, // 'temporary' | 'regular'
     required String repeatInterval, // 'none' | 'daily' | 'weekly'
+    String category = 'সাধারণ',
+    String timeText = '',
+    String note = '',
   }) async {
     try {
       if (!_isInitialized) await initialize();
@@ -149,7 +194,12 @@ class AgriReminderNotificationService {
         channelName,
         channelDescription: channelDescription,
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
+        fullScreenIntent: true,
+        category: AndroidNotificationCategory.alarm,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+        ongoing: true,
+        autoCancel: false,
         playSound: true,
         enableVibration: true,
         icon: '@mipmap/ic_launcher',
@@ -165,6 +215,18 @@ class AgriReminderNotificationService {
         android: androidDetails,
         iOS: iosDetails,
       );
+
+      final String payloadStr = json.encode({
+        'notificationId': notificationId,
+        'title': title,
+        'category': category,
+        'body': body,
+        'reminderType': reminderType,
+        'repeatInterval': repeatInterval,
+        'scheduledDateTime': scheduledDateTime.toIso8601String(),
+        'timeText': timeText,
+        'note': note,
+      });
 
       final tz.TZDateTime tzScheduledTime =
           tz.TZDateTime.from(scheduledDateTime, tz.local);
@@ -182,6 +244,7 @@ class AgriReminderNotificationService {
             body: body,
             scheduledDate: firstTrigger,
             notificationDetails: platformDetails,
+            payload: payloadStr,
             matchDateTimeComponents: matchComponent,
           );
           debugPrint('Daily reminder scheduled: ID $notificationId at ${firstTrigger.toString()}');
@@ -202,6 +265,7 @@ class AgriReminderNotificationService {
             body: body,
             scheduledDate: firstTrigger,
             notificationDetails: platformDetails,
+            payload: payloadStr,
             matchDateTimeComponents: matchComponent,
           );
           debugPrint('Weekly reminder scheduled: ID $notificationId at ${firstTrigger.toString()}');
@@ -221,6 +285,7 @@ class AgriReminderNotificationService {
         body: body,
         scheduledDate: tzScheduledTime,
         notificationDetails: platformDetails,
+        payload: payloadStr,
       );
       debugPrint('Temporary reminder scheduled: ID $notificationId at ${tzScheduledTime.toString()}');
       return true;
@@ -237,6 +302,7 @@ class AgriReminderNotificationService {
     required String body,
     required tz.TZDateTime scheduledDate,
     required NotificationDetails notificationDetails,
+    String? payload,
     DateTimeComponents? matchDateTimeComponents,
   }) async {
     try {
@@ -246,6 +312,7 @@ class AgriReminderNotificationService {
         body,
         scheduledDate,
         notificationDetails,
+        payload: payload,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -259,6 +326,7 @@ class AgriReminderNotificationService {
         body,
         scheduledDate,
         notificationDetails,
+        payload: payload,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -365,6 +433,9 @@ class AgriReminderNotificationService {
             scheduledDateTime: scheduledDate,
             reminderType: reminderType,
             repeatInterval: repeatInterval,
+            category: category,
+            timeText: data['timeText']?.toString() ?? '',
+            note: note,
           );
           if (ok) scheduledCount++;
         }

@@ -43,11 +43,11 @@ export default {
       try {
         const rawFileName = url.searchParams.get("filename") || request.headers.get("x-filename") || `upload_${Date.now()}.jpg`;
         const cleanFileName = rawFileName.replace(/[^a-zA-Z0-9_\.\-]/g, "_");
-        const contentType = request.headers.get("content-type") || "image/jpeg";
+        const contentType = request.headers.get("content-type") || "application/octet-stream";
 
         const fileBytes = await request.arrayBuffer();
         if (!fileBytes || fileBytes.byteLength === 0) {
-          return new Response(JSON.stringify({ success: false, error: "No image bytes received" }), {
+          return new Response(JSON.stringify({ success: false, error: "No file bytes received" }), {
             status: 400,
             headers: corsHeaders,
           });

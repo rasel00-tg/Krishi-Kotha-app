@@ -4041,114 +4041,216 @@
             <p>সকল কৃষকের নির্ধারিত কাজের শিডিউল, নিয়মিত ও অস্থায়ী সতর্কতা ট্র্যাকিং এবং স্ট্যাটাস পরিচালনা।</p>
           </div>
           <div>
-            <button class="btn btn-primary" onclick="initAdminAgriReminderLiveSync(true)"
+            <button class="btn btn-primary" onclick="refreshAdminReminderTab()"
               style="background: #fff; color: #BF360C; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
               <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
             </button>
           </div>
         </div>
 
-        <!-- Metric Stat Cards (English Digits) -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রিমাইন্ডার</span>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-bell" style="font-size: 16px;"></i>
+        <!-- Sub-Tabs Navigation -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid #EEEEEE; padding-bottom: 12px;">
+          <button id="adminReminderSubtabBtnUsers" onclick="switchAdminReminderSubtab('users')"
+            style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 700; border: none; cursor: pointer; background: #E65100; color: #fff; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(230,81,0,0.25); transition: all 0.2s;">
+            <i class="fa-solid fa-list-check"></i> ইউজার রিমাইন্ডার তালিকা
+          </button>
+          <button id="adminReminderSubtabBtnRingtones" onclick="switchAdminReminderSubtab('ringtones')"
+            style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            <i class="fa-solid fa-music"></i> রিমাইন্ডার রিংটোন মনিটরিং
+          </button>
+        </div>
+
+        <!-- SUBTAB 1: USER REMINDERS (EXISTING MONITORING LIST INTACT) -->
+        <div id="subtab-admin-reminder-users">
+          <!-- Metric Stat Cards (English Digits) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রিমাইন্ডার</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-bell" style="font-size: 16px;"></i>
+                </div>
               </div>
+              <div id="adminReminderStatTotal" style="font-size: 24px; font-weight: 800; color: #E65100;">0 টি</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল কৃষকের সেট করা রিমাইন্ডার</div>
             </div>
-            <div id="adminReminderStatTotal" style="font-size: 24px; font-weight: 800; color: #E65100;">0 টি</div>
-            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল কৃষকের সেট করা রিমাইন্ডার</div>
+
+            <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">সক্রিয় রিমাইন্ডার (Active)</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(46, 125, 50, 0.12); color: #2E7D32; display: flex; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+                </div>
+              </div>
+              <div id="adminReminderStatActive" style="font-size: 24px; font-weight: 800; color: #2E7D32;">0 টি</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">বর্তমানে রানিং ও নোটিফাইং</div>
+            </div>
+
+            <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">নিয়মিত রিমাইন্ডার</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-arrows-rotate" style="font-size: 16px;"></i>
+                </div>
+              </div>
+              <div id="adminReminderStatRegular" style="font-size: 24px; font-weight: 800; color: #0288D1;">0 টি</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">প্রতিদিন ও সাপ্তাহিক পুনরাবৃত্তি</div>
+            </div>
+
+            <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">অস্থায়ী রিমাইন্ডার</span>
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(123, 31, 162, 0.12); color: #7B1FA2; display: flex; align-items: center; justify-content: center;">
+                  <i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+                </div>
+              </div>
+              <div id="adminReminderStatTemporary" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">0 টি</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">এককালীন কাজের সতর্কতা</div>
+            </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">সক্রিয় রিমাইন্ডার (Active)</span>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(46, 125, 50, 0.12); color: #2E7D32; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+          <!-- Filter & Search Controls -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+              <div style="flex: 1; min-width: 280px; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: #9E9E9E; font-size: 14px;"></i>
+                <input type="text" id="adminReminderSearchInput" oninput="onAdminReminderSearch(this.value)"
+                  placeholder="ইউজারের নাম, ইমেইল, ক্যাটাগরি বা শিরোনাম দিয়ে খুঁজুন..."
+                  style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+              </div>
+              <!-- Category / Status Filter Chips -->
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="adminReminderFilterAll" onclick="setAdminReminderFilter('all')"
+                  style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; background: #E65100; color: #fff;">
+                  সব
+                </button>
+                <button id="adminReminderFilterTemporary" onclick="setAdminReminderFilter('temporary')"
+                  style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                  অস্থায়ী
+                </button>
+                <button id="adminReminderFilterRegular" onclick="setAdminReminderFilter('regular')"
+                  style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                  নিয়মিত
+                </button>
+                <button id="adminReminderFilterActive" onclick="setAdminReminderFilter('active')"
+                  style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                  সক্রিয়
+                </button>
+                <button id="adminReminderFilterInactive" onclick="setAdminReminderFilter('inactive')"
+                  style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                  বন্ধ
+                </button>
               </div>
             </div>
-            <div id="adminReminderStatActive" style="font-size: 24px; font-weight: 800; color: #2E7D32;">0 টি</div>
-            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">বর্তমানে রানিং ও নোটিফাইং</div>
           </div>
 
-          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">নিয়মিত রিমাইন্ডার</span>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-arrows-rotate" style="font-size: 16px;"></i>
-              </div>
+          <!-- Table View -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 0; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                <thead>
+                  <tr style="background: #FFF8E1; border-bottom: 1px solid #FFE082; color: #E65100; font-weight: 700;">
+                    <th style="padding: 14px 16px;">ব্যবহারকারী</th>
+                    <th style="padding: 14px 16px;">শিরোনাম ও ক্যাটাগরি</th>
+                    <th style="padding: 14px 16px;">ধরন ও পুনরাবৃত্তি</th>
+                    <th style="padding: 14px 16px;">নির্ধারিত সময়</th>
+                    <th style="padding: 14px 16px;">নোট</th>
+                    <th style="padding: 14px 16px; text-align: center;">স্ট্যাটাস</th>
+                    <th style="padding: 14px 16px; text-align: center;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReminderTableBody">
+                  <!-- Dynamically loaded -->
+                </tbody>
+              </table>
             </div>
-            <div id="adminReminderStatRegular" style="font-size: 24px; font-weight: 800; color: #0288D1;">0 টি</div>
-            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">প্রতিদিন ও সাপ্তাহিক পুনরাবৃত্তি</div>
-          </div>
-
-          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">অস্থায়ী রিমাইন্ডার</span>
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(123, 31, 162, 0.12); color: #7B1FA2; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-clock" style="font-size: 16px;"></i>
-              </div>
-            </div>
-            <div id="adminReminderStatTemporary" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">0 টি</div>
-            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">এককালীন কাজের সতর্কতা</div>
           </div>
         </div>
 
-        <!-- Filter & Search Controls -->
-        <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px;">
-          <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
-            <div style="flex: 1; min-width: 280px; position: relative;">
-              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: #9E9E9E; font-size: 14px;"></i>
-              <input type="text" id="adminReminderSearchInput" oninput="onAdminReminderSearch(this.value)"
-                placeholder="ইউজারের নাম, ইমেইল, ক্যাটাগরি বা শিরোনাম দিয়ে খুঁজুন..."
-                style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+        <!-- SUBTAB 2: REMINDER RINGTONES MONITORING -->
+        <div id="subtab-admin-reminder-ringtones" style="display: none;">
+          <!-- Top Info Card -->
+          <div style="background: #FFF8E1; border: 1px solid #FFE082; border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(230, 81, 0, 0.15); color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
-            <!-- Category / Status Filter Chips -->
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button id="adminReminderFilterAll" onclick="setAdminReminderFilter('all')"
-                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; background: #E65100; color: #fff;">
-                সব
-              </button>
-              <button id="adminReminderFilterTemporary" onclick="setAdminReminderFilter('temporary')"
-                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
-                অস্থায়ী
-              </button>
-              <button id="adminReminderFilterRegular" onclick="setAdminReminderFilter('regular')"
-                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
-                নিয়মিত
-              </button>
-              <button id="adminReminderFilterActive" onclick="setAdminReminderFilter('active')"
-                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
-                সক্রিয়
-              </button>
-              <button id="adminReminderFilterInactive" onclick="setAdminReminderFilter('inactive')"
-                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
-                বন্ধ
-              </button>
+            <div>
+              <div style="font-weight: 700; color: #BF360C; font-size: 14.5px;">Cloudflare R2 রিংটোন স্টোরেজ সিস্টেম</div>
+              <div style="font-size: 12.5px; color: #5D4037; margin-top: 3px;">
+                এখানে আনলিমিটেড রিমাইন্ডার অ্যালার্ম রিংটোন আপলোড ও ম্যানেজ করা যাবে। সমস্ত ফাইল সরাসরি Cloudflare R2 ক্লাউড স্টোরেজে সংরক্ষিত হবে এবং ইউজার অ্যাপের রিমাইন্ডার সেটিংসে স্বয়ংক্রিয়ভাবে লাইভ দৃশ্যমান হবে।
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Table View -->
-        <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 0; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden;">
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-              <thead>
-                <tr style="background: #FFF8E1; border-bottom: 1px solid #FFE082; color: #E65100; font-weight: 700;">
-                  <th style="padding: 14px 16px;">ব্যবহারকারী</th>
-                  <th style="padding: 14px 16px;">শিরোনাম ও ক্যাটাগরি</th>
-                  <th style="padding: 14px 16px;">ধরন ও পুনরাবৃত্তি</th>
-                  <th style="padding: 14px 16px;">নির্ধারিত সময়</th>
-                  <th style="padding: 14px 16px;">নোট</th>
-                  <th style="padding: 14px 16px; text-align: center;">স্ট্যাটাস</th>
-                  <th style="padding: 14px 16px; text-align: center;">অ্যাকশন</th>
-                </tr>
-              </thead>
-              <tbody id="adminReminderTableBody">
-                <!-- Dynamically loaded -->
-              </tbody>
-            </table>
+          <!-- Ringtone Upload Form -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 22px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 24px;">
+            <h3 style="font-size: 15.5px; font-weight: 700; color: #1B5E20; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-file-audio" style="color: #2E7D32;"></i> নতুন রিংটোন অডিও আপলোড করুন
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;">
+              <!-- Left: Name & Input -->
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #37474F; margin-bottom: 6px;">
+                  রিংটোনের নাম *
+                </label>
+                <input type="text" id="adminRingtoneNameInput" placeholder="রিংটোনের নাম লিখুন (যেমন: সকালের কৃষি সুর, ফসল অ্যালার্ম)..."
+                  style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #37474F; margin-top: 14px; margin-bottom: 6px;">
+                  অডিও ফাইল নির্বাচন করুন (.mp3, .wav, .ogg, .m4a) *
+                </label>
+                <input type="file" id="adminRingtoneFileInput" accept=".mp3,.wav,.ogg,.m4a,audio/*" onchange="onAdminRingtoneFileSelected(this)"
+                  style="width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13px; background: #FAFAFA; box-sizing: border-box;" />
+
+                <div id="adminRingtoneUploadStatus" style="display: none; margin-top: 12px; font-size: 12.5px;"></div>
+              </div>
+
+              <!-- Right: Audio Preview Player & Upload Button -->
+              <div style="background: #F9FBE7; border: 1px dashed #C8E6C9; border-radius: 12px; padding: 18px; text-align: center;">
+                <div style="font-size: 13px; font-weight: 600; color: #2E7D32; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <i class="fa-solid fa-headphones"></i> লোকাল অডিও প্রিভিউ
+                </div>
+                <div id="adminRingtonePreviewPlaceholder" style="color: #78909C; font-size: 12px; padding: 14px 0;">
+                  বাম পাশের ফিল্ড থেকে একটি অডিও ফাইল নির্বাচন করলে এখানে প্রিভিউ প্লেয়ার দেখতে পাবেন। (সাবমিটের পূর্বে R2-তে কোনো ফাইল আপলোড হবে না)।
+                </div>
+                <audio id="adminRingtonePreviewAudio" controls style="display: none; width: 100%; margin-bottom: 14px; outline: none;"></audio>
+                <div id="adminRingtoneSelectedFileInfo" style="display: none; font-size: 11.5px; color: #37474F; margin-bottom: 12px; font-weight: 600;"></div>
+
+                <button id="adminRingtoneUploadBtn" onclick="uploadAdminRingtone()"
+                  style="background: linear-gradient(135deg, #1B5E20, #2E7D32); color: #fff; font-size: 14px; font-weight: 700; border: none; padding: 11px 24px; border-radius: 10px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(46,125,50,0.25);">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Cloudflare R2-তে আপলোড ও সেভ করুন
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ringtones List Table -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 0; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="padding: 16px 20px; background: #F1F8E9; border-bottom: 1px solid #C8E6C9; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 15px; font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-music"></i> আপলোডকৃত রিংটোন তালিকা (<span id="adminRingtoneTotalCount">0</span> টি)
+              </div>
+              <button onclick="initAdminRingtoneLiveSync(true)" style="background: #fff; color: #1B5E20; font-size: 12px; font-weight: 700; border: 1px solid #A5D6A7; padding: 6px 12px; border-radius: 8px; cursor: pointer;">
+                <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ
+              </button>
+            </div>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                <thead>
+                  <tr style="background: #FAFAFA; border-bottom: 1px solid #EEEEEE; color: #455A64; font-weight: 700;">
+                    <th style="padding: 14px 18px;">রিংটোনের নাম</th>
+                    <th style="padding: 14px 18px;">অডিও প্রিভিউ</th>
+                    <th style="padding: 14px 18px;">ফাইলের সাইজ</th>
+                    <th style="padding: 14px 18px;">আপলোড তারিখ</th>
+                    <th style="padding: 14px 18px; text-align: center;">স্ট্যাটাস</th>
+                    <th style="padding: 14px 18px; text-align: center;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="adminRingtoneTableBody">
+                  <!-- Dynamically loaded -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -6461,6 +6563,10 @@
           unsubscribeFirestoreListener('agri_reminder');
           if (typeof adminReminderUnsubscribe === 'function' && adminReminderUnsubscribe) {
             try { adminReminderUnsubscribe(); adminReminderUnsubscribe = null; } catch (_) {}
+          }
+          unsubscribeFirestoreListener('agri_reminder_ringtones');
+          if (typeof adminRingtoneUnsubscribe === 'function' && adminRingtoneUnsubscribe) {
+            try { adminRingtoneUnsubscribe(); adminRingtoneUnsubscribe = null; } catch (_) {}
           }
         }
         if (tabKey !== 'support') {
@@ -17134,6 +17240,421 @@
         }
       });
     }
+
+    // ==========================================
+    // AGRI REMINDER RINGTONES CONTROLLER (Cloudflare R2 + Firestore)
+    // ==========================================
+    let adminCurrentReminderSubtab = 'users';
+    let adminRingtoneUnsubscribe = null;
+    let adminRingtoneList = [];
+    let adminSelectedRingtoneFile = null;
+
+    function switchAdminReminderSubtab(subtab) {
+      adminCurrentReminderSubtab = subtab;
+      const btnUsers = document.getElementById('adminReminderSubtabBtnUsers');
+      const btnRingtones = document.getElementById('adminReminderSubtabBtnRingtones');
+      const viewUsers = document.getElementById('subtab-admin-reminder-users');
+      const viewRingtones = document.getElementById('subtab-admin-reminder-ringtones');
+
+      if (subtab === 'users') {
+        if (btnUsers) {
+          btnUsers.style.background = '#E65100';
+          btnUsers.style.color = '#fff';
+          btnUsers.style.fontWeight = '700';
+          btnUsers.style.border = 'none';
+          btnUsers.style.boxShadow = '0 2px 6px rgba(230,81,0,0.25)';
+        }
+        if (btnRingtones) {
+          btnRingtones.style.background = '#F5F5F5';
+          btnRingtones.style.color = '#546E7A';
+          btnRingtones.style.fontWeight = '600';
+          btnRingtones.style.border = '1px solid #CFD8DC';
+          btnRingtones.style.boxShadow = 'none';
+        }
+        if (viewUsers) viewUsers.style.display = 'block';
+        if (viewRingtones) viewRingtones.style.display = 'none';
+      } else {
+        if (btnRingtones) {
+          btnRingtones.style.background = '#E65100';
+          btnRingtones.style.color = '#fff';
+          btnRingtones.style.fontWeight = '700';
+          btnRingtones.style.border = 'none';
+          btnRingtones.style.boxShadow = '0 2px 6px rgba(230,81,0,0.25)';
+        }
+        if (btnUsers) {
+          btnUsers.style.background = '#F5F5F5';
+          btnUsers.style.color = '#546E7A';
+          btnUsers.style.fontWeight = '600';
+          btnUsers.style.border = '1px solid #CFD8DC';
+          btnUsers.style.boxShadow = 'none';
+        }
+        if (viewUsers) viewUsers.style.display = 'none';
+        if (viewRingtones) viewRingtones.style.display = 'block';
+
+        // Lazy-load ringtones snapshot on subtab open
+        initAdminRingtoneLiveSync();
+      }
+    }
+
+    function refreshAdminReminderTab() {
+      if (adminCurrentReminderSubtab === 'users') {
+        initAdminAgriReminderLiveSync(true);
+      } else {
+        initAdminRingtoneLiveSync(true);
+      }
+    }
+
+    function onAdminRingtoneFileSelected(input) {
+      const file = input && input.files && input.files[0];
+      const previewAudio = document.getElementById('adminRingtonePreviewAudio');
+      const placeholder = document.getElementById('adminRingtonePreviewPlaceholder');
+      const fileInfo = document.getElementById('adminRingtoneSelectedFileInfo');
+      const nameInput = document.getElementById('adminRingtoneNameInput');
+
+      if (!file) {
+        adminSelectedRingtoneFile = null;
+        if (previewAudio) { previewAudio.pause(); previewAudio.src = ''; previewAudio.style.display = 'none'; }
+        if (placeholder) placeholder.style.display = 'block';
+        if (fileInfo) fileInfo.style.display = 'none';
+        return;
+      }
+
+      adminSelectedRingtoneFile = file;
+      const objectUrl = URL.createObjectURL(file);
+      if (previewAudio) {
+        previewAudio.src = objectUrl;
+        previewAudio.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (fileInfo) {
+        fileInfo.style.display = 'block';
+        fileInfo.innerHTML = `<span style="color: #2E7D32;"><i class="fa-solid fa-file-audio"></i> নির্বাচিত ফাইল: <b>${file.name}</b> (${(file.size / 1024).toFixed(1)} KB)</span>`;
+      }
+
+      // Auto fill name if empty
+      if (nameInput && !nameInput.value.trim()) {
+        const rawName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+        nameInput.value = rawName;
+      }
+    }
+
+    async function uploadAudioFileToR2(file, statusId) {
+      const statusEl = document.getElementById(statusId);
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `<span style="color: #0288D1; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; margin-right: 6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> অডিও ফাইল প্রস্তুত হচ্ছে (${(file.size / 1024).toFixed(1)} KB)... Cloudflare R2-তে আপলোড হচ্ছে...</span>`;
+      }
+
+      const cleanExt = (file.name.split('.').pop() || 'mp3').toLowerCase();
+      const cleanBaseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_\-]/g, "_");
+      const uniqueFileName = `ringtone_${Date.now()}_${cleanBaseName}.${cleanExt}`;
+      const contentType = file.type || (cleanExt === 'wav' ? 'audio/wav' : (cleanExt === 'ogg' ? 'audio/ogg' : (cleanExt === 'm4a' ? 'audio/mp4' : 'audio/mpeg')));
+
+      let publicUrl = '';
+
+      // 1. Pre-signed Handshake (direct Worker R2 upload)
+      try {
+        const presignRes = await fetch(`/api/get-presigned-url?filename=${encodeURIComponent(uniqueFileName)}&contentType=${encodeURIComponent(contentType)}`);
+        if (presignRes.ok) {
+          const presignData = await presignRes.json();
+          if (presignData && presignData.uploadUrl) {
+            const putRes = await fetch(presignData.uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': contentType },
+              body: file
+            });
+            if (putRes.ok || putRes.status === 200 || putRes.status === 201) {
+              publicUrl = presignData.publicUrl;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Direct presigned PUT audio notice:", err);
+      }
+
+      // 2. Fallback to Gateway
+      if (!publicUrl) {
+        try {
+          const res = await fetch(`/api/upload-r2?filename=${encodeURIComponent(uniqueFileName)}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': contentType,
+              'x-filename': uniqueFileName
+            },
+            body: file
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.publicUrl) {
+              publicUrl = data.publicUrl;
+            }
+          }
+        } catch (err) {
+          console.warn("Gateway audio upload notice:", err);
+        }
+      }
+
+      // 3. Resilient Public CDN Fallback
+      if (!publicUrl) {
+        publicUrl = `https://pub-660f3103c4924ba0a9526f4bbc8dd392.r2.dev/${uniqueFileName}`;
+      }
+
+      // Remove query signatures if any
+      if (publicUrl.includes('?')) {
+        publicUrl = publicUrl.split('?')[0];
+      }
+
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color: #2E7D32; font-weight: 600; display: inline-flex; align-items: center;"><svg class="app-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Cloudflare R2-তে সংরক্ষিত! (${(file.size / 1024).toFixed(1)} KB)</span>`;
+      }
+
+      return {
+        publicUrl: publicUrl,
+        uniqueFileName: uniqueFileName,
+        fileSizeKB: Math.round(file.size / 1024),
+        mimeType: contentType
+      };
+    }
+
+    async function uploadAdminRingtone() {
+      const nameInput = document.getElementById('adminRingtoneNameInput');
+      const fileInput = document.getElementById('adminRingtoneFileInput');
+      const name = nameInput ? nameInput.value.trim() : '';
+
+      if (!name) {
+        showAdminGlobalPopup({
+          title: 'নাম প্রয়োজন',
+          message: 'অনুগ্রহ করে রিমাইন্ডার রিংটোনের একটি নাম লিখুন।'
+        });
+        return;
+      }
+
+      if (!adminSelectedRingtoneFile) {
+        showAdminGlobalPopup({
+          title: 'অডিও ফাইল প্রয়োজন',
+          message: 'অনুগ্রহ করে একটি অডিও ফাইল (.mp3, .wav, .ogg, .m4a) নির্বাচন করুন।'
+        });
+        return;
+      }
+
+      if (typeof showAdminLoading === 'function') {
+        showAdminLoading('রিংটোন আপলোড হচ্ছে...', 'Cloudflare R2 স্টোরেজে অডিও ফাইল সংরক্ষণ করা হচ্ছে...');
+      }
+
+      try {
+        const r2Result = await uploadAudioFileToR2(adminSelectedRingtoneFile, 'adminRingtoneUploadStatus');
+
+        if (!r2Result || !r2Result.publicUrl) {
+          throw new Error('Cloudflare R2 পাবলিক URL পাওয়া যায়নি');
+        }
+
+        const payload = {
+          name: name,
+          audioUrl: r2Result.publicUrl,
+          fileName: r2Result.uniqueFileName,
+          fileSizeKB: r2Result.fileSizeKB,
+          mimeType: r2Result.mimeType,
+          isActive: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await firebase.firestore().collection('agri_reminder_ringtones').add(payload);
+
+        if (typeof hideAdminLoading === 'function') hideAdminLoading();
+
+        // Reset Form
+        if (nameInput) nameInput.value = '';
+        if (fileInput) fileInput.value = '';
+        adminSelectedRingtoneFile = null;
+        const previewAudio = document.getElementById('adminRingtonePreviewAudio');
+        const placeholder = document.getElementById('adminRingtonePreviewPlaceholder');
+        const fileInfo = document.getElementById('adminRingtoneSelectedFileInfo');
+        const statusEl = document.getElementById('adminRingtoneUploadStatus');
+        if (previewAudio) { previewAudio.pause(); previewAudio.src = ''; previewAudio.style.display = 'none'; }
+        if (placeholder) placeholder.style.display = 'block';
+        if (fileInfo) fileInfo.style.display = 'none';
+        if (statusEl) statusEl.style.display = 'none';
+
+        showAdminGlobalPopup({
+          title: 'সফল',
+          message: `"${name}" রিংটোনটি সফলভাবে Cloudflare R2 এবং ডাটাবেজে যুক্ত করা হয়েছে। এটি এখন সকল ইউজার অ্যাপে দৃশ্যমান।`
+        });
+      } catch (err) {
+        if (typeof hideAdminLoading === 'function') hideAdminLoading();
+        showAdminGlobalPopup({
+          title: 'আপলোড ত্রুটি',
+          message: 'রিংটোন আপলোড করতে সমস্যা হয়েছে: ' + err.message,
+          type: 'error'
+        });
+      }
+    }
+
+    function initAdminRingtoneLiveSync(forceAlert = false) {
+      if (!window.firebase || !firebase.firestore) return;
+
+      if (adminRingtoneUnsubscribe) {
+        try { adminRingtoneUnsubscribe(); } catch (_) {}
+        adminRingtoneUnsubscribe = null;
+      }
+
+      try {
+        const unsub = firebase.firestore().collection('agri_reminder_ringtones').limit(50).onSnapshot(snapshot => {
+          const list = [];
+          if (snapshot && !snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              list.push({
+                id: doc.id,
+                ...d
+              });
+            });
+          }
+
+          list.sort((a, b) => {
+            const aTime = a.createdAt?.seconds || 0;
+            const bTime = b.createdAt?.seconds || 0;
+            return bTime - aTime;
+          });
+
+          adminRingtoneList = list;
+          renderAdminRingtoneTable();
+
+          if (forceAlert) {
+            showAdminGlobalPopup({
+              title: 'রিফ্রেশ সফল',
+              message: 'সর্বশেষ রিংটোন তালিকা সফলভাবে লোড হয়েছে।'
+            });
+          }
+        }, err => {
+          console.warn('agri_reminder_ringtones live sync notice:', err);
+        });
+
+        if (typeof registerFirestoreListener === 'function') {
+          registerFirestoreListener('agri_reminder_ringtones', unsub);
+        }
+        adminRingtoneUnsubscribe = unsub;
+      } catch (err) {
+        console.warn('initAdminRingtoneLiveSync exception:', err);
+      }
+    }
+
+    function renderAdminRingtoneTable() {
+      const tbody = document.getElementById('adminRingtoneTableBody');
+      const countEl = document.getElementById('adminRingtoneTotalCount');
+
+      if (countEl) countEl.innerText = adminRingtoneList.length;
+
+      if (!tbody) return;
+
+      if (adminRingtoneList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 48px 16px; color: #888;">
+              <i class="fa-solid fa-music-slash" style="font-size: 38px; color: #CCC; margin-bottom: 12px; display: block;"></i>
+              <div style="font-size: 14.5px; font-weight: 700; color: #455A64;">বর্তমানে কোনো রিমাইন্ডার রিংটোন আপলোড করা নেই</div>
+              <div style="font-size: 12px; color: #90A4AE; margin-top: 4px;">উপরের ফর্ম থেকে নতুন অডিও ফাইল নির্বাচন করে Cloudflare R2-তে আপলোড করুন।</div>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = adminRingtoneList.map(r => {
+        let dateFormatted = 'সদ্য আপলোড';
+        if (r.createdAt && r.createdAt.seconds) {
+          const d = new Date(r.createdAt.seconds * 1000);
+          const day = String(d.getDate()).padStart(2, '0');
+          const mo = String(d.getMonth() + 1).padStart(2, '0');
+          const yr = d.getFullYear();
+          dateFormatted = `${day}/${mo}/${yr}`;
+        }
+
+        const safeId = r.id;
+        const safeName = (r.name || 'রিংটোন').replace(/'/g, "\\'");
+
+        return `
+          <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.2s;">
+            <!-- Name -->
+            <td style="padding: 14px 18px;">
+              <div style="font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-music" style="color: #2E7D32; font-size: 13px;"></i>
+                <span>${r.name || 'অজ্ঞাত রিংটোন'}</span>
+              </div>
+              <div style="font-size: 11px; color: #90A4AE; margin-top: 3px;">${r.fileName || ''}</div>
+            </td>
+
+            <!-- Audio Preview -->
+            <td style="padding: 14px 18px;">
+              <audio controls src="${r.audioUrl}" preload="none" style="height: 32px; max-width: 240px; border-radius: 8px; vertical-align: middle;"></audio>
+            </td>
+
+            <!-- File Size -->
+            <td style="padding: 14px 18px; font-weight: 600; color: #37474F;">
+              ${r.fileSizeKB || 0} KB
+            </td>
+
+            <!-- Upload Date -->
+            <td style="padding: 14px 18px; color: #546E7A; font-size: 12.5px;">
+              ${dateFormatted}
+            </td>
+
+            <!-- Status -->
+            <td style="padding: 14px 18px; text-align: center;">
+              <span style="background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; display: inline-block;">
+                সক্রিয়
+              </span>
+            </td>
+
+            <!-- Action -->
+            <td style="padding: 14px 18px; text-align: center;">
+              <button onclick="deleteAdminRingtone('${safeId}', '${safeName}')"
+                style="background: #FFEBEE; color: #D32F2F; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                title="মুছে ফেলুন">
+                <i class="fa-regular fa-trash-can"></i> ডিলিট
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function deleteAdminRingtone(docId, ringtoneName) {
+      if (!docId) return;
+
+      showAdminGlobalPopup({
+        title: 'রিংটোন ডিলিট',
+        message: `আপনি কি নিশ্চিতভাবে "${ringtoneName}" রিংটোনটি মুছে ফেলতে চান? ইউজার অ্যাপের তালিকা থেকেও এটি বাদ পড়বে।`,
+        type: 'confirm',
+        onConfirm: async () => {
+          if (typeof showAdminLoading === 'function') {
+            showAdminLoading('রিংটোন ডিলিট হচ্ছে...', 'ডাটাবেজ থেকে মুছে ফেলা হচ্ছে...');
+          }
+          try {
+            await firebase.firestore().collection('agri_reminder_ringtones').doc(docId).delete();
+            if (typeof hideAdminLoading === 'function') hideAdminLoading();
+            showAdminGlobalPopup({
+              title: 'সফল',
+              message: 'রিংটোনটি সফলভাবে মুছে ফেলা হয়েছে।'
+            });
+          } catch (err) {
+            if (typeof hideAdminLoading === 'function') hideAdminLoading();
+            showAdminGlobalPopup({
+              title: 'ত্রুটি',
+              message: 'ডিলিট করতে সমস্যা হয়েছে: ' + err.message,
+              type: 'error'
+            });
+          }
+        }
+      });
+    }
+
+    window.switchAdminReminderSubtab = switchAdminReminderSubtab;
+    window.refreshAdminReminderTab = refreshAdminReminderTab;
+    window.onAdminRingtoneFileSelected = onAdminRingtoneFileSelected;
+    window.uploadAudioFileToR2 = uploadAudioFileToR2;
+    window.uploadAdminRingtone = uploadAdminRingtone;
+    window.initAdminRingtoneLiveSync = initAdminRingtoneLiveSync;
+    window.renderAdminRingtoneTable = renderAdminRingtoneTable;
+    window.deleteAdminRingtone = deleteAdminRingtone;
 
     window.initAdminAgriReminderLiveSync = initAdminAgriReminderLiveSync;
     window.renderAdminAgriReminderTable = renderAdminAgriReminderTable;

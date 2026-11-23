@@ -99,6 +99,7 @@ class KrishiKothaApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: AgriReminderNotificationService.navigatorKey,
         title: AppStrings.appName,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,

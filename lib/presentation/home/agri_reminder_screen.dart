@@ -1,9 +1,16 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/empty_state_widget.dart';
 import '../../global_popup/global_popup.dart';
@@ -43,6 +50,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   void initState() {
     super.initState();
     _resolveInitialUser();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkRuntimePermissionsOnEntry();
+    });
   }
 
   @override
@@ -864,6 +874,11 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               scheduledDateTime: fullScheduledDateTime,
                               reminderType: reminderType,
                               repeatInterval: repeatInterval,
+                              category: selectedCategory,
+                              timeText: (reminderType == 'temporary')
+                                  ? '$formattedDateStr | $formattedTimeStr'
+                                  : formattedTimeStr,
+                              note: noteController.text.trim(),
                             );
 
                             isSubmitting = false;
@@ -948,6 +963,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
             scheduledDateTime: dt,
             reminderType: data['reminderType']?.toString() ?? 'temporary',
             repeatInterval: data['repeatInterval']?.toString() ?? 'none',
+            category: data['category']?.toString() ?? 'সাধারণ',
+            timeText: data['timeText']?.toString() ?? '',
+            note: data['note']?.toString() ?? '',
           );
         }
       } else {
@@ -1916,6 +1934,579 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
     );
   }
 
+  // Cached stream for ringtones to avoid duplicate Firestore reads
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _ringtonesStream;
+
+  void _ensureRingtonesStream() {
+    _ringtonesStream ??= FirebaseFirestore.instance
+        .collection('agri_reminder_ringtones')
+        .limit(50)
+        .snapshots();
+  }
+
+  Future<void> _checkRuntimePermissionsOnEntry() async {
+    try {
+      if (Platform.isAndroid) {
+        final flutterLocalNotificationsPlugin =
+            FlutterLocalNotificationsPlugin();
+        final androidImpl = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        if (androidImpl != null) {
+          final notifsEnabled =
+              await androidImpl.areNotificationsEnabled() ?? false;
+          final exactAlarmEnabled =
+              await androidImpl.canScheduleExactAlarms() ?? true;
+
+          if (!notifsEnabled || !exactAlarmEnabled) {
+            if (mounted) {
+              GlobalPopup.showConfirm(
+                context,
+                title: 'অ্যালার্ম ও নোটিফিকেশন অনুমতি',
+                message:
+                    'সময়মতো রিমাইন্ডার সতর্কবার্তা ও ফুল-স্ক্রিন রিংটোন অ্যালার্ম পাওয়ার জন্য অ্যাপটিকে নোটিফিকেশন এবং সঠিক অ্যালার্ম সেট করার অনুমতি দিন।',
+                confirmText: 'অনুমতি দিন',
+                cancelText: 'পরে করব',
+                confirmColor: const Color(0xFF2E7D32),
+                onConfirm: () async {
+                  await androidImpl.requestNotificationsPermission();
+                  await androidImpl.requestExactAlarmsPermission();
+                },
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Runtime permission check notice: $e');
+    }
+  }
+
+  void _showRingtoneSettingsModal() async {
+    _ensureRingtonesStream();
+
+    final prefs = await SharedPreferences.getInstance();
+    String selectedRingtoneId =
+        prefs.getString('agri_ringtone_id') ?? 'device_default';
+    String selectedRingtoneName =
+        prefs.getString('agri_ringtone_name') ?? 'ডিভাইস ডিফল্ট অ্যালার্ম';
+    String selectedRingtoneUrl = prefs.getString('agri_ringtone_url') ?? '';
+    double selectedVolume = prefs.getDouble('agri_ringtone_volume') ?? 0.85;
+
+    AudioPlayer previewPlayer = AudioPlayer();
+    String? currentPlayingId;
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final volumePercent = (selectedVolume * 100).round();
+
+            void playPreview(String ringtoneId, String audioUrl) async {
+              if (currentPlayingId == ringtoneId) {
+                await previewPlayer.stop();
+                setModalState(() => currentPlayingId = null);
+                return;
+              }
+
+              await previewPlayer.stop();
+              setModalState(() => currentPlayingId = ringtoneId);
+
+              if (audioUrl.isEmpty) {
+                // Device default feedback
+                HapticFeedback.vibrate();
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted && currentPlayingId == ringtoneId) {
+                    setModalState(() => currentPlayingId = null);
+                  }
+                });
+              } else {
+                try {
+                  await previewPlayer.setVolume(selectedVolume);
+                  await previewPlayer.play(UrlSource(audioUrl));
+                  previewPlayer.onPlayerComplete.listen((_) {
+                    if (mounted) {
+                      setModalState(() => currentPlayingId = null);
+                    }
+                  });
+                } catch (e) {
+                  debugPrint('Preview error: $e');
+                  setModalState(() => currentPlayingId = null);
+                }
+              }
+            }
+
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Drag Handle
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.settings_rounded,
+                                size: 20,
+                                color: Color(0xFF1B5E20),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'রিংটোন ও শব্দ সেটিংস',
+                              style: TextStyle(
+                                fontSize: 17.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B5E20),
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () {
+                            previewPlayer.stop();
+                            previewPlayer.dispose();
+                            Navigator.pop(bottomSheetCtx);
+                          },
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 12),
+
+                    // 1. Ring Volume Slider
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F8E9),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFC8E6C9)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    selectedVolume == 0
+                                        ? Icons.volume_off_rounded
+                                        : (selectedVolume < 0.5
+                                            ? Icons.volume_down_rounded
+                                            : Icons.volume_up_rounded),
+                                    size: 19,
+                                    color: const Color(0xFF1B5E20),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'অ্যালার্ম রিং ভলিউম',
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1B5E20),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                '$volumePercent%',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF2E7D32),
+                                  fontFeatures: [FontFeature.tabularFigures()],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: const Color(0xFF2E7D32),
+                              inactiveTrackColor: const Color(0xFFA5D6A7),
+                              thumbColor: const Color(0xFF1B5E20),
+                              overlayColor:
+                                  const Color(0xFF2E7D32).withOpacity(0.2),
+                              trackHeight: 5,
+                            ),
+                            child: Slider(
+                              value: selectedVolume,
+                              min: 0.0,
+                              max: 1.0,
+                              onChanged: (val) {
+                                setModalState(() => selectedVolume = val);
+                                previewPlayer.setVolume(val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // 2. Ringtone List from Firestore
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'রিংটোন নির্বাচন করুন *',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          '(অ্যাডমিন প্যানেল থেকে আপলোডকৃত)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Device Default Option Card
+                    _buildRingtoneSelectionTile(
+                      title: 'ডিভাইস ডিফল্ট অ্যালার্ম',
+                      subtitle: 'স্ট্যান্ডার্ড নোটিফিকেশন অ্যালার্ম সুর',
+                      isSelected: selectedRingtoneId == 'device_default',
+                      isPlaying: currentPlayingId == 'device_default',
+                      onSelect: () {
+                        setModalState(() {
+                          selectedRingtoneId = 'device_default';
+                          selectedRingtoneName = 'ডিভাইস ডিফল্ট অ্যালার্ম';
+                          selectedRingtoneUrl = '';
+                        });
+                      },
+                      onPlayToggle: () => playPreview('device_default', ''),
+                    ),
+
+                    // Firestore StreamBuilder for custom uploaded ringtones
+                    StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: _ringtonesStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                                ConnectionState.waiting &&
+                            !snapshot.hasData) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF2E7D32),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final docs = snapshot.data?.docs ?? [];
+                        if (docs.isEmpty) {
+                          return Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'বর্তমানে কোনো কাস্টম রিংটোন নেই (ডিফল্ট টোন ব্যবহার হবে)।',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: docs.map((doc) {
+                            final data = doc.data();
+                            final ringtoneId = doc.id;
+                            final ringtoneName =
+                                data['name']?.toString() ?? 'রিংটোন';
+                            final audioUrl = data['audioUrl']?.toString() ?? '';
+                            final sizeKB = data['fileSizeKB']?.toString() ?? '';
+                            final subText = sizeKB.isNotEmpty
+                                ? '$sizeKB KB • Cloudflare R2'
+                                : 'Cloudflare R2 অডিও';
+
+                            final isSelected = selectedRingtoneId == ringtoneId;
+                            final isPlaying = currentPlayingId == ringtoneId;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: _buildRingtoneSelectionTile(
+                                title: ringtoneName,
+                                subtitle: subText,
+                                isSelected: isSelected,
+                                isPlaying: isPlaying,
+                                onSelect: () {
+                                  setModalState(() {
+                                    selectedRingtoneId = ringtoneId;
+                                    selectedRingtoneName = ringtoneName;
+                                    selectedRingtoneUrl = audioUrl;
+                                  });
+                                },
+                                onPlayToggle: () =>
+                                    playPreview(ringtoneId, audioUrl),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 22),
+
+                    // Save Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 2,
+                        ),
+                        onPressed: () async {
+                          await previewPlayer.stop();
+                          await previewPlayer.dispose();
+
+                          GlobalPopup.showLoading(context,
+                              message: 'সেটিংস সংরক্ষণ হচ্ছে...');
+
+                          try {
+                            // 1. Save preferences
+                            await prefs.setString(
+                                'agri_ringtone_id', selectedRingtoneId);
+                            await prefs.setString(
+                                'agri_ringtone_name', selectedRingtoneName);
+                            await prefs.setString(
+                                'agri_ringtone_url', selectedRingtoneUrl);
+                            await prefs.setDouble(
+                                'agri_ringtone_volume', selectedVolume);
+
+                            // 2. Offline audio file caching (CRITICAL)
+                            if (selectedRingtoneUrl.isNotEmpty) {
+                              try {
+                                final appDir =
+                                    await getApplicationDocumentsDirectory();
+                                final ringtoneDir =
+                                    Directory('${appDir.path}/agri_ringtones');
+                                if (!await ringtoneDir.exists()) {
+                                  await ringtoneDir.create(recursive: true);
+                                }
+
+                                final localFilePath =
+                                    '${ringtoneDir.path}/$selectedRingtoneId.mp3';
+                                final localFile = File(localFilePath);
+
+                                if (!await localFile.exists()) {
+                                  final response = await http
+                                      .get(Uri.parse(selectedRingtoneUrl))
+                                      .timeout(const Duration(seconds: 15));
+                                  if (response.statusCode == 200) {
+                                    await localFile
+                                        .writeAsBytes(response.bodyBytes);
+                                  }
+                                }
+
+                                if (await localFile.exists()) {
+                                  await prefs.setString(
+                                      'agri_ringtone_local_path',
+                                      localFilePath);
+                                  debugPrint(
+                                      'Offline ringtone cached at: $localFilePath');
+                                }
+                              } catch (cacheErr) {
+                                debugPrint(
+                                    'Offline audio caching notice: $cacheErr');
+                              }
+                            } else {
+                              await prefs.remove('agri_ringtone_local_path');
+                            }
+
+                            GlobalPopup.hideLoading(context);
+                            Navigator.pop(bottomSheetCtx);
+
+                            if (mounted) {
+                              GlobalPopup.showNotice(
+                                context,
+                                title: 'সংরক্ষণ সফল',
+                                message:
+                                    'রিংটোন "$selectedRingtoneName" এবং ভলিউম $volumePercent% সফলভাবে সংরক্ষণ করা হয়েছে।',
+                              );
+                            }
+                          } catch (e) {
+                            GlobalPopup.hideLoading(context);
+                            if (mounted) {
+                              GlobalPopup.showNotice(
+                                context,
+                                title: 'ত্রুটি',
+                                message: 'সেটিংস সংরক্ষণে সমস্যা হয়েছে: $e',
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.check_circle_rounded, size: 20),
+                        label: const Text(
+                          'সেটিংস সংরক্ষণ করুন',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildRingtoneSelectionTile({
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required bool isPlaying,
+    required VoidCallback onSelect,
+    required VoidCallback onPlayToggle,
+  }) {
+    return InkWell(
+      onTap: onSelect,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F5E9) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF2E7D32)
+                : Colors.grey.shade300,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2E7D32).withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Radio<bool>(
+              value: true,
+              groupValue: isSelected ? true : null,
+              onChanged: (_) => onSelect(),
+              activeColor: const Color(0xFF2E7D32),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected
+                          ? const Color(0xFF1B5E20)
+                          : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                isPlaying
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_fill_rounded,
+                color: isPlaying
+                    ? const Color(0xFF2E7D32)
+                    : const Color(0xFF00796B),
+                size: 34,
+              ),
+              onPressed: onPlayToggle,
+              tooltip: isPlaying ? 'থামান' : 'শুনুন',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   PreferredSizeWidget _buildAppBar() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(60),
@@ -1951,8 +2542,13 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
           ],
         ),
         centerTitle: true,
-        actions: const [
-          SizedBox(width: 48),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 21),
+            tooltip: 'রিংটোন ও ভলিউম সেটিংস',
+            onPressed: _showRingtoneSettingsModal,
+          ),
+          const SizedBox(width: 6),
         ],
       ),
     );

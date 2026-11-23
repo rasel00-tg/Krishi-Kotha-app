@@ -3796,8 +3796,12 @@
             <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">কৃষি রিমাইন্ডার</h3>
             <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সময়মতো কৃষি কাজের সতর্কবার্তা</p>
           </div>
-          <!-- Clean balance spacer on right instead of duplicate button -->
-          <div style="width: 34px;"></div>
+          <!-- Settings Button on Topbar Right -->
+          <button class="topbar-settings-btn" onclick="openAgriReminderSettingsModal()"
+            style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); font-size: 16px; color: #fff; cursor: pointer; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+            title="রিংটোন ও ভলিউম সেটিংস">
+            <i class="fa-solid fa-gear"></i>
+          </button>
         </div>
 
         <!-- Reminder Count Banner (Without Duplicate Button) -->
@@ -6457,6 +6461,135 @@
       <button type="button" id="warningDialogBtn" onclick="closeWarningDialog()"
         style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #2E7D32; color: white; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(46,125,50,0.28);">ঠিক
         আছে</button>
+    </div>
+  </div>
+
+  <style>
+    @keyframes alarmPulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.18); opacity: 0.3; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+  </style>
+
+  <!-- AGRI REMINDER SETTINGS MODAL (RINGTONE & VOLUME) -->
+  <div id="agriReminderSettingsModal" class="modal-overlay" onclick="closeAgriReminderSettingsModal()"
+    style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 120000 !important; align-items: flex-end; justify-content: center; pointer-events: none;">
+    <div onclick="event.stopPropagation()"
+      style="background: #ffffff; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 20px 20px 24px 20px; box-shadow: 0 -8px 32px rgba(0,0,0,0.25); max-height: 85vh; overflow-y: auto; box-sizing: border-box; position: relative; z-index: 120001 !important; pointer-events: auto !important;">
+      <div style="width: 44px; height: 5px; background: #E0E0E0; border-radius: 10px; margin: 0 auto 16px auto;"></div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #E8F5E9; color: #1B5E20; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+            <i class="fa-solid fa-gear"></i>
+          </div>
+          <h3 style="font-size: 16.5px; font-weight: 700; color: #1B5E20; margin: 0;">রিমাইন্ডার রিংটোন ও শব্দ সেটিংস</h3>
+        </div>
+        <button type="button" onclick="closeAgriReminderSettingsModal()" style="background: none; border: none; font-size: 20px; color: #9E9E9E; cursor: pointer; padding: 4px;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Volume Slider Section -->
+      <div style="background: #F1F8E9; border-radius: 14px; padding: 16px; border: 1px solid #C8E6C9; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 13.5px; font-weight: 700; color: #1B5E20; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-volume-high" id="agriVolumeIcon"></i> অ্যালার্ম রিং ভলিউম
+          </span>
+          <span id="agriVolumePercentText" style="font-size: 14px; font-weight: 800; color: #2E7D32; font-variant-numeric: tabular-nums;">85%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <i class="fa-solid fa-volume-xmark" style="color: #78909C; font-size: 14px;"></i>
+          <input type="range" id="agriReminderVolumeSlider" min="0" max="100" value="85" oninput="onAgriVolumeSliderChange(this.value)"
+            style="flex: 1; accent-color: #2E7D32; height: 6px; cursor: pointer;" />
+          <i class="fa-solid fa-volume-high" style="color: #2E7D32; font-size: 16px;"></i>
+        </div>
+      </div>
+
+      <!-- Ringtone Selection Section -->
+      <div style="margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 13.5px; font-weight: 700; color: #37474F; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-music" style="color: #E65100;"></i> রিংটোন নির্বাচন করুন
+          </span>
+          <span style="font-size: 11px; color: #78909C;">(অ্যাডমিন কর্তৃক আপলোডকৃত)</span>
+        </div>
+        <div id="agriReminderRingtoneListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically loaded from Firestore agri_reminder_ringtones -->
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button type="button" onclick="saveAgriReminderSettings()"
+        style="width: 100%; height: 48px; border: none; border-radius: 14px; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(46,125,50,0.3);">
+        <i class="fa-solid fa-check"></i> সেটিংস সংরক্ষণ করুন
+      </button>
+    </div>
+  </div>
+
+  <!-- DEDICATED FULL SCREEN ALARM OVERLAY (Z-INDEX: 150000) -->
+  <div id="agriReminderAlarmOverlay"
+    style="display: none; position: fixed; inset: 0; background: radial-gradient(circle at center, #1B5E20 0%, #0A2612 100%); z-index: 150000 !important; flex-direction: column; align-items: center; justify-content: space-between; padding: 48px 24px 36px 24px; box-sizing: border-box; text-align: center; color: #ffffff;">
+
+    <!-- Background Animated Pulse Circles -->
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <!-- App Logo with Ring Animation -->
+      <div style="position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+        <div style="position: absolute; inset: -15px; border-radius: 50%; border: 2px solid rgba(129, 199, 132, 0.4); animation: alarmPulseRing 1.8s ease-out infinite;"></div>
+        <div style="position: absolute; inset: -30px; border-radius: 50%; border: 2px solid rgba(129, 199, 132, 0.2); animation: alarmPulseRing 1.8s ease-out infinite 0.6s;"></div>
+        <div style="width: 96px; height: 96px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0,0,0,0.4); overflow: hidden; z-index: 2;">
+          <img src="pnglogo.png" alt="কৃষি কথা" style="width: 76px; height: 76px; object-fit: contain;" onerror="this.src='assets/icons/appicon.png'" />
+        </div>
+      </div>
+
+      <div style="font-size: 13.5px; font-weight: 700; color: #A5D6A7; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;">
+        কৃষি কথা • কৃষি রিমাইন্ডার
+      </div>
+
+      <!-- Current Time Display in English Digits -->
+      <div id="agriAlarmCurrentTime" style="font-size: 38px; font-weight: 800; color: #ffffff; font-variant-numeric: tabular-nums; line-height: 1.1; margin-bottom: 12px; font-family: monospace;">
+        12:00 PM
+      </div>
+
+      <!-- Badges: Category & Type -->
+      <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 18px;">
+        <span id="agriAlarmCategoryBadge" style="background: rgba(255,255,255,0.22); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; backdrop-filter: blur(4px);">
+          সেচ দেওয়া
+        </span>
+        <span id="agriAlarmTypeBadge" style="background: rgba(255,255,255,0.22); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; backdrop-filter: blur(4px);">
+          অস্থায়ী
+        </span>
+      </div>
+
+      <!-- Reminder Headline -->
+      <h1 id="agriAlarmTitle" style="font-size: 23px; font-weight: 800; color: #ffffff; margin: 0 0 16px 0; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+        আজকের কাজের শিরোনাম
+      </h1>
+
+      <!-- Frosted Details Card -->
+      <div style="width: 100%; max-width: 380px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 18px; padding: 16px 20px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-sizing: border-box; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #C8E6C9; margin-bottom: 6px; font-weight: 600;">
+          <i class="fa-solid fa-clock"></i> <span id="agriAlarmScheduledTimeText">সময় ও তারিখ</span>
+        </div>
+        <div id="agriAlarmNoteText" style="font-size: 13.5px; color: #ffffff; line-height: 1.45; font-weight: 500;">
+          রিমাইন্ডারের বিবরণ এখানে প্রদর্শিত হবে।
+        </div>
+      </div>
+    </div>
+
+    <!-- Alarm Audio Element -->
+    <audio id="agriReminderAlarmAudio" loop preload="auto" style="display: none;"></audio>
+
+    <!-- Dismiss Button at Bottom -->
+    <div style="width: 100%; max-width: 380px; margin-top: 24px;">
+      <button type="button" onclick="stopAgriReminderAlarm()"
+        style="width: 100%; height: 56px; border: none; border-radius: 18px; background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%); color: #ffffff; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 25px rgba(211,47,47,0.5); transition: transform 0.15s ease;"
+        onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+        <i class="fa-solid fa-bell-slash"></i> বন্ধ করুন
+      </button>
+      <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 10px; text-align: center;">
+        * বন্ধ করুন বাটনে চাপ দিলে শুধু বর্তমান অ্যালার্মের সুর বন্ধ হবে, রিমাইন্ডার সক্রিয় থাকবে।
+      </div>
     </div>
   </div>
 
@@ -23788,30 +23921,377 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       });
     }
 
+    // ==========================================
+    // AGRI REMINDER RINGTONES, SETTINGS & FULL-SCREEN ALARM
+    // ==========================================
+    let webAgriSettingsRingtonesUnsub = null;
+    let webAgriPreviewAudio = null;
+    let webAgriPreviewPlayingId = null;
+    let synthAlarmInterval = null;
+
+    let webAgriSelectedRingtone = {
+      id: localStorage.getItem('web_agri_ringtone_id') || 'device_default',
+      name: localStorage.getItem('web_agri_ringtone_name') || 'ডিভাইস ডিফল্ট অ্যালার্ম',
+      url: localStorage.getItem('web_agri_ringtone_url') || ''
+    };
+    let webAgriSelectedVolume = parseInt(localStorage.getItem('web_agri_ringtone_volume') || '85', 10);
+
+    function playFallbackAlarmSound(volume) {
+      stopSynthAlarm();
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        synthAlarmInterval = setInterval(() => {
+          if (ctx.state === 'suspended') ctx.resume();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.35);
+          gain.gain.setValueAtTime((volume / 100) * 0.4, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.36);
+        }, 650);
+      } catch (e) {
+        console.warn('Synth alarm notice:', e);
+      }
+    }
+
+    function stopSynthAlarm() {
+      if (synthAlarmInterval) {
+        clearInterval(synthAlarmInterval);
+        synthAlarmInterval = null;
+      }
+    }
+
+    function openAgriReminderSettingsModal() {
+      webAgriSelectedRingtone = {
+        id: localStorage.getItem('web_agri_ringtone_id') || 'device_default',
+        name: localStorage.getItem('web_agri_ringtone_name') || 'ডিভাইস ডিফল্ট অ্যালার্ম',
+        url: localStorage.getItem('web_agri_ringtone_url') || ''
+      };
+      webAgriSelectedVolume = parseInt(localStorage.getItem('web_agri_ringtone_volume') || '85', 10);
+
+      const slider = document.getElementById('agriReminderVolumeSlider');
+      const text = document.getElementById('agriVolumePercentText');
+      if (slider) slider.value = webAgriSelectedVolume;
+      if (text) text.innerText = webAgriSelectedVolume + '%';
+
+      const modal = document.getElementById('agriReminderSettingsModal');
+      if (modal) {
+        modal.classList.add('active');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('z-index', '120000', 'important');
+      }
+
+      initAgriSettingsRingtonesLiveSync();
+    }
+
+    function closeAgriReminderSettingsModal() {
+      if (webAgriPreviewAudio) {
+        webAgriPreviewAudio.pause();
+        webAgriPreviewAudio = null;
+        webAgriPreviewPlayingId = null;
+      }
+      stopSynthAlarm();
+      if (webAgriSettingsRingtonesUnsub) {
+        try { webAgriSettingsRingtonesUnsub(); } catch (_) {}
+        webAgriSettingsRingtonesUnsub = null;
+      }
+      const modal = document.getElementById('agriReminderSettingsModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    function onAgriVolumeSliderChange(val) {
+      webAgriSelectedVolume = parseInt(val, 10);
+      const text = document.getElementById('agriVolumePercentText');
+      const icon = document.getElementById('agriVolumeIcon');
+      if (text) text.innerText = webAgriSelectedVolume + '%';
+      if (icon) {
+        if (webAgriSelectedVolume === 0) icon.className = 'fa-solid fa-volume-xmark';
+        else if (webAgriSelectedVolume < 50) icon.className = 'fa-solid fa-volume-low';
+        else icon.className = 'fa-solid fa-volume-high';
+      }
+      if (webAgriPreviewAudio) {
+        webAgriPreviewAudio.volume = webAgriSelectedVolume / 100;
+      }
+    }
+
+    function initAgriSettingsRingtonesLiveSync() {
+      const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+      const container = document.getElementById('agriReminderRingtoneListContainer');
+      if (!container) return;
+
+      container.innerHTML = `<div style="text-align: center; padding: 20px; color: #78909C; font-size: 13px;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> রিংটোন তালিকা লোড হচ্ছে...</div>`;
+
+      if (webAgriSettingsRingtonesUnsub) {
+        try { webAgriSettingsRingtonesUnsub(); } catch (_) {}
+        webAgriSettingsRingtonesUnsub = null;
+      }
+
+      if (firestoreDb) {
+        webAgriSettingsRingtonesUnsub = firestoreDb.collection('agri_reminder_ringtones')
+          .limit(50)
+          .onSnapshot(snap => {
+            const list = [];
+            if (snap && !snap.empty) {
+              snap.forEach(doc => {
+                list.push({ id: doc.id, ...doc.data() });
+              });
+            }
+            list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            renderAgriSettingsRingtonesUI(list);
+          }, err => {
+            console.warn('Settings ringtones sync notice:', err);
+            renderAgriSettingsRingtonesUI([]);
+          });
+      } else {
+        renderAgriSettingsRingtonesUI([]);
+      }
+    }
+
+    function renderAgriSettingsRingtonesUI(ringtones) {
+      const container = document.getElementById('agriReminderRingtoneListContainer');
+      if (!container) return;
+
+      let html = '';
+
+      // Default option
+      const isDefaultSelected = webAgriSelectedRingtone.id === 'device_default' || !webAgriSelectedRingtone.url;
+      html += `
+        <div onclick="selectAgriRingtone('device_default', 'ডিভাইস ডিফল্ট অ্যালার্ম', '')"
+          style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; border: 1.5px solid ${isDefaultSelected ? '#2E7D32' : '#CFD8DC'}; background: ${isDefaultSelected ? '#E8F5E9' : '#fff'}; cursor: pointer; transition: all 0.2s;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="agriRingtoneRadio" ${isDefaultSelected ? 'checked' : ''} style="accent-color: #2E7D32; cursor: pointer;" />
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: ${isDefaultSelected ? '#1B5E20' : '#263238'};">ডিভাইস ডিফল্ট অ্যালার্ম</div>
+              <div style="font-size: 11px; color: #78909C;">স্ট্যান্ডার্ড নোটিফিকেশন অ্যালার্ম সাউন্ড</div>
+            </div>
+          </div>
+          <button type="button" onclick="event.stopPropagation(); previewAgriRingtone('', 'device_default')"
+            style="width: 34px; height: 34px; border-radius: 50%; border: 1px solid #C8E6C9; background: #fff; color: #2E7D32; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid ${webAgriPreviewPlayingId === 'device_default' ? 'fa-pause' : 'fa-play'}"></i>
+          </button>
+        </div>
+      `;
+
+      if (ringtones.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 18px 12px; color: #78909C; font-size: 12px; background: #FAFAFA; border-radius: 10px; border: 1px dashed #CFD8DC; margin-top: 6px;">
+            <i class="fa-solid fa-music-slash" style="font-size: 18px; color: #B0BEC5; margin-bottom: 4px; display: block;"></i>
+            কোনো কাস্টম রিংটোন পাওয়া যায়নি (অ্যাডমিন প্যানেল থেকে আপলোড হলে এখানে যুক্ত হবে)।
+          </div>
+        `;
+      } else {
+        ringtones.forEach(r => {
+          const isSelected = webAgriSelectedRingtone.id === r.id;
+          const safeUrl = (r.audioUrl || '').replace(/'/g, "\\'");
+          const safeName = (r.name || 'রিংটোন').replace(/'/g, "\\'");
+          const isPlaying = webAgriPreviewPlayingId === r.id;
+
+          html += `
+            <div onclick="selectAgriRingtone('${r.id}', '${safeName}', '${safeUrl}')"
+              style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; border: 1.5px solid ${isSelected ? '#2E7D32' : '#CFD8DC'}; background: ${isSelected ? '#E8F5E9' : '#fff'}; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="radio" name="agriRingtoneRadio" ${isSelected ? 'checked' : ''} style="accent-color: #2E7D32; cursor: pointer;" />
+                <div>
+                  <div style="font-size: 13.5px; font-weight: 700; color: ${isSelected ? '#1B5E20' : '#263238'};">${r.name || 'রিংটোন'}</div>
+                  <div style="font-size: 11px; color: #78909C;">${r.fileSizeKB ? r.fileSizeKB + ' KB' : 'Cloudflare R2'}</div>
+                </div>
+              </div>
+              <button type="button" onclick="event.stopPropagation(); previewAgriRingtone('${safeUrl}', '${r.id}')"
+                style="width: 34px; height: 34px; border-radius: 50%; border: 1px solid ${isPlaying ? '#2E7D32' : '#C8E6C9'}; background: ${isPlaying ? '#2E7D32' : '#fff'}; color: ${isPlaying ? '#fff' : '#2E7D32'}; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                <i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>
+              </button>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function selectAgriRingtone(id, name, url) {
+      webAgriSelectedRingtone = { id, name, url };
+      const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
+      if (firestoreDb) {
+        firestoreDb.collection('agri_reminder_ringtones').limit(50).get().then(snap => {
+          const list = [];
+          if (snap && !snap.empty) snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          renderAgriSettingsRingtonesUI(list);
+        }).catch(() => renderAgriSettingsRingtonesUI([]));
+      } else {
+        renderAgriSettingsRingtonesUI([]);
+      }
+    }
+
+    function previewAgriRingtone(url, id) {
+      if (webAgriPreviewPlayingId === id && (webAgriPreviewAudio || synthAlarmInterval)) {
+        if (webAgriPreviewAudio) {
+          webAgriPreviewAudio.pause();
+          webAgriPreviewAudio = null;
+        }
+        stopSynthAlarm();
+        webAgriPreviewPlayingId = null;
+        selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+        return;
+      }
+
+      if (webAgriPreviewAudio) {
+        webAgriPreviewAudio.pause();
+        webAgriPreviewAudio = null;
+      }
+      stopSynthAlarm();
+
+      webAgriPreviewPlayingId = id;
+
+      if (!url) {
+        playFallbackAlarmSound(webAgriSelectedVolume);
+        setTimeout(() => {
+          if (webAgriPreviewPlayingId === 'device_default') {
+            stopSynthAlarm();
+            webAgriPreviewPlayingId = null;
+            selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+          }
+        }, 3500);
+      } else {
+        webAgriPreviewAudio = new Audio(url);
+        webAgriPreviewAudio.volume = webAgriSelectedVolume / 100;
+        webAgriPreviewAudio.play().catch(e => {
+          console.warn('Audio preview play notice:', e);
+          playFallbackAlarmSound(webAgriSelectedVolume);
+        });
+        webAgriPreviewAudio.onended = () => {
+          webAgriPreviewAudio = null;
+          webAgriPreviewPlayingId = null;
+          selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+        };
+      }
+
+      selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+    }
+
+    function saveAgriReminderSettings() {
+      if (webAgriPreviewAudio) {
+        webAgriPreviewAudio.pause();
+        webAgriPreviewAudio = null;
+        webAgriPreviewPlayingId = null;
+      }
+      stopSynthAlarm();
+
+      localStorage.setItem('web_agri_ringtone_id', webAgriSelectedRingtone.id);
+      localStorage.setItem('web_agri_ringtone_name', webAgriSelectedRingtone.name);
+      localStorage.setItem('web_agri_ringtone_url', webAgriSelectedRingtone.url || '');
+      localStorage.setItem('web_agri_ringtone_volume', webAgriSelectedVolume.toString());
+
+      closeAgriReminderSettingsModal();
+
+      showGlobalPopup({
+        title: 'সংরক্ষণ সফল',
+        message: `রিংটোন "${webAgriSelectedRingtone.name}" এবং ভলিউম ${webAgriSelectedVolume}% সফলভাবে সেভ করা হয়েছে।`
+      });
+    }
+
+    function triggerAgriReminderAlarm(r) {
+      const now = new Date();
+      let hr = now.getHours();
+      const ampm = hr >= 12 ? 'PM' : 'AM';
+      hr = hr % 12 || 12;
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+
+      const titleEl = document.getElementById('agriAlarmTitle');
+      const catBadge = document.getElementById('agriAlarmCategoryBadge');
+      const typeBadge = document.getElementById('agriAlarmTypeBadge');
+      const timeEl = document.getElementById('agriAlarmCurrentTime');
+      const schedTimeEl = document.getElementById('agriAlarmScheduledTimeText');
+      const noteEl = document.getElementById('agriAlarmNoteText');
+      const overlay = document.getElementById('agriReminderAlarmOverlay');
+      const audio = document.getElementById('agriReminderAlarmAudio');
+
+      if (titleEl) titleEl.innerText = r.title || 'কৃষি রিমাইন্ডার';
+      if (catBadge) catBadge.innerText = r.category || 'সাধারণ';
+      if (typeBadge) typeBadge.innerText = r.reminderType === 'regular' ? 'নিয়মিত' : 'অস্থায়ী';
+      if (timeEl) timeEl.innerText = timeStr;
+      if (schedTimeEl) schedTimeEl.innerText = r.timeText || timeStr;
+      if (noteEl) noteEl.innerText = r.note || (r.category + ' কাজের সতর্কবার্তা।');
+
+      const savedUrl = localStorage.getItem('web_agri_ringtone_url') || '';
+      const savedVolume = parseInt(localStorage.getItem('web_agri_ringtone_volume') || '85', 10);
+
+      if (audio) {
+        audio.volume = savedVolume / 100;
+        if (savedUrl) {
+          audio.src = savedUrl;
+          audio.currentTime = 0;
+          audio.play().catch(e => {
+            console.warn('Custom ringtone play notice, using synth alarm:', e);
+            playFallbackAlarmSound(savedVolume);
+          });
+        } else {
+          audio.pause();
+          audio.src = '';
+          playFallbackAlarmSound(savedVolume);
+        }
+      } else {
+        playFallbackAlarmSound(savedVolume);
+      }
+
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('কৃষি রিমাইন্ডার: ' + r.title, {
+          body: r.note || r.category,
+          icon: 'pnglogo.png'
+        });
+      }
+    }
+
+    function stopAgriReminderAlarm() {
+      const audio = document.getElementById('agriReminderAlarmAudio');
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = '';
+      }
+      stopSynthAlarm();
+      const overlay = document.getElementById('agriReminderAlarmOverlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+      }
+    }
+
     function startWebRemindersChecker() {
       if (webReminderIntervalTimer) clearInterval(webReminderIntervalTimer);
       // Check every 30 seconds for scheduled reminders if browser tab is open
       webReminderIntervalTimer = setInterval(() => {
+        // Logout protection: do not ring if user is logged out
+        const uid = (typeof getActiveUserId === 'function') ? getActiveUserId() : ((window.currentUser && window.currentUser.uid) ? window.currentUser.uid : null);
+        if (!uid) return;
+
         const now = new Date();
         webAgriReminderList.forEach(r => {
           if (!r.isActive || !r.scheduledDateTime) return;
           const target = new Date(r.scheduledDateTime);
           const diffMinutes = Math.floor((now.getTime() - target.getTime()) / 60000);
           if (diffMinutes >= 0 && diffMinutes < 1) {
-            const triggeredKey = 'web_reminder_triggered_' + r.id + '_' + target.toDateString();
+            const triggeredKey = 'web_reminder_triggered_' + r.id + '_' + target.toDateString() + '_' + target.getHours() + '_' + target.getMinutes();
             if (!sessionStorage.getItem(triggeredKey)) {
               sessionStorage.setItem(triggeredKey, 'true');
-              showGlobalPopup({
-                title: 'কৃষি রিমাইন্ডার: ' + r.title,
-                message: (r.category ? '[' + r.category + '] ' : '') + (r.note || 'আপনার নির্ধারিত কৃষি কাজের সময় হয়েছে।'),
-                btnText: 'ঠিক আছে'
-              });
-              if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('কৃষি রিমাইন্ডার: ' + r.title, {
-                  body: r.note || r.category,
-                  icon: 'pnglogo.png'
-                });
-              }
+              triggerAgriReminderAlarm(r);
             }
           }
         });
@@ -23819,6 +24299,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function clearWebRemindersOnLogout() {
+      stopAgriReminderAlarm();
       if (webReminderIntervalTimer) {
         clearInterval(webReminderIntervalTimer);
         webReminderIntervalTimer = null;
