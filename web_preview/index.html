@@ -23364,25 +23364,56 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             .limit(10)
             .onSnapshot(snapshot => {
               const list = [];
-              const totalCount = snapshot ? snapshot.size : 0;
-              window._currentAgriReminderCount = totalCount;
+              const nowMs = Date.now();
 
               if (snapshot && !snapshot.empty) {
                 snapshot.forEach(doc => {
                   const d = doc.data() || {};
-                  list.push({
-                    id: doc.id,
-                    ...d
-                  });
+                  const isExpFlag = d.isExpired === true || d.status === 'expired';
+                  const isTemp = (d.reminderType === 'temporary');
+                  let isTempPast = false;
+                  if (isTemp && d.scheduledDateTime) {
+                    const schedTime = new Date(d.scheduledDateTime).getTime();
+                    if (!isNaN(schedTime) && schedTime <= nowMs) {
+                      isTempPast = true;
+                    }
+                  }
+
+                  // Auto-expire expired temporary reminders in Firestore
+                  if (isTemp && isTempPast && !isExpFlag) {
+                    firestoreDb.collection('users')
+                      .doc(uid)
+                      .collection('agri_reminders')
+                      .doc(doc.id)
+                      .update({
+                        status: 'expired',
+                        isExpired: true,
+                        isActive: false,
+                        expiredAt: firebase.firestore.FieldValue.serverTimestamp()
+                      })
+                      .catch(e => console.warn('Auto-expire background update notice:', e));
+                  }
+
+                  // Only active, non-expired reminders appear in user app's active list & count
+                  const shouldInclude = !isExpFlag && !(isTemp && isTempPast);
+                  if (shouldInclude) {
+                    list.push({
+                      id: doc.id,
+                      ...d
+                    });
+                  }
                 });
               }
+
               // Sort by updatedAt/createdAt descending
               list.sort((a, b) => {
                 const aTime = (a.updatedAt && a.updatedAt.seconds) || (a.createdAt && a.createdAt.seconds) || (a.scheduledDateTime ? new Date(a.scheduledDateTime).getTime() : 0);
                 const bTime = (b.updatedAt && b.updatedAt.seconds) || (b.createdAt && b.createdAt.seconds) || (b.scheduledDateTime ? new Date(b.scheduledDateTime).getTime() : 0);
                 return bTime - aTime;
               });
+
               webAgriReminderList = list;
+              window._currentAgriReminderCount = list.length;
               updateWebReminderFilterChipsUI();
               renderAgriReminderList();
               startWebRemindersChecker();
@@ -23846,10 +23877,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
         const colRef = firestoreDb.collection('users').doc(uid).collection('agri_reminders');
 
-        // CRITICAL LAYER 2: Direct live Firestore check right before write
+        // CRITICAL LAYER 2: Direct live Firestore check right before write (only counting active non-expired)
         if (!docId) {
-          const existingSnap = await colRef.limit(5).get();
-          if (existingSnap.size >= MAX_AGRI_REMINDERS) {
+          const existingSnap = await colRef.limit(15).get();
+          const nowMs = Date.now();
+          const activeCount = existingSnap.docs.filter(d => {
+            const dt = d.data() || {};
+            if (dt.isExpired === true || dt.status === 'expired') return false;
+            if (dt.reminderType === 'temporary' && dt.scheduledDateTime) {
+              const t = new Date(dt.scheduledDateTime).getTime();
+              if (!isNaN(t) && t <= nowMs) return false;
+            }
+            return true;
+          }).length;
+
+          if (activeCount >= MAX_AGRI_REMINDERS) {
             isWebAgriReminderSubmitting = false;
             hideGlobalLoading();
             showGlobalPopup({
@@ -24027,12 +24069,16 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    let webAgriRingtoneCache = [];
+
     function initAgriSettingsRingtonesLiveSync() {
       const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
       const container = document.getElementById('agriReminderRingtoneListContainer');
       if (!container) return;
 
-      container.innerHTML = `<div style="text-align: center; padding: 20px; color: #78909C; font-size: 13px;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> রিংটোন তালিকা লোড হচ্ছে...</div>`;
+      if (!webAgriRingtoneCache || webAgriRingtoneCache.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 20px; color: #78909C; font-size: 13px;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> রিংটোন তালিকা লোড হচ্ছে...</div>`;
+      }
 
       if (webAgriSettingsRingtonesUnsub) {
         try { webAgriSettingsRingtonesUnsub(); } catch (_) {}
@@ -24046,17 +24092,21 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             const list = [];
             if (snap && !snap.empty) {
               snap.forEach(doc => {
-                list.push({ id: doc.id, ...doc.data() });
+                const d = doc.data() || {};
+                if (d.isActive !== false) {
+                  list.push({ id: doc.id, ...d });
+                }
               });
             }
             list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            renderAgriSettingsRingtonesUI(list);
+            webAgriRingtoneCache = list;
+            renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
           }, err => {
             console.warn('Settings ringtones sync notice:', err);
-            renderAgriSettingsRingtonesUI([]);
+            renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
           });
       } else {
-        renderAgriSettingsRingtonesUI([]);
+        renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
       }
     }
 
@@ -24085,7 +24135,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         </div>
       `;
 
-      if (ringtones.length === 0) {
+      if (!ringtones || ringtones.length === 0) {
         html += `
           <div style="text-align: center; padding: 18px 12px; color: #78909C; font-size: 12px; background: #FAFAFA; border-radius: 10px; border: 1px dashed #CFD8DC; margin-top: 6px;">
             <i class="fa-solid fa-music-slash" style="font-size: 18px; color: #B0BEC5; margin-bottom: 4px; display: block;"></i>
@@ -24095,7 +24145,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       } else {
         ringtones.forEach(r => {
           const isSelected = webAgriSelectedRingtone.id === r.id;
-          const safeUrl = (r.audioUrl || '').replace(/'/g, "\\'");
+          const directUrl = (r.audioUrl || r.url || r.ringtoneUrl || r.downloadUrl || '');
+          const safeUrl = directUrl.replace(/'/g, "\\'");
           const safeName = (r.name || 'রিংটোন').replace(/'/g, "\\'");
           const isPlaying = webAgriPreviewPlayingId === r.id;
 
@@ -24106,7 +24157,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 <input type="radio" name="agriRingtoneRadio" ${isSelected ? 'checked' : ''} style="accent-color: #2E7D32; cursor: pointer;" />
                 <div>
                   <div style="font-size: 13.5px; font-weight: 700; color: ${isSelected ? '#1B5E20' : '#263238'};">${r.name || 'রিংটোন'}</div>
-                  <div style="font-size: 11px; color: #78909C;">${r.fileSizeKB ? r.fileSizeKB + ' KB' : 'Cloudflare R2'}</div>
+                  <div style="font-size: 11px; color: #78909C;">${r.fileSizeKB ? r.fileSizeKB + ' KB' : 'Cloudflare R2 অডিও'}</div>
                 </div>
               </div>
               <button type="button" onclick="event.stopPropagation(); previewAgriRingtone('${safeUrl}', '${r.id}')"
@@ -24123,17 +24174,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     function selectAgriRingtone(id, name, url) {
       webAgriSelectedRingtone = { id, name, url };
-      const firestoreDb = (window.firebase && firebase.firestore) ? firebase.firestore() : ((typeof db !== 'undefined' && db) ? db : null);
-      if (firestoreDb) {
-        firestoreDb.collection('agri_reminder_ringtones').limit(50).get().then(snap => {
-          const list = [];
-          if (snap && !snap.empty) snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-          list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-          renderAgriSettingsRingtonesUI(list);
-        }).catch(() => renderAgriSettingsRingtonesUI([]));
-      } else {
-        renderAgriSettingsRingtonesUI([]);
-      }
+      renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
     }
 
     function previewAgriRingtone(url, id) {
@@ -24144,7 +24185,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
         stopSynthAlarm();
         webAgriPreviewPlayingId = null;
-        selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+        renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
         return;
       }
 
@@ -24162,7 +24203,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (webAgriPreviewPlayingId === 'device_default') {
             stopSynthAlarm();
             webAgriPreviewPlayingId = null;
-            selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+            renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
           }
         }, 3500);
       } else {
@@ -24175,11 +24216,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         webAgriPreviewAudio.onended = () => {
           webAgriPreviewAudio = null;
           webAgriPreviewPlayingId = null;
-          selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+          renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
         };
       }
 
-      selectAgriRingtone(webAgriSelectedRingtone.id, webAgriSelectedRingtone.name, webAgriSelectedRingtone.url);
+      renderAgriSettingsRingtonesUI(webAgriRingtoneCache);
     }
 
     function saveAgriReminderSettings() {

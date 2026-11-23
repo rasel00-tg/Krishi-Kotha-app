@@ -4049,10 +4049,14 @@
         </div>
 
         <!-- Sub-Tabs Navigation -->
-        <div style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid #EEEEEE; padding-bottom: 12px;">
-          <button id="adminReminderSubtabBtnUsers" onclick="switchAdminReminderSubtab('users')"
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid #EEEEEE; padding-bottom: 12px; flex-wrap: wrap;">
+          <button id="adminReminderSubtabBtnActive" onclick="switchAdminReminderSubtab('active')"
             style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 700; border: none; cursor: pointer; background: #E65100; color: #fff; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(230,81,0,0.25); transition: all 0.2s;">
-            <i class="fa-solid fa-list-check"></i> ইউজার রিমাইন্ডার তালিকা
+            <i class="fa-solid fa-circle-check"></i> সক্রিয় রিমাইন্ডার (<span id="adminReminderActiveTabCount">0</span>)
+          </button>
+          <button id="adminReminderSubtabBtnHistory" onclick="switchAdminReminderSubtab('history')"
+            style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            <i class="fa-solid fa-clock-rotate-left"></i> রিমাইন্ডার হিস্ট্রি (<span id="adminReminderHistoryTabCount">0</span>)
           </button>
           <button id="adminReminderSubtabBtnRingtones" onclick="switchAdminReminderSubtab('ringtones')"
             style="padding: 10px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
@@ -4060,19 +4064,19 @@
           </button>
         </div>
 
-        <!-- SUBTAB 1: USER REMINDERS (EXISTING MONITORING LIST INTACT) -->
-        <div id="subtab-admin-reminder-users">
+        <!-- SUBTAB 1: ACTIVE REMINDERS (RUNNING & NON-EXPIRED) -->
+        <div id="subtab-admin-reminder-active">
           <!-- Metric Stat Cards (English Digits) -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রিমাইন্ডার</span>
+                <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট সক্রিয় রিমাইন্ডার</span>
                 <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
                   <i class="fa-solid fa-bell" style="font-size: 16px;"></i>
                 </div>
               </div>
               <div id="adminReminderStatTotal" style="font-size: 24px; font-weight: 800; color: #E65100;">0 টি</div>
-              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল কৃষকের সেট করা রিমাইন্ডার</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">চলমান সকল কৃষকের রিমাইন্ডার</div>
             </div>
 
             <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
@@ -4105,7 +4109,7 @@
                 </div>
               </div>
               <div id="adminReminderStatTemporary" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">0 টি</div>
-              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">এককালীন কাজের সতর্কতা</div>
+              <div style="font-size: 11px; color: #78909C; margin-top: 4px;">চলমান এককালীন কাজের সতর্কতা</div>
             </div>
           </div>
 
@@ -4160,6 +4164,59 @@
                   </tr>
                 </thead>
                 <tbody id="adminReminderTableBody">
+                  <!-- Dynamically loaded -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 2: REMINDER HISTORY (PERMANENT EXPIRED TEMPORARY REMINDERS) -->
+        <div id="subtab-admin-reminder-history" style="display: none;">
+          <!-- Top Info Card -->
+          <div style="background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(230, 81, 0, 0.15); color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: #BF360C; font-size: 14.5px;">মেয়াদোত্তীর্ণ রিমাইন্ডার হিস্ট্রি রেকর্ড</div>
+              <div style="font-size: 12.5px; color: #5D4037; margin-top: 3px;">
+                এখানে কৃষকদের সমাপ্ত হয়ে যাওয়া এককালীন অস্থায়ী কাজের রিমাইন্ডারগুলো স্থায়ীভাবে সংরক্ষিত থাকে। নিয়মিত (Daily/Weekly) রিমাইন্ডার কখনো মেয়াদোত্তীর্ণ হয় না।
+              </div>
+            </div>
+          </div>
+
+          <!-- History Filter & Search Controls -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+              <div style="flex: 1; min-width: 280px; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: #9E9E9E; font-size: 14px;"></i>
+                <input type="text" id="adminReminderHistorySearchInput" oninput="onAdminReminderHistorySearch(this.value)"
+                  placeholder="হিস্ট্রি খুঁজুন (ইউজারের নাম, ইমেইল, শিরোনাম বা ক্যাটাগরি)..."
+                  style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+              </div>
+              <div style="font-size: 13px; font-weight: 700; color: #D32F2F; background: #FFEBEE; padding: 7px 16px; border-radius: 20px;">
+                মোট মেয়াদোত্তীর্ণ: <span id="adminReminderHistoryCount">0</span> টি
+              </div>
+            </div>
+          </div>
+
+          <!-- History Table View -->
+          <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 0; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                <thead>
+                  <tr style="background: #FFEBEE; border-bottom: 1px solid #FFCDD2; color: #C62828; font-weight: 700;">
+                    <th style="padding: 14px 16px;">ব্যবহারকারী</th>
+                    <th style="padding: 14px 16px;">শিরোনাম ও ক্যাটাগরি</th>
+                    <th style="padding: 14px 16px;">ধরন</th>
+                    <th style="padding: 14px 16px;">নির্ধারিত সময়</th>
+                    <th style="padding: 14px 16px;">মেয়াদ উত্তীর্ণের সময়</th>
+                    <th style="padding: 14px 16px; text-align: center;">স্ট্যাটাস</th>
+                    <th style="padding: 14px 16px; text-align: center;">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReminderHistoryTableBody">
                   <!-- Dynamically loaded -->
                 </tbody>
               </table>
@@ -17035,71 +17092,60 @@
       renderAdminAgriReminderTable();
     }
 
+    let adminReminderHistorySearchQuery = '';
+
+    function isReminderExpired(r) {
+      if (!r) return false;
+      if (r.reminderType !== 'temporary') return false; // regular NEVER expires!
+      if (r.isExpired === true || r.status === 'expired') return true;
+      if (r.scheduledDateTime) {
+        const d = new Date(r.scheduledDateTime);
+        if (!isNaN(d.getTime()) && d.getTime() <= Date.now()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     function onAdminReminderSearch(query) {
       adminReminderSearchQuery = (query || '').trim().toLowerCase();
       renderAdminAgriReminderTable();
     }
 
+    function onAdminReminderHistorySearch(query) {
+      adminReminderHistorySearchQuery = (query || '').trim().toLowerCase();
+      renderAdminAgriReminderTable();
+    }
+
     function renderAdminAgriReminderTable() {
       const tbody = document.getElementById('adminReminderTableBody');
+      const historyTbody = document.getElementById('adminReminderHistoryTableBody');
       const totalEl = document.getElementById('adminReminderStatTotal');
       const actEl = document.getElementById('adminReminderStatActive');
       const regEl = document.getElementById('adminReminderStatRegular');
       const tempEl = document.getElementById('adminReminderStatTemporary');
 
-      const totalCount = adminReminderList.length;
-      const activeCount = adminReminderList.filter(r => r.isActive === true).length;
-      const regularCount = adminReminderList.filter(r => r.reminderType === 'regular').length;
-      const temporaryCount = adminReminderList.filter(r => r.reminderType === 'temporary').length;
+      const activeTabBadge = document.getElementById('adminReminderActiveTabCount');
+      const historyTabBadge = document.getElementById('adminReminderHistoryTabCount');
+      const historyCountBadge = document.getElementById('adminReminderHistoryCount');
+
+      const activeList = adminReminderList.filter(r => !isReminderExpired(r));
+      const historyList = adminReminderList.filter(r => isReminderExpired(r));
+
+      if (activeTabBadge) activeTabBadge.innerText = activeList.length;
+      if (historyTabBadge) historyTabBadge.innerText = historyList.length;
+      if (historyCountBadge) historyCountBadge.innerText = historyList.length;
+
+      const totalCount = activeList.length;
+      const activeCount = activeList.filter(r => r.isActive === true).length;
+      const regularCount = activeList.filter(r => r.reminderType === 'regular').length;
+      const temporaryCount = activeList.filter(r => r.reminderType === 'temporary').length;
 
       // English digits strictly
       if (totalEl) totalEl.innerText = totalCount + ' টি';
       if (actEl) actEl.innerText = activeCount + ' টি';
       if (regEl) regEl.innerText = regularCount + ' টি';
       if (tempEl) tempEl.innerText = temporaryCount + ' টি';
-
-      if (!tbody) return;
-
-      let filtered = adminReminderList;
-
-      // Type / Status filter
-      if (adminReminderCurrentFilter === 'temporary') {
-        filtered = filtered.filter(r => r.reminderType === 'temporary');
-      } else if (adminReminderCurrentFilter === 'regular') {
-        filtered = filtered.filter(r => r.reminderType === 'regular');
-      } else if (adminReminderCurrentFilter === 'active') {
-        filtered = filtered.filter(r => r.isActive === true);
-      } else if (adminReminderCurrentFilter === 'inactive') {
-        filtered = filtered.filter(r => r.isActive !== true);
-      }
-
-      // Search Query filter
-      if (adminReminderSearchQuery) {
-        filtered = filtered.filter(r => {
-          const uName = (r.userName || '').toLowerCase();
-          const uEmail = (r.userEmail || '').toLowerCase();
-          const title = (r.title || '').toLowerCase();
-          const category = (r.category || '').toLowerCase();
-          const note = (r.note || '').toLowerCase();
-          return uName.includes(adminReminderSearchQuery) ||
-                 uEmail.includes(adminReminderSearchQuery) ||
-                 title.includes(adminReminderSearchQuery) ||
-                 category.includes(adminReminderSearchQuery) ||
-                 note.includes(adminReminderSearchQuery);
-        });
-      }
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" style="text-align: center; padding: 48px 16px; color: #888;">
-              <i class="fa-solid fa-bell-slash" style="font-size: 38px; color: #CCC; margin-bottom: 12px; display: block;"></i>
-              <div style="font-size: 14.5px; font-weight: 700; color: #455A64;">বর্তমানে কোনো কৃষি রিমাইন্ডার ডেটা নেই</div>
-              <div style="font-size: 12px; color: #90A4AE; margin-top: 4px;">কৃষকরা রিমাইন্ডার তৈরি করলে তা এখানে লাইভ প্রদর্শিত হবে।</div>
-            </td>
-          </tr>`;
-        return;
-      }
 
       const getCatBadgeColor = (cat) => {
         switch (cat) {
@@ -17113,88 +17159,298 @@
         }
       };
 
-      tbody.innerHTML = filtered.map(r => {
-        const catBadge = getCatBadgeColor(r.category);
-        const isActive = r.isActive === true;
-        let typeBadge = 'অস্থায়ী';
-        if (r.reminderType === 'regular') {
-          typeBadge = r.repeatInterval === 'daily' ? 'নিয়মিত (প্রতিদিন)' : (r.repeatInterval === 'weekly' ? 'নিয়মিত (প্রতি সপ্তাহে)' : 'নিয়মিত');
+      // ----------------------------------------
+      // 1. RENDER ACTIVE REMINDERS TABLE
+      // ----------------------------------------
+      if (tbody) {
+        let filteredActive = activeList;
+
+        // Type / Status filter
+        if (adminReminderCurrentFilter === 'temporary') {
+          filteredActive = filteredActive.filter(r => r.reminderType === 'temporary');
+        } else if (adminReminderCurrentFilter === 'regular') {
+          filteredActive = filteredActive.filter(r => r.reminderType === 'regular');
+        } else if (adminReminderCurrentFilter === 'active') {
+          filteredActive = filteredActive.filter(r => r.isActive === true);
+        } else if (adminReminderCurrentFilter === 'inactive') {
+          filteredActive = filteredActive.filter(r => r.isActive !== true);
         }
 
-        let timeFormatted = r.timeText || '';
-        if (r.scheduledDateTime) {
-          const d = new Date(r.scheduledDateTime);
-          if (!isNaN(d.getTime())) {
-            const day = String(d.getDate()).padStart(2, '0');
-            const mo = String(d.getMonth() + 1).padStart(2, '0');
-            const yr = d.getFullYear();
-            let hr = d.getHours();
-            const ampm = hr >= 12 ? 'PM' : 'AM';
-            hr = hr % 12 || 12;
-            const min = String(d.getMinutes()).padStart(2, '0');
-            timeFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
-          }
+        // Search Query filter
+        if (adminReminderSearchQuery) {
+          filteredActive = filteredActive.filter(r => {
+            const uName = (r.userName || '').toLowerCase();
+            const uEmail = (r.userEmail || '').toLowerCase();
+            const title = (r.title || '').toLowerCase();
+            const category = (r.category || '').toLowerCase();
+            const note = (r.note || '').toLowerCase();
+            return uName.includes(adminReminderSearchQuery) ||
+                   uEmail.includes(adminReminderSearchQuery) ||
+                   title.includes(adminReminderSearchQuery) ||
+                   category.includes(adminReminderSearchQuery) ||
+                   note.includes(adminReminderSearchQuery);
+          });
         }
 
-        const safePath = (r._docPath || '').replace(/'/g, "\\'");
+        if (filteredActive.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 48px 16px; color: #888;">
+                <i class="fa-solid fa-bell-slash" style="font-size: 38px; color: #CCC; margin-bottom: 12px; display: block;"></i>
+                <div style="font-size: 14.5px; font-weight: 700; color: #455A64;">বর্তমানে কোনো সক্রিয় কৃষি রিমাইন্ডার ডেটা নেই</div>
+                <div style="font-size: 12px; color: #90A4AE; margin-top: 4px;">কৃষকরা রিমাইন্ডার তৈরি করলে তা এখানে লাইভ প্রদর্শিত হবে।</div>
+              </td>
+            </tr>`;
+        } else {
+          tbody.innerHTML = filteredActive.map(r => {
+            const catBadge = getCatBadgeColor(r.category);
+            const isActive = r.isActive === true;
+            let typeBadge = 'অস্থায়ী';
+            if (r.reminderType === 'regular') {
+              typeBadge = r.repeatInterval === 'daily' ? 'নিয়মিত (প্রতিদিন)' : (r.repeatInterval === 'weekly' ? 'নিয়মিত (প্রতি সপ্তাহে)' : 'নিয়মিত');
+            }
 
-        return `
-          <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.2s;">
-            <!-- User Info -->
-            <td style="padding: 12px 16px;">
-              <div style="font-weight: 700; color: #263238;">${r.userName || 'অজ্ঞাত কৃষক'}</div>
-              <div style="font-size: 11.5px; color: #78909C;">${r.userEmail || (r.userId ? 'UID: ' + r.userId.slice(0, 8) + '...' : 'তথ্য নেই')}</div>
-            </td>
+            let timeFormatted = r.timeText || '';
+            if (r.scheduledDateTime) {
+              const d = new Date(r.scheduledDateTime);
+              if (!isNaN(d.getTime())) {
+                const day = String(d.getDate()).padStart(2, '0');
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const yr = d.getFullYear();
+                let hr = d.getHours();
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                hr = hr % 12 || 12;
+                const min = String(d.getMinutes()).padStart(2, '0');
+                timeFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+              }
+            }
 
-            <!-- Title & Category -->
-            <td style="padding: 12px 16px;">
-              <div style="font-weight: 700; color: #1B5E20; margin-bottom: 3px;">${r.title || 'রিমাইন্ডার'}</div>
-              <span style="background: ${catBadge.bg}; color: ${catBadge.text}; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">
-                ${r.category || 'সাধারণ'}
-              </span>
-            </td>
+            const safePath = (r._docPath || '').replace(/'/g, "\\'");
 
-            <!-- Type -->
-            <td style="padding: 12px 16px;">
-              <span style="background: ${r.reminderType === 'regular' ? '#E8F5E9' : '#FFF3E0'}; color: ${r.reminderType === 'regular' ? '#1B5E20' : '#E65100'}; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
-                ${typeBadge}
-              </span>
-            </td>
+            return `
+              <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.2s;">
+                <!-- User Info -->
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 700; color: #263238;">${r.userName || 'অজ্ঞাত কৃষক'}</div>
+                  <div style="font-size: 11.5px; color: #78909C;">${r.userEmail || (r.userId ? 'UID: ' + r.userId.slice(0, 8) + '...' : 'তথ্য নেই')}</div>
+                </td>
 
-            <!-- Scheduled Date Time -->
-            <td style="padding: 12px 16px; font-weight: 600; color: #37474F;">
-              ${timeFormatted}
-            </td>
+                <!-- Title & Category -->
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 700; color: #1B5E20; margin-bottom: 3px;">${r.title || 'রিমাইন্ডার'}</div>
+                  <span style="background: ${catBadge.bg}; color: ${catBadge.text}; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">
+                    ${r.category || 'সাধারণ'}
+                  </span>
+                </td>
 
-            <!-- Note -->
-            <td style="padding: 12px 16px; max-width: 180px; color: #546E7A; font-size: 12px;">
-              ${r.note || '<span style="color: #B0BEC5;">কোনো নোট নেই</span>'}
-            </td>
+                <!-- Type -->
+                <td style="padding: 12px 16px;">
+                  <span style="background: ${r.reminderType === 'regular' ? '#E8F5E9' : '#FFF3E0'}; color: ${r.reminderType === 'regular' ? '#1B5E20' : '#E65100'}; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                    ${typeBadge}
+                  </span>
+                </td>
 
-            <!-- Status -->
-            <td style="padding: 12px 16px; text-align: center;">
-              <span style="background: ${isActive ? '#E8F5E9' : '#FFEBEE'}; color: ${isActive ? '#2E7D32' : '#D32F2F'}; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; display: inline-block;">
-                ${isActive ? 'সক্রিয়' : 'বন্ধ'}
-              </span>
-            </td>
+                <!-- Scheduled Date Time -->
+                <td style="padding: 12px 16px; font-weight: 600; color: #37474F;">
+                  ${timeFormatted}
+                </td>
 
-            <!-- Actions -->
-            <td style="padding: 12px 16px; text-align: center;">
-              <div style="display: flex; gap: 8px; justify-content: center;">
-                <button onclick="toggleAdminReminderStatus('${safePath}', ${isActive})"
-                  style="background: ${isActive ? '#FFF3E0' : '#E8F5E9'}; color: ${isActive ? '#E65100' : '#2E7D32'}; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
-                  title="${isActive ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}">
-                  ${isActive ? 'বন্ধ করুন' : 'চালু করুন'}
-                </button>
-                <button onclick="deleteAdminReminder('${safePath}')"
-                  style="background: #FFEBEE; color: #D32F2F; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
-                  title="মুছে ফেলুন">
-                  <i class="fa-regular fa-trash-can"></i>
-                </button>
-              </div>
-            </td>
-          </tr>`;
-      }).join('');
+                <!-- Note -->
+                <td style="padding: 12px 16px; max-width: 180px; color: #546E7A; font-size: 12px;">
+                  ${r.note || '<span style="color: #B0BEC5;">কোনো নোট নেই</span>'}
+                </td>
+
+                <!-- Status -->
+                <td style="padding: 12px 16px; text-align: center;">
+                  <span style="background: ${isActive ? '#E8F5E9' : '#FFEBEE'}; color: ${isActive ? '#2E7D32' : '#D32F2F'}; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; display: inline-block;">
+                    ${isActive ? 'সক্রিয়' : 'বন্ধ'}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td style="padding: 12px 16px; text-align: center;">
+                  <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button onclick="toggleAdminReminderStatus('${safePath}', ${isActive})"
+                      style="background: ${isActive ? '#FFF3E0' : '#E8F5E9'}; color: ${isActive ? '#E65100' : '#2E7D32'}; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
+                      title="${isActive ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}">
+                      ${isActive ? 'বন্ধ করুন' : 'চালু করুন'}
+                    </button>
+                    <button onclick="deleteAdminReminder('${safePath}')"
+                      style="background: #FFEBEE; color: #D32F2F; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
+                      title="মুছে ফেলুন">
+                      <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+      }
+
+      // ----------------------------------------
+      // 2. RENDER HISTORY REMINDERS TABLE
+      // ----------------------------------------
+      if (historyTbody) {
+        let filteredHistory = historyList;
+
+        if (adminReminderHistorySearchQuery) {
+          filteredHistory = filteredHistory.filter(r => {
+            const uName = (r.userName || '').toLowerCase();
+            const uEmail = (r.userEmail || '').toLowerCase();
+            const title = (r.title || '').toLowerCase();
+            const category = (r.category || '').toLowerCase();
+            const note = (r.note || '').toLowerCase();
+            return uName.includes(adminReminderHistorySearchQuery) ||
+                   uEmail.includes(adminReminderHistorySearchQuery) ||
+                   title.includes(adminReminderHistorySearchQuery) ||
+                   category.includes(adminReminderHistorySearchQuery) ||
+                   note.includes(adminReminderHistorySearchQuery);
+          });
+        }
+
+        if (filteredHistory.length === 0) {
+          historyTbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 48px 16px; color: #888;">
+                <i class="fa-solid fa-clock-rotate-left" style="font-size: 38px; color: #CCC; margin-bottom: 12px; display: block;"></i>
+                <div style="font-size: 14.5px; font-weight: 700; color: #455A64;">কোনো মেয়াদোত্তীর্ণ রিমাইন্ডার হিস্ট্রি নেই</div>
+                <div style="font-size: 12px; color: #90A4AE; margin-top: 4px;">অস্থায়ী কাজের সময় পার হলে সেগুলো স্বয়ংক্রিয়ভাবে হিস্ট্রি হিসেবে এখানে থাকবে।</div>
+              </td>
+            </tr>`;
+        } else {
+          historyTbody.innerHTML = filteredHistory.map(r => {
+            const catBadge = getCatBadgeColor(r.category);
+
+            let schedFormatted = r.timeText || '';
+            if (r.scheduledDateTime) {
+              const d = new Date(r.scheduledDateTime);
+              if (!isNaN(d.getTime())) {
+                const day = String(d.getDate()).padStart(2, '0');
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const yr = d.getFullYear();
+                let hr = d.getHours();
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                hr = hr % 12 || 12;
+                const min = String(d.getMinutes()).padStart(2, '0');
+                schedFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+              }
+            }
+
+            let expFormatted = 'মেয়াদ সমাপ্ত';
+            if (r.expiredAt && r.expiredAt.seconds) {
+              const d = new Date(r.expiredAt.seconds * 1000);
+              const day = String(d.getDate()).padStart(2, '0');
+              const mo = String(d.getMonth() + 1).padStart(2, '0');
+              const yr = d.getFullYear();
+              let hr = d.getHours();
+              const ampm = hr >= 12 ? 'PM' : 'AM';
+              hr = hr % 12 || 12;
+              const min = String(d.getMinutes()).padStart(2, '0');
+              expFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+            } else if (r.scheduledDateTime) {
+              expFormatted = schedFormatted;
+            }
+
+            const safePath = (r._docPath || '').replace(/'/g, "\\'");
+
+            return `
+              <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.2s;">
+                <!-- User Info -->
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 700; color: #263238;">${r.userName || 'অজ্ঞাত কৃষক'}</div>
+                  <div style="font-size: 11.5px; color: #78909C;">${r.userEmail || (r.userId ? 'UID: ' + r.userId.slice(0, 8) + '...' : 'তথ্য নেই')}</div>
+                </td>
+
+                <!-- Title & Category -->
+                <td style="padding: 12px 16px;">
+                  <div style="font-weight: 700; color: #BF360C; margin-bottom: 3px;">${r.title || 'রিমাইন্ডার'}</div>
+                  <span style="background: ${catBadge.bg}; color: ${catBadge.text}; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">
+                    ${r.category || 'সাধারণ'}
+                  </span>
+                </td>
+
+                <!-- Type -->
+                <td style="padding: 12px 16px;">
+                  <span style="background: #FFF3E0; color: #E65100; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                    অস্থায়ী (এককালীন)
+                  </span>
+                </td>
+
+                <!-- Scheduled Date Time -->
+                <td style="padding: 12px 16px; font-weight: 600; color: #546E7A;">
+                  ${schedFormatted}
+                </td>
+
+                <!-- Expired Time -->
+                <td style="padding: 12px 16px; font-weight: 600; color: #D32F2F;">
+                  ${expFormatted}
+                </td>
+
+                <!-- Status Badge -->
+                <td style="padding: 12px 16px; text-align: center;">
+                  <span style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> মেয়াদোত্তীর্ণ
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td style="padding: 12px 16px; text-align: center;">
+                  <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button onclick="showAdminReminderDetails('${safePath}')"
+                      style="background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                      title="বিস্তারিত দেখুন">
+                      <i class="fa-regular fa-eye"></i> বিস্তারিত
+                    </button>
+                    <button onclick="deleteAdminReminder('${safePath}')"
+                      style="background: #FFEBEE; color: #D32F2F; border: 1px solid #FFCDD2; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                      title="চিরতরে মুছে ফেলুন">
+                      <i class="fa-regular fa-trash-can"></i> ডিলিট
+                    </button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('');
+        }
+      }
+    }
+
+    function showAdminReminderDetails(docPath) {
+      const r = adminReminderList.find(x => x._docPath === docPath);
+      if (!r) return;
+
+      let schedFormatted = r.timeText || 'নির্ধারিত ছিল না';
+      if (r.scheduledDateTime) {
+        const d = new Date(r.scheduledDateTime);
+        if (!isNaN(d.getTime())) {
+          schedFormatted = d.toLocaleString('bn-BD', { hour12: true });
+        }
+      }
+      let expFormatted = 'মেয়াদ শেষ';
+      if (r.expiredAt && r.expiredAt.seconds) {
+        expFormatted = new Date(r.expiredAt.seconds * 1000).toLocaleString('bn-BD', { hour12: true });
+      } else if (r.scheduledDateTime) {
+        expFormatted = schedFormatted;
+      }
+
+      const isExp = isReminderExpired(r);
+
+      showAdminGlobalPopup({
+        title: isExp ? 'মেয়াদোত্তীর্ণ রিমাইন্ডার হিস্ট্রি' : 'সক্রিয় রিমাইন্ডার বিবরণ',
+        message: `
+          <div style="text-align: left; font-size: 13.5px; line-height: 1.7; color: #37474F;">
+            <div style="margin-bottom: 8px;"><b>শিরোনাম:</b> <span style="color: #1B5E20; font-weight: 700;">${r.title || 'রিমাইন্ডার'}</span></div>
+            <div style="margin-bottom: 8px;"><b>ক্যাটাগরি:</b> <span style="background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${r.category || 'সাধারণ'}</span></div>
+            <div style="margin-bottom: 8px;"><b>ব্যবহারকারী:</b> ${r.userName || 'অজ্ঞাত কৃষক'}</div>
+            <div style="margin-bottom: 8px;"><b>ইমেইল / আইডি:</b> ${r.userEmail || (r.userId || 'তথ্য নেই')}</div>
+            <div style="margin-bottom: 8px;"><b>ধরন:</b> ${r.reminderType === 'regular' ? 'নিয়মিত পুনরাবৃত্তি' : 'এককালীন অস্থায়ী কাজের সতর্কতা'}</div>
+            <div style="margin-bottom: 8px;"><b>নির্ধারিত কাজের সময়:</b> ${schedFormatted}</div>
+            ${isExp ? `<div style="margin-bottom: 8px;"><b>মেয়াদ উত্তীর্ণের সময়:</b> <span style="color: #D32F2F; font-weight: 700;">${expFormatted}</span></div>` : ''}
+            <div style="margin-bottom: 8px;"><b>নোট/বিবরণ:</b> ${r.note || 'কোনো নোট দেওয়া হয়নি'}</div>
+            <div style="margin-bottom: 8px;"><b>স্ট্যাটাস:</b> ${isExp ? '<span style="background: #FFEBEE; color: #C62828; padding: 2px 8px; border-radius: 6px; font-weight: 700;">মেয়াদোত্তীর্ণ (হিস্ট্রি)</span>' : '<span style="background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 6px; font-weight: 700;">সক্রিয়</span>'}</div>
+            <div style="font-size: 11px; color: #90A4AE; margin-top: 10px; word-break: break-all;"><b>ডাটাবেজ রেফারেন্স:</b> ${docPath}</div>
+          </div>
+        `
+      });
     }
 
     async function toggleAdminReminderStatus(docPath, currentStatus) {
@@ -17244,52 +17500,57 @@
     // ==========================================
     // AGRI REMINDER RINGTONES CONTROLLER (Cloudflare R2 + Firestore)
     // ==========================================
-    let adminCurrentReminderSubtab = 'users';
+    let adminCurrentReminderSubtab = 'active';
     let adminRingtoneUnsubscribe = null;
     let adminRingtoneList = [];
     let adminSelectedRingtoneFile = null;
 
     function switchAdminReminderSubtab(subtab) {
+      if (subtab === 'users') subtab = 'active';
       adminCurrentReminderSubtab = subtab;
-      const btnUsers = document.getElementById('adminReminderSubtabBtnUsers');
+
+      const btnActive = document.getElementById('adminReminderSubtabBtnActive') || document.getElementById('adminReminderSubtabBtnUsers');
+      const btnHistory = document.getElementById('adminReminderSubtabBtnHistory');
       const btnRingtones = document.getElementById('adminReminderSubtabBtnRingtones');
-      const viewUsers = document.getElementById('subtab-admin-reminder-users');
+
+      const viewActive = document.getElementById('subtab-admin-reminder-active') || document.getElementById('subtab-admin-reminder-users');
+      const viewHistory = document.getElementById('subtab-admin-reminder-history');
       const viewRingtones = document.getElementById('subtab-admin-reminder-ringtones');
 
-      if (subtab === 'users') {
-        if (btnUsers) {
-          btnUsers.style.background = '#E65100';
-          btnUsers.style.color = '#fff';
-          btnUsers.style.fontWeight = '700';
-          btnUsers.style.border = 'none';
-          btnUsers.style.boxShadow = '0 2px 6px rgba(230,81,0,0.25)';
+      const setTabActive = (btn, view) => {
+        if (btn) {
+          btn.style.background = '#E65100';
+          btn.style.color = '#fff';
+          btn.style.fontWeight = '700';
+          btn.style.border = 'none';
+          btn.style.boxShadow = '0 2px 6px rgba(230,81,0,0.25)';
         }
-        if (btnRingtones) {
-          btnRingtones.style.background = '#F5F5F5';
-          btnRingtones.style.color = '#546E7A';
-          btnRingtones.style.fontWeight = '600';
-          btnRingtones.style.border = '1px solid #CFD8DC';
-          btnRingtones.style.boxShadow = 'none';
+        if (view) view.style.display = 'block';
+      };
+
+      const setTabInactive = (btn, view) => {
+        if (btn) {
+          btn.style.background = '#F5F5F5';
+          btn.style.color = '#546E7A';
+          btn.style.fontWeight = '600';
+          btn.style.border = '1px solid #CFD8DC';
+          btn.style.boxShadow = 'none';
         }
-        if (viewUsers) viewUsers.style.display = 'block';
-        if (viewRingtones) viewRingtones.style.display = 'none';
-      } else {
-        if (btnRingtones) {
-          btnRingtones.style.background = '#E65100';
-          btnRingtones.style.color = '#fff';
-          btnRingtones.style.fontWeight = '700';
-          btnRingtones.style.border = 'none';
-          btnRingtones.style.boxShadow = '0 2px 6px rgba(230,81,0,0.25)';
-        }
-        if (btnUsers) {
-          btnUsers.style.background = '#F5F5F5';
-          btnUsers.style.color = '#546E7A';
-          btnUsers.style.fontWeight = '600';
-          btnUsers.style.border = '1px solid #CFD8DC';
-          btnUsers.style.boxShadow = 'none';
-        }
-        if (viewUsers) viewUsers.style.display = 'none';
-        if (viewRingtones) viewRingtones.style.display = 'block';
+        if (view) view.style.display = 'none';
+      };
+
+      if (subtab === 'active') {
+        setTabActive(btnActive, viewActive);
+        setTabInactive(btnHistory, viewHistory);
+        setTabInactive(btnRingtones, viewRingtones);
+      } else if (subtab === 'history') {
+        setTabInactive(btnActive, viewActive);
+        setTabActive(btnHistory, viewHistory);
+        setTabInactive(btnRingtones, viewRingtones);
+      } else if (subtab === 'ringtones') {
+        setTabInactive(btnActive, viewActive);
+        setTabInactive(btnHistory, viewHistory);
+        setTabActive(btnRingtones, viewRingtones);
 
         // Lazy-load ringtones snapshot on subtab open
         initAdminRingtoneLiveSync();
@@ -17297,7 +17558,7 @@
     }
 
     function refreshAdminReminderTab() {
-      if (adminCurrentReminderSubtab === 'users') {
+      if (adminCurrentReminderSubtab === 'active' || adminCurrentReminderSubtab === 'history') {
         initAdminAgriReminderLiveSync(true);
       } else {
         initAdminRingtoneLiveSync(true);
@@ -17451,6 +17712,9 @@
         const payload = {
           name: name,
           audioUrl: r2Result.publicUrl,
+          url: r2Result.publicUrl,
+          ringtoneUrl: r2Result.publicUrl,
+          downloadUrl: r2Result.publicUrl,
           fileName: r2Result.uniqueFileName,
           fileSizeKB: r2Result.fileSizeKB,
           mimeType: r2Result.mimeType,
@@ -17660,6 +17924,8 @@
     window.renderAdminAgriReminderTable = renderAdminAgriReminderTable;
     window.setAdminReminderFilter = setAdminReminderFilter;
     window.onAdminReminderSearch = onAdminReminderSearch;
+    window.onAdminReminderHistorySearch = onAdminReminderHistorySearch;
+    window.showAdminReminderDetails = showAdminReminderDetails;
     window.toggleAdminReminderStatus = toggleAdminReminderStatus;
     window.deleteAdminReminder = deleteAdminReminder;
 

@@ -819,8 +819,26 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             // Strict 2nd-layer limit verification directly from Firestore before insert (if new)
                             if (!isEdit) {
                               final existingDocs =
-                                  await remindersCol.limit(5).get();
-                              if (existingDocs.docs.length >= maxRemindersLimit) {
+                                  await remindersCol.limit(15).get();
+                              final now = DateTime.now();
+                              final activeCount = existingDocs.docs.where((d) {
+                                final dData = d.data();
+                                if (dData['isExpired'] == true ||
+                                    dData['status'] == 'expired') {
+                                  return false;
+                                }
+                                if (dData['reminderType'] == 'temporary') {
+                                  final sched = DateTime.tryParse(
+                                      dData['scheduledDateTime']?.toString() ??
+                                          '');
+                                  if (sched != null && sched.isBefore(now)) {
+                                    return false;
+                                  }
+                                }
+                                return true;
+                              }).length;
+
+                              if (activeCount >= maxRemindersLimit) {
                                 isSubmitting = false;
                                 GlobalPopup.hideLoading(context);
                                 if (mounted) {
@@ -2248,7 +2266,11 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                           );
                         }
 
-                        final docs = snapshot.data?.docs ?? [];
+                        final allRingtoneDocs = snapshot.data?.docs ?? [];
+                        final docs = allRingtoneDocs.where((d) {
+                          final data = d.data();
+                          return data['isActive'] != false;
+                        }).toList();
                         if (docs.isEmpty) {
                           return Container(
                             margin: const EdgeInsets.only(top: 8),
@@ -2276,7 +2298,12 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             final ringtoneId = doc.id;
                             final ringtoneName =
                                 data['name']?.toString() ?? 'রিংটোন';
-                            final audioUrl = data['audioUrl']?.toString() ?? '';
+                            final audioUrl = (data['audioUrl'] ??
+                                    data['url'] ??
+                                    data['ringtoneUrl'] ??
+                                    data['downloadUrl'] ??
+                                    '')
+                                .toString();
                             final sizeKB = data['fileSizeKB']?.toString() ?? '';
                             final subText = sizeKB.isNotEmpty
                                 ? '$sizeKB KB • Cloudflare R2'
@@ -2830,13 +2857,58 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
       stream: _remindersStream,
       builder: (context, snapshot) {
         final allDocs = snapshot.data?.docs ?? [];
-        final totalCount = allDocs.length;
-        final tempCount = allDocs
+        final now = DateTime.now();
+        final List<QueryDocumentSnapshot<Map<String, dynamic>>> activeDocs = [];
+
+        for (final doc in allDocs) {
+          final data = doc.data();
+          final isExpiredFlag = data['isExpired'] == true ||
+              (data['status']?.toString() == 'expired');
+          final reminderType = data['reminderType']?.toString() ?? 'temporary';
+
+          bool isExpired = isExpiredFlag;
+          if (!isExpired && reminderType == 'temporary') {
+            final schedStr = data['scheduledDateTime']?.toString() ?? '';
+            final schedDt = DateTime.tryParse(schedStr);
+            if (schedDt != null && schedDt.isBefore(now)) {
+              isExpired = true;
+              // Background update in Firestore + cancel local notification
+              if (currentUser != null) {
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(currentUser.uid)
+                    .collection('agri_reminders')
+                    .doc(doc.id)
+                    .update({
+                      'status': 'expired',
+                      'isExpired': true,
+                      'isActive': false,
+                      'expiredAt': FieldValue.serverTimestamp(),
+                    }).catchError((e) => debugPrint('Error updating expired reminder: $e'));
+
+                final notifId = data['notificationId'] is int
+                    ? data['notificationId'] as int
+                    : int.tryParse(data['notificationId']?.toString() ?? '');
+                if (notifId != null) {
+                  AgriReminderNotificationService.cancelReminder(notifId);
+                }
+              }
+            }
+          }
+
+          // If NOT expired (regular reminders NEVER expire), keep it in activeDocs
+          if (!isExpired) {
+            activeDocs.add(doc);
+          }
+        }
+
+        final totalCount = activeDocs.length;
+        final tempCount = activeDocs
             .where((d) =>
                 (d.data()['reminderType']?.toString() ?? '') ==
                 'temporary')
             .length;
-        final regCount = allDocs
+        final regCount = activeDocs
             .where((d) =>
                 (d.data()['reminderType']?.toString() ?? '') ==
                 'regular')
@@ -2864,7 +2936,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
           // Client-Side in-memory sorting by updatedAt / createdAt descending
           final sortedDocs =
               List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(
-                  allDocs);
+                  activeDocs);
           sortedDocs.sort((a, b) {
             final aData = a.data();
             final bData = b.data();
