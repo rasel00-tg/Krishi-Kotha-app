@@ -2478,7 +2478,7 @@
             <span>কৃষি বিশেষজ্ঞ</span>
           </div>
           <!-- ৩. কৃষি রিমাইন্ডার -->
-          <div class="quick-card" onclick="openServiceModal('agri_reminder')">
+          <div class="quick-card" onclick="openAgriReminderPage()">
             <div class="quick-icon-wrap" style="background: #FFF3E0; color: #E65100;">
               <i class="fa-solid fa-bell"></i>
             </div>
@@ -3776,6 +3776,158 @@
       </div>
       <div id="cropPreservationDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN AGRI REMINDER PAGE -->
+    <div class="full-screen-page" id="agriReminderPage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      
+      <!-- Colored Header & Topbar matching Flutter App & Crop Calendar -->
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="topbar-back-btn" onclick="closeAgriReminderPage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center;"
+            title="ফিরে যান">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">কৃষি রিমাইন্ডার</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.85); margin: 2px 0 0 0;">সময়মতো কৃষি কাজের সতর্কবার্তা</p>
+          </div>
+          <button onclick="checkAuthAndOpenReminderModal()"
+            style="background: rgba(255, 255, 255, 0.15); border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; cursor: pointer; transition: background 0.2s;"
+            title="নতুন রিমাইন্ডার">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+
+        <!-- Reminder Count Banner & New Reminder Action -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="background: rgba(255,255,255,0.18); border-radius: 12px; padding: 4px 10px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-bell" style="font-size: 12px; color: #fff;"></i>
+            <span style="font-size: 12px; font-weight: 700; color: #fff;">মোট রিমাইন্ডার: <span id="webAgriReminderLimitCounter">0/5</span></span>
+          </div>
+          <button onclick="checkAuthAndOpenReminderModal()"
+            style="background: #fff; border: none; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #1B5E20; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+            <i class="fa-solid fa-circle-plus" style="font-size: 13px; color: #1B5E20;"></i>
+            <span>+ নতুন রিমাইন্ডার</span>
+          </button>
+        </div>
+
+        <!-- Horizontal Filter Chips (All, Temporary, Regular) -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="webReminderFilterAll" onclick="setAgriReminderFilter('all')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; color: #1B5E20; box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: all 0.2s ease;">
+            <span>সব</span>
+            <span id="webReminderBadgeAll" style="background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button id="webReminderFilterTemporary" onclick="setAgriReminderFilter('temporary')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
+            <span>অস্থায়ী</span>
+            <span id="webReminderBadgeTemporary" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+          </button>
+          <button id="webReminderFilterRegular" onclick="setAgriReminderFilter('regular')"
+            style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
+            <span>নিয়মিত</span>
+            <span id="webReminderBadgeRegular" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Reminders Body -->
+      <div id="agriReminderScrollContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 40px 16px;">
+        <div id="agriReminderListContainer">
+          <!-- Dynamically Populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- AGRI REMINDER ADD/EDIT MODAL -->
+    <div id="agriReminderFormModal" class="modal-overlay" style="display: none; z-index: 100020; align-items: flex-end;">
+      <div style="background: #fff; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 20px; box-shadow: 0 -4px 24px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
+        <div style="width: 44px; height: 5px; background: #E0E0E0; border-radius: 10px; margin: 0 auto 16px auto;"></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEE; padding-bottom: 10px; margin-bottom: 14px;">
+          <h3 id="agriReminderModalTitle" style="font-size: 17px; font-weight: 700; color: #1B5E20; margin: 0;">নতুন কৃষি রিমাইন্ডার</h3>
+          <button onclick="closeAgriReminderFormModal()" style="background: none; border: none; font-size: 18px; color: #9E9E9E; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <input type="hidden" id="agriReminderEditDocId" value="" />
+        
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">রিমাইন্ডারের শিরোনাম *</label>
+          <input type="text" id="agriReminderInputTitle" placeholder="যেমন: ধানে সেচ দেওয়া, ইউরিয়া সার প্রয়োগ..."
+            style="width: 100%; padding: 11px 14px; border: 1px solid #CCC; border-radius: 12px; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">কাজের ধরন / ক্যাটাগরি *</label>
+          <select id="agriReminderInputCategory" style="width: 100%; padding: 11px 14px; border: 1px solid #CCC; border-radius: 12px; font-size: 13.5px; outline: none; background: #fff; box-sizing: border-box;">
+            <option value="সেচ দেওয়া">সেচ দেওয়া</option>
+            <option value="সার প্রয়োগ">সার প্রয়োগ</option>
+            <option value="কীটনাশক স্প্রে">কীটনাশক স্প্রে</option>
+            <option value="বীজ বপন">বীজ বপন</option>
+            <option value="ফসল সংগ্রহ">ফসল সংগ্রহ</option>
+            <option value="পশু-পাখি ও মাছ">পশু-পাখি ও মাছ</option>
+            <option value="অন্যান্য">অন্যান্য</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">রিমাইন্ডারের ধরন *</label>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" id="webReminderTypeTemporaryBtn" onclick="selectAgriReminderType('temporary')"
+              style="flex: 1; padding: 10px; border-radius: 12px; border: 1.5px solid #2E7D32; background: #E8F5E9; color: #1B5E20; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-clock"></i>
+              <span>অস্থায়ী (একবার)</span>
+            </button>
+            <button type="button" id="webReminderTypeRegularBtn" onclick="selectAgriReminderType('regular')"
+              style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #CCC; background: #F9F9F9; color: #555; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>নিয়মিত (পুনরাবৃত্তি)</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="webReminderRepeatIntervalGroup" style="display: none; margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">পুনরাবৃত্তির সময়সীমা *</label>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" id="webReminderIntervalDailyBtn" onclick="selectAgriReminderInterval('daily')"
+              style="padding: 7px 16px; border-radius: 20px; border: none; background: #2E7D32; color: #fff; font-weight: 600; font-size: 12.5px; cursor: pointer;">
+              প্রতিদিন
+            </button>
+            <button type="button" id="webReminderIntervalWeeklyBtn" onclick="selectAgriReminderInterval('weekly')"
+              style="padding: 7px 16px; border-radius: 20px; border: 1px solid #CCC; background: #F9F9F9; color: #555; font-weight: 600; font-size: 12.5px; cursor: pointer;">
+              প্রতি সপ্তাহে
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">তারিখ নির্বাচন *</label>
+            <input type="date" id="agriReminderInputDate"
+              style="width: 100%; padding: 10px 12px; border: 1px solid #CCC; border-radius: 12px; font-size: 13px; outline: none; box-sizing: border-box;" />
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">সময় নির্বাচন *</label>
+            <input type="time" id="agriReminderInputTime"
+              style="width: 100%; padding: 10px 12px; border: 1px solid #CCC; border-radius: 12px; font-size: 13px; outline: none; box-sizing: border-box;" />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">সংক্ষিপ্ত নোট (ঐচ্ছিক)</label>
+          <textarea id="agriReminderInputNote" rows="2" placeholder="প্রয়োজনীয় কোনো নোট বা দিকনির্দেশনা লিখুন..."
+            style="width: 100%; padding: 10px 14px; border: 1px solid #CCC; border-radius: 12px; font-size: 13.5px; outline: none; resize: none; box-sizing: border-box;"></textarea>
+        </div>
+
+        <button type="button" onclick="saveAgriReminderFromModal()"
+          style="width: 100%; padding: 13px; border-radius: 12px; border: none; background: #2E7D32; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 8px rgba(46,125,50,0.3);">
+          রিমাইন্ডার সংরক্ষণ করুন
+        </button>
       </div>
     </div>
 
@@ -21200,6 +21352,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       closeGlobalPopup();
       closeNotificationsPage();
       closePrivacyPage();
+      closeAgriReminderPage();
     });
 
     document.addEventListener('keydown', function (e) {
@@ -21207,6 +21360,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         closeGlobalPopup();
         closeNotificationsPage();
         closePrivacyPage();
+        closeAgriReminderPage();
       }
     });
 
@@ -22667,6 +22821,581 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       renderWebRecentHistory();
       updateWebProfileHeader();
     };
+
+    // ==========================================
+    // AGRI REMINDER MODULE (WEB PREVIEW SYNC)
+    // ==========================================
+    let webAgriReminderList = [];
+    let webAgriReminderFilter = 'all';
+    let webAgriReminderUnsub = null;
+    let webAgriReminderSelectedType = 'temporary';
+    let webAgriReminderSelectedInterval = 'none';
+    let webReminderIntervalTimer = null;
+    const MAX_AGRI_REMINDERS = 5;
+
+    function getWebActiveUserId() {
+      if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) {
+        return firebase.auth().currentUser.uid;
+      }
+      if (typeof currentUser !== 'undefined' && currentUser && currentUser.uid && !currentUser.uid.startsWith('guest_')) {
+        return currentUser.uid;
+      }
+      return null;
+    }
+
+    function openAgriReminderPage() {
+      const page = document.getElementById('agriReminderPage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+        window.history.pushState({ page: 'agriReminder' }, '');
+      }
+      initWebAgriReminderLiveSync();
+    }
+
+    function closeAgriReminderPage() {
+      const page = document.getElementById('agriReminderPage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      closeAgriReminderFormModal();
+      if (webAgriReminderUnsub) {
+        try { webAgriReminderUnsub(); } catch (_) {}
+        webAgriReminderUnsub = null;
+      }
+    }
+
+    function initWebAgriReminderLiveSync() {
+      const uid = getWebActiveUserId();
+      const container = document.getElementById('agriReminderListContainer');
+      const counterEl = document.getElementById('webAgriReminderLimitCounter');
+
+      if (!uid) {
+        webAgriReminderList = [];
+        updateWebReminderFilterChipsUI();
+        if (counterEl) counterEl.textContent = '0/' + MAX_AGRI_REMINDERS;
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 48px 20px;">
+              <i class="fa-solid fa-user-lock" style="font-size: 46px; color: #BBB; margin-bottom: 14px; display: block;"></i>
+              <h4 style="font-size: 16px; font-weight: 700; color: #1B5E20; margin: 0 0 8px 0;">লগইন প্রয়োজন</h4>
+              <p style="font-size: 13px; color: #666; max-width: 300px; margin: 0 auto 16px auto; line-height: 1.4;">
+                রিমাইন্ডার সেট এবং ব্যাকগ্রাউন্ড নোটিফিকেশন পেতে অনুগ্রহ করে আপনার একাউন্টে লগইন করুন।
+              </p>
+              <button onclick="openRegistrationModal()"
+                style="background: #2E7D32; color: #fff; font-size: 13.5px; font-weight: 700; border: none; padding: 10px 22px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(46,125,50,0.25);">
+                লগইন করুন
+              </button>
+            </div>`;
+        }
+        return;
+      }
+
+      if (webAgriReminderUnsub) {
+        try { webAgriReminderUnsub(); } catch (_) {}
+      }
+
+      if (window.db) {
+        webAgriReminderUnsub = db.collection('users')
+          .doc(uid)
+          .collection('agri_reminders')
+          .limit(10)
+          .onSnapshot(snapshot => {
+            const list = [];
+            if (snapshot && !snapshot.empty) {
+              snapshot.forEach(doc => {
+                const d = doc.data() || {};
+                list.push({
+                  id: doc.id,
+                  ...d
+                });
+              });
+            }
+            // Sort by createdAt descending
+            list.sort((a, b) => {
+              const aTime = a.createdAt?.seconds || (a.scheduledDateTime ? new Date(a.scheduledDateTime).getTime() : 0);
+              const bTime = b.createdAt?.seconds || (b.scheduledDateTime ? new Date(b.scheduledDateTime).getTime() : 0);
+              return bTime - aTime;
+            });
+            webAgriReminderList = list;
+            updateWebReminderFilterChipsUI();
+            renderAgriReminderList();
+            startWebRemindersChecker();
+          }, err => {
+            console.warn('Web reminder live sync notice:', err);
+          });
+      }
+    }
+
+    function setAgriReminderFilter(filter) {
+      webAgriReminderFilter = filter;
+      updateWebReminderFilterChipsUI();
+      renderAgriReminderList();
+    }
+
+    function updateWebReminderFilterChipsUI() {
+      const allBtn = document.getElementById('webReminderFilterAll');
+      const tempBtn = document.getElementById('webReminderFilterTemporary');
+      const regBtn = document.getElementById('webReminderFilterRegular');
+
+      const allBadge = document.getElementById('webReminderBadgeAll');
+      const tempBadge = document.getElementById('webReminderBadgeTemporary');
+      const regBadge = document.getElementById('webReminderBadgeRegular');
+      const counterEl = document.getElementById('webAgriReminderLimitCounter');
+
+      const total = webAgriReminderList.length;
+      const tempCount = webAgriReminderList.filter(r => r.reminderType === 'temporary').length;
+      const regCount = webAgriReminderList.filter(r => r.reminderType === 'regular').length;
+
+      if (allBadge) allBadge.textContent = String(total);
+      if (tempBadge) tempBadge.textContent = String(tempCount);
+      if (regBadge) regBadge.textContent = String(regCount);
+      if (counterEl) counterEl.textContent = total + '/' + MAX_AGRI_REMINDERS;
+
+      const activeStyle = "flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; color: #1B5E20; box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: all 0.2s ease;";
+      const activeBadgeStyle = "background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;";
+
+      const inactiveStyle = "flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;";
+      const inactiveBadgeStyle = "background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;";
+
+      if (allBtn) allBtn.style.cssText = webAgriReminderFilter === 'all' ? activeStyle : inactiveStyle;
+      if (allBadge) allBadge.style.cssText = webAgriReminderFilter === 'all' ? activeBadgeStyle : inactiveBadgeStyle;
+
+      if (tempBtn) tempBtn.style.cssText = webAgriReminderFilter === 'temporary' ? activeStyle : inactiveStyle;
+      if (tempBadge) tempBadge.style.cssText = webAgriReminderFilter === 'temporary' ? activeBadgeStyle : inactiveBadgeStyle;
+
+      if (regBtn) regBtn.style.cssText = webAgriReminderFilter === 'regular' ? activeStyle : inactiveStyle;
+      if (regBadge) regBadge.style.cssText = webAgriReminderFilter === 'regular' ? activeBadgeStyle : inactiveBadgeStyle;
+    }
+
+    function renderAgriReminderList() {
+      const container = document.getElementById('agriReminderListContainer');
+      if (!container) return;
+
+      let list = webAgriReminderList;
+      if (webAgriReminderFilter === 'temporary') {
+        list = list.filter(r => r.reminderType === 'temporary');
+      } else if (webAgriReminderFilter === 'regular') {
+        list = list.filter(r => r.reminderType === 'regular');
+      }
+
+      if (!list || list.length === 0) {
+        let emptyIcon = 'fa-solid fa-bell-slash';
+        let emptyTitle = 'বর্তমানে কোনো রিমাইন্ডার সেট করা নেই';
+        let emptySub = 'নতুন রিমাইন্ডার সেট করতে "+ নতুন রিমাইন্ডার" চাপুন';
+
+        if (webAgriReminderFilter === 'temporary') {
+          emptyIcon = 'fa-regular fa-calendar-xmark';
+          emptyTitle = 'কোনো অস্থায়ী রিমাইন্ডার নেই';
+          emptySub = 'এককালীন কোনো কাজের সতর্কবার্তা পেতে নতুন রিমাইন্ডার যোগ করুন';
+        } else if (webAgriReminderFilter === 'regular') {
+          emptyIcon = 'fa-solid fa-arrows-spin';
+          emptyTitle = 'কোনো নিয়মিত রিমাইন্ডার নেই';
+          emptySub = 'দৈনিক বা সাপ্তাহিক কাজের জন্য নিয়মিত রিমাইন্ডার সেট করুন';
+        }
+
+        container.innerHTML = `
+          <div style="text-align: center; padding: 48px 20px; color: var(--text-secondary);">
+            <i class="${emptyIcon}" style="font-size: 42px; color: #BBB; margin-bottom: 12px; display: block;"></i>
+            <h4 style="font-size: 15px; font-weight: 700; color: #555; margin: 0 0 6px 0;">${emptyTitle}</h4>
+            <p style="font-size: 12.5px; color: #888; margin: 0;">${emptySub}</p>
+          </div>`;
+        return;
+      }
+
+      const getCatColor = (cat) => {
+        switch (cat) {
+          case 'সেচ দেওয়া': return '#0288D1';
+          case 'সার প্রয়োগ': return '#388E3C';
+          case 'কীটনাশক স্প্রে': return '#D32F2F';
+          case 'বীজ বপন': return '#7B1FA2';
+          case 'ফসল সংগ্রহ': return '#E65100';
+          case 'পশু-পাখি ও মাছ': return '#00796B';
+          default: return '#455A64';
+        }
+      };
+
+      const getCatIcon = (cat) => {
+        switch (cat) {
+          case 'সেচ দেওয়া': return 'fa-droplet';
+          case 'সার প্রয়োগ': return 'fa-seedling';
+          case 'কীটনাশক স্প্রে': return 'fa-spray-can-sparkles';
+          case 'বীজ বপন': return 'fa-spa';
+          case 'ফসল সংগ্রহ': return 'fa-wheat-awn';
+          case 'পশু-পাখি ও মাছ': return 'fa-paw';
+          default: return 'fa-bell';
+        }
+      };
+
+      container.innerHTML = list.map(r => {
+        const catColor = getCatColor(r.category);
+        const catIcon = getCatIcon(r.category);
+        const isActive = r.isActive === true;
+        let typeLabel = 'অস্থায়ী (একবার)';
+        if (r.reminderType === 'regular') {
+          typeLabel = r.repeatInterval === 'daily' ? 'নিয়মিত (প্রতিদিন)' : (r.repeatInterval === 'weekly' ? 'নিয়মিত (প্রতি সপ্তাহে)' : 'নিয়মিত');
+        }
+
+        let timeFormatted = r.timeText || '';
+        if (r.scheduledDateTime) {
+          const d = new Date(r.scheduledDateTime);
+          if (!isNaN(d.getTime())) {
+            const day = String(d.getDate()).padStart(2, '0');
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const yr = d.getFullYear();
+            let hr = d.getHours();
+            const ampm = hr >= 12 ? 'PM' : 'AM';
+            hr = hr % 12 || 12;
+            const min = String(d.getMinutes()).padStart(2, '0');
+            timeFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+          }
+        }
+
+        return `
+          <div style="background: #fff; border-radius: 16px; border: 1px solid ${isActive ? catColor + '40' : '#E0E0E0'}; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <!-- Top Badges & Switch -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: ${catColor}15; color: ${catColor}; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid ${catIcon}"></i> ${r.category || 'সাধারণ'}
+                </span>
+                <span style="background: ${r.reminderType === 'regular' ? '#E8F5E9' : '#FFF3E0'}; color: ${r.reminderType === 'regular' ? '#1B5E20' : '#E65100'}; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">
+                  ${typeLabel}
+                </span>
+              </div>
+              <!-- Switch toggle -->
+              <label style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleAgriReminderStatus('${r.id}', this.checked)"
+                  style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${isActive ? '#2E7D32' : '#CCC'}; border-radius: 22px; transition: .2s;">
+                  <span style="position: absolute; height: 16px; width: 16px; left: ${isActive ? '21px' : '3px'}; bottom: 3px; background-color: white; border-radius: 50%; transition: .2s;"></span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Title -->
+            <h4 style="font-size: 15px; font-weight: 700; color: ${isActive ? '#212121' : '#9E9E9E'}; margin: 0 0 4px 0; ${!isActive ? 'text-decoration: line-through;' : ''}">
+              ${r.title || 'রিমাইন্ডার'}
+            </h4>
+
+            <!-- Note if any -->
+            ${r.note ? `<p style="font-size: 12.5px; color: #666; margin: 4px 0 8px 0; line-height: 1.35;">${r.note}</p>` : ''}
+
+            <!-- Bottom: Date & Actions -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0F0F0; padding-top: 8px; margin-top: 8px;">
+              <div style="font-size: 12px; font-weight: 600; color: #424242; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-regular fa-clock" style="color: #757575;"></i>
+                <span>${timeFormatted}</span>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button onclick="openAgriReminderFormModal('${r.id}')"
+                  style="background: none; border: none; font-size: 15px; color: #0288D1; cursor: pointer; padding: 4px 6px;" title="সম্পাদনা">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+                <button onclick="deleteAgriReminder('${r.id}')"
+                  style="background: none; border: none; font-size: 15px; color: #D32F2F; cursor: pointer; padding: 4px 6px;" title="মুছে ফেলুন">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function checkAuthAndOpenReminderModal() {
+      const uid = getWebActiveUserId();
+      if (!uid) {
+        showGlobalPopup({
+          title: 'লগইন প্রয়োজন',
+          message: 'রিমাইন্ডার সেট করতে আপনার একাউন্টে লগইন করুন।',
+          btnText: 'লগইন করুন',
+          onConfirm: () => openRegistrationModal()
+        });
+        return;
+      }
+
+      if (webAgriReminderList.length >= MAX_AGRI_REMINDERS) {
+        showGlobalPopup({
+          title: 'রিমাইন্ডার সীমা পূর্ণ',
+          message: 'আপনি সর্বোচ্চ ' + MAX_AGRI_REMINDERS + ' টি রিমাইন্ডার সেট করতে পারবেন। নতুন রিমাইন্ডার যুক্ত করতে পুরোনো একটি ডিলিট করুন।',
+          btnText: 'ঠিক আছে'
+        });
+        return;
+      }
+
+      openAgriReminderFormModal();
+    }
+
+    function openAgriReminderFormModal(docId) {
+      const modal = document.getElementById('agriReminderFormModal');
+      const titleEl = document.getElementById('agriReminderModalTitle');
+      const docIdInput = document.getElementById('agriReminderEditDocId');
+      const titleInput = document.getElementById('agriReminderInputTitle');
+      const catInput = document.getElementById('agriReminderInputCategory');
+      const dateInput = document.getElementById('agriReminderInputDate');
+      const timeInput = document.getElementById('agriReminderInputTime');
+      const noteInput = document.getElementById('agriReminderInputNote');
+
+      const isEdit = !!docId;
+      const targetDoc = isEdit ? webAgriReminderList.find(r => r.id === docId) : null;
+
+      if (titleEl) titleEl.textContent = isEdit ? 'রিমাইন্ডার সম্পাদনা' : 'নতুন কৃষি রিমাইন্ডার';
+      if (docIdInput) docIdInput.value = isEdit ? docId : '';
+      if (titleInput) titleInput.value = targetDoc ? targetDoc.title : '';
+      if (catInput) catInput.value = targetDoc ? targetDoc.category : 'সেচ দেওয়া';
+      if (noteInput) noteInput.value = targetDoc ? (targetDoc.note || '') : '';
+
+      // Default Date & Time (1 hour from now)
+      let defaultDate = new Date();
+      defaultDate.setHours(defaultDate.getHours() + 1);
+      if (targetDoc && targetDoc.scheduledDateTime) {
+        defaultDate = new Date(targetDoc.scheduledDateTime);
+      }
+
+      const yr = defaultDate.getFullYear();
+      const mo = String(defaultDate.getMonth() + 1).padStart(2, '0');
+      const da = String(defaultDate.getDate()).padStart(2, '0');
+      if (dateInput) dateInput.value = `${yr}-${mo}-${da}`;
+
+      const hr = String(defaultDate.getHours()).padStart(2, '0');
+      const mi = String(defaultDate.getMinutes()).padStart(2, '0');
+      if (timeInput) timeInput.value = `${hr}:${mi}`;
+
+      const rType = targetDoc ? targetDoc.reminderType : 'temporary';
+      const rInterval = targetDoc ? targetDoc.repeatInterval : 'none';
+      selectAgriReminderType(rType);
+      if (rType === 'regular') {
+        selectAgriReminderInterval(rInterval === 'none' ? 'daily' : rInterval);
+      }
+
+      if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAgriReminderFormModal() {
+      const modal = document.getElementById('agriReminderFormModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
+    }
+
+    function selectAgriReminderType(type) {
+      webAgriReminderSelectedType = type;
+      const tempBtn = document.getElementById('webReminderTypeTemporaryBtn');
+      const regBtn = document.getElementById('webReminderTypeRegularBtn');
+      const intervalGroup = document.getElementById('webReminderRepeatIntervalGroup');
+
+      if (type === 'temporary') {
+        webAgriReminderSelectedInterval = 'none';
+        if (tempBtn) {
+          tempBtn.style.border = '1.5px solid #2E7D32';
+          tempBtn.style.background = '#E8F5E9';
+          tempBtn.style.color = '#1B5E20';
+        }
+        if (regBtn) {
+          regBtn.style.border = '1px solid #CCC';
+          regBtn.style.background = '#F9F9F9';
+          regBtn.style.color = '#555';
+        }
+        if (intervalGroup) intervalGroup.style.display = 'none';
+      } else {
+        if (webAgriReminderSelectedInterval === 'none') {
+          webAgriReminderSelectedInterval = 'daily';
+        }
+        if (tempBtn) {
+          tempBtn.style.border = '1px solid #CCC';
+          tempBtn.style.background = '#F9F9F9';
+          tempBtn.style.color = '#555';
+        }
+        if (regBtn) {
+          regBtn.style.border = '1.5px solid #2E7D32';
+          regBtn.style.background = '#E8F5E9';
+          regBtn.style.color = '#1B5E20';
+        }
+        if (intervalGroup) intervalGroup.style.display = 'block';
+        selectAgriReminderInterval(webAgriReminderSelectedInterval);
+      }
+    }
+
+    function selectAgriReminderInterval(interval) {
+      webAgriReminderSelectedInterval = interval;
+      const dailyBtn = document.getElementById('webReminderIntervalDailyBtn');
+      const weeklyBtn = document.getElementById('webReminderIntervalWeeklyBtn');
+
+      if (interval === 'daily') {
+        if (dailyBtn) { dailyBtn.style.background = '#2E7D32'; dailyBtn.style.color = '#fff'; }
+        if (weeklyBtn) { weeklyBtn.style.background = '#F9F9F9'; weeklyBtn.style.color = '#555'; }
+      } else {
+        if (dailyBtn) { dailyBtn.style.background = '#F9F9F9'; dailyBtn.style.color = '#555'; }
+        if (weeklyBtn) { weeklyBtn.style.background = '#2E7D32'; weeklyBtn.style.color = '#fff'; }
+      }
+    }
+
+    async function saveAgriReminderFromModal() {
+      const uid = getWebActiveUserId();
+      if (!uid) {
+        showGlobalPopup({ title: 'লগইন প্রয়োজন', message: 'রিমাইন্ডার সংরক্ষণ করতে লগইন করুন।' });
+        return;
+      }
+
+      const docId = document.getElementById('agriReminderEditDocId')?.value || '';
+      const title = document.getElementById('agriReminderInputTitle')?.value.trim() || '';
+      const category = document.getElementById('agriReminderInputCategory')?.value || 'সেচ দেওয়া';
+      const dateStr = document.getElementById('agriReminderInputDate')?.value || '';
+      const timeStr = document.getElementById('agriReminderInputTime')?.value || '';
+      const note = document.getElementById('agriReminderInputNote')?.value.trim() || '';
+
+      if (!title) {
+        showGlobalPopup({ title: 'শিরোনাম প্রয়োজন', message: 'অনুগ্রহ করে রিমাইন্ডারের একটি শিরোনাম লিখুন।' });
+        return;
+      }
+      if (!dateStr || !timeStr) {
+        showGlobalPopup({ title: 'তারিখ ও সময় প্রয়োজন', message: 'অনুগ্রহ করে রিমাইন্ডারের তারিখ ও সময় নির্বাচন করুন।' });
+        return;
+      }
+
+      // Check max limit if not edit
+      if (!docId && webAgriReminderList.length >= MAX_AGRI_REMINDERS) {
+        showGlobalPopup({
+          title: 'রিমাইন্ডার সীমা পূর্ণ',
+          message: 'আপনি সর্বোচ্চ ' + MAX_AGRI_REMINDERS + ' টি রিমাইন্ডার সেট করতে পারবেন। নতুন রিমাইন্ডার যুক্ত করতে পুরোনো একটি ডিলিট করুন।'
+        });
+        return;
+      }
+
+      const scheduledDt = new Date(`${dateStr}T${timeStr}:00`);
+      const notifId = docId ? (webAgriReminderList.find(r => r.id === docId)?.notificationId || Date.now() % 1000000) : (Date.now() % 1000000);
+
+      const d = scheduledDt;
+      const day = String(d.getDate()).padStart(2, '0');
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const yr = d.getFullYear();
+      let hr = d.getHours();
+      const ampm = hr >= 12 ? 'PM' : 'AM';
+      hr = hr % 12 || 12;
+      const min = String(d.getMinutes()).padStart(2, '0');
+      const timeText = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+
+      const payload = {
+        notificationId: notifId,
+        userId: uid,
+        userName: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.name || currentUser.displayName) : '') || 'কৃষক',
+        userEmail: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.email || currentUser.phone) : '') || '',
+        title: title,
+        category: category,
+        reminderType: webAgriReminderSelectedType,
+        repeatInterval: webAgriReminderSelectedInterval,
+        scheduledDateTime: scheduledDt.toISOString(),
+        timeText: timeText,
+        note: note,
+        isActive: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        const colRef = db.collection('users').doc(uid).collection('agri_reminders');
+        if (docId) {
+          await colRef.doc(docId).update(payload);
+        } else {
+          payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          const newDoc = await colRef.add(payload);
+          await newDoc.update({ id: newDoc.id });
+        }
+        closeAgriReminderFormModal();
+        showGlobalPopup({
+          title: 'সফল',
+          message: docId ? 'রিমাইন্ডার সফলভাবে আপডেট করা হয়েছে।' : 'নতুন রিমাইন্ডার সফলভাবে যুক্ত করা হয়েছে।'
+        });
+      } catch (err) {
+        showGlobalPopup({
+          title: 'ত্রুটি',
+          message: 'রিমাইন্ডার সংরক্ষণে সমস্যা হয়েছে: ' + err.message
+        });
+      }
+    }
+
+    async function toggleAgriReminderStatus(id, newStatus) {
+      const uid = getWebActiveUserId();
+      if (!uid) return;
+
+      try {
+        await db.collection('users').doc(uid).collection('agri_reminders').doc(id).update({
+          isActive: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (err) {
+        showGlobalPopup({ title: 'ত্রুটি', message: 'স্ট্যাটাস পরিবর্তনে সমস্যা হয়েছে: ' + err.message });
+      }
+    }
+
+    async function deleteAgriReminder(id) {
+      const uid = getWebActiveUserId();
+      if (!uid) return;
+
+      showGlobalPopup({
+        title: 'রিমাইন্ডার ডিলিট',
+        message: 'আপনি কি নিশ্চিতভাবে এই রিমাইন্ডারটি মুছে ফেলতে চান?',
+        btnText: 'হ্যাঁ, মুছুন',
+        onConfirm: async () => {
+          try {
+            await db.collection('users').doc(uid).collection('agri_reminders').doc(id).delete();
+            showGlobalPopup({ title: 'সফল', message: 'রিমাইন্ডারটি সফলভাবে মুছে ফেলা হয়েছে।' });
+          } catch (err) {
+            showGlobalPopup({ title: 'ত্রুটি', message: 'ডিলিট করতে সমস্যা হয়েছে: ' + err.message });
+          }
+        }
+      });
+    }
+
+    function startWebRemindersChecker() {
+      if (webReminderIntervalTimer) clearInterval(webReminderIntervalTimer);
+      // Check every 30 seconds for scheduled reminders if browser tab is open
+      webReminderIntervalTimer = setInterval(() => {
+        const now = new Date();
+        webAgriReminderList.forEach(r => {
+          if (!r.isActive || !r.scheduledDateTime) return;
+          const target = new Date(r.scheduledDateTime);
+          const diffMinutes = Math.floor((now.getTime() - target.getTime()) / 60000);
+          if (diffMinutes >= 0 && diffMinutes < 1) {
+            const triggeredKey = 'web_reminder_triggered_' + r.id + '_' + target.toDateString();
+            if (!sessionStorage.getItem(triggeredKey)) {
+              sessionStorage.setItem(triggeredKey, 'true');
+              showGlobalPopup({
+                title: 'কৃষি রিমাইন্ডার: ' + r.title,
+                message: (r.category ? '[' + r.category + '] ' : '') + (r.note || 'আপনার নির্ধারিত কৃষি কাজের সময় হয়েছে।'),
+                btnText: 'ঠিক আছে'
+              });
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('কৃষি রিমাইন্ডার: ' + r.title, {
+                  body: r.note || r.category,
+                  icon: 'pnglogo.png'
+                });
+              }
+            }
+          }
+        });
+      }, 30000);
+    }
+
+    function clearWebRemindersOnLogout() {
+      if (webReminderIntervalTimer) {
+        clearInterval(webReminderIntervalTimer);
+        webReminderIntervalTimer = null;
+      }
+      if (webAgriReminderUnsub) {
+        try { webAgriReminderUnsub(); } catch (_) {}
+        webAgriReminderUnsub = null;
+      }
+      webAgriReminderList = [];
+    }
+
   </script>
 </body>
 

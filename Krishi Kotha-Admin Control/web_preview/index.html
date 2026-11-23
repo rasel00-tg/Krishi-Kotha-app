@@ -283,7 +283,7 @@
     }
 
     .submenu-container.open {
-      max-height: 2000px;
+      max-height: 2500px;
       opacity: 1;
       margin: 4px 0 8px 18px;
       padding-bottom: 12px;
@@ -1243,6 +1243,17 @@
           <div style="flex: 1; min-width: 0;">
             <div style="font-size: 12.5px; font-weight: 600;">ফসল সংরক্ষন মনিটরিং</div>
             <div style="font-size: 9.5px; opacity: 0.7;">শস্য, আলু, বীজ ও হিমাগার সংরক্ষণ পদ্ধতি</div>
+          </div>
+        </li>
+        <li class="menu-item submenu-item" id="submenuItemAgriReminderMonitoring"
+          onclick="switchTab('agri_reminder_monitoring')">
+          <div class="menu-icon-badge"
+            style="width: 26px; height: 26px; background: rgba(230, 81, 0, 0.16); color: #E65100; margin-right: -4px;">
+            <i class="fa-solid fa-bell" style="font-size: 13px;"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 12.5px; font-weight: 600;">কৃষি রিমাইন্ডার মনিটরিং</div>
+            <div style="font-size: 9.5px; opacity: 0.7;">ব্যবহারকারীদের কৃষি কাজের সময়সূচি ও সতর্কতা</div>
           </div>
         </li>
       </div>
@@ -4020,6 +4031,128 @@
           </div>
         </div>
       </div>
+      <!-- TAB: HOMEPAGE AGRI REMINDER MONITORING -->
+      <div id="tab-agri-reminder-monitoring" class="tab-content">
+        <!-- Banner Header -->
+        <div class="banner"
+          style="background: linear-gradient(135deg, #E65100, #BF360C); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2>হোমপেজ • কৃষি রিমাইন্ডার মনিটরিং ও কন্ট্রোল</h2>
+            <p>সকল কৃষকের নির্ধারিত কাজের শিডিউল, নিয়মিত ও অস্থায়ী সতর্কতা ট্র্যাকিং এবং স্ট্যাটাস পরিচালনা।</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="initAdminAgriReminderLiveSync(true)"
+              style="background: #fff; color: #BF360C; font-weight: 700; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards (English Digits) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">মোট রিমাইন্ডার</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(230, 81, 0, 0.12); color: #E65100; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-bell" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminReminderStatTotal" style="font-size: 24px; font-weight: 800; color: #E65100;">0 টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">সকল কৃষকের সেট করা রিমাইন্ডার</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">সক্রিয় রিমাইন্ডার (Active)</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(46, 125, 50, 0.12); color: #2E7D32; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminReminderStatActive" style="font-size: 24px; font-weight: 800; color: #2E7D32;">0 টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">বর্তমানে রানিং ও নোটিফাইং</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">নিয়মিত রিমাইন্ডার</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 136, 209, 0.12); color: #0288D1; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrows-rotate" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminReminderStatRegular" style="font-size: 24px; font-weight: 800; color: #0288D1;">0 টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">প্রতিদিন ও সাপ্তাহিক পুনরাবৃত্তি</div>
+          </div>
+
+          <div class="stat-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #546E7A;">অস্থায়ী রিমাইন্ডার</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(123, 31, 162, 0.12); color: #7B1FA2; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+              </div>
+            </div>
+            <div id="adminReminderStatTemporary" style="font-size: 24px; font-weight: 800; color: #7B1FA2;">0 টি</div>
+            <div style="font-size: 11px; color: #78909C; margin-top: 4px;">এককালীন কাজের সতর্কতা</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 18px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div style="flex: 1; min-width: 280px; position: relative;">
+              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 13px; color: #9E9E9E; font-size: 14px;"></i>
+              <input type="text" id="adminReminderSearchInput" oninput="onAdminReminderSearch(this.value)"
+                placeholder="ইউজারের নাম, ইমেইল, ক্যাটাগরি বা শিরোনাম দিয়ে খুঁজুন..."
+                style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px; border: 1px solid #CFD8DC; font-size: 13.5px; outline: none; box-sizing: border-box;" />
+            </div>
+            <!-- Category / Status Filter Chips -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button id="adminReminderFilterAll" onclick="setAdminReminderFilter('all')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 700; border: none; cursor: pointer; background: #E65100; color: #fff;">
+                সব
+              </button>
+              <button id="adminReminderFilterTemporary" onclick="setAdminReminderFilter('temporary')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                অস্থায়ী
+              </button>
+              <button id="adminReminderFilterRegular" onclick="setAdminReminderFilter('regular')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                নিয়মিত
+              </button>
+              <button id="adminReminderFilterActive" onclick="setAdminReminderFilter('active')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                সক্রিয়
+              </button>
+              <button id="adminReminderFilterInactive" onclick="setAdminReminderFilter('inactive')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid #CFD8DC; cursor: pointer; background: #F5F5F5; color: #546E7A;">
+                বন্ধ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="panel-card" style="background: #fff; border-radius: 14px; padding: 0; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden;">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+              <thead>
+                <tr style="background: #FFF8E1; border-bottom: 1px solid #FFE082; color: #E65100; font-weight: 700;">
+                  <th style="padding: 14px 16px;">ব্যবহারকারী</th>
+                  <th style="padding: 14px 16px;">শিরোনাম ও ক্যাটাগরি</th>
+                  <th style="padding: 14px 16px;">ধরন ও পুনরাবৃত্তি</th>
+                  <th style="padding: 14px 16px;">নির্ধারিত সময়</th>
+                  <th style="padding: 14px 16px;">নোট</th>
+                  <th style="padding: 14px 16px; text-align: center;">স্ট্যাটাস</th>
+                  <th style="padding: 14px 16px; text-align: center;">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="adminReminderTableBody">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div id="tab-settings-privacy" class="tab-content">
         <!-- Banner Header -->
         <div class="banner" style="background: linear-gradient(135deg, #1B5E20, #2E7D32); margin-bottom: 24px;">
@@ -6020,6 +6153,7 @@
       if (tabKey === 'livestock_poultry_monitoring') tabKey = 'livestock-poultry-monitoring';
       if (tabKey === 'fish_farming_monitoring') tabKey = 'fish-farming-monitoring';
       if (tabKey === 'crop_preservation_monitoring') tabKey = 'crop-preservation-monitoring';
+      if (tabKey === 'agri_reminder_monitoring') tabKey = 'agri-reminder-monitoring';
 
       try {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -6048,6 +6182,7 @@
           'livestock-poultry-monitoring': 'হোমপেজ • পশু ও হাঁস-মুরগি মনিটরিং',
           'fish-farming-monitoring': 'হোমপেজ • মৎস্য চাষ মনিটরিং',
           'crop-preservation-monitoring': 'হোমপেজ • ফসল সংরক্ষন মনিটরিং',
+          'agri-reminder-monitoring': 'হোমপেজ • কৃষি রিমাইন্ডার মনিটরিং',
           'settings-privacy': 'অ্যাপস সেটিংস – গোপনীয় নীতি (Privacy Policy)'
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
@@ -6231,6 +6366,20 @@
           } else {
             renderAdminCropPreservationTable();
           }
+        } else if (tabKey === 'agri-reminder-monitoring') {
+          const sub = document.getElementById('homepageSubmenu');
+          const caret = document.getElementById('homepageCaret');
+          if (sub) { sub.style.display = ''; sub.classList.add('open'); }
+          if (caret) caret.style.transform = 'rotate(180deg)';
+          const subItem = document.getElementById('submenuItemAgriReminderMonitoring');
+          if (subItem) subItem.classList.add('active');
+          const parent = document.getElementById('menuHomepageParent');
+          if (parent) parent.classList.add('active');
+          if (!adminReminderUnsubscribe || !adminReminderFirstLoadDone || adminReminderList.length === 0) {
+            initAdminAgriReminderLiveSync(false, !adminReminderFirstLoadDone);
+          } else {
+            renderAdminAgriReminderTable();
+          }
         } else if (tabKey === 'settings-privacy') {
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
@@ -6304,6 +6453,14 @@
           unsubscribeFirestoreListener('crop_preservation');
           if (typeof adminPreservationUnsubscribe === 'function' && adminPreservationUnsubscribe) {
             try { adminPreservationUnsubscribe(); adminPreservationUnsubscribe = null; } catch (_) {}
+          }
+        }
+        if (tabKey !== 'agri-reminder-monitoring') {
+          const subRem = document.getElementById('submenuItemAgriReminderMonitoring');
+          if (subRem) subRem.classList.remove('active');
+          unsubscribeFirestoreListener('agri_reminder');
+          if (typeof adminReminderUnsubscribe === 'function' && adminReminderUnsubscribe) {
+            try { adminReminderUnsubscribe(); adminReminderUnsubscribe = null; } catch (_) {}
           }
         }
         if (tabKey !== 'support') {
@@ -16676,6 +16833,314 @@
     window.saveAdminCropPreservationForm = saveAdminCropPreservationForm;
     window.deleteAdminCropPreservation = deleteAdminCropPreservation;
 
+
+
+
+    // ==========================================
+    // AGRI REMINDER MONITORING CONTROLLER
+    // ==========================================
+    let adminReminderList = [];
+    let adminReminderUnsubscribe = null;
+    let adminReminderFirstLoadDone = false;
+    let adminReminderSearchQuery = '';
+    let adminReminderCurrentFilter = 'all';
+
+    async function initAdminAgriReminderLiveSync(forceAlert = false, showLoader = true) {
+      if (!window.firebase || !firebase.firestore) return;
+
+      const shouldShowLoading = forceAlert || (!adminReminderFirstLoadDone && showLoader);
+      if (shouldShowLoading && typeof showAdminLoading === 'function') {
+        showAdminLoading('কৃষি রিমাইন্ডার তথ্য লোড হচ্ছে...', 'ক্লাউড ফায়ারস্টোর থেকে সকল ব্যবহারকারীর লাইভ তথ্য ফেচ করা হচ্ছে...');
+      }
+
+      if (adminReminderUnsubscribe) {
+        try { adminReminderUnsubscribe(); } catch (_) {}
+      }
+
+      try {
+        const unsub = firebase.firestore().collectionGroup('agri_reminders').limit(50).onSnapshot(snapshot => {
+          adminReminderFirstLoadDone = true;
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') hideAdminLoading();
+
+          const list = [];
+          if (snapshot && !snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data() || {};
+              list.push({
+                ...d,
+                id: doc.id,
+                _docPath: doc.ref.path
+              });
+            });
+          }
+
+          list.sort((a, b) => {
+            const aTime = a.createdAt?.seconds || (a.scheduledDateTime ? new Date(a.scheduledDateTime).getTime() : 0);
+            const bTime = b.createdAt?.seconds || (b.scheduledDateTime ? new Date(b.scheduledDateTime).getTime() : 0);
+            return bTime - aTime;
+          });
+
+          adminReminderList = list;
+          renderAdminAgriReminderTable();
+
+          if (forceAlert) {
+            showAdminGlobalPopup({
+              title: 'রিফ্রেশ সফল',
+              message: 'সর্বশেষ কৃষি রিমাইন্ডার তথ্য সফলভাবে লোড হয়েছে।'
+            });
+          }
+        }, err => {
+          console.warn('CollectionGroup agri_reminders notice:', err);
+          if (shouldShowLoading && typeof hideAdminLoading === 'function') hideAdminLoading();
+          // Fallback: direct root collection attempt if collectionGroup requires index
+          firebase.firestore().collection('agri_reminders').limit(50).get().then(snap => {
+            const list = [];
+            snap.forEach(doc => list.push({ ...doc.data(), id: doc.id, _docPath: doc.ref.path }));
+            adminReminderList = list;
+            renderAdminAgriReminderTable();
+          }).catch(e => console.warn('Direct fallback notice:', e));
+        });
+
+        registerFirestoreListener('agri_reminder', unsub);
+        adminReminderUnsubscribe = unsub;
+      } catch (err) {
+        console.warn('Admin reminder sync error:', err);
+        if (shouldShowLoading && typeof hideAdminLoading === 'function') hideAdminLoading();
+      }
+    }
+
+    function setAdminReminderFilter(filter) {
+      adminReminderCurrentFilter = filter;
+      const filters = ['all', 'temporary', 'regular', 'active', 'inactive'];
+      filters.forEach(f => {
+        const btn = document.getElementById('adminReminderFilter' + f.charAt(0).toUpperCase() + f.slice(1));
+        if (btn) {
+          if (f === filter) {
+            btn.style.background = '#E65100';
+            btn.style.color = '#fff';
+            btn.style.fontWeight = '700';
+          } else {
+            btn.style.background = '#F5F5F5';
+            btn.style.color = '#546E7A';
+            btn.style.fontWeight = '600';
+          }
+        }
+      });
+      renderAdminAgriReminderTable();
+    }
+
+    function onAdminReminderSearch(query) {
+      adminReminderSearchQuery = (query || '').trim().toLowerCase();
+      renderAdminAgriReminderTable();
+    }
+
+    function renderAdminAgriReminderTable() {
+      const tbody = document.getElementById('adminReminderTableBody');
+      const totalEl = document.getElementById('adminReminderStatTotal');
+      const actEl = document.getElementById('adminReminderStatActive');
+      const regEl = document.getElementById('adminReminderStatRegular');
+      const tempEl = document.getElementById('adminReminderStatTemporary');
+
+      const totalCount = adminReminderList.length;
+      const activeCount = adminReminderList.filter(r => r.isActive === true).length;
+      const regularCount = adminReminderList.filter(r => r.reminderType === 'regular').length;
+      const temporaryCount = adminReminderList.filter(r => r.reminderType === 'temporary').length;
+
+      // English digits strictly
+      if (totalEl) totalEl.innerText = totalCount + ' টি';
+      if (actEl) actEl.innerText = activeCount + ' টি';
+      if (regEl) regEl.innerText = regularCount + ' টি';
+      if (tempEl) tempEl.innerText = temporaryCount + ' টি';
+
+      if (!tbody) return;
+
+      let filtered = adminReminderList;
+
+      // Type / Status filter
+      if (adminReminderCurrentFilter === 'temporary') {
+        filtered = filtered.filter(r => r.reminderType === 'temporary');
+      } else if (adminReminderCurrentFilter === 'regular') {
+        filtered = filtered.filter(r => r.reminderType === 'regular');
+      } else if (adminReminderCurrentFilter === 'active') {
+        filtered = filtered.filter(r => r.isActive === true);
+      } else if (adminReminderCurrentFilter === 'inactive') {
+        filtered = filtered.filter(r => r.isActive !== true);
+      }
+
+      // Search Query filter
+      if (adminReminderSearchQuery) {
+        filtered = filtered.filter(r => {
+          const uName = (r.userName || '').toLowerCase();
+          const uEmail = (r.userEmail || '').toLowerCase();
+          const title = (r.title || '').toLowerCase();
+          const category = (r.category || '').toLowerCase();
+          const note = (r.note || '').toLowerCase();
+          return uName.includes(adminReminderSearchQuery) ||
+                 uEmail.includes(adminReminderSearchQuery) ||
+                 title.includes(adminReminderSearchQuery) ||
+                 category.includes(adminReminderSearchQuery) ||
+                 note.includes(adminReminderSearchQuery);
+        });
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 48px 16px; color: #888;">
+              <i class="fa-solid fa-bell-slash" style="font-size: 38px; color: #CCC; margin-bottom: 12px; display: block;"></i>
+              <div style="font-size: 14.5px; font-weight: 700; color: #455A64;">বর্তমানে কোনো কৃষি রিমাইন্ডার ডেটা নেই</div>
+              <div style="font-size: 12px; color: #90A4AE; margin-top: 4px;">কৃষকরা রিমাইন্ডার তৈরি করলে তা এখানে লাইভ প্রদর্শিত হবে।</div>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      const getCatBadgeColor = (cat) => {
+        switch (cat) {
+          case 'সেচ দেওয়া': return { bg: '#E1F5FE', text: '#0288D1' };
+          case 'সার প্রয়োগ': return { bg: '#E8F5E9', text: '#2E7D32' };
+          case 'কীটনাশক স্প্রে': return { bg: '#FFEBEE', text: '#D32F2F' };
+          case 'বীজ বপন': return { bg: '#F3E5F5', text: '#7B1FA2' };
+          case 'ফসল সংগ্রহ': return { bg: '#FFF3E0', text: '#E65100' };
+          case 'পশু-পাখি ও মাছ': return { bg: '#E0F2F1', text: '#00796B' };
+          default: return { bg: '#ECEFF1', text: '#455A64' };
+        }
+      };
+
+      tbody.innerHTML = filtered.map(r => {
+        const catBadge = getCatBadgeColor(r.category);
+        const isActive = r.isActive === true;
+        let typeBadge = 'অস্থায়ী';
+        if (r.reminderType === 'regular') {
+          typeBadge = r.repeatInterval === 'daily' ? 'নিয়মিত (প্রতিদিন)' : (r.repeatInterval === 'weekly' ? 'নিয়মিত (প্রতি সপ্তাহে)' : 'নিয়মিত');
+        }
+
+        let timeFormatted = r.timeText || '';
+        if (r.scheduledDateTime) {
+          const d = new Date(r.scheduledDateTime);
+          if (!isNaN(d.getTime())) {
+            const day = String(d.getDate()).padStart(2, '0');
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const yr = d.getFullYear();
+            let hr = d.getHours();
+            const ampm = hr >= 12 ? 'PM' : 'AM';
+            hr = hr % 12 || 12;
+            const min = String(d.getMinutes()).padStart(2, '0');
+            timeFormatted = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+          }
+        }
+
+        const safePath = (r._docPath || '').replace(/'/g, "\\'");
+
+        return `
+          <tr style="border-bottom: 1px solid #EEEEEE; transition: background 0.2s;">
+            <!-- User Info -->
+            <td style="padding: 12px 16px;">
+              <div style="font-weight: 700; color: #263238;">${r.userName || 'অজ্ঞাত কৃষক'}</div>
+              <div style="font-size: 11.5px; color: #78909C;">${r.userEmail || (r.userId ? 'UID: ' + r.userId.slice(0, 8) + '...' : 'তথ্য নেই')}</div>
+            </td>
+
+            <!-- Title & Category -->
+            <td style="padding: 12px 16px;">
+              <div style="font-weight: 700; color: #1B5E20; margin-bottom: 3px;">${r.title || 'রিমাইন্ডার'}</div>
+              <span style="background: ${catBadge.bg}; color: ${catBadge.text}; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">
+                ${r.category || 'সাধারণ'}
+              </span>
+            </td>
+
+            <!-- Type -->
+            <td style="padding: 12px 16px;">
+              <span style="background: ${r.reminderType === 'regular' ? '#E8F5E9' : '#FFF3E0'}; color: ${r.reminderType === 'regular' ? '#1B5E20' : '#E65100'}; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                ${typeBadge}
+              </span>
+            </td>
+
+            <!-- Scheduled Date Time -->
+            <td style="padding: 12px 16px; font-weight: 600; color: #37474F;">
+              ${timeFormatted}
+            </td>
+
+            <!-- Note -->
+            <td style="padding: 12px 16px; max-width: 180px; color: #546E7A; font-size: 12px;">
+              ${r.note || '<span style="color: #B0BEC5;">কোনো নোট নেই</span>'}
+            </td>
+
+            <!-- Status -->
+            <td style="padding: 12px 16px; text-align: center;">
+              <span style="background: ${isActive ? '#E8F5E9' : '#FFEBEE'}; color: ${isActive ? '#2E7D32' : '#D32F2F'}; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; display: inline-block;">
+                ${isActive ? 'সক্রিয়' : 'বন্ধ'}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td style="padding: 12px 16px; text-align: center;">
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button onclick="toggleAdminReminderStatus('${safePath}', ${isActive})"
+                  style="background: ${isActive ? '#FFF3E0' : '#E8F5E9'}; color: ${isActive ? '#E65100' : '#2E7D32'}; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
+                  title="${isActive ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}">
+                  ${isActive ? 'বন্ধ করুন' : 'চালু করুন'}
+                </button>
+                <button onclick="deleteAdminReminder('${safePath}')"
+                  style="background: #FFEBEE; color: #D32F2F; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;"
+                  title="মুছে ফেলুন">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function toggleAdminReminderStatus(docPath, currentStatus) {
+      if (!docPath) return;
+      try {
+        await firebase.firestore().doc(docPath).update({
+          isActive: !currentStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showAdminGlobalPopup({
+          title: 'স্ট্যাটাস আপডেট',
+          message: 'রিমাইন্ডারের স্ট্যাটাস সফলভাবে ' + (!currentStatus ? 'সক্রিয়' : 'বন্ধ') + ' করা হয়েছে।'
+        });
+      } catch (err) {
+        showAdminGlobalPopup({
+          title: 'ত্রুটি',
+          message: 'স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ' + err.message,
+          type: 'error'
+        });
+      }
+    }
+
+    async function deleteAdminReminder(docPath) {
+      if (!docPath) return;
+      showAdminGlobalPopup({
+        title: 'রিমাইন্ডার ডিলিট',
+        message: 'আপনি কি নিশ্চিতভাবে এই রিমাইন্ডারটি চিরতরে মুছে ফেলতে চান?',
+        type: 'confirm',
+        onConfirm: async () => {
+          try {
+            await firebase.firestore().doc(docPath).delete();
+            showAdminGlobalPopup({
+              title: 'সফল',
+              message: 'রিমাইন্ডারটি সফলভাবে মুছে ফেলা হয়েছে।'
+            });
+          } catch (err) {
+            showAdminGlobalPopup({
+              title: 'ত্রুটি',
+              message: 'ডিলিট করতে সমস্যা হয়েছে: ' + err.message,
+              type: 'error'
+            });
+          }
+        }
+      });
+    }
+
+    window.initAdminAgriReminderLiveSync = initAdminAgriReminderLiveSync;
+    window.renderAdminAgriReminderTable = renderAdminAgriReminderTable;
+    window.setAdminReminderFilter = setAdminReminderFilter;
+    window.onAdminReminderSearch = onAdminReminderSearch;
+    window.toggleAdminReminderStatus = toggleAdminReminderStatus;
+    window.deleteAdminReminder = deleteAdminReminder;
 
 
     // Initialize

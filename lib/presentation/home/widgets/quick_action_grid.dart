@@ -1,3 +1,4 @@
+import '../agri_reminder_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
@@ -514,14 +515,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.alarm_on_rounded,
         color: const Color(0xFFE65100),
         bgColor: const Color(0xFFFFF3E0),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'agri_reminder',
-          title: 'কৃষি রিমাইন্ডার',
-          icon: Icons.alarm_on_rounded,
-          color: const Color(0xFFE65100),
-          bgColor: const Color(0xFFFFF3E0),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AgriReminderScreen(),
+            ),
+          );
+        },
       ),
       // ৪. বীজের তথ্য
       QuickActionItem(

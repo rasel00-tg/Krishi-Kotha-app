@@ -1,3 +1,4 @@
+import '../../services/agri_reminder_notification_service.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -510,7 +511,8 @@ class AuthService {
         }
         throw Exception('আপনার দেওয়া পাসওয়ার্ড সঠিক নয়!');
       }
-      } else if (e.code == 'user-not-found') {
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
         throw Exception(cleanId.contains('@')
             ? 'এই জিমেইল এড্রেসে কোনো একাউন্ট পাওয়া যায়নি!'
             : 'এই মোবাইল নম্বরে কোনো একাউন্ট পাওয়া যায়নি!');
@@ -571,5 +573,10 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefUserKey);
     _currentUser = null;
+    try {
+      await AgriReminderNotificationService.cancelAllUserReminders();
+    } catch (e) {
+      debugPrint('Cancel reminders on signOut notice: $e');
+    }
   }
 }

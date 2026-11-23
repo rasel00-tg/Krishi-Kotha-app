@@ -1,3 +1,4 @@
+import 'services/agri_reminder_notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -51,6 +52,13 @@ void main() async {
   }
 
   // Shared singleton firestore service instance
+  // Initialize Agri Reminder local notification service & logout hook
+  try {
+    await AgriReminderNotificationService.initialize();
+  } catch (e) {
+    debugPrint('Reminder service init notice: $e');
+  }
+
   final firestoreService = FirestoreService();
 
   runApp(KrishiKothaApp(firestoreService: firestoreService));
