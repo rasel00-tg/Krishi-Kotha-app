@@ -3804,7 +3804,7 @@
         <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
           <div style="background: rgba(255,255,255,0.18); border-radius: 12px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-bell" style="font-size: 13px; color: #fff;"></i>
-            <span style="font-size: 12.5px; font-weight: 700; color: #fff;">মোট রিমাইন্ডার: <span id="webAgriReminderLimitCounter">0/5</span></span>
+            <span style="font-size: 12.5px; font-weight: 700; color: #fff; line-height: 1.3;">মোট রিমাইন্ডার: <span id="webAgriReminderLimitCounter" style="font-variant-numeric: tabular-nums; font-family: 'Hind Siliguri', 'Inter', 'Roboto', sans-serif; line-height: 1.3;">0/5</span></span>
           </div>
         </div>
 
@@ -3813,17 +3813,17 @@
           <button id="webReminderFilterAll" onclick="setAgriReminderFilter('all')"
             style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; color: #1B5E20; box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: all 0.2s ease;">
             <span>সব</span>
-            <span id="webReminderBadgeAll" style="background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+            <span id="webReminderBadgeAll" style="background: rgba(27,94,32,0.12); color: #1B5E20; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; font-variant-numeric: tabular-nums; line-height: 1.3;">0</span>
           </button>
           <button id="webReminderFilterTemporary" onclick="setAgriReminderFilter('temporary')"
             style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
             <span>অস্থায়ী</span>
-            <span id="webReminderBadgeTemporary" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+            <span id="webReminderBadgeTemporary" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; font-variant-numeric: tabular-nums; line-height: 1.3;">0</span>
           </button>
           <button id="webReminderFilterRegular" onclick="setAgriReminderFilter('regular')"
             style="flex: 1; padding: 7px 10px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.12); color: #fff; transition: all 0.2s ease;">
             <span>নিয়মিত</span>
-            <span id="webReminderBadgeRegular" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;">0</span>
+            <span id="webReminderBadgeRegular" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; font-variant-numeric: tabular-nums; line-height: 1.3;">0</span>
           </button>
         </div>
       </div>
@@ -6476,7 +6476,7 @@
       
       <div style="margin-bottom: 14px;">
         <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">রিমাইন্ডারের শিরোনাম *</label>
-        <input type="text" id="agriReminderInputTitle" placeholder="যেমন: ধানে সেচ দেওয়া, ইউরিয়া সার প্রয়োগ..."
+        <input type="text" id="agriReminderInputTitle" placeholder="রিমাইন্ডারের শিরোনাম লিখুন"
           style="width: 100%; padding: 11px 14px; border: 1px solid #CCC; border-radius: 12px; font-size: 13.5px; outline: none; box-sizing: border-box; pointer-events: auto !important;" />
       </div>
 
@@ -6525,25 +6525,25 @@
 
       <!-- Custom Date & Time Picker Triggers -->
       <div style="display: flex; gap: 10px; margin-bottom: 14px;">
-        <div style="flex: 1;">
+        <div id="webReminderDateFieldGroup" style="flex: 1;">
           <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">তারিখ নির্বাচন *</label>
           <div onclick="openCustomDatePicker()"
             style="display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1.5px solid #C8E6C9; background: #F1F8E9; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-sizing: border-box; pointer-events: auto !important;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <i class="fa-regular fa-calendar-days" style="color: #2E7D32; font-size: 16px;"></i>
-              <span id="agriReminderDisplayDate" style="font-size: 13px; font-weight: 700; color: #1B5E20;">24 Nov 2026</span>
+              <span id="agriReminderDisplayDate" style="font-size: 13px; font-weight: 700; color: #1B5E20; font-variant-numeric: tabular-nums; font-family: 'Hind Siliguri', 'Inter', 'Roboto', sans-serif; line-height: 1.3;">24 Nov 2026</span>
             </div>
             <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: #2E7D32;"></i>
           </div>
           <input type="hidden" id="agriReminderInputDate" value="" />
         </div>
-        <div style="flex: 1;">
+        <div id="webReminderTimeFieldGroup" style="flex: 1;">
           <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">সময় নির্বাচন *</label>
           <div onclick="openCustomTimePicker()"
             style="display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1.5px solid #C8E6C9; background: #F1F8E9; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-sizing: border-box; pointer-events: auto !important;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <i class="fa-regular fa-clock" style="color: #2E7D32; font-size: 16px;"></i>
-              <span id="agriReminderDisplayTime" style="font-size: 13px; font-weight: 700; color: #1B5E20;">07:30 AM</span>
+              <span id="agriReminderDisplayTime" style="font-size: 13px; font-weight: 700; color: #1B5E20; font-variant-numeric: tabular-nums; font-family: 'Hind Siliguri', 'Inter', 'Roboto', sans-serif; line-height: 1.3;">07:30 AM</span>
             </div>
             <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: #2E7D32;"></i>
           </div>
@@ -6553,7 +6553,7 @@
 
       <div style="margin-bottom: 18px;">
         <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">সংক্ষিপ্ত নোট (ঐচ্ছিক)</label>
-        <textarea id="agriReminderInputNote" rows="2" placeholder="প্রয়োজনীয় কোনো নোট বা দিকনির্দেশনা লিখুন..."
+        <textarea id="agriReminderInputNote" rows="2" placeholder="নোট লিখুন (ঐচ্ছিক)"
           style="width: 100%; padding: 10px 14px; border: 1px solid #CCC; border-radius: 12px; font-size: 13.5px; outline: none; resize: none; box-sizing: border-box; pointer-events: auto !important;"></textarea>
       </div>
 
@@ -6645,7 +6645,7 @@
       <!-- Top Colored Header with Big Digital Clock Display -->
       <div style="background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #00897B 100%); padding: 18px 20px; color: #ffffff; text-align: center;">
         <span style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.85); font-weight: 600;">সময় নির্বাচন করুন</span>
-        <div id="customTimePickerDigitalDisplay" style="font-size: 34px; font-weight: 800; font-family: monospace, sans-serif; letter-spacing: 2px; margin-top: 4px;">07 : 30 AM</div>
+        <div id="customTimePickerDigitalDisplay" style="font-size: 34px; font-weight: 800; font-family: monospace, sans-serif; letter-spacing: 2px; margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 1.2;">07 : 30 AM</div>
       </div>
 
       <div style="padding: 16px 18px 18px 18px;">
@@ -6679,7 +6679,7 @@
           <div style="display: flex; flex-direction: column; align-items: center;">
             <button type="button" onclick="adjustCustomTimeHour(1)"
               style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">+</button>
-            <span id="customTimeHourDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace;">07</span>
+            <span id="customTimeHourDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace; font-variant-numeric: tabular-nums; line-height: 1.2;">07</span>
             <button type="button" onclick="adjustCustomTimeHour(-1)"
               style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">-</button>
             <span style="font-size: 11px; color: #78909C; font-weight: 600; margin-top: 4px;">ঘণ্টা</span>
@@ -6691,7 +6691,7 @@
           <div style="display: flex; flex-direction: column; align-items: center;">
             <button type="button" onclick="adjustCustomTimeMinute(5)"
               style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">+</button>
-            <span id="customTimeMinuteDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace;">30</span>
+            <span id="customTimeMinuteDisplay" style="font-size: 26px; font-weight: 800; color: #1B5E20; padding: 6px 0; font-family: monospace; font-variant-numeric: tabular-nums; line-height: 1.2;">30</span>
             <button type="button" onclick="adjustCustomTimeMinute(-5)"
               style="width: 38px; height: 32px; border-radius: 8px; border: none; background: #E8F5E9; color: #1B5E20; font-size: 16px; font-weight: 700; cursor: pointer;">-</button>
             <span style="font-size: 11px; color: #78909C; font-weight: 600; margin-top: 4px;">মিনিট</span>
@@ -6773,6 +6773,22 @@
         style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #00897B; color: #ffffff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,137,123,0.3); flex-shrink: 0; transition: background 0.2s ease;">
         <span id="globalPopupBtnText">ঠিক আছে</span>
       </button>
+    </div>
+  </div>
+
+  <!-- UNIFIED MASTER GLOBAL LOADING MODAL (TOPMOST LAYER Z-INDEX: 999999) -->
+  <div class="modal-overlay" id="globalLoadingModal"
+    style="display: none; align-items: center; justify-content: center; z-index: 999999 !important; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px; box-sizing: border-box;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="max-width: 320px; width: 85%; border-radius: 22px; padding: 26px 22px; background: #ffffff; box-shadow: 0 16px 40px rgba(0,0,0,0.22); position: relative; z-index: 1000000 !important; display: flex; flex-direction: column; align-items: center; text-align: center; box-sizing: border-box; animation: popIn 0.2s ease-out;">
+      <img src="pnglogo.png"
+        style="width: 58px; height: 58px; object-fit: contain; margin: 0 auto 16px auto; display: block;"
+        alt="কৃষি কথা">
+      <div style="width: 36px; height: 36px; border: 3.5px solid #E0F2F1; border-top-color: #00897B; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
+      <div id="globalLoadingText"
+        style="font-size: 15px; font-weight: 700; color: #00897B; line-height: 1.4;">
+        রিমাইন্ডার সেভ হচ্ছে...
+      </div>
     </div>
   </div>
 
@@ -21649,6 +21665,30 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       globalPopupActionUrl = null;
     }
 
+    function showGlobalLoading(msg) {
+      const modal = document.getElementById('globalLoadingModal');
+      const txt = document.getElementById('globalLoadingText');
+      if (txt && msg) txt.textContent = msg;
+      if (modal) {
+        modal.classList.add('active');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
+      }
+    }
+
+    function hideGlobalLoading() {
+      const modal = document.getElementById('globalLoadingModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('visibility', 'hidden', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+    }
+
     function onGlobalPopupBtnClick() {
       const url = globalPopupActionUrl;
       const callback = globalPopupOnConfirm;
@@ -23326,7 +23366,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
 
         let timeFormatted = r.timeText || '';
-        if (r.scheduledDateTime) {
+        if (r.reminderType === 'temporary' && r.scheduledDateTime) {
           const d = new Date(r.scheduledDateTime);
           if (!isNaN(d.getTime())) {
             const day = String(d.getDate()).padStart(2, '0');
@@ -23374,7 +23414,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0F0F0; padding-top: 8px; margin-top: 8px;">
               <div style="font-size: 12px; font-weight: 600; color: #424242; display: flex; align-items: center; gap: 5px;">
                 <i class="fa-regular fa-clock" style="color: #757575;"></i>
-                <span>${timeFormatted}</span>
+                <span style="font-variant-numeric: tabular-nums; font-family: 'Hind Siliguri', 'Inter', 'Roboto', sans-serif; line-height: 1.3;">${timeFormatted}</span>
               </div>
               <div style="display: flex; gap: 4px;">
                 <button onclick="openAgriReminderFormModal('${r.id}')"
@@ -23506,9 +23546,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       const tempBtn = document.getElementById('webReminderTypeTemporaryBtn');
       const regBtn = document.getElementById('webReminderTypeRegularBtn');
       const intervalGroup = document.getElementById('webReminderRepeatIntervalGroup');
+      const dateFieldGroup = document.getElementById('webReminderDateFieldGroup');
 
       if (type === 'temporary') {
         webAgriReminderSelectedInterval = 'none';
+        if (dateFieldGroup) dateFieldGroup.style.display = 'block';
         if (tempBtn) {
           tempBtn.style.border = '1.5px solid #2E7D32';
           tempBtn.style.background = '#E8F5E9';
@@ -23521,6 +23563,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
         if (intervalGroup) intervalGroup.style.display = 'none';
       } else {
+        if (dateFieldGroup) dateFieldGroup.style.display = 'none';
         if (webAgriReminderSelectedInterval === 'none') {
           webAgriReminderSelectedInterval = 'daily';
         }
@@ -23572,8 +23615,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         showGlobalPopup({ title: 'শিরোনাম প্রয়োজন', message: 'অনুগ্রহ করে রিমাইন্ডারের একটি শিরোনাম লিখুন।' });
         return;
       }
-      if (!dateStr || !timeStr) {
+
+      const isTemporary = webAgriReminderSelectedType === 'temporary';
+      if (isTemporary && (!dateStr || !timeStr)) {
         showGlobalPopup({ title: 'তারিখ ও সময় প্রয়োজন', message: 'অনুগ্রহ করে রিমাইন্ডারের তারিখ ও সময় নির্বাচন করুন।' });
+        return;
+      }
+      if (!isTemporary && !timeStr) {
+        showGlobalPopup({ title: 'সময় প্রয়োজন', message: 'অনুগ্রহ করে রিমাইন্ডারের সময় নির্বাচন করুন।' });
         return;
       }
 
@@ -23586,18 +23635,32 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         return;
       }
 
-      const scheduledDt = new Date(`${dateStr}T${timeStr}:00`);
-      const notifId = docId ? (webAgriReminderList.find(r => r.id === docId)?.notificationId || Date.now() % 1000000) : (Date.now() % 1000000);
+      // Show Master Global Loading overlay immediately before any await
+      showGlobalLoading('রিমাইন্ডার সেভ হচ্ছে...');
 
-      const d = scheduledDt;
-      const day = String(d.getDate()).padStart(2, '0');
-      const mo = String(d.getMonth() + 1).padStart(2, '0');
-      const yr = d.getFullYear();
-      let hr = d.getHours();
-      const ampm = hr >= 12 ? 'PM' : 'AM';
-      hr = hr % 12 || 12;
-      const min = String(d.getMinutes()).padStart(2, '0');
-      const timeText = `${day}/${mo}/${yr} | ${String(hr).padStart(2, '0')}:${min} ${ampm}`;
+      let scheduledDt = null;
+      let timeText = '';
+
+      if (timeStr) {
+        const [th, tm] = timeStr.split(':').map(Number);
+        let hr = th;
+        const ampm = hr >= 12 ? 'PM' : 'AM';
+        hr = hr % 12 || 12;
+        const formattedTimeOnly = `${String(hr).padStart(2, '0')}:${String(tm).padStart(2, '0')} ${ampm}`;
+
+        if (isTemporary && dateStr) {
+          scheduledDt = new Date(`${dateStr}T${timeStr}:00`);
+          const d = scheduledDt;
+          const day = String(d.getDate()).padStart(2, '0');
+          const mo = String(d.getMonth() + 1).padStart(2, '0');
+          const yr = d.getFullYear();
+          timeText = `${day}/${mo}/${yr} | ${formattedTimeOnly}`;
+        } else {
+          timeText = formattedTimeOnly;
+        }
+      }
+
+      const notifId = docId ? (webAgriReminderList.find(r => r.id === docId)?.notificationId || Date.now() % 1000000) : (Date.now() % 1000000);
 
       const payload = {
         notificationId: notifId,
@@ -23608,7 +23671,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         category: category,
         reminderType: webAgriReminderSelectedType,
         repeatInterval: webAgriReminderSelectedInterval,
-        scheduledDateTime: scheduledDt.toISOString(),
+        scheduledDateTime: (isTemporary && scheduledDt) ? scheduledDt.toISOString() : null,
         timeText: timeText,
         note: note,
         isActive: true,
@@ -23624,12 +23687,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           const newDoc = await colRef.add(payload);
           await newDoc.update({ id: newDoc.id });
         }
+        hideGlobalLoading();
         closeAgriReminderFormModal();
         showGlobalPopup({
           title: 'সফল',
-          message: docId ? 'রিমাইন্ডার সফলভাবে আপডেট করা হয়েছে।' : 'নতুন রিমাইন্ডার সফলভাবে যুক্ত করা হয়েছে।'
+          message: docId ? 'রিমাইন্ডার সফলভাবে আপডেট করা হয়েছে।' : 'রিমাইন্ডার সফলভাবে সেভ করা হয়েছে।'
         });
       } catch (err) {
+        hideGlobalLoading();
         showGlobalPopup({
           title: 'ত্রুটি',
           message: 'রিমাইন্ডার সংরক্ষণে সমস্যা হয়েছে: ' + err.message
@@ -23988,6 +24053,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     // Expose functions globally to window for reliable inline execution
+    window.showGlobalLoading = showGlobalLoading;
+    window.hideGlobalLoading = hideGlobalLoading;
     window.openAgriReminderPage = openAgriReminderPage;
     window.closeAgriReminderPage = closeAgriReminderPage;
     window.checkAuthAndOpenReminderModal = checkAuthAndOpenReminderModal;

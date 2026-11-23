@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,6 +43,15 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
   void initState() {
     super.initState();
     _resolveInitialUser();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final uid = _getActiveUserId(context);
+    if (uid != null && (_currentUserId != uid || _remindersStream == null)) {
+      _ensureStream(uid);
+    }
   }
 
   /// Initial fallback to cached user in SharedPreferences
@@ -332,7 +342,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                     TextField(
                       controller: titleController,
                       decoration: InputDecoration(
-                        hintText: 'যেমন: ধানে সেচ দেওয়া, ইউরিয়া সার প্রয়োগ...',
+                        hintText: 'রিমাইন্ডারের শিরোনাম লিখুন',
                         hintStyle: TextStyle(
                             fontSize: 13, color: Colors.grey.shade400),
                         contentPadding: const EdgeInsets.symmetric(
@@ -575,68 +585,68 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                     // ৫. তারিখ ও সময় নির্বাচন (Date & Time Picker with English Digits)
                     Row(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                reminderType == 'regular'
-                                    ? (repeatInterval == 'weekly'
-                                        ? 'বার নির্বাচন *'
-                                        : 'শুরুর তারিখ *')
-                                    : 'তারিখ নির্বাচন *',
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87),
-                              ),
-                              const SizedBox(height: 6),
-                              InkWell(
-                                onTap: () async {
-                                  final picked = await _showCustomDatePickerPopup(
-                                    context,
-                                    selectedDate,
-                                  );
-                                  if (picked != null) {
-                                    setModalState(() {
-                                      selectedDate = DateTime(
-                                        picked.year,
-                                        picked.month,
-                                        picked.day,
-                                        selectedDate.hour,
-                                        selectedDate.minute,
-                                      );
-                                    });
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 11),
-                                  decoration: BoxDecoration(
-                                    border:
-                                        Border.all(color: Colors.grey.shade300),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.calendar_today_rounded,
-                                          size: 16, color: Color(0xFF2E7D32)),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        formattedDateStr,
-                                        style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
+                        if (reminderType == 'temporary') ...[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'তারিখ নির্বাচন *',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87),
+                                ),
+                                const SizedBox(height: 6),
+                                InkWell(
+                                  onTap: () async {
+                                    final picked = await _showCustomDatePickerPopup(
+                                      context,
+                                      selectedDate,
+                                    );
+                                    if (picked != null) {
+                                      setModalState(() {
+                                        selectedDate = DateTime(
+                                          picked.year,
+                                          picked.month,
+                                          picked.day,
+                                          selectedDate.hour,
+                                          selectedDate.minute,
+                                        );
+                                      });
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 11),
+                                    decoration: BoxDecoration(
+                                      border:
+                                          Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today_rounded,
+                                            size: 16, color: Color(0xFF2E7D32)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          formattedDateStr,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              fontFeatures: [FontFeature.tabularFigures()],
+                                              height: 1.3),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
+                          const SizedBox(width: 12),
+                        ],
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -686,7 +696,9 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                         formattedTimeStr,
                                         style: const TextStyle(
                                             fontSize: 13,
-                                            fontWeight: FontWeight.w600),
+                                            fontWeight: FontWeight.w600,
+                                            fontFeatures: [FontFeature.tabularFigures()],
+                                            height: 1.3),
                                       ),
                                     ],
                                   ),
@@ -712,7 +724,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                       controller: noteController,
                       maxLines: 2,
                       decoration: InputDecoration(
-                        hintText: 'প্রয়োজনীয় কোনো নোট বা দিকনির্দেশনা লিখুন...',
+                        hintText: 'নোট লিখুন (ঐচ্ছিক)',
                         hintStyle: TextStyle(
                             fontSize: 13, color: Colors.grey.shade400),
                         contentPadding: const EdgeInsets.symmetric(
@@ -779,7 +791,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                           final uName = _getUserName(context);
                           final uEmail = _getUserEmailOrPhone(context);
 
-                          Navigator.pop(bottomSheetCtx);
+                          // Show master Global Loading popup immediately before any await
+                          GlobalPopup.showLoading(context, message: 'রিমাইন্ডার সেভ হচ্ছে...');
 
                           try {
                             final userRef = FirebaseFirestore.instance
@@ -796,6 +809,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                   .where((d) => (d.data())['isActive'] == true)
                                   .length;
                               if (activeCount >= maxRemindersLimit) {
+                                GlobalPopup.hideLoading(context);
                                 if (mounted) {
                                   GlobalPopup.showNotice(
                                     context,
@@ -817,9 +831,12 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               'category': selectedCategory,
                               'reminderType': reminderType,
                               'repeatInterval': repeatInterval,
-                              'scheduledDateTime':
-                                  fullScheduledDateTime.toIso8601String(),
-                              'timeText': formattedTimeStr,
+                              'scheduledDateTime': (reminderType == 'temporary')
+                                  ? fullScheduledDateTime.toIso8601String()
+                                  : null,
+                              'timeText': (reminderType == 'temporary')
+                                  ? '$formattedDateStr | $formattedTimeStr'
+                                  : formattedTimeStr,
                               'note': noteController.text.trim(),
                               'isActive': true,
                               'updatedAt': FieldValue.serverTimestamp(),
@@ -846,16 +863,20 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                               repeatInterval: repeatInterval,
                             );
 
+                            GlobalPopup.hideLoading(context);
+                            Navigator.pop(bottomSheetCtx);
+
                             if (mounted) {
                               GlobalPopup.showNotice(
                                 context,
                                 title: 'সফল',
                                 message: isEdit
                                     ? 'রিমাইন্ডার সফলভাবে আপডেট করা হয়েছে।'
-                                    : 'নতুন রিমাইন্ডার সফলভাবে যুক্ত করা হয়েছে।',
+                                    : 'রিমাইন্ডার সফলভাবে সেভ করা হয়েছে।',
                               );
                             }
                           } catch (e) {
+                            GlobalPopup.hideLoading(context);
                             if (mounted) {
                               GlobalPopup.showNotice(
                                 context,
@@ -1488,6 +1509,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                             fontWeight: FontWeight.w800,
                                             color: Color(0xFF1B5E20),
                                             fontFamily: 'monospace',
+                                            fontFeatures: [FontFeature.tabularFigures()],
+                                            height: 1.2,
                                           ),
                                         ),
                                       ),
@@ -1537,6 +1560,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                             fontWeight: FontWeight.w800,
                                             color: Color(0xFF1B5E20),
                                             fontFamily: 'monospace',
+                                            fontFeatures: [FontFeature.tabularFigures()],
+                                            height: 1.2,
                                           ),
                                         ),
                                       ),
@@ -2016,6 +2041,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                   color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
+                                  fontFeatures: [FontFeature.tabularFigures()],
+                                  height: 1.3,
                                 ),
                               ),
                             ],
@@ -2235,7 +2262,7 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                             // Format scheduled date time
                             String dateTimeText =
                                 data['timeText']?.toString() ?? '';
-                            if (data['scheduledDateTime'] != null) {
+                            if (reminderType == 'temporary' && data['scheduledDateTime'] != null) {
                               DateTime? dt;
                               if (data['scheduledDateTime'] is Timestamp) {
                                 dt = (data['scheduledDateTime'] as Timestamp)
@@ -2416,6 +2443,8 @@ class _AgriReminderScreenState extends State<AgriReminderScreen> {
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.grey.shade800,
+                                              fontFeatures: const [FontFeature.tabularFigures()],
+                                              height: 1.3,
                                             ),
                                           ),
                                         ],

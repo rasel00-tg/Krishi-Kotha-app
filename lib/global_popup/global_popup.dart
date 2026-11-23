@@ -570,4 +570,92 @@ class GlobalPopup {
       ),
     );
   }
+
+  static bool _isLoadingOpen = false;
+
+  /// ৬. গ্লোবাল পপআপ লোডিং (মাস্টার টেমপ্লেট ডিজাইন)
+  static void showLoading(
+    BuildContext context, {
+    String message = 'রিমাইন্ডার সেভ হচ্ছে...',
+  }) {
+    if (_isLoadingOpen) return;
+    _isLoadingOpen = true;
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.55),
+      builder: (dialogCtx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+            decoration: BoxDecoration(
+              color: cardBgColor,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  appLogoAsset,
+                  width: 58,
+                  height: 58,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.eco_rounded,
+                    color: primaryTeal,
+                    size: 44,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3.2,
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryTeal),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: primaryTeal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).then((_) {
+      _isLoadingOpen = false;
+    });
+  }
+
+  static void hideLoading(BuildContext context) {
+    if (_isLoadingOpen) {
+      _isLoadingOpen = false;
+      try {
+        if (Navigator.of(context, rootNavigator: true).canPop()) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+      } catch (_) {}
+    }
+  }
 }
