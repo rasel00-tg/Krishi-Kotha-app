@@ -6363,6 +6363,49 @@
     </div>
   </div>
 
+  <!-- UNIFIED MASTER GLOBAL POPUP MODAL (TOPMOST LAYER Z-INDEX: 99999) -->
+  <div class="modal-overlay" id="globalPopupModal" onclick="closeGlobalPopup()"
+    style="display: none; align-items: center; justify-content: center; z-index: 99999 !important; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px; box-sizing: border-box;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="max-width: 420px; width: 90%; border-radius: 22px; padding: 24px 22px 20px 22px; background: #ffffff; box-shadow: 0 16px 40px rgba(0,0,0,0.22); position: relative; max-height: 85vh; display: flex; flex-direction: column; text-align: center; box-sizing: border-box; animation: popIn 0.2s ease-out;">
+      
+      <!-- Clean Official App Logo Without Border -->
+      <img src="pnglogo.png"
+        style="width: 58px; height: 58px; object-fit: contain; margin: 0 auto 12px auto; display: block; flex-shrink: 0;"
+        alt="কৃষি কথা">
+
+      <!-- Title (Teal-Green #00897B) -->
+      <h3 id="globalPopupTitle"
+        style="color: #00897B; font-size: 19px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.2px; line-height: 1.35; flex-shrink: 0;">
+      </h3>
+
+      <!-- Subtitle / Timestamp -->
+      <div id="globalPopupSubtitle"
+        style="font-size: 12.5px; color: #78909C; font-weight: 500; margin-bottom: 12px; display: none; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0;">
+      </div>
+
+      <!-- Cloudflare R2 Banner Image (If Available) -->
+      <div id="globalPopupImgWrap"
+        style="display: none; border-radius: 12px; overflow: hidden; margin-bottom: 14px; max-height: 180px; width: 100%; background: #f0f0f0; flex-shrink: 0;">
+        <img id="globalPopupImg" src=""
+          style="width: 100%; height: 100%; object-fit: cover; display: block;"
+          alt="নোটিফিকেশন ছবি"
+          onerror="this.parentElement.style.display='none';">
+      </div>
+
+      <!-- Scrollable Message Body (Smooth Scroll for Long Content) -->
+      <div id="globalPopupBody"
+        style="flex: 1; overflow-y: auto; max-height: 35vh; margin-bottom: 18px; padding: 0 4px; font-size: 14.5px; line-height: 1.6; color: #455A64; text-align: left; white-space: pre-line; word-break: break-word;">
+      </div>
+
+      <!-- Full-Width Teal-Green Action/Close Button -->
+      <button type="button" id="globalPopupBtn" onclick="onGlobalPopupBtnClick()"
+        style="width: 100%; height: 46px; border-radius: 12px; border: none; background: #00897B; color: #ffffff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,137,123,0.3); flex-shrink: 0; transition: background 0.2s ease;">
+        <span id="globalPopupBtnText">ঠিক আছে</span>
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL: BIOMETRIC SCANNING DIALOG -->
   <div class="modal-overlay" id="biometricScanModal"
     style="display: none; align-items: center; justify-content: center; z-index: 10000002; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
@@ -21055,6 +21098,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function closeNotificationsPage() {
+      closeGlobalPopup();
+      const existing = document.getElementById('notifDetailModal');
+      if (existing) existing.remove();
       const page = document.getElementById('notificationsPage');
       if (page && page.classList.contains('active')) {
         page.classList.remove('active');
@@ -21064,12 +21110,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     window.addEventListener('popstate', function (e) {
+      closeGlobalPopup();
       closeNotificationsPage();
       closePrivacyPage();
     });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
+        closeGlobalPopup();
         closeNotificationsPage();
         closePrivacyPage();
       }
@@ -21087,93 +21135,119 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
     }
 
+    // ==================== UNIFIED MASTER GLOBAL POPUP (HTML PREVIEW) ====================
+    let globalPopupOnConfirm = null;
+    let globalPopupActionUrl = null;
+
+    function showGlobalPopup(options) {
+      const opts = options || {};
+      const title = opts.title || '';
+      const message = opts.message || '';
+      const timeText = opts.timeText || '';
+      const imageUrl = opts.imageUrl || '';
+      const actionUrl = opts.actionUrl || '';
+      const btnText = opts.btnText || 'ঠিক আছে';
+      const onConfirm = opts.onConfirm || null;
+
+      globalPopupOnConfirm = onConfirm;
+      globalPopupActionUrl = actionUrl;
+
+      const modal = document.getElementById('globalPopupModal');
+      const t = document.getElementById('globalPopupTitle');
+      const sub = document.getElementById('globalPopupSubtitle');
+      const imgWrap = document.getElementById('globalPopupImgWrap');
+      const img = document.getElementById('globalPopupImg');
+      const body = document.getElementById('globalPopupBody');
+      const btnTextEl = document.getElementById('globalPopupBtnText');
+
+      if (t) t.innerText = title;
+
+      if (sub) {
+        if (timeText && timeText.trim().length > 0) {
+          sub.innerHTML = '<i class="fa-regular fa-calendar-days" style="color: #00897B;"></i> <span>' + timeText.trim() + '</span>';
+          sub.style.display = 'flex';
+        } else {
+          sub.innerHTML = '';
+          sub.style.display = 'none';
+        }
+      }
+
+      if (imgWrap && img) {
+        if (imageUrl && imageUrl.trim().length > 0) {
+          img.src = imageUrl.trim();
+          imgWrap.style.display = 'block';
+        } else {
+          img.src = '';
+          imgWrap.style.display = 'none';
+        }
+      }
+
+      if (body) body.innerText = message || '';
+
+      if (btnTextEl) {
+        btnTextEl.innerText = (actionUrl && actionUrl.trim().length > 0) ? 'লিংকে যান' : btnText;
+      }
+
+      if (modal) {
+        modal.classList.add('active');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    }
+
+    function closeGlobalPopup() {
+      const modal = document.getElementById('globalPopupModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+      }
+      globalPopupOnConfirm = null;
+      globalPopupActionUrl = null;
+    }
+
+    function onGlobalPopupBtnClick() {
+      const url = globalPopupActionUrl;
+      const callback = globalPopupOnConfirm;
+      closeGlobalPopup();
+      if (url && url.trim().length > 0) {
+        try {
+          window.open(url.trim(), '_blank');
+        } catch (_) {}
+      }
+      if (typeof callback === 'function') {
+        try {
+          callback();
+        } catch (_) {}
+      }
+    }
+
     function showNotificationDetailModal(id) {
       markNotificationSeen(id);
       const item = notificationsList.find(n => n.id === id);
       if (!item) return;
-      const catLabel = getNotifCategoryLabel(item.type);
+
       const formattedDate = formatExactDateTimeWithBar(item.rawTime);
 
-      const existing = document.getElementById('notifDetailModal');
-      if (existing) existing.remove();
-
-      const modal = document.createElement('div');
-      modal.className = 'modal-overlay active';
-      modal.id = 'notifDetailModal';
-      modal.style.alignItems = 'center';
-      modal.style.padding = '16px';
-      modal.onclick = function (e) {
-        if (e.target === modal) modal.remove();
-      };
-      modal.innerHTML = `
-        <div style="background: #fff; width: 100%; max-width: 480px; margin: 0 auto; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,0.25); animation: popIn 0.2s ease-out; position: relative; max-height: 90vh; display: flex; flex-direction: column;">
-          
-          <!-- Close Button -->
-          <button onclick="document.getElementById('notifDetailModal').remove()" style="position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.5); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-
-          <!-- Scrollable Body -->
-          <div style="overflow-y: auto; flex: 1;">
-            <!-- ১. একেবারে উপরে স্ক্রিনের প্রস্থ অনুযায়ী বড় করে নোটিফিকেশনের ব্যানার ছবিটি -->
-            ${item.imageUrl ? `
-              <div style="width: 100%; height: 220px; overflow: hidden; background: #f0f0f0;">
-                <img src="${item.imageUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="ব্যানার ছবি" onerror="this.parentElement.style.display='none';">
-              </div>
-            ` : `
-              <div style="width: 100%; height: 160px; background: linear-gradient(135deg, ${item.color}CC, ${item.color}); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 8px;">
-                  <i class="fa-solid ${item.icon}"></i>
-                </div>
-                <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.5px;">${catLabel}</span>
-              </div>
-            `}
-
-            <div style="padding: 18px 20px;">
-              <!-- Category Badge -->
-              <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; background: ${item.color}15; border: 1px solid ${item.color}30; color: ${item.color}; font-size: 12px; font-weight: 700; margin-bottom: 12px;">
-                <i class="fa-solid ${item.icon}" style="font-size: 11px;"></i>
-                <span>${catLabel}</span>
-              </div>
-
-              <!-- ২. ছবির নিচে বড় ও বোল্ড ফন্টে নোটিফিকেশনের হেডলাইন -->
-              <h3 style="font-size: 20px; font-weight: 700; color: ${item.color}; margin: 0 0 10px 0; line-height: 1.35;">
-                ${item.title}
-              </h3>
-
-              <!-- ৩. হেডলাইনের নিচে সম্পূর্ণ তারিখ ও সময় -->
-              <div style="font-size: 13px; color: #616161; font-weight: 500; display: flex; align-items: center; gap: 6px; margin-bottom: 14px;">
-                <i class="fa-regular fa-calendar-days" style="color: #757575;"></i>
-                <span>${formattedDate}</span>
-              </div>
-
-              <div style="height: 1px; background: #EEEEEE; margin-bottom: 14px;"></div>
-
-              <!-- ৪. সম্পূর্ণ বিস্তারিত লেখা (Full Description) -->
-              <p style="font-size: 15px; line-height: 1.65; color: #212121; margin: 0; white-space: pre-line;">
-                ${item.message}
-              </p>
-            </div>
-          </div>
-
-          <!-- ৫. পেজের নিচের দিকে একটি বড় কালারফুল অ্যাকশন বাটন (রেড কালার) -->
-          <div style="padding: 12px 18px; border-top: 1px solid #EEEEEE; background: #fff;">
-            <button onclick="handleNotificationAction('${item.actionUrl || ''}')" 
-                    style="width: 100%; height: 50px; background: #D32F2F; color: #fff; border: none; border-radius: 12px; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 3px 10px rgba(211,47,47,0.3);">
-              <i class="fa-solid ${item.actionUrl ? 'fa-arrow-up-right-from-square' : 'fa-circle-info'}"></i>
-              <span>${item.actionUrl ? 'লিংকে যান' : 'বিস্তারিত দেখুন'}</span>
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
+      showGlobalPopup({
+        title: item.title,
+        message: item.message,
+        timeText: formattedDate,
+        imageUrl: item.imageUrl || '',
+        actionUrl: item.actionUrl || '',
+        btnText: 'ঠিক আছে'
+      });
     }
 
     function handleNotificationAction(url) {
       if (url && url.trim().length > 0) {
         window.open(url.trim(), '_blank');
       } else {
-        alert('এই বিজ্ঞপ্তির সকল বিস্তারিত তথ্য এখানে দেওয়া হয়েছে।');
+        showGlobalPopup({
+          title: 'বিজ্ঞপ্তি তথ্য',
+          message: 'এই বিজ্ঞপ্তির সকল বিস্তারিত তথ্য এখানে দেওয়া হয়েছে।',
+          btnText: 'ঠিক আছে'
+        });
       }
     }
 
@@ -21188,6 +21262,11 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           batch.commit().catch(e => console.warn('Mark all seen sync:', e));
         }).catch(() => { });
       }
+      showGlobalPopup({
+        title: 'সফল',
+        message: 'সকল নোটিফিকেশন সফলভাবে পঠিত হিসেবে চিহ্নিত করা হয়েছে।',
+        btnText: 'ঠিক আছে'
+      });
     }
 
     // ==================== BENGALI ACCURATE TIMESTAMP FORMATTER ====================

@@ -12,6 +12,7 @@ import '../../core/utils/bangla_number_converter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/notification_model.dart';
 import '../../data/services/firestore_service.dart';
+import '../../global_popup/global_popup.dart';
 
 /// Formats DateTime into exact Bengali date-time format: e.g. "১৫ নভেম্বর ২০২৬ | ০৬:১৯ PM"
 String formatFullDateTimeWithBar(DateTime dt) {
@@ -68,10 +69,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        Navigator.of(context).pop();
+        if (context.mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
       },
       child: StreamBuilder<QuerySnapshot>(
         stream: _notificationsStream,
@@ -229,16 +232,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           color: Colors.white),
                       tooltip: 'সব পঠিত হিসেবে চিহ্নিত করুন',
                       onPressed: () async {
-                        await _service.markAllNotificationsAsSeen();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'সকল নোটিফিকেশন পঠিত হিসেবে চিহ্নিত করা হয়েছে'),
-                              duration: Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
+                        final confirm = await GlobalPopup.showConfirm(
+                          context,
+                          title: 'সব পঠিত করবেন?',
+                          message:
+                              'আপনি কি সকল নোটিফিকেশন পঠিত হিসেবে চিহ্নিত করতে চান?',
+                          confirmText: 'হ্যাঁ, চিহ্নিত করুন',
+                          cancelText: 'বাতিল',
+                          confirmColor: GlobalPopup.primaryTeal,
+                        );
+                        if (confirm == true) {
+                          await _service.markAllNotificationsAsSeen();
+                          if (context.mounted) {
+                            GlobalPopup.showNotice(
+                              context,
+                              title: 'সফল',
+                              message:
+                                  'সকল নোটিফিকেশন সফলভাবে পঠিত হিসেবে চিহ্নিত করা হয়েছে।',
+                            );
+                          }
                         }
                       },
                     ),
@@ -269,11 +281,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (isUnseen) {
             _service.markNotificationAsSeen(item.id);
           }
-          // Navigate to NotificationDetailScreen with complete document data
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => NotificationDetailScreen(notification: item),
-            ),
+          if (!mounted) return;
+          // Open Topmost Unified Master Global Popup with complete document data
+          GlobalPopup.showNotificationDetail(
+            context,
+            title: item.title,
+            message: item.message,
+            timeText: formatFullDateTimeWithBar(item.timestamp),
+            imageUrl: item.imageUrl,
+            actionUrl: item.actionUrl,
           );
         },
         child: Padding(

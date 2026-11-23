@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// ============================================================================
 /// KRISHI KOTHA — UNIFIED GLOBAL POPUP SYSTEM (MASTER TEMPLATE)
@@ -371,6 +373,196 @@ class GlobalPopup {
                   const SizedBox(height: 12),
                 ],
                 child,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ৫. নোটিফিকেশন বিস্তারিত পপআপ (মাষ্টার গ্লোবাল পপআপ টেমপ্লেট)
+  static Future<void> showNotificationDetail(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String timeText,
+    String? imageUrl,
+    String? actionUrl,
+    String buttonText = 'ঠিক আছে',
+    VoidCallback? onPressed,
+    bool barrierDismissible = true,
+  }) async {
+    await showDialog(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: barrierDismissible,
+      barrierColor: Colors.black.withOpacity(0.55),
+      builder: (dialogCtx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+            decoration: BoxDecoration(
+              color: cardBgColor,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // ক্লিন অফিসিয়াল অ্যাপ লোগো (কোনো বর্ডার ছাড়া)
+                Image.asset(
+                  appLogoAsset,
+                  width: 58,
+                  height: 58,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.eco_rounded,
+                    color: primaryTeal,
+                    size: 44,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // টিল-গ্রিন টাইটেল
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.bold,
+                    color: primaryTeal,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // তারিখ ও সময়
+                if (timeText.trim().isNotEmpty) ...[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 13,
+                        color: Color(0xFF78909C),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          timeText,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF78909C),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // Cloudflare R2 ব্যানার ছবি (যদি থাকে)
+                if (imageUrl != null && imageUrl.trim().isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 180),
+                      width: double.infinity,
+                      color: Colors.grey.shade100,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl.trim(),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          height: 120,
+                          color: Colors.grey.shade100,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: primaryTeal,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // স্ক্রলেবল বডি মেসেজ (লম্বা হলেও স্মুথ স্ক্রলেবল)
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(dialogCtx).size.height * 0.38,
+                    ),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          height: 1.6,
+                          color: textBodyColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ফুল-উইডথ টিল-গ্রিন বাটন
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (Navigator.of(dialogCtx, rootNavigator: true).canPop()) {
+                        Navigator.of(dialogCtx, rootNavigator: true).pop();
+                      }
+                      if (onPressed != null) {
+                        onPressed();
+                      } else if (actionUrl != null && actionUrl.trim().isNotEmpty) {
+                        final uri = Uri.tryParse(actionUrl.trim());
+                        if (uri != null && await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryTeal,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      (actionUrl != null && actionUrl.trim().isNotEmpty)
+                          ? 'লিংকে যান'
+                          : buttonText,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
