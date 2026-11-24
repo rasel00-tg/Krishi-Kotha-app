@@ -19833,7 +19833,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
               if (cachedRaw) {
                 return { ...JSON.parse(cachedRaw), ...active };
               }
-            } catch (_) {}
+            } catch (e) {
+              console.warn('[BIOMETRIC] cached user parse notice:', e);
+            }
             return active;
           }
         }
@@ -19857,7 +19859,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           }
         }
       } catch (e) {
-        console.warn('getBiometricActiveUser notice:', e);
+        console.error('[BIOMETRIC ERROR] getBiometricActiveUser:', e);
       }
       return null;
     }
@@ -19891,12 +19893,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       if (actionBtn) {
         actionBtn.style.display = 'flex';
         if (isEnabled) {
-          actionBtn.setAttribute('onclick', 'handleBiometricToggleWeb(false)');
+          actionBtn.setAttribute('onclick', 'window.handleBiometricToggleWeb(false)');
           actionBtn.style.background = '#ECEFF1';
           actionBtn.style.color = '#37474F';
           actionBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> <span>বন্ধ করুন</span>';
         } else {
-          actionBtn.setAttribute('onclick', 'handleBiometricToggleWeb(true)');
+          actionBtn.setAttribute('onclick', 'window.handleBiometricToggleWeb(true)');
           actionBtn.style.background = '#2E7D32';
           actionBtn.style.color = '#FFFFFF';
           actionBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> <span>চালু করুন</span>';
@@ -19955,12 +19957,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           if (available && navigator.credentials) {
             const challenge = new Uint8Array(32);
             window.crypto.getRandomValues(challenge);
+            const rpHost = window.location.hostname || 'localhost';
             if (isSetup && userObj) {
               const userIdBytes = new TextEncoder().encode(String(userObj.uid || 'krishi_user').slice(0, 32));
               const cred = await navigator.credentials.create({
                 publicKey: {
                   challenge: challenge,
-                  rp: { name: 'কৃষি কথা - Krishi Kotha' },
+                  rp: { name: 'Krishi Kotha', id: rpHost },
                   user: {
                     id: userIdBytes,
                     name: String(userObj.email || userObj.phone || userObj.uid),
@@ -19983,6 +19986,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
                 const assertion = await navigator.credentials.get({
                   publicKey: {
                     challenge: challenge,
+                    rpId: rpHost,
                     allowCredentials: [{ type: 'public-key', id: allowId }],
                     userVerification: 'required',
                     timeout: 30000
@@ -19997,10 +20001,10 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (err && (err.name === 'NotAllowedError' || err.name === 'AbortError')) {
           return { success: false, cancelled: true };
         }
-        console.warn('WebAuthn fallback notice:', err);
+        console.warn('[BIOMETRIC] WebAuthn hardware unavailable, using web preview token fallback:', err);
       }
 
-      // Safe UI Biometric Scan Fallback for standard browser/local preview
+      // Safe Web Preview fallback token when hardware biometric is unavailable
       return new Promise((resolve) => {
         const title = document.getElementById('biometricScanTitle');
         const sub = document.getElementById('biometricScanSubtitle');
@@ -20010,7 +20014,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         biometricScanTimer = setTimeout(() => {
           closeModal('biometricScanModal');
           resolve({ success: true });
-        }, 1000);
+        }, 900);
       });
     }
 
@@ -20023,7 +20027,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             if (bioToggle) bioToggle.checked = false;
             showGlobalPopup({
               title: 'লগইন প্রয়োজন',
-              message: 'বায়োমেট্রিক লগইন চালু করতে প্রথমে আপনার একাউন্টে লগইন করুন।',
+              message: 'বায়োমেট্রিক চালু করতে প্রথমে আপনার একাউন্টে লগইন করুন।',
               btnText: 'ঠিক আছে'
             });
             return;
@@ -20037,13 +20041,14 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
             if (bioToggle) bioToggle.checked = false;
             showGlobalPopup({
               title: 'যাচাই ব্যর্থ',
-              message: 'ডিভাইসে বায়োমেট্রিক সাপোর্ট/সেটআপ পাওয়া যায়নি অথবা যাচাইকরণ বাতিল করা হয়েছে।',
+              message: 'বায়োমেট্রিক যাচাইকরণ বাতিল বা ব্যর্থ হয়েছে।',
               btnText: 'বুঝেছি'
             });
             return;
           }
 
           localStorage.setItem('kk_biometric_enabled', 'true');
+          localStorage.setItem('kk_biometric_user', JSON.stringify(resolvedUser));
           localStorage.setItem('kk_biometric_creds', JSON.stringify(resolvedUser));
           localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
           localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(resolvedUser));
@@ -20055,6 +20060,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           });
         } else {
           localStorage.setItem('kk_biometric_enabled', 'false');
+          localStorage.removeItem('kk_biometric_user');
           localStorage.removeItem('kk_biometric_creds');
           localStorage.removeItem('kk_webauthn_cred_id');
           localStorage.setItem('krishi_kotha_biometric_enabled', 'false');
@@ -20069,7 +20075,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       } catch (err) {
         if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
         if (bioToggle) bioToggle.checked = !enable;
-        console.error('handleBiometricToggleWeb error:', err);
+        console.error('[BIOMETRIC ERROR] handleBiometricToggleWeb:', err);
         showGlobalPopup({
           title: 'ত্রুটি',
           message: 'বায়োমেট্রিক সেটিংস আপডেট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
@@ -20082,7 +20088,8 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       try {
         const isBioEnabled = localStorage.getItem('kk_biometric_enabled') === 'true' ||
                              localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
-        const bioUserJson = localStorage.getItem('kk_biometric_creds') ||
+        const bioUserJson = localStorage.getItem('kk_biometric_user') ||
+                            localStorage.getItem('kk_biometric_creds') ||
                             localStorage.getItem('krishi_kotha_biometric_user');
 
         if (!isBioEnabled || !bioUserJson) {
@@ -20129,7 +20136,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         });
       } catch (e) {
         if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
-        console.error('handleBiometricLoginWeb error:', e);
+        console.error('[BIOMETRIC ERROR] handleBiometricLoginWeb:', e);
         showGlobalPopup({
           title: 'ভেরিফিকেশন ব্যর্থ',
           message: 'বায়োমেট্রিক দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।',
@@ -20137,6 +20144,12 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         });
       }
     }
+
+    window.getBiometricActiveUser = getBiometricActiveUser;
+    window.updateBiometricStatusInSettings = updateBiometricStatusInSettings;
+    window.handleBiometricToggleWeb = handleBiometricToggleWeb;
+    window.handleBiometricLoginWeb = handleBiometricLoginWeb;
+    window.cancelBiometricScan = cancelBiometricScan;
 
     let supportTicketsUnsubscribe = null;
     let liveSupportSettings = null;

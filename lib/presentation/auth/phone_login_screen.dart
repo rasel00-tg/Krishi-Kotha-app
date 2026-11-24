@@ -10,6 +10,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/utils/bangla_number_converter.dart';
 import '../../core/widgets/app_warning_dialog.dart';
 import '../../core/widgets/app_unified_dialog.dart';
+import '../../global_popup/global_popup.dart';
 import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
 import '../menu/privacy_policy_screen.dart';
@@ -631,10 +632,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
     if (!isEnabled || savedCreds == null) {
       if (!mounted) return;
-      await AppUnifiedDialog.showWarning(
+      await GlobalPopup.showNotice(
         context,
         title: 'বায়োমেট্রিক লগইন সক্রিয় নেই!',
-        message: 'প্রথমে একবার একাউন্টে লগইন করে মেনু > সেটিংস থেকে বায়োমেট্রিক লগইন চালু করুন।',
+        message: 'প্রথমে একবার লগইন করে সেটিংস থেকে বায়োমেট্রিক চালু করুন।',
         buttonText: 'বুঝেছি',
       );
       return;
@@ -647,7 +648,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
     if (!mounted) return;
     if (!verifyRes.success) {
-      await AppUnifiedDialog.showWarning(
+      await GlobalPopup.showNotice(
         context,
         title: 'বায়োমেট্রিক যাচাই ব্যর্থ',
         message: verifyRes.errorMessage ?? 'বায়োমেট্রিক যাচাইকরণ সম্পন্ন হয়নি।',
@@ -656,28 +657,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       return;
     }
 
-    // Show loading feedback while signing into Firebase Auth
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true,
-      builder: (_) => const Center(
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(color: AppColors.primary),
-                SizedBox(height: 14),
-                Text('বায়োমেট্রিক লগইন হচ্ছে...', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    GlobalPopup.showLoading(context, message: 'বায়োমেট্রিক লগইন হচ্ছে...');
 
     bool loginSuccess = false;
     String? errorMsg;
@@ -699,9 +679,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       errorMsg = 'লগইন সম্পন্ন করতে সমস্যা হয়েছে। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।';
     } finally {
       if (mounted) {
-        try {
-          Navigator.of(context, rootNavigator: true).pop();
-        } catch (_) {}
+        GlobalPopup.hideLoading(context);
       }
     }
 
@@ -712,10 +690,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       final allowed = await _validateUserAccountStatus(context, activeUid);
       if (!allowed) return;
 
-      await AppUnifiedDialog.showSuccess(
+      await GlobalPopup.showNotice(
         context,
-        title: 'লগইন সফল!',
-        message: 'বায়োমেট্রিক ভেরিফিকেশন সফল হয়েছে। স্বাগতম!',
+        title: 'বায়োমেট্রিক লগইন সফল হয়েছে!',
+        message: 'স্বাগতম! আপনার একাউন্টে সফলভাবে প্রবেশ করা হয়েছে।',
         buttonText: 'ঠিক আছে',
       );
       if (mounted) {
@@ -725,7 +703,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         );
       }
     } else {
-      await AppUnifiedDialog.showWarning(
+      await GlobalPopup.showNotice(
         context,
         title: 'লগইন ব্যর্থ হয়েছে',
         message: errorMsg ?? 'বায়োমেট্রিক দিয়ে লগইন করা যায়নি। দয়া করে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন।',
