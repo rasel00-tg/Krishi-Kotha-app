@@ -6,6 +6,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/widgets/custom_app_bar.dart';
 import '../../core/widgets/app_unified_dialog.dart';
+import '../../data/services/auth_service.dart';
 import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
 
@@ -47,7 +48,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     var user = authProvider.user;
 
     if (enable) {
-      String activeUid = user?.uid ?? fbUser?.uid ?? '';
+      // Unified Auth Resolution (AuthProvider -> FirebaseAuth -> SharedPreferences AuthService)
+      if (user == null || user.uid.isEmpty || user.uid.startsWith('guest_')) {
+        try {
+          final cachedUser = await AuthService().loadCachedUser();
+          if (cachedUser != null && cachedUser.uid.isNotEmpty && !cachedUser.uid.startsWith('guest_')) {
+            user = cachedUser;
+          }
+        } catch (_) {}
+      }
+
+      String activeUid = user?.uid ?? '';
+      if ((activeUid.isEmpty || activeUid.startsWith('guest_')) && fbUser != null && !fbUser.isAnonymous) {
+        activeUid = fbUser.uid;
+      }
+
       String userPhone = user?.phone ?? fbUser?.phoneNumber ?? '';
       String userEmail = user?.email ?? fbUser?.email ?? '';
       String userName = user?.name ?? fbUser?.displayName ?? 'সম্মানিত কৃষক';
@@ -56,9 +71,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       String userVillage = user?.village ?? '';
       String userOccupation = user?.occupation ?? '';
 
-      // ফায়ারবেস কারেন্ট ইউজার থাকলে সরাসরি ফায়ারস্টোর থেকে ইউজারের বিস্তারিত লোড করা
-      if (fbUser != null && !fbUser.isAnonymous) {
-        activeUid = fbUser.uid;
+      // ফায়ারবেস কারেন্ট ইউজার থাকলে প্রয়োজনে ফায়ারস্টোর থেকে ইউজারের বিস্তারিত লোড করা
+      if (fbUser != null && !fbUser.isAnonymous && (userName == 'সম্মানিত কৃষক' || userPhone.isEmpty)) {
         try {
           final doc = await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
           if (doc.exists && doc.data() != null) {
@@ -76,35 +90,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final isGuest = activeUid.isEmpty || activeUid.startsWith('guest_');
       if (isGuest) {
+        setState(() => _biometricEnabled = false);
         await AppUnifiedDialog.showWarning(
           context,
           title: 'লগইন প্রয়োজন',
-          message: 'ফিঙ্গারপ্রিন্ট সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।',
+          message: 'বায়োমেট্রিক লগইন সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।',
           buttonText: 'বুঝেছি',
         );
         return;
       }
 
-      // ১. ডিভাইস বায়োমেট্রিক সাপোর্ট চেক (canCheckBiometrics & isDeviceSupported)
-      final isSupported = await BiometricAuthService.canCheckBiometrics();
+      // ১. ডিভাইস বায়োমেট্রিক বা স্ক্রিন লক সাপোর্ট চেক (isDeviceSupported || canCheckBiometrics)
+      final isSupported = await BiometricAuthService.isDeviceBiometricAvailable();
       if (!isSupported && mounted) {
+        setState(() => _biometricEnabled = false);
         await AppUnifiedDialog.showWarning(
           context,
           title: 'ডিভাইস অসঙ্গতি',
-          message: 'আপনার ডিভাইসে ফিঙ্গারপ্রিন্ট বা বায়োমেট্রিক সেন্সর পাওয়া যায়নি।',
+          message: 'আপনার ডিভাইসে বায়োমেট্রিক বা স্ক্রিন লক সেট করা নেই। অনুগ্রহ করে ফোনের সেটিংস থেকে ফিঙ্গারপ্রিন্ট বা স্ক্রিন লক চালু করুন।',
           buttonText: 'বুঝেছি',
         );
         return;
       }
 
-      // ২. সরাসরি ডিভাইসের নেটিভ ফিঙ্গারপ্রিন্ট স্ক্যানার (local_auth) ওপেন
-      final success = await BiometricAuthService.showBiometricScanDialog(
-        context,
-        title: 'বায়োমেট্রিক ভেরিফিকেশন',
-        subtitle: 'সক্রিয় করতে সেন্সরে আঙুল রাখুন',
+      // ২. সরাসরি ডিভাইসের নেটিভ বায়োমেট্রিক/লক প্রমট (biometricOnly: false)
+      final verifyRes = await BiometricAuthService.authenticateDevice(
+        reason: 'বায়োমেট্রিক লগইন চালু করতে আপনার ডিভাইস যাচাই করুন',
       );
 
-      if (success && mounted) {
+      if (!mounted) return;
+
+      if (verifyRes.success) {
         final userData = {
           'uid': activeUid,
           'name': userName,
@@ -118,6 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await BiometricAuthService.enableBiometrics(
           phone: userPhone,
           uid: activeUid,
+          identifier: userEmail.isNotEmpty ? userEmail : userPhone,
           userData: userData,
         );
         setState(() => _biometricEnabled = true);
@@ -129,6 +146,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             buttonText: 'ঠিক আছে',
           );
         }
+      } else {
+        setState(() => _biometricEnabled = false);
+        await AppUnifiedDialog.showWarning(
+          context,
+          title: 'বায়োমেট্রিক যাচাই ব্যর্থ',
+          message: verifyRes.errorMessage ?? 'বায়োমেট্রিক যাচাইকরণ সম্পন্ন হয়নি।',
+          buttonText: 'বুঝেছি',
+        );
       }
     } else {
       // ৩. ইউজার সুইচ অফ করতে চাইলে কনফার্মেশন ডায়ালগ

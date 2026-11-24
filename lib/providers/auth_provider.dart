@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/models/user_model.dart';
 import '../data/services/auth_service.dart';
+import '../data/services/biometric_auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -145,6 +146,11 @@ class AuthProvider extends ChangeNotifier {
         village: village,
         occupation: occupation,
       );
+      await BiometricAuthService.cacheLoginCredentials(
+        identifier: email,
+        password: password,
+        provider: 'email',
+      );
       _isLoading = false;
       notifyListeners();
       return true;
@@ -168,6 +174,11 @@ class AuthProvider extends ChangeNotifier {
       _user = await _authService.loginWithIdentifierAndPassword(
         identifier: identifier,
         password: password,
+      );
+      await BiometricAuthService.cacheLoginCredentials(
+        identifier: identifier,
+        password: password,
+        provider: identifier.contains('@') ? 'email' : 'phone',
       );
       _isLoading = false;
       notifyListeners();

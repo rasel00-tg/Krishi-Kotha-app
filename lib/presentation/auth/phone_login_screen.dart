@@ -627,48 +627,110 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
   Future<void> _handleBiometricLogin() async {
     final isEnabled = await BiometricAuthService.isBiometricEnabled();
-    if (!isEnabled) {
+    final savedCreds = await BiometricAuthService.getSavedBiometricCredentials();
+
+    if (!isEnabled || savedCreds == null) {
       if (!mounted) return;
       await AppUnifiedDialog.showWarning(
         context,
-        title: 'ফিঙ্গারপ্রিন্ট লগইন সক্রিয় নেই!',
-        message: 'নিরাপদে এক ক্লিকে লগইন করতে প্রথমে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন, এরপর মেনু > সেটিংস পেজ থেকে ফিঙ্গারপ্রিন্ট অথেনটিকেশন সক্রিয় করে নিন।',
+        title: 'বায়োমেট্রিক লগইন সক্রিয় নেই!',
+        message: 'প্রথমে একবার একাউন্টে লগইন করে মেনু > সেটিংস থেকে বায়োমেট্রিক লগইন চালু করুন।',
         buttonText: 'বুঝেছি',
       );
       return;
     }
 
     if (!mounted) return;
-    final verified = await BiometricAuthService.showBiometricScanDialog(
-      context,
-      title: 'ফিঙ্গারপ্রিন্ট লগইন',
-      subtitle: 'লগইন করতে আপনার ফিঙ্গারপ্রিন্ট সেন্সরে আঙুল রাখুন',
+    final verifyRes = await BiometricAuthService.authenticateDevice(
+      reason: 'বায়োমেট্রিক দিয়ে দ্রুত লগইন করতে ডিভাইস যাচাই করুন',
     );
 
-    if (verified && mounted) {
-      final savedUser = await BiometricAuthService.getSavedBiometricUser();
-      if (savedUser != null) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final success = await authProvider.loginWithBiometrics(savedUser);
-        if (success && mounted) {
-          final activeUid = FirebaseAuth.instance.currentUser?.uid ?? savedUser.uid;
-          final allowed = await _validateUserAccountStatus(context, activeUid);
-          if (!allowed) return;
+    if (!mounted) return;
+    if (!verifyRes.success) {
+      await AppUnifiedDialog.showWarning(
+        context,
+        title: 'বায়োমেট্রিক যাচাই ব্যর্থ',
+        message: verifyRes.errorMessage ?? 'বায়োমেট্রিক যাচাইকরণ সম্পন্ন হয়নি।',
+        buttonText: 'বুঝেছি',
+      );
+      return;
+    }
 
-          await AppUnifiedDialog.showSuccess(
-            context,
-            title: 'লগইন সফল!',
-            message: 'ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে। স্বাগতম!',
-            buttonText: 'ঠিক আছে',
-          );
-          if (mounted) {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-              (route) => false,
-            );
-          }
+    // Show loading feedback while signing into Firebase Auth
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => const Center(
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColors.primary),
+                SizedBox(height: 14),
+                Text('বায়োমেট্রিক লগইন হচ্ছে...', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    bool loginSuccess = false;
+    String? errorMsg;
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (savedCreds.identifier.isNotEmpty && savedCreds.password.isNotEmpty) {
+        loginSuccess = await authProvider.loginWithIdentifierAndPassword(
+          identifier: savedCreds.identifier,
+          password: savedCreds.password,
+        );
+        if (!loginSuccess) {
+          errorMsg = authProvider.errorMessage;
         }
+      } else if (savedCreds.userModel != null) {
+        loginSuccess = await authProvider.loginWithBiometrics(savedCreds.userModel!);
       }
+    } catch (e) {
+      errorMsg = 'লগইন সম্পন্ন করতে সমস্যা হয়েছে। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।';
+    } finally {
+      if (mounted) {
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+      }
+    }
+
+    if (!mounted) return;
+
+    if (loginSuccess) {
+      final activeUid = FirebaseAuth.instance.currentUser?.uid ?? savedCreds.uid;
+      final allowed = await _validateUserAccountStatus(context, activeUid);
+      if (!allowed) return;
+
+      await AppUnifiedDialog.showSuccess(
+        context,
+        title: 'লগইন সফল!',
+        message: 'বায়োমেট্রিক ভেরিফিকেশন সফল হয়েছে। স্বাগতম!',
+        buttonText: 'ঠিক আছে',
+      );
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      }
+    } else {
+      await AppUnifiedDialog.showWarning(
+        context,
+        title: 'লগইন ব্যর্থ হয়েছে',
+        message: errorMsg ?? 'বায়োমেট্রিক দিয়ে লগইন করা যায়নি। দয়া করে ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন।',
+        buttonText: 'ঠিক আছে',
+      );
     }
   }
 
