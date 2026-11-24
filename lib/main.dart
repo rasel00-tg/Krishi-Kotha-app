@@ -39,11 +39,16 @@ void main() async {
     );
     FirebaseService.isFirebaseInitialized = true;
 
-    // Web Persistence fix: disable persistence on Web to prevent stream hangs
+    // Offline Persistence: Enable unlimited cache on mobile; keep web stream-safe
     try {
       if (kIsWeb) {
         FirebaseFirestore.instance.settings = const Settings(
           persistenceEnabled: false,
+        );
+      } else {
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
         );
       }
     } catch (_) {}

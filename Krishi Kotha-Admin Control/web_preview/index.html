@@ -6346,21 +6346,33 @@
         };
         document.getElementById('pageTitle').innerText = titles[tabKey] || 'এডমিন প্যানেল';
 
-        // 2. Instant Reactive Rendering of Tab Data without requiring page refresh
+        // Unsubscribe previous tab listeners to prevent background read leaks
+        if (window._currentAdminActiveTab && window._currentAdminActiveTab !== tabKey) {
+          if (typeof unsubscribeAllAdminTabListeners === 'function') {
+            unsubscribeAllAdminTabListeners();
+          }
+        }
+        window._currentAdminActiveTab = tabKey;
+
+        // 2. Instant Reactive Rendering + Strict On-Demand Lazy Loading
         if (tabKey === 'dashboard') {
-          renderNotifications();
-          renderMarketList();
+          if (typeof loadDashboardAggregateCounts === 'function') loadDashboardAggregateCounts(false);
           if (typeof renderDashboardEnhanced === 'function') renderDashboardEnhanced();
         } else if (tabKey === 'notifications') {
+          if (typeof initAdminNotificationsListener === 'function') initAdminNotificationsListener(false);
           renderNotifications();
           if (typeof loadPopupNotificationSettings === 'function') loadPopupNotificationSettings();
         } else if (tabKey === 'market') {
+          if (typeof initAdminMarketListener === 'function') initAdminMarketListener(false);
           renderMarketList();
         } else if (tabKey === 'crops') {
+          if (typeof initAdminCropsListener === 'function') initAdminCropsListener(false);
           renderCrops();
         } else if (tabKey === 'pests') {
+          if (typeof initAdminPestsListener === 'function') initAdminPestsListener(false);
           renderCrops();
         } else if (tabKey === 'support') {
+          if (typeof initAdminSupportListener === 'function') initAdminSupportListener(false);
           renderSupportTicketsTable();
           if (!window.activeFirestoreListeners['faqs'] || !adminFaqsUnsubscribe || adminFaqsList.length === 0) {
             initAdminFaqsLiveSync();
@@ -6368,8 +6380,11 @@
             renderAdminFaqsTable(adminFaqsList);
           }
         } else if (tabKey === 'krishimate-ai') {
+          if (typeof initAdminKrishiMateListener === 'function') initAdminKrishiMateListener(false);
           renderKrishiMateDashboard();
         } else if (tabKey === 'user-control') {
+          if (typeof initAdminUsersListener === 'function') initAdminUsersListener(false);
+          if (typeof initAdminLoginRequestsListener === 'function') initAdminLoginRequestsListener(false);
           updateUcDistrictFilterOptions(ucSelectedDivision || 'all');
           const distSelect = document.getElementById('ucDistrictFilter');
           if (distSelect) distSelect.value = ucSelectedDistrict || 'all';
@@ -6540,6 +6555,7 @@
             renderAdminAgriReminderTable();
           }
         } else if (tabKey === 'settings-privacy') {
+          if (typeof initAdminPrivacyListener === 'function') initAdminPrivacyListener(false);
           const sub = document.getElementById('settingsSubmenu');
           const caret = document.getElementById('settingsCaret');
           if (sub) { sub.style.display = ''; sub.classList.add('open'); }
@@ -6690,15 +6706,127 @@
       }
     }
 
-    function initFirestoreListeners() {
+    // =========================================================================
+    // FIRESTORE READ AUDIT & COST OPTIMIZATION ENGINE
+    // =========================================================================
+    window._firestoreReadTotal = 0;
+    window._adminTabCache = window._adminTabCache || {};
+
+    window.logFirestoreRead = function(source, count = 1) {
+      const c = Number(count) || 0;
+      window._firestoreReadTotal += c;
+      console.log(`📊 [READ AUDIT] ${source}: +${c} reads | Total This Refresh: ${window._firestoreReadTotal}`);
+    };
+
+    function unsubscribeAllAdminTabListeners() {
+      if (!window.activeFirestoreListeners) return;
+      Object.keys(window.activeFirestoreListeners).forEach(key => {
+        unsubscribeFirestoreListener(key);
+      });
+    }
+
+    async function loadDashboardAggregateCounts(forceRefresh = false) {
       if (!db) {
-        hideAdminLoading();
+        if (typeof hideAdminLoading === 'function') hideAdminLoading();
         return;
       }
 
-      // 1. Notifications Listener (Limited to 50 recent documents)
+      const CACHE_KEY = 'krishi_admin_dash_counts_v1';
+      const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+      if (!forceRefresh) {
+        try {
+          const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && cached.ts && (Date.now() - cached.ts < CACHE_TTL_MS)) {
+              applyDashboardAggregateCountsUI(cached.counts);
+              if (typeof hideAdminLoading === 'function') hideAdminLoading();
+              console.log('📊 [READ AUDIT] Dashboard counts loaded from 5-min sessionStorage cache (0 Firestore reads)');
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+
       try {
-        const unsubNotif = db.collection('notifications').orderBy('timestamp', 'desc').limit(50).onSnapshot(snapshot => {
+        const countQuery = async (colName) => {
+          try {
+            if (typeof db.collection(colName).count === 'function') {
+              const snap = await db.collection(colName).count().get();
+              window.logFirestoreRead(`Dashboard count(${colName})`, 1);
+              return snap.data().count || 0;
+            }
+          } catch (e) {
+            console.warn(`Count fallback for ${colName}:`, e);
+          }
+          return 0;
+        };
+
+        const [usersCount, cropsCount, marketCount, notifCount, ticketsCount] = await Promise.all([
+          countQuery('users'),
+          countQuery('crops'),
+          countQuery('market_prices'),
+          countQuery('notifications'),
+          countQuery('support_tickets')
+        ]);
+
+        const counts = {
+          users: usersCount,
+          crops: cropsCount,
+          market: marketCount,
+          notifications: notifCount,
+          tickets: ticketsCount
+        };
+
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), counts }));
+        } catch (_) {}
+
+        applyDashboardAggregateCountsUI(counts);
+      } catch (err) {
+        console.warn('Dashboard aggregate count notice:', err);
+      } finally {
+        if (typeof hideAdminLoading === 'function') hideAdminLoading();
+      }
+    }
+
+    function applyDashboardAggregateCountsUI(counts) {
+      if (!counts) return;
+      const toBn = (n) => {
+        const b = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return String(n).replace(/[0-9]/g, d => b[d]);
+      };
+
+      const elFarmers = document.getElementById('stat-farmers');
+      if (elFarmers) elFarmers.innerText = toBn(counts.users || 0) + ' জন';
+
+      const elActive = document.getElementById('dashboardActiveAccountsCount');
+      if (elActive) elActive.innerText = toBn(counts.users || 0) + ' জন';
+
+      const elCrops = document.getElementById('stat-crops');
+      if (elCrops) elCrops.innerText = toBn(counts.crops || 0) + ' টি';
+
+      const elMarket = document.getElementById('stat-market');
+      if (elMarket) elMarket.innerText = toBn(counts.market || 0) + ' টি';
+
+      const elNotif = document.getElementById('stat-notifications');
+      if (elNotif) elNotif.innerText = toBn(counts.notifications || 0) + ' টি';
+
+      const elTickets = document.getElementById('stat-tickets');
+      if (elTickets) elTickets.innerText = toBn(counts.tickets || 0) + ' টি';
+    }
+
+    function initAdminNotificationsListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['notifications']) {
+        notifications = window._adminTabCache['notifications'];
+        renderNotifications();
+        return;
+      }
+      try {
+        const unsubNotif = db.collection('notifications').orderBy('timestamp', 'desc').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin notifications', snapshot.size);
           notifications = [];
           snapshot.forEach(doc => {
             const d = doc.data();
@@ -6710,11 +6838,12 @@
               time: formatTime(d.timestamp || d.updatedAt)
             });
           });
+          window._adminTabCache['notifications'] = notifications;
           renderNotifications();
-          checkInitialCoreLoadDone();
         }, err => {
-          console.warn("Notifications orderBy fallback, querying snapshot:", err);
-          const unsubFallback = db.collection('notifications').limit(50).onSnapshot(snapshot => {
+          console.warn("Notifications orderBy fallback:", err);
+          const unsubFallback = db.collection('notifications').limit(20).onSnapshot(snapshot => {
+            window.logFirestoreRead('Admin notifications (fallback)', snapshot.size);
             notifications = [];
             snapshot.forEach(doc => {
               const d = doc.data();
@@ -6728,8 +6857,8 @@
               });
             });
             notifications.sort((a, b) => b.rawTime - a.rawTime);
+            window._adminTabCache['notifications'] = notifications;
             renderNotifications();
-            checkInitialCoreLoadDone();
           });
           registerFirestoreListener('notifications', unsubFallback);
         });
@@ -6737,10 +6866,18 @@
       } catch (nErr) {
         console.warn("Notifications listener init error:", nErr);
       }
+    }
 
-      // 2. Market Prices Listener (Limited to 100 recent documents)
+    function initAdminMarketListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['market_prices']) {
+        marketPrices = window._adminTabCache['market_prices'];
+        renderMarketList();
+        return;
+      }
       try {
-        const unsubMarket = db.collection('market_prices').limit(100).onSnapshot(snapshot => {
+        const unsubMarket = db.collection('market_prices').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin market_prices', snapshot.size);
           marketPrices = [];
           snapshot.forEach(doc => {
             const d = doc.data() || {};
@@ -6782,19 +6919,27 @@
               rawTime: rawTime
             });
           });
-          // Sort newest updated first
           marketPrices.sort((a, b) => b.rawTime - a.rawTime);
+          window._adminTabCache['market_prices'] = marketPrices;
           renderMarketList();
-          checkInitialCoreLoadDone();
         }, err => console.error("Market stream error:", err));
         registerFirestoreListener('market_prices', unsubMarket);
       } catch (mErr) {
         console.warn("Market listener init error:", mErr);
       }
+    }
 
-      // 3. Crops Listener & Category Discovery (Limited to 100 documents)
+    function initAdminCropsListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['crops']) {
+        crops = window._adminTabCache['crops'];
+        refreshCategoryDropdowns();
+        renderCrops();
+        return;
+      }
       try {
-        const unsubCrops = db.collection('crops').limit(100).onSnapshot(snapshot => {
+        const unsubCrops = db.collection('crops').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin crops', snapshot.size);
           crops = [];
           snapshot.forEach(doc => {
             const d = doc.data();
@@ -6821,35 +6966,42 @@
               updatedAt: d.updatedAt || d.updated_at || d.timestamp || null
             });
           });
+          window._adminTabCache['crops'] = crops;
           refreshCategoryDropdowns();
           renderCrops();
-          checkInitialCoreLoadDone();
         }, err => console.error("Crops stream error:", err));
         registerFirestoreListener('crops', unsubCrops);
+
+        if (!window._adminTabCache['categories']) {
+          const unsubCat = db.collection('categories').limit(20).onSnapshot(snapshot => {
+            window.logFirestoreRead('Admin categories', snapshot.size);
+            if (snapshot && !snapshot.empty) {
+              snapshot.forEach(doc => {
+                const d = doc.data() || {};
+                const catName = (d.name || d.name_bn || doc.id.replace(/^cat_/, '')).trim();
+                if (catName) categoriesSet.add(catName);
+              });
+              window._adminTabCache['categories'] = true;
+              refreshCategoryDropdowns();
+            }
+          }, err => console.warn("Categories stream note:", err));
+          registerFirestoreListener('categories', unsubCat);
+        }
       } catch (cErr) {
         console.warn("Crops listener init error:", cErr);
       }
+    }
 
-      // 3.1 Dedicated Categories Collection Listener (Limited to 50)
-      try {
-        const unsubCat = db.collection('categories').limit(50).onSnapshot(snapshot => {
-          if (snapshot && !snapshot.empty) {
-            snapshot.forEach(doc => {
-              const d = doc.data() || {};
-              const catName = (d.name || d.name_bn || doc.id.replace(/^cat_/, '')).trim();
-              if (catName) categoriesSet.add(catName);
-            });
-            refreshCategoryDropdowns();
-          }
-        }, err => console.warn("Categories stream note:", err));
-        registerFirestoreListener('categories', unsubCat);
-      } catch (catErr) {
-        console.warn("Categories listener init:", catErr);
+    function initAdminPestsListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['pests_diseases']) {
+        pests = window._adminTabCache['pests_diseases'];
+        renderCrops();
+        return;
       }
-
-      // 4. Pests Listener (Limited to 100 documents)
       try {
-        const unsubPests = db.collection('pests_diseases').limit(100).onSnapshot(snapshot => {
+        const unsubPests = db.collection('pests_diseases').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin pests_diseases', snapshot.size);
           pests = [];
           snapshot.forEach(doc => {
             const d = doc.data();
@@ -6862,16 +7014,26 @@
               chemical: d.chemical_cure || ''
             });
           });
+          window._adminTabCache['pests_diseases'] = pests;
           renderCrops();
         }, err => console.error("Pests stream error:", err));
         registerFirestoreListener('pests_diseases', unsubPests);
       } catch (pErr) {
         console.warn("Pests listener init error:", pErr);
       }
+    }
 
-      // 5. Users Listener (Limited to 100 documents)
+    function initAdminUsersListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['users']) {
+        users = window._adminTabCache['users'];
+        renderUsers();
+        renderUserControlTable();
+        return;
+      }
       try {
-        const unsubUsers = db.collection('users').limit(100).onSnapshot(snapshot => {
+        const unsubUsers = db.collection('users').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin users', snapshot.size);
           users = [];
           snapshot.forEach(doc => {
             const d = doc.data();
@@ -6900,16 +7062,24 @@
               raw: d
             });
           });
+          window._adminTabCache['users'] = users;
           renderUsers();
           renderUserControlTable();
-          checkInitialCoreLoadDone();
         }, err => console.error("Users stream error:", err));
         registerFirestoreListener('users', unsubUsers);
       } catch (uErr) {
         console.warn("Users listener init error:", uErr);
       }
+    }
 
-      // 6. Support Tickets Listener (Limited to 50 documents)
+    function initAdminSupportListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['support_tickets']) {
+        tickets = window._adminTabCache['support_tickets'];
+        renderUsers();
+        renderSupportTicketsTable();
+        return;
+      }
       const parseTicketDoc = doc => {
         const d = doc.data() || {};
         return {
@@ -6948,21 +7118,25 @@
       };
 
       try {
-        const unsubTickets = db.collection('support_tickets').orderBy('createdAt', 'desc').limit(50).onSnapshot(snapshot => {
+        const unsubTickets = db.collection('support_tickets').orderBy('createdAt', 'desc').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin support_tickets', snapshot.size);
           tickets = [];
           snapshot.forEach(doc => tickets.push(parseTicketDoc(doc)));
           sortTicketsDescending(tickets);
+          window._adminTabCache['support_tickets'] = tickets;
           renderUsers();
           renderSupportTicketsTable();
         }, err => {
-          console.warn("Tickets orderBy error, falling back to unordered listener:", err);
-          const unsubFbTickets = db.collection('support_tickets').limit(50).onSnapshot(fallbackSnap => {
+          console.warn("Tickets orderBy fallback:", err);
+          const unsubFbTickets = db.collection('support_tickets').limit(20).onSnapshot(fallbackSnap => {
+            window.logFirestoreRead('Admin support_tickets (fallback)', fallbackSnap.size);
             tickets = [];
             fallbackSnap.forEach(doc => tickets.push(parseTicketDoc(doc)));
             sortTicketsDescending(tickets);
+            window._adminTabCache['support_tickets'] = tickets;
             renderUsers();
             renderSupportTicketsTable();
-          }, fbErr => console.error("Tickets stream fallback error:", fbErr));
+          });
           registerFirestoreListener('support_tickets', unsubFbTickets);
         });
         registerFirestoreListener('support_tickets', unsubTickets);
@@ -6970,31 +7144,35 @@
         console.warn("Tickets listener initialization error:", err);
       }
 
-      // 6.b Support Contact Live Settings Listener
-      try {
-        const unsubContact = db.collection('app_settings').doc('support_contact').onSnapshot(doc => {
-          if (doc.exists) {
-            const d = doc.data() || {};
-            applySupportContactSettingsToForm(d);
-          }
-        }, err => console.error("Support contact settings error:", err));
-        registerFirestoreListener('support_contact', unsubContact);
-      } catch (e) {
-        console.error(e);
+      if (!window._adminTabCache['support_contact']) {
+        try {
+          const unsubContact = db.collection('app_settings').doc('support_contact').onSnapshot(doc => {
+            window.logFirestoreRead('Admin support_contact', 1);
+            if (doc.exists) {
+              window._adminTabCache['support_contact'] = doc.data() || {};
+              applySupportContactSettingsToForm(window._adminTabCache['support_contact']);
+            }
+          }, err => console.error("Support contact settings error:", err));
+          registerFirestoreListener('support_contact', unsubContact);
+        } catch (e) { console.error(e); }
       }
+    }
 
-      // 7. KrishiMate AI Listener (Stream from disease_prescriptions limited to 50)
+    function initAdminKrishiMateListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['disease_prescriptions']) {
+        krishiMateList = window._adminTabCache['disease_prescriptions'];
+        renderKrishiMateDashboard();
+        return;
+      }
       try {
-        const unsubKm = db.collection('disease_prescriptions').limit(50).onSnapshot(snapshot => {
+        const unsubKm = db.collection('disease_prescriptions').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin disease_prescriptions', snapshot.size);
           krishiMateList = [];
           snapshot.forEach(doc => {
             const d = doc.data() || {};
-            krishiMateList.push({
-              id: doc.id,
-              ...d
-            });
+            krishiMateList.push({ id: doc.id, ...d });
           });
-          // Sort by created_at desc
           krishiMateList.sort((a, b) => {
             const getMs = (x) => {
               const ts = x.created_at || x.createdAt;
@@ -7005,6 +7183,7 @@
             };
             return getMs(b) - getMs(a);
           });
+          window._adminTabCache['disease_prescriptions'] = krishiMateList;
           renderKrishiMateDashboard();
         }, err => {
           console.warn("KrishiMate stream note:", err);
@@ -7014,11 +7193,16 @@
       } catch (kmErr) {
         console.warn("KrishiMate listener init error:", kmErr);
       }
+    }
 
-      // 8. Privacy Policy Settings Listener
+    function initAdminPrivacyListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['privacy_policy']) return;
       try {
         const unsubPrivacy = db.collection('settings').doc('privacy_policy').onSnapshot(doc => {
+          window.logFirestoreRead('Admin privacy_policy', 1);
           if (doc.exists) {
+            window._adminTabCache['privacy_policy'] = true;
             const d = doc.data() || {};
             const lastUpdated = d.last_updated || 'সর্বশেষ হালনাগাদ: নভেম্বর ২০২৬ • সংস্করণ ১.০.০';
             const bannerText = d.banner_text || 'কৃষি কথা অ্যাপ কৃষকদের আস্থার প্ল্যাটফর্ম। আপনার কোনো ব্যক্তিগত তথ্য বা ফোন নম্বর কখনো কোনো বাণিজ্যিক তৃতীয় পক্ষের কাছে বিক্রি বা শেয়ার করা হয় না।';
@@ -7041,14 +7225,8 @@
               if (bImgEl) bImgEl.value = bannerImgUrl;
 
               if (bannerImgUrl) {
-                if (pBox && pImg) {
-                  pBox.style.display = 'block';
-                  pImg.src = bannerImgUrl;
-                }
-                if (appWrap && appImg) {
-                  appWrap.style.display = 'block';
-                  appImg.src = bannerImgUrl;
-                }
+                if (pBox && pImg) { pBox.style.display = 'block'; pImg.src = bannerImgUrl; }
+                if (appWrap && appImg) { appWrap.style.display = 'block'; appImg.src = bannerImgUrl; }
               } else {
                 if (pBox) pBox.style.display = 'none';
                 if (appWrap) appWrap.style.display = 'none';
@@ -7058,47 +7236,53 @@
               updatePolicyPreview();
             }
           } else {
-            if (!window.privacyEditorDirty) {
-              resetPrivacyToDefault(false);
-            }
+            if (!window.privacyEditorDirty) resetPrivacyToDefault(false);
           }
-        }, err => {
-          console.warn("Privacy policy listener notice:", err);
-        });
+        }, err => console.warn("Privacy policy listener notice:", err));
         registerFirestoreListener('privacy_policy', unsubPrivacy);
       } catch (ppErr) {
         console.warn("Privacy policy listener init error:", ppErr);
       }
+    }
 
-      // 9. Login Update Requests Listener (Limited to 50)
+    function initAdminLoginRequestsListener(forceRefresh = false) {
+      if (!db) return;
+      if (!forceRefresh && window._adminTabCache['login_update_requests']) {
+        loginUpdateRequests = window._adminTabCache['login_update_requests'];
+        updateLoginRequestsBadge();
+        renderLoginRequestsTable();
+        return;
+      }
       try {
-        const unsubLoginReq = db.collection('login_update_requests').limit(50).onSnapshot(snapshot => {
+        const unsubLoginReq = db.collection('login_update_requests').limit(20).onSnapshot(snapshot => {
+          window.logFirestoreRead('Admin login_update_requests', snapshot.size);
           loginUpdateRequests = [];
           snapshot.forEach(doc => {
             const d = doc.data() || {};
-            loginUpdateRequests.push({
-              id: doc.id,
-              ...d
-            });
+            loginUpdateRequests.push({ id: doc.id, ...d });
           });
           loginUpdateRequests.sort((a, b) => {
             const secA = a.createdAt ? (a.createdAt.seconds || 0) : 0;
             const secB = b.createdAt ? (b.createdAt.seconds || 0) : 0;
             return secB - secA;
           });
+          window._adminTabCache['login_update_requests'] = loginUpdateRequests;
           updateLoginRequestsBadge();
           renderLoginRequestsTable();
           const dView = document.getElementById('ucDetailView');
           if (dView && dView.style.display !== 'none' && typeof currentDetailUserId !== 'undefined' && currentDetailUserId) {
             renderUserDetailsView(currentDetailUserId);
           }
-        }, err => {
-          console.warn("Login update requests stream error:", err);
-        });
+        }, err => console.warn("Login update requests stream error:", err));
         registerFirestoreListener('login_update_requests', unsubLoginReq);
       } catch (reqErr) {
         console.warn("Login update requests listener init error:", reqErr);
       }
+    }
+
+    function initFirestoreListeners() {
+      // Zero background preload: Only load lightweight dashboard aggregate counts at startup
+      loadDashboardAggregateCounts(false);
     }
 
     function formatTime(timestamp) {
@@ -17932,26 +18116,13 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-      // 1. Show Branded Global Loading Popup for System Initialization
-      showAdminLoading('সিস্টেম প্রস্তুত হচ্ছে...', 'তথ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...');
-
+      // Zero Background Preload: Only load lightweight dashboard aggregate counts on startup
       refreshCategoryDropdowns();
-      // Lazy-loading architecture: Only core dashboard collections (notifications, market, crops, users)
-      // are loaded on initialization. Heavy sub-tabs (farming_calendar, income_expense, seed, irrigation, dealers, soil_health, faqs)
-      // are loaded strictly on-demand when the administrator navigates to their specific tab.
-      initFirestoreListeners();
+      loadDashboardAggregateCounts(false);
       updateDistrictFilterOptions('all');
       updateUcDistrictFilterOptions('all');
       populateAdminDealersDistricts();
-      renderNotifications();
-      renderMarketList();
-      renderCrops();
-      renderUsers();
-      renderUserControlTable();
-      renderKrishiMateDashboard();
       setupMarketFormPasteSanitizers();
-      updatePolicyCounters();
-      updatePolicyPreview();
     });
   </script>
   <!-- MODAL: ADMIN INCOME-EXPENSE MEMO DETAILS -->

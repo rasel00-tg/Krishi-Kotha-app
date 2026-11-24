@@ -434,7 +434,7 @@ class FirestoreService {
   }
 
   // ==================== NOTIFICATIONS ====================
-  Stream<List<NotificationModel>> getNotificationsStream({int limit = 50}) {
+  Stream<List<NotificationModel>> getNotificationsStream({int limit = 15}) {
     _cachedNotificationsStream ??= FirebaseFirestore.instance
         .collection('notifications')
         .orderBy('timestamp', descending: true)
@@ -511,8 +511,8 @@ class FirestoreService {
       query = query.where('month', isEqualTo: month);
     }
     
-    // Read Optimization: Limit calendar query to 100 documents
-    query = query.limit(100);
+    // Read Optimization: Limit calendar query to 20 documents
+    query = query.limit(20);
     
     return query.snapshots().map((snapshot) {
       final list = snapshot.docs.map((doc) {

@@ -8099,10 +8099,23 @@
       }
     }
 
+    // =========================================================================
+    // FIRESTORE READ AUDIT & COST OPTIMIZATION ENGINE
+    // =========================================================================
+    window._firestoreReadTotal = 0;
+    window.logFirestoreRead = function(source, count = 1) {
+      const c = Number(count) || 0;
+      window._firestoreReadTotal += c;
+      console.log(`📊 [READ AUDIT] ${source}: +${c} reads | Total This Refresh: ${window._firestoreReadTotal}`);
+    };
+
     function initUserAppSystemControlListener() {
       if (!db) return;
+      if (window._sysControlUnsubscribed === false && window._sysControlUnsub) return;
       try {
-        db.collection('app_settings').doc('system_control').onSnapshot(doc => {
+        window._sysControlUnsubscribed = false;
+        window._sysControlUnsub = db.collection('app_settings').doc('system_control').onSnapshot(doc => {
+          window.logFirestoreRead('App system_control', 1);
           if (doc.exists) {
             handleSystemControlUpdate(doc.data() || {});
           } else {
@@ -8203,6 +8216,7 @@
         }
 
         webPopupUnsubscribe = dbInstance.collection('admin_settings').doc('popup_notification').onSnapshot(doc => {
+          window.logFirestoreRead('App popup_notification', 1);
           if (!doc || !doc.exists) return;
           // Optimistic local write skip
           if (doc.metadata && doc.metadata.hasPendingWrites) return;
@@ -22636,23 +22650,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       }
 
       // Stream Unblock Safety Timeout:
-      // If Firestore onSnapshot handshake takes more than 1.2s, break infinite loading immediately!
+      // Only unblock visible loader UI without triggering background network reads for hidden tabs
       setTimeout(function () {
         const cropsEl = document.getElementById('cropsListContainer');
         if (cropsEl && cropsEl.querySelector('.premium-loader-card')) {
-          if (cropsData && cropsData.length > 0) {
-            applyCropsFilter();
-          } else {
-            fetchCropsViaRest();
-          }
+          if (cropsData && cropsData.length > 0) applyCropsFilter();
         }
         const marketEl = document.getElementById('marketPricesContainer');
         if (marketEl && marketEl.querySelector('.premium-loader-card')) {
-          if (marketPrices && marketPrices.length > 0) {
-            filterMarketPrices();
-          } else {
-            fetchMarketViaRest();
-          }
+          if (marketPrices && marketPrices.length > 0) filterMarketPrices();
         }
       }, 1200);
     }
@@ -22862,12 +22868,9 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function initFirestoreLiveSync() {
-      // 0. Immediate REST fetch for instant (<200ms) data display
-      fetchCropsViaRest();
-      fetchMarketViaRest();
-      fetchPestsViaRest();
-      fetchNotificationsViaRest();
-
+      // ZERO BACKGROUND PRELOAD:
+      // Do NOT fetch crops, market_prices, pests_diseases, or notifications at startup!
+      // Each module is strictly lazy-loaded on demand with 10-min sessionStorage cache when its tab/modal is opened.
       if (!db) {
         const errHtml = '<div style="color:#D32F2F; text-align:center; padding:24px; font-weight:bold;">ফায়ারবেস সংযোগ সক্রিয় করা যায়নি। ইন্টারনেট সংযোগ বা ফায়ারবেস কনসোল রুলস চেক করুন।</div>';
         const c1 = document.getElementById('cropsListContainer');
@@ -22876,17 +22879,40 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         if (c2 && (!marketPrices || marketPrices.length === 0)) c2.innerHTML = errHtml;
         return;
       }
-
-      // 1. Core single document listeners (System Control & Popup Notification)
-      // Notifications, Crops, Market, Pests, Support, etc. are lazy-loaded on demand when their tab/modal is opened.
     }
 
     /* ==========================================================================
-       LAZY-LOADED FIRESTORE REALTIME SYNC MODULES (WITH STRICT LIMITS)
+       LAZY-LOADED FIRESTORE REALTIME SYNC MODULES (WITH STRICT LIMITS & CACHE)
        ========================================================================== */
+    function getWebTabCache(key) {
+      try {
+        const raw = sessionStorage.getItem('krishi_web_cache_' + key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.ts && (Date.now() - parsed.ts < 10 * 60 * 1000)) {
+          return parsed.data;
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    function setWebTabCache(key, data) {
+      try {
+        sessionStorage.setItem('krishi_web_cache_' + key, JSON.stringify({ ts: Date.now(), data }));
+      } catch (_) {}
+    }
+
     function initNotificationsLiveSync() {
+      const cached = getWebTabCache('notifications');
+      if (cached && cached.length > 0) {
+        notificationsList = cached;
+        updateNotificationBadge();
+        renderNotifications();
+        return;
+      }
       if (!db) return;
-      const unsub = db.collection('notifications').limit(50).onSnapshot(snapshot => {
+      const unsub = db.collection('notifications').limit(20).onSnapshot(snapshot => {
+        window.logFirestoreRead('App notifications', snapshot.size);
         if (!snapshot.empty) {
           const liveList = [];
           snapshot.forEach(doc => {
@@ -22935,6 +22961,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           });
           liveList.sort((a, b) => b.rawTime - a.rawTime);
           notificationsList = liveList;
+          setWebTabCache('notifications', notificationsList);
           updateNotificationBadge();
           renderNotifications();
         } else {
@@ -22947,8 +22974,17 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function initCropsLiveSync() {
+      const cachedCrops = getWebTabCache('crops');
+      if (cachedCrops && cachedCrops.length > 0) {
+        cropsData = cachedCrops;
+        cropsData.forEach(c => { if (c.category) cropCategoriesSet.add(c.category); });
+        renderCropCategoryChips();
+        applyCropsFilter();
+        return;
+      }
       if (!db) return;
-      const unsubCrops = db.collection('crops').limit(50).onSnapshot(snapshot => {
+      const unsubCrops = db.collection('crops').limit(20).onSnapshot(snapshot => {
+        window.logFirestoreRead('App crops', snapshot.size);
         if (!snapshot.empty) {
           const liveCrops = [];
           snapshot.forEach(doc => {
@@ -23002,6 +23038,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           });
           liveCrops.sort((a, b) => b.rawTime - a.rawTime);
           cropsData = liveCrops;
+          setWebTabCache('crops', cropsData);
           renderCropCategoryChips();
           applyCropsFilter();
         } else {
@@ -23032,8 +23069,15 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     }
 
     function initMarketLiveSync() {
+      const cachedMarket = getWebTabCache('market_prices');
+      if (cachedMarket && cachedMarket.length > 0) {
+        marketPrices = cachedMarket;
+        filterMarketPrices();
+        return;
+      }
       if (!db) return;
-      const unsub = db.collection('market_prices').limit(100).onSnapshot(snapshot => {
+      const unsub = db.collection('market_prices').limit(20).onSnapshot(snapshot => {
+        window.logFirestoreRead('App market_prices', snapshot.size);
         if (!snapshot.empty) {
           const livePrices = [];
           snapshot.forEach(doc => {
@@ -23041,6 +23085,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           });
           livePrices.sort((a, b) => (b.rawTime || 0) - (a.rawTime || 0));
           marketPrices = livePrices;
+          setWebTabCache('market_prices', marketPrices);
           filterMarketPrices();
         } else {
           marketPrices = [];
@@ -23187,11 +23232,13 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       });
       document.body.style.overflow = '';
 
+      if (window._homeDataInitialized) return;
+      window._homeDataInitialized = true;
+
       showInitialLoaders();
       updateDynamicGreeting();
       setInterval(updateDynamicGreeting, 60000);
       fetchLiveWeather(selectedDistrictName || 'ঢাকা');
-      fetchMarketViaRest();
       renderCommunityPosts();
       updateNotificationBadge();
       initFirestoreLiveSync();

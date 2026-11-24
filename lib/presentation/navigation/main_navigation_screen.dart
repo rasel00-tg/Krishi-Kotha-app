@@ -26,6 +26,7 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late int _currentIndex;
+  final Set<int> _visitedTabs = {0};
   final FirestoreService _firestoreService = FirestoreService();
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userBlockStatusSubscription;
   bool _isAutoLoggingOut = false;
@@ -139,6 +140,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     } catch (_) {}
 
     setState(() {
+      _visitedTabs.add(index);
       _currentIndex = index;
     });
   }
@@ -146,14 +148,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      HomeScreen(
-        onNavigateTab: _onTabSelected,
-        firestoreService: _firestoreService,
-      ),
-      CropListScreen(onNavigateTab: _onTabSelected),
-      const MarketPriceScreen(),
-      const FertilizerCalculatorScreen(),
-      const AppMenuScreen(),
+      _visitedTabs.contains(0)
+          ? HomeScreen(
+              onNavigateTab: _onTabSelected,
+              firestoreService: _firestoreService,
+            )
+          : const SizedBox.shrink(),
+      _visitedTabs.contains(1)
+          ? CropListScreen(onNavigateTab: _onTabSelected)
+          : const SizedBox.shrink(),
+      _visitedTabs.contains(2)
+          ? const MarketPriceScreen()
+          : const SizedBox.shrink(),
+      _visitedTabs.contains(3)
+          ? const FertilizerCalculatorScreen()
+          : const SizedBox.shrink(),
+      _visitedTabs.contains(4)
+          ? const AppMenuScreen()
+          : const SizedBox.shrink(),
     ];
 
     return Scaffold(

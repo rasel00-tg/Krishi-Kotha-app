@@ -42,8 +42,8 @@ class _CropListScreenState extends State<CropListScreen> {
   @override
   void initState() {
     super.initState();
-    _cropsStream = FirebaseFirestore.instance.collection('crops').limit(100).snapshots();
-    _categoriesStream = FirebaseFirestore.instance.collection('categories').limit(50).snapshots();
+    _cropsStream = FirebaseFirestore.instance.collection('crops').limit(20).snapshots();
+    _categoriesStream = FirebaseFirestore.instance.collection('categories').limit(20).snapshots();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.trim().toLowerCase();

@@ -32,7 +32,7 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
   @override
   void initState() {
     super.initState();
-    _marketStream = FirebaseFirestore.instance.collection('market_prices').limit(150).snapshots();
+    _marketStream = FirebaseFirestore.instance.collection('market_prices').limit(20).snapshots();
     MarketFavoritesService.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
