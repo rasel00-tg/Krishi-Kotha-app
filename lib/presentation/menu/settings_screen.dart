@@ -17,22 +17,37 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   bool _weatherAlerts = true;
   bool _marketUpdates = true;
   bool _offlineCache = true;
   bool _biometricEnabled = false;
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _appConfigStream;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     // Read Optimization: Cache app_config stream once in initState
     _appConfigStream = FirebaseFirestore.instance
         .collection('settings')
         .doc('app_config')
         .snapshots();
     _loadBiometricState();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadBiometricState() async {
@@ -221,8 +236,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 20),
 
-          // Section: Language & Display
-          _buildSectionHeader('ভাষা ও ফন্ট'),
+          // Section: Language
+          _buildSectionHeader('ভাষা'),
           _buildCardWrapper([
             ListTile(
               leading: const Icon(Icons.language_rounded, color: AppColors.primary),
@@ -233,13 +248,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 backgroundColor: AppColors.primaryContainer,
                 padding: EdgeInsets.zero,
               ),
-            ),
-            const Divider(height: 1, indent: 16, endIndent: 16),
-            const ListTile(
-              leading: Icon(Icons.font_download_outlined, color: AppColors.primary),
-              title: Text('টাইপোগ্রাফি ফন্ট', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: Text('Tiro Bangla (গ্লোবাল বাংলা ফন্ট)', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
-              trailing: Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
+              onTap: () {
+                GlobalPopup.showNotice(
+                  context,
+                  title: 'ভাষা পরিবর্তন',
+                  message: 'এই ফিচারটি এখনো চালু হয়নি',
+                  buttonText: 'ঠিক আছে',
+                );
+              },
             ),
           ]),
 
@@ -302,22 +318,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// ডেডিকেটেড বায়োমেট্রিক সেটিংস কার্ড (Dedicated Biometric Settings Card with Live Status)
+  /// ডেডিকেটেড বায়োমেট্রিক সেটিংস কার্ড (Colorful Animated Biometric Settings Card)
   Widget _buildBiometricCard() {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOutCubic,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: _biometricEnabled
+              ? const [Color(0xFFECFDF5), Color(0xFFD1FAE5)]
+              : const [Color(0xFFF8FAFC), Color(0xFFEEF2FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: _biometricEnabled ? const Color(0xFF81C784) : const Color(0xFFE2E8E2),
-          width: _biometricEnabled ? 1.5 : 1.0,
+          color: _biometricEnabled ? const Color(0xFF10B981) : const Color(0xFFC7D2FE),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: _biometricEnabled ? const Color(0xFF2E7D32).withOpacity(0.08) : const Color(0x0A000000),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: _biometricEnabled
+                ? const Color(0xFF10B981).withOpacity(0.16)
+                : const Color(0xFF6366F1).withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -328,22 +354,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _biometricEnabled ? const Color(0xFFE8F5E9) : const Color(0xFFF1F8E9),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _biometricEnabled ? const Color(0xFF2E7D32) : const Color(0xFF81C784).withOpacity(0.5),
-                    width: 1.5,
+              ScaleTransition(
+                scale: _pulseAnimation,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _biometricEnabled
+                          ? const [Color(0xFF10B981), Color(0xFF059669)]
+                          : const [Color(0xFF6366F1), Color(0xFF0EA5E9)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_biometricEnabled
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF6366F1))
+                            .withOpacity(0.35),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.fingerprint_rounded,
-                    color: Color(0xFF2E7D32),
-                    size: 26,
+                  child: const Center(
+                    child: Icon(
+                      Icons.fingerprint_rounded,
+                      color: Colors.white,
+                      size: 25,
+                    ),
                   ),
                 ),
               ),
@@ -357,7 +399,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: Color(0xFF1E293B),
                       ),
                     ),
                     SizedBox(height: 2.5),
@@ -365,7 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'ফিঙ্গারপ্রিন্ট দিয়ে এক ক্লিকে সুরক্ষিত লগইন',
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                        color: Color(0xFF475569),
                         height: 1.3,
                       ),
                     ),
@@ -374,110 +416,109 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(width: 8),
               Transform.scale(
-                scale: 0.9,
+                scale: 0.92,
                 child: Switch(
                   value: _biometricEnabled,
-                  activeColor: const Color(0xFF2E7D32),
-                  activeTrackColor: const Color(0xFFA5D6A7),
+                  activeColor: Colors.white,
+                  activeTrackColor: const Color(0xFF10B981),
                   inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: const Color(0xFFCFD8DC),
+                  inactiveTrackColor: const Color(0xFF94A3B8),
                   onChanged: _handleBiometricToggle,
                 ),
               ),
             ],
           ),
 
+          const SizedBox(height: 14),
+          Divider(height: 1, color: const Color(0xFF94A3B8).withOpacity(0.22)),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFEFF3EF)),
-          const SizedBox(height: 10),
 
-          // Live Status Row
+          // Live Status & Action Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (_biometricEnabled)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF81C784), width: 1.0),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 14),
-                      SizedBox(width: 5),
-                      Text(
-                        'সেট করা আছে',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1B5E20),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECEFF1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFCFD8DC), width: 1.0),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.info_outline_rounded, color: Color(0xFF78909C), size: 14),
-                      SizedBox(width: 5),
-                      Text(
-                        'নিষ্ক্রিয় আছে',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF546E7A),
-                        ),
-                      ),
-                    ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _biometricEnabled ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
+                    width: 1.2,
                   ),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ScaleTransition(
+                      scale: _biometricEnabled ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _biometricEnabled ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      _biometricEnabled ? 'চালু আছে' : 'বন্ধ আছে',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _biometricEnabled ? const Color(0xFF065F46) : const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-              if (!_biometricEnabled)
-                InkWell(
-                  onTap: () => _handleBiometricToggle(true),
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2E7D32).withOpacity(0.25),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              InkWell(
+                onTap: () => _handleBiometricToggle(!_biometricEnabled),
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _biometricEnabled
+                          ? const [Color(0xFFF43F5E), Color(0xFFFB923C)]
+                          : const [Color(0xFF0D9488), Color(0xFF059669)],
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.fingerprint_rounded, color: Colors.white, size: 15),
-                        SizedBox(width: 6),
-                        Text(
-                          'চালু করুন',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_biometricEnabled
+                                ? const Color(0xFFF43F5E)
+                                : const Color(0xFF0D9488))
+                            .withOpacity(0.28),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _biometricEnabled ? Icons.power_settings_new_rounded : Icons.fingerprint_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _biometricEnabled ? 'বন্ধ করুন' : 'চালু করুন',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
         ],
