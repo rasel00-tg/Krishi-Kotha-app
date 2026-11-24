@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/widgets/custom_app_bar.dart';
-import '../../core/widgets/app_unified_dialog.dart';
+import '../../global_popup/global_popup.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/biometric_auth_service.dart';
 import '../../providers/auth_provider.dart';
@@ -91,10 +91,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final isGuest = activeUid.isEmpty || activeUid.startsWith('guest_');
       if (isGuest) {
         setState(() => _biometricEnabled = false);
-        await AppUnifiedDialog.showWarning(
+        await GlobalPopup.showNotice(
           context,
           title: 'লগইন প্রয়োজন',
-          message: 'বায়োমেট্রিক লগইন সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।',
+          message: 'বায়োমেট্রিক লগইন চালু করতে প্রথমে আপনার একাউন্টে লগইন করুন।',
           buttonText: 'বুঝেছি',
         );
         return;
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final isSupported = await BiometricAuthService.isDeviceBiometricAvailable();
       if (!isSupported && mounted) {
         setState(() => _biometricEnabled = false);
-        await AppUnifiedDialog.showWarning(
+        await GlobalPopup.showNotice(
           context,
           title: 'ডিভাইস অসঙ্গতি',
           message: 'আপনার ডিভাইসে বায়োমেট্রিক বা স্ক্রিন লক সেট করা নেই। অনুগ্রহ করে ফোনের সেটিংস থেকে ফিঙ্গারপ্রিন্ট বা স্ক্রিন লক চালু করুন।',
@@ -139,16 +139,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
         setState(() => _biometricEnabled = true);
         if (mounted) {
-          await AppUnifiedDialog.showSuccess(
+          await GlobalPopup.showNotice(
             context,
             title: 'সফল হয়েছে!',
-            message: 'বায়োমেট্রিক সফলভাবে সেট করা হয়েছে!',
+            message: 'বায়োমেট্রিক লগইন সফলভাবে চালু হয়েছে!',
             buttonText: 'ঠিক আছে',
           );
         }
       } else {
         setState(() => _biometricEnabled = false);
-        await AppUnifiedDialog.showWarning(
+        await GlobalPopup.showNotice(
           context,
           title: 'বায়োমেট্রিক যাচাই ব্যর্থ',
           message: verifyRes.errorMessage ?? 'বায়োমেট্রিক যাচাইকরণ সম্পন্ন হয়নি।',
@@ -156,23 +156,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     } else {
-      // ৩. ইউজার সুইচ অফ করতে চাইলে কনফার্মেশন ডায়ালগ
-      final confirmed = await AppUnifiedDialog.showConfirmation(
+      // ৩. ইউজার সুইচ অফ করতে চাইলে GlobalPopup কনফার্মেশন ডায়ালগ
+      final confirmed = await GlobalPopup.showConfirm(
         context,
-        title: 'ফিঙ্গারপ্রিন্ট বন্ধ করবেন?',
-        message: 'আপনি কি নিশ্চিত যে ফিঙ্গারপ্রিন্ট লগইন ফিচারটি নিষ্ক্রিয় করতে চান?',
+        title: 'বায়োমেট্রিক বন্ধ করবেন?',
+        message: 'আপনি কি নিশ্চিত যে বায়োমেট্রিক লগইন ফিচারটি বন্ধ করতে চান?',
         confirmText: 'হ্যাঁ, বন্ধ করুন',
         cancelText: 'বাতিল',
       );
 
-      if (confirmed && mounted) {
+      if (confirmed == true && mounted) {
         await BiometricAuthService.disableBiometrics();
         setState(() => _biometricEnabled = false);
         if (mounted) {
-          await AppUnifiedDialog.showSuccess(
+          await GlobalPopup.showNotice(
             context,
-            title: 'নিষ্ক্রিয় হয়েছে',
-            message: 'ফিঙ্গারপ্রিন্ট লগইন সফলভাবে বন্ধ করা হয়েছে।',
+            title: 'বায়োমেট্রিক বন্ধ',
+            message: 'বায়োমেট্রিক লগইন বন্ধ করা হয়েছে।',
             buttonText: 'ঠিক আছে',
           );
         }

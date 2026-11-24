@@ -19820,6 +19820,48 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
       openEditProfilePage();
     }
 
+    function getBiometricActiveUser() {
+      try {
+        if (window.currentUser && window.currentUser.uid && !String(window.currentUser.uid).startsWith('guest_')) {
+          return window.currentUser;
+        }
+        if (typeof getWebActiveUserData === 'function') {
+          const active = getWebActiveUserData();
+          if (active && active.uid && !String(active.uid).startsWith('guest_')) {
+            try {
+              const cachedRaw = localStorage.getItem('krishi_kotha_cached_user');
+              if (cachedRaw) {
+                return { ...JSON.parse(cachedRaw), ...active };
+              }
+            } catch (_) {}
+            return active;
+          }
+        }
+        const cachedRaw = localStorage.getItem('krishi_kotha_cached_user');
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          const uid = parsed ? (parsed.uid || parsed.id) : null;
+          if (uid && !String(uid).startsWith('guest_')) {
+            return { ...parsed, uid: String(uid) };
+          }
+        }
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+          const fbU = firebase.auth().currentUser;
+          if (fbU && !fbU.isAnonymous && fbU.uid) {
+            return {
+              uid: fbU.uid,
+              name: fbU.displayName || 'কৃষক',
+              email: fbU.email || '',
+              phone: fbU.phoneNumber || ''
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('getBiometricActiveUser notice:', e);
+      }
+      return null;
+    }
+
     function updateBiometricStatusInSettings() {
       const isEnabled = localStorage.getItem('kk_biometric_enabled') === 'true' ||
                         localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
@@ -19834,7 +19876,7 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
           badge.innerHTML = `
             <div style="display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; border: 1px solid #81C784; padding: 4px 10px; border-radius: 20px;">
               <i class="fa-solid fa-circle-check" style="color: #2E7D32; font-size: 13px;"></i>
-              <span style="font-size: 12px; font-weight: 700; color: #1B5E20;">সেট করা আছে</span>
+              <span style="font-size: 12px; font-weight: 700; color: #1B5E20;">চালু আছে</span>
             </div>
           `;
         } else {
@@ -19847,7 +19889,18 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
         }
       }
       if (actionBtn) {
-        actionBtn.style.display = isEnabled ? 'none' : 'flex';
+        actionBtn.style.display = 'flex';
+        if (isEnabled) {
+          actionBtn.setAttribute('onclick', 'handleBiometricToggleWeb(false)');
+          actionBtn.style.background = '#ECEFF1';
+          actionBtn.style.color = '#37474F';
+          actionBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> <span>বন্ধ করুন</span>';
+        } else {
+          actionBtn.setAttribute('onclick', 'handleBiometricToggleWeb(true)');
+          actionBtn.style.background = '#2E7D32';
+          actionBtn.style.color = '#FFFFFF';
+          actionBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> <span>চালু করুন</span>';
+        }
       }
       if (card) {
         card.style.borderColor = isEnabled ? '#81C784' : '#E2E8E2';
@@ -19963,93 +20016,125 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
 
     async function handleBiometricToggleWeb(enable) {
       const bioToggle = document.getElementById('settingsBiometricToggle');
-      if (enable) {
-        // Unified active user resolution (same source as Agri Reminder & Irrigation Tracker)
-        const activeUser = (typeof getWebActiveUserData === 'function') ? getWebActiveUserData() : null;
-        let resolvedUser = null;
-
-        if (currentUser && currentUser.uid && !String(currentUser.uid).startsWith('guest_')) {
-          resolvedUser = currentUser;
-        } else if (activeUser && activeUser.uid && !String(activeUser.uid).startsWith('guest_')) {
-          try {
-            const cachedRaw = localStorage.getItem('krishi_kotha_cached_user');
-            resolvedUser = cachedRaw ? { ...JSON.parse(cachedRaw), ...activeUser } : activeUser;
-          } catch (_) {
-            resolvedUser = activeUser;
+      try {
+        if (enable) {
+          const resolvedUser = getBiometricActiveUser();
+          if (!resolvedUser || !resolvedUser.uid || String(resolvedUser.uid).startsWith('guest_')) {
+            if (bioToggle) bioToggle.checked = false;
+            showGlobalPopup({
+              title: 'লগইন প্রয়োজন',
+              message: 'বায়োমেট্রিক লগইন চালু করতে প্রথমে আপনার একাউন্টে লগইন করুন।',
+              btnText: 'ঠিক আছে'
+            });
+            return;
           }
-        }
 
-        if (!resolvedUser || !resolvedUser.uid || String(resolvedUser.uid).startsWith('guest_')) {
-          showWarningDialog('বায়োমেট্রিক সক্রিয় করতে প্রথমে আপনার আসল কৃষক একাউন্টে লগইন করুন।', 'লগইন প্রয়োজন');
-          if (bioToggle) bioToggle.checked = false;
-          return;
-        }
+          if (typeof showGlobalLoading === 'function') showGlobalLoading('বায়োমেট্রিক যাচাই হচ্ছে...');
+          const verifyRes = await verifyWebDeviceBiometric(true, resolvedUser);
+          if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
 
-        const verifyRes = await verifyWebDeviceBiometric(true, resolvedUser);
-        if (!verifyRes.success) {
-          if (bioToggle) bioToggle.checked = false;
-          showWarningDialog('বায়োমেট্রিক যাচাইকরণ বাতিল বা ব্যর্থ হয়েছে।', 'যাচাই ব্যর্থ');
-          return;
-        }
+          if (!verifyRes || !verifyRes.success) {
+            if (bioToggle) bioToggle.checked = false;
+            showGlobalPopup({
+              title: 'যাচাই ব্যর্থ',
+              message: 'ডিভাইসে বায়োমেট্রিক সাপোর্ট/সেটআপ পাওয়া যায়নি অথবা যাচাইকরণ বাতিল করা হয়েছে।',
+              btnText: 'বুঝেছি'
+            });
+            return;
+          }
 
-        localStorage.setItem('kk_biometric_enabled', 'true');
-        localStorage.setItem('kk_biometric_creds', JSON.stringify(resolvedUser));
-        localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
-        localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(resolvedUser));
-        updateBiometricStatusInSettings();
-        showSuccessDialog('বায়োমেট্রিক সক্রিয় হয়েছে!', 'বায়োমেট্রিক সফলভাবে সেট করা হয়েছে!');
-      } else {
-        const confirmDeactivate = confirm('আপনি কি সত্যিই বায়োমেট্রিক লগইন বন্ধ করতে চান?');
-        if (confirmDeactivate) {
+          localStorage.setItem('kk_biometric_enabled', 'true');
+          localStorage.setItem('kk_biometric_creds', JSON.stringify(resolvedUser));
+          localStorage.setItem('krishi_kotha_biometric_enabled', 'true');
+          localStorage.setItem('krishi_kotha_biometric_user', JSON.stringify(resolvedUser));
+          updateBiometricStatusInSettings();
+          showGlobalPopup({
+            title: 'সফল হয়েছে!',
+            message: 'বায়োমেট্রিক লগইন সফলভাবে চালু হয়েছে!',
+            btnText: 'ঠিক আছে'
+          });
+        } else {
           localStorage.setItem('kk_biometric_enabled', 'false');
           localStorage.removeItem('kk_biometric_creds');
           localStorage.removeItem('kk_webauthn_cred_id');
           localStorage.setItem('krishi_kotha_biometric_enabled', 'false');
           localStorage.removeItem('krishi_kotha_biometric_user');
           updateBiometricStatusInSettings();
-          showWarningDialog('বায়োমেট্রিক লগইন নিষ্ক্রিয় করা হয়েছে।', 'বায়োমেট্রিক বন্ধ');
-        } else {
-          if (bioToggle) bioToggle.checked = true;
+          showGlobalPopup({
+            title: 'বায়োমেট্রিক বন্ধ',
+            message: 'বায়োমেট্রিক লগইন বন্ধ করা হয়েছে।',
+            btnText: 'ঠিক আছে'
+          });
         }
+      } catch (err) {
+        if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+        if (bioToggle) bioToggle.checked = !enable;
+        console.error('handleBiometricToggleWeb error:', err);
+        showGlobalPopup({
+          title: 'ত্রুটি',
+          message: 'বায়োমেট্রিক সেটিংস আপডেট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+          btnText: 'ঠিক আছে'
+        });
       }
     }
 
     async function handleBiometricLoginWeb() {
-      const isBioEnabled = localStorage.getItem('kk_biometric_enabled') === 'true' ||
-                           localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
-      const bioUserJson = localStorage.getItem('kk_biometric_creds') ||
-                          localStorage.getItem('krishi_kotha_biometric_user');
-
-      if (!isBioEnabled || !bioUserJson) {
-        showWarningDialog(
-          'প্রথমে একবার একাউন্টে লগইন করে সেটিংস থেকে বায়োমেট্রিক লগইন চালু করুন।',
-          'বায়োমেট্রিক লগইন সক্রিয় নেই!',
-          'বুঝেছি'
-        );
-        return;
-      }
-
-      const verifyRes = await verifyWebDeviceBiometric(false, null);
-      if (!verifyRes.success) {
-        showWarningDialog('বায়োমেট্রিক যাচাইকরণ বাতিল বা ব্যর্থ হয়েছে।', 'ভেরিফিকেশন ব্যর্থ');
-        return;
-      }
-
       try {
+        const isBioEnabled = localStorage.getItem('kk_biometric_enabled') === 'true' ||
+                             localStorage.getItem('krishi_kotha_biometric_enabled') === 'true';
+        const bioUserJson = localStorage.getItem('kk_biometric_creds') ||
+                            localStorage.getItem('krishi_kotha_biometric_user');
+
+        if (!isBioEnabled || !bioUserJson) {
+          showGlobalPopup({
+            title: 'বায়োমেট্রিক লগইন সক্রিয় নেই!',
+            message: 'প্রথমে একবার লগইন করে সেটিংস থেকে বায়োমেট্রিক চালু করুন।',
+            btnText: 'বুঝেছি'
+          });
+          return;
+        }
+
+        if (typeof showGlobalLoading === 'function') showGlobalLoading('বায়োমেট্রিক যাচাই হচ্ছে...');
+        const verifyRes = await verifyWebDeviceBiometric(false, null);
+        if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+
+        if (!verifyRes || !verifyRes.success) {
+          showGlobalPopup({
+            title: 'ভেরিফিকেশন ব্যর্থ',
+            message: 'বায়োমেট্রিক যাচাইকরণ বাতিল বা ব্যর্থ হয়েছে।',
+            btnText: 'ঠিক আছে'
+          });
+          return;
+        }
+
+        if (typeof showGlobalLoading === 'function') showGlobalLoading('লগইন হচ্ছে...');
         const u = JSON.parse(bioUserJson);
         if (typeof validateUserAccountStatusWeb === 'function') {
           const isValid = await validateUserAccountStatusWeb(u);
-          if (!isValid) return;
+          if (!isValid) {
+            if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+            return;
+          }
         }
-        currentUser = u;
         window.currentUser = u;
         localStorage.setItem('krishi_kotha_cached_user', JSON.stringify(u));
         if (typeof applyUserToUI === 'function') applyUserToUI(u);
         if (typeof checkAuthState === 'function') checkAuthState();
         if (typeof closeAuthModal === 'function') closeAuthModal();
-        showSuccessDialog('লগইন সফল হয়েছে!', 'স্বাগতম, ' + (u.name || 'সম্মানিত কৃষক ভাই') + '!');
+        if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+        showGlobalPopup({
+          title: 'বায়োমেট্রিক লগইন সফল হয়েছে!',
+          message: 'স্বাগতম, ' + (u.name || 'সম্মানিত কৃষক ভাই') + '!',
+          btnText: 'ঠিক আছে'
+        });
       } catch (e) {
-        showWarningDialog('বায়োমেট্রিক দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।', 'ভেরিফিকেশন ব্যর্থ');
+        if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+        console.error('handleBiometricLoginWeb error:', e);
+        showGlobalPopup({
+          title: 'ভেরিফিকেশন ব্যর্থ',
+          message: 'বায়োমেট্রিক দিয়ে লগইন করা যায়নি। দয়া করে পাসওয়ার্ড দিয়ে প্রবেশ করুন।',
+          btnText: 'ঠিক আছে'
+        });
       }
     }
 
