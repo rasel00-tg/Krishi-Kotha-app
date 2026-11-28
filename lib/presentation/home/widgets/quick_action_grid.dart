@@ -1,4 +1,5 @@
 import '../agri_reminder_screen.dart';
+import '../agri_office_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
@@ -547,14 +548,14 @@ class QuickActionGrid extends StatelessWidget {
         icon: Icons.location_city_rounded,
         color: const Color(0xFF1565C0),
         bgColor: const Color(0xFFE3F2FD),
-        onTap: () => _openServiceDetail(
-          context,
-          serviceId: 'agri_office',
-          title: 'কৃষি অফিস',
-          icon: Icons.location_city_rounded,
-          color: const Color(0xFF1565C0),
-          bgColor: const Color(0xFFE3F2FD),
-        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AgriOfficeMapScreen(),
+            ),
+          );
+        },
       ),
       // ৬. সেচ ট্র্যাকার
       QuickActionItem(

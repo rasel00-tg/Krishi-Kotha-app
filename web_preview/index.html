@@ -18,6 +18,8 @@
     href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;600;700&family=Tiro+Bangla:ital,wght@0,400;0,700;1,400&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Firebase Web SDK (v10 compat) for Live Firestore Synchronization & Authentication -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -2492,7 +2494,7 @@
             <span>বীজের তথ্য</span>
           </div>
           <!-- ৫. কৃষি অফিস -->
-          <div class="quick-card" onclick="openServiceModal('agri_office')">
+          <div class="quick-card" onclick="openAgriOfficePage()">
             <div class="quick-icon-wrap" style="background: #E3F2FD; color: #1565C0;">
               <i class="fa-solid fa-building-flag"></i>
             </div>
@@ -3776,6 +3778,81 @@
       </div>
       <div id="cropPreservationDetailContent" style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
         <!-- Dynamically rendered detailed body -->
+      </div>
+    </div>
+
+    <!-- DEDICATED FULL SCREEN AGRI OFFICE MAP PAGE -->
+    <div class="full-screen-page" id="agriOfficePage"
+      style="background: #F7FAF7; z-index: 100010; overflow: hidden; display: none; flex-direction: column;">
+      <!-- Colored Topbar -->
+      <div
+        style="background: linear-gradient(180deg, #1B5E20 0%, #2E7D32 100%); border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25); padding: 12px 16px 14px 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <button class="topbar-back-btn" onclick="closeAgriOfficePage()"
+            style="background: none; border: none; font-size: 18px; color: #fff; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center;"
+            title="ফিরে যান">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div style="text-align: center; flex: 1;">
+            <h3 style="font-size: 17.5px; font-weight: 700; color: #fff; margin: 0;">কৃষি অফিস</h3>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.88); margin: 2px 0 0 0;">আপনার এলাকার যাচাইকৃত কৃষি অফিসের মানচিত্র</p>
+          </div>
+          <button onclick="refreshWebAgriOfficeGeo()"
+            style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); font-size: 15px; color: #fff; cursor: pointer; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"
+            title="পুনরায় লোড করুন">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+
+        <!-- Compact Cascading Filter Bar -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+          <select id="webOfficeDivFilter" onchange="onWebOfficeDivChange(this.value)"
+            style="width: 100%; padding: 6px 8px; border-radius: 10px; border: none; font-size: 11.5px; font-weight: 600; background: rgba(255,255,255,0.95); color: #1B5E20; outline: none;">
+            <option value="">বিভাগ</option>
+          </select>
+          <select id="webOfficeDistFilter" onchange="onWebOfficeDistChange(this.value)"
+            style="width: 100%; padding: 6px 8px; border-radius: 10px; border: none; font-size: 11.5px; font-weight: 600; background: rgba(255,255,255,0.95); color: #1B5E20; outline: none;">
+            <option value="">জেলা</option>
+          </select>
+          <select id="webOfficeUpaFilter" onchange="onWebOfficeUpaChange(this.value)"
+            style="width: 100%; padding: 6px 8px; border-radius: 10px; border: none; font-size: 11.5px; font-weight: 600; background: rgba(255,255,255,0.95); color: #1B5E20; outline: none;">
+            <option value="all">সব উপজেলা</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px; color: rgba(255,255,255,0.92); font-weight: 600;">
+          <span><i class="fa-solid fa-location-dot"></i> যাচাইকৃত অফিস: <b id="webAgriOfficeCountBadge">0</b> টি</span>
+          <span id="webAgriOfficeLocationStatus" style="font-size: 11px; opacity: 0.9;"></span>
+        </div>
+      </div>
+
+      <!-- Interactive Map Container + Floating Controls -->
+      <div style="position: relative; width: 100%; height: 270px; flex-shrink: 0; border-bottom: 1px solid #D8E4D8;">
+        <div id="webAgriOfficeMap" style="width: 100%; height: 100%; z-index: 1;"></div>
+        <div style="position: absolute; right: 12px; bottom: 14px; z-index: 500; display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" onclick="webOfficeMapZoomIn()" title="জুম ইন"
+            style="width: 36px; height: 36px; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #1B5E20; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">+</button>
+          <button type="button" onclick="webOfficeMapZoomOut()" title="জুম আউট"
+            style="width: 36px; height: 36px; border-radius: 10px; border: 1px solid #CFD8DC; background: #fff; color: #1B5E20; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">-</button>
+          <button type="button" onclick="locateUserOnAgriOfficeMap()" title="আমার বর্তমান অবস্থান"
+            style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #0288D1; color: #fff; font-size: 15px; cursor: pointer; box-shadow: 0 3px 10px rgba(2,136,209,0.35);">
+            <i class="fa-solid fa-location-crosshairs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Office List -->
+      <div id="webAgriOfficeListContainer" style="flex: 1; overflow-y: auto; padding: 14px 16px 24px 16px;">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+
+    <!-- AGRI OFFICE DETAIL SLIDE-UP CARD (Z-INDEX 99999) -->
+    <div class="modal-overlay" id="webAgriOfficeDetailModal" onclick="closeWebAgriOfficeDetail()"
+      style="display: none; align-items: flex-end; justify-content: center; z-index: 99999 !important; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);">
+      <div class="modal-box" onclick="event.stopPropagation()"
+        style="width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 20px 20px 26px 20px; background: #ffffff; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); box-sizing: border-box;">
+        <div style="width: 42px; height: 4px; background: #CFD8DC; border-radius: 4px; margin: 0 auto 14px auto;"></div>
+        <div id="webAgriOfficeDetailBody"></div>
       </div>
     </div>
 
@@ -24958,6 +25035,494 @@ ${webSelectedDiseaseFile ? `- ব্যবহারকারী একটি ছ
     window.setCustomTimePeriod = setCustomTimePeriod;
     window.quickSelectTime = quickSelectTime;
     window.confirmCustomTimePicker = confirmCustomTimePicker;
+
+    // =========================================================================
+    // BD GEO API v2.0 + BANGLADESH AGRI OFFICE MAP MODULE (Web Preview)
+    // =========================================================================
+    window.BdGeoApi = (function() {
+      const BASE_URL = 'https://bdapis.pro.bd/geo/v2.0';
+      const TTL_MS = 7 * 24 * 60 * 60 * 1000;
+      const PREFIX = 'kk_web_geo_v2_';
+      const mem = {};
+
+      async function fetchCached(key, path, forceRefresh = false) {
+        if (!forceRefresh && mem[key]) return mem[key];
+        let stale = null;
+        try {
+          const raw = localStorage.getItem(PREFIX + key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+              stale = parsed.items;
+              if (!forceRefresh && parsed.ts && (Date.now() - parsed.ts < TTL_MS)) {
+                mem[key] = parsed.items;
+                return parsed.items;
+              }
+            }
+          }
+        } catch (_) {}
+
+        try {
+          const res = await fetch(BASE_URL + path);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const json = await res.json();
+          const list = (json && Array.isArray(json.data)) ? json.data : (Array.isArray(json) ? json : []);
+          const normalized = list.map(item => ({
+            id: String(item.id || '').trim(),
+            name: String(item.name || '').trim(),
+            bn_name: String(item.bn_name || item.name || '').trim()
+          })).filter(x => x.id);
+          if (normalized.length > 0) {
+            mem[key] = normalized;
+            try {
+              localStorage.setItem(PREFIX + key, JSON.stringify({ ts: Date.now(), items: normalized }));
+            } catch (_) {}
+            return normalized;
+          }
+        } catch (err) {
+          console.warn('Web BdGeoApi fetch error:', path, err);
+          if (stale) {
+            mem[key] = stale;
+            return stale;
+          }
+          throw err;
+        }
+        return stale || [];
+      }
+
+      return {
+        getDivisions: (f) => fetchCached('divisions', '/divisions', f),
+        getAllDistricts: (f) => fetchCached('districts_all', '/districts', f),
+        getDistricts: (divId, f) => divId ? fetchCached('districts_' + divId, '/districts/' + encodeURIComponent(divId), f) : fetchCached('districts_all', '/districts', f),
+        getUpazilas: (distId, f) => distId ? fetchCached('upazilas_' + distId, '/upazilas/' + encodeURIComponent(distId), f) : Promise.resolve([]),
+        getUnions: (upaId, f) => upaId ? fetchCached('unions_' + upaId, '/unions/' + encodeURIComponent(upaId), f) : Promise.resolve([])
+      };
+    })();
+
+    let webAgriOfficeMap = null;
+    let webAgriOfficeMarkersLayer = null;
+    let webAgriOfficeUserMarker = null;
+    let webAgriOfficeUnsub = null;
+    let webAgriOfficeDistrictList = [];
+    let webAgriOfficeUserPos = null;
+    let webAgriOfficeSelectedDistId = '';
+    let webAgriOfficeSelectedUpaId = 'all';
+
+    function calcHaversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    async function openAgriOfficePage() {
+      const page = document.getElementById('agriOfficePage');
+      if (page) {
+        page.classList.add('active');
+        page.style.display = 'flex';
+        page.style.pointerEvents = 'auto';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'none';
+
+      initWebAgriOfficeMap();
+      await initWebAgriOfficeFiltersFromProfile(false);
+    }
+
+    function closeAgriOfficePage() {
+      const page = document.getElementById('agriOfficePage');
+      if (page) {
+        page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.pointerEvents = 'none';
+      }
+      const bNav = document.querySelector('.bottom-nav');
+      if (bNav) bNav.style.display = 'flex';
+      closeWebAgriOfficeDetail();
+      if (webAgriOfficeUnsub) {
+        try { webAgriOfficeUnsub(); } catch (_) {}
+        webAgriOfficeUnsub = null;
+      }
+    }
+
+    function initWebAgriOfficeMap() {
+      const mapEl = document.getElementById('webAgriOfficeMap');
+      if (!mapEl || typeof L === 'undefined') return;
+      if (!webAgriOfficeMap) {
+        webAgriOfficeMap = L.map('webAgriOfficeMap', { zoomControl: false }).setView([23.685, 90.3563], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(webAgriOfficeMap);
+        webAgriOfficeMarkersLayer = L.layerGroup().addTo(webAgriOfficeMap);
+      }
+      setTimeout(() => {
+        if (webAgriOfficeMap) webAgriOfficeMap.invalidateSize();
+      }, 220);
+    }
+
+    function webOfficeMapZoomIn() {
+      if (webAgriOfficeMap) webAgriOfficeMap.zoomIn();
+    }
+
+    function webOfficeMapZoomOut() {
+      if (webAgriOfficeMap) webAgriOfficeMap.zoomOut();
+    }
+
+    function locateUserOnAgriOfficeMap() {
+      if (!navigator.geolocation) {
+        showGlobalPopup({ title: 'জিপিএস অনুপলব্ধ', message: 'আপনার ব্রাউজার বা ডিভাইসে লোকেশন সেবা পাওয়া যায়নি।', btnText: 'ঠিক আছে' });
+        return;
+      }
+      if (typeof showGlobalLoading === 'function') showGlobalLoading('আপনার অবস্থান শনাক্ত হচ্ছে...');
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          webAgriOfficeUserPos = { lat, lng };
+          if (webAgriOfficeMap && typeof L !== 'undefined') {
+            if (webAgriOfficeUserMarker) webAgriOfficeMap.removeLayer(webAgriOfficeUserMarker);
+            webAgriOfficeUserMarker = L.circleMarker([lat, lng], {
+              radius: 9,
+              fillColor: '#0288D1',
+              color: '#ffffff',
+              weight: 3,
+              opacity: 1,
+              fillOpacity: 0.95
+            }).addTo(webAgriOfficeMap).bindPopup('<b>আপনার বর্তমান অবস্থান</b>');
+            webAgriOfficeMap.flyTo([lat, lng], 12);
+          }
+          renderWebAgriOfficeListAndPins();
+        },
+        err => {
+          if (typeof hideGlobalLoading === 'function') hideGlobalLoading();
+          showGlobalPopup({
+            title: 'লোকেশন অনুমতি প্রয়োজন',
+            message: 'আপনার নিকটস্থ কৃষি অফিসের দূরত্ব দেখতে ব্রাউজারে লোকেশন (GPS) অনুমতি চালু করুন।',
+            btnText: 'ঠিক আছে'
+          });
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    async function refreshWebAgriOfficeGeo() {
+      await initWebAgriOfficeFiltersFromProfile(true);
+    }
+
+    async function initWebAgriOfficeFiltersFromProfile(forceRefresh = false) {
+      const container = document.getElementById('webAgriOfficeListContainer');
+      if (container) {
+        container.innerHTML = `<div style="text-align: center; padding: 36px 16px; color: #546E7A;"><div style="display:inline-block;width:30px;height:30px;border:3px solid #C8E6C9;border-top-color:#2E7D32;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:10px;"></div><div style="font-size:13px;">জেলা ও কৃষি অফিস লোড হচ্ছে...</div></div>`;
+      }
+
+      try {
+        const [divs, allDists] = await Promise.all([
+          window.BdGeoApi.getDivisions(forceRefresh),
+          window.BdGeoApi.getAllDistricts(forceRefresh)
+        ]);
+
+        const divSel = document.getElementById('webOfficeDivFilter');
+        if (divSel) {
+          divSel.innerHTML = '<option value="">সকল বিভাগ</option>' +
+            divs.map(d => `<option value="${d.id}">${d.bn_name}</option>`).join('');
+        }
+
+        // Auto-detect from active user profile
+        let profDiv = '';
+        let profDist = '';
+        let profUpa = '';
+        try {
+          const u = (typeof getBiometricActiveUser === 'function') ? getBiometricActiveUser() : null;
+          if (u) {
+            profDiv = (u.division || u.divisionBnName || '').toString().trim();
+            profDist = (u.district || u.rawDistrict || u.districtBnName || '').toString().trim();
+            profUpa = (u.upazila || u.upazilaBnName || '').toString().trim();
+          }
+        } catch (_) {}
+
+        let matchedDist = null;
+        if (profDist) {
+          const cleanD = profDist.replace(/জেলা/g, '').trim().toLowerCase();
+          matchedDist = allDists.find(d =>
+            d.bn_name.toLowerCase() === cleanD ||
+            d.name.toLowerCase() === cleanD ||
+            d.bn_name.toLowerCase().includes(cleanD) ||
+            cleanD.includes(d.bn_name.toLowerCase())
+          );
+        }
+
+        // Default to Dhaka (or first available district) if profile has no district
+        if (!matchedDist && allDists.length > 0) {
+          matchedDist = allDists.find(d => d.name.toLowerCase() === 'dhaka') || allDists[0];
+        }
+
+        const distSel = document.getElementById('webOfficeDistFilter');
+        if (distSel) {
+          distSel.innerHTML = allDists.map(d => `<option value="${d.id}">${d.bn_name}</option>`).join('');
+          if (matchedDist) {
+            distSel.value = matchedDist.id;
+            webAgriOfficeSelectedDistId = matchedDist.id;
+          }
+        }
+
+        if (matchedDist) {
+          const upas = await window.BdGeoApi.getUpazilas(matchedDist.id, forceRefresh);
+          const upaSel = document.getElementById('webOfficeUpaFilter');
+          let matchedUpaId = 'all';
+          if (profUpa) {
+            const cleanU = profUpa.replace(/উপজেলা/g, '').trim().toLowerCase();
+            const foundU = upas.find(u =>
+              u.bn_name.toLowerCase() === cleanU ||
+              u.name.toLowerCase() === cleanU ||
+              u.bn_name.toLowerCase().includes(cleanU)
+            );
+            if (foundU) matchedUpaId = foundU.id;
+          }
+          if (upaSel) {
+            upaSel.innerHTML = '<option value="all">সব উপজেলা</option>' +
+              upas.map(u => `<option value="${u.id}">${u.bn_name}</option>`).join('');
+            upaSel.value = matchedUpaId;
+          }
+          webAgriOfficeSelectedUpaId = matchedUpaId;
+          subscribeWebAgriOfficesByDistrict(matchedDist.id);
+        }
+      } catch (err) {
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 32px 16px;">
+              <i class="fa-solid fa-wifi" style="font-size: 30px; color: #E53935; margin-bottom: 10px;"></i>
+              <div style="font-size: 14px; font-weight: 700; color: #37474F;">জিও ডেটা লোড করা যায়নি</div>
+              <button onclick="refreshWebAgriOfficeGeo()" style="margin-top: 12px; background: #2E7D32; color: #fff; border: none; padding: 8px 18px; border-radius: 10px; font-weight: 700; cursor: pointer;">পুনরায় চেষ্টা করুন</button>
+            </div>`;
+        }
+        showGlobalPopup({ title: 'নেটওয়ার্ক ত্রুটি', message: 'বিভাগ/জেলা লোড করা যায়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।', btnText: 'ঠিক আছে' });
+      }
+    }
+
+    async function onWebOfficeDivChange(divId) {
+      try {
+        const dists = await window.BdGeoApi.getDistricts(divId);
+        const distSel = document.getElementById('webOfficeDistFilter');
+        if (distSel && dists.length > 0) {
+          distSel.innerHTML = dists.map(d => `<option value="${d.id}">${d.bn_name}</option>`).join('');
+          await onWebOfficeDistChange(dists[0].id);
+        }
+      } catch (err) {
+        showGlobalPopup({ title: 'ত্রুটি', message: 'জেলা লোড করা যায়নি।', btnText: 'ঠিক আছে' });
+      }
+    }
+
+    async function onWebOfficeDistChange(distId) {
+      if (!distId) return;
+      webAgriOfficeSelectedDistId = String(distId);
+      webAgriOfficeSelectedUpaId = 'all';
+      try {
+        const upas = await window.BdGeoApi.getUpazilas(distId);
+        const upaSel = document.getElementById('webOfficeUpaFilter');
+        if (upaSel) {
+          upaSel.innerHTML = '<option value="all">সব উপজেলা</option>' +
+            upas.map(u => `<option value="${u.id}">${u.bn_name}</option>`).join('');
+        }
+      } catch (_) {}
+      subscribeWebAgriOfficesByDistrict(distId);
+    }
+
+    function onWebOfficeUpaChange(upaId) {
+      webAgriOfficeSelectedUpaId = upaId || 'all';
+      renderWebAgriOfficeListAndPins();
+    }
+
+    function subscribeWebAgriOfficesByDistrict(districtId) {
+      if (!db || !districtId) return;
+      if (webAgriOfficeUnsub) {
+        try { webAgriOfficeUnsub(); } catch (_) {}
+        webAgriOfficeUnsub = null;
+      }
+
+      const container = document.getElementById('webAgriOfficeListContainer');
+      if (container) {
+        container.innerHTML = `<div style="text-align: center; padding: 30px 16px; color: #546E7A;"><div style="display:inline-block;width:28px;height:28px;border:3px solid #C8E6C9;border-top-color:#2E7D32;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px;"></div><div style="font-size:13px;">কৃষি অফিস খোঁজা হচ্ছে...</div></div>`;
+      }
+
+      webAgriOfficeUnsub = db.collection('agriculture_offices')
+        .where('districtId', '==', String(districtId))
+        .limit(50)
+        .onSnapshot(snap => {
+          if (typeof window.logFirestoreRead === 'function') {
+            window.logFirestoreRead('App agriculture_offices (dist ' + districtId + ')', snap.size);
+          }
+          const list = [];
+          snap.forEach(doc => {
+            const d = doc.data() || {};
+            if (d.isActive !== false) {
+              list.push({ id: doc.id, ...d });
+            }
+          });
+          webAgriOfficeDistrictList = list;
+          renderWebAgriOfficeListAndPins();
+        }, err => {
+          console.error('agriculture_offices sync error:', err);
+          if (container) {
+            container.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#D32F2F;font-size:13px;">তথ্য লোড করতে সমস্যা হয়েছে।</div>`;
+          }
+        });
+    }
+
+    function renderWebAgriOfficeListAndPins() {
+      const container = document.getElementById('webAgriOfficeListContainer');
+      const countEl = document.getElementById('webAgriOfficeCountBadge');
+
+      let filtered = webAgriOfficeDistrictList;
+      if (webAgriOfficeSelectedUpaId && webAgriOfficeSelectedUpaId !== 'all') {
+        filtered = filtered.filter(o => String(o.upazilaId) === String(webAgriOfficeSelectedUpaId));
+      }
+
+      if (countEl) countEl.textContent = String(filtered.length);
+
+      // Update Map Pins
+      if (webAgriOfficeMap && webAgriOfficeMarkersLayer && typeof L !== 'undefined') {
+        webAgriOfficeMarkersLayer.clearLayers();
+        const bounds = [];
+        const greenIcon = L.divIcon({
+          className: 'web-agri-green-pin',
+          html: '<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;background:#1B5E20;border:2.5px solid #fff;transform:rotate(-45deg);box-shadow:0 3px 10px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;"><div style="width:9px;height:9px;background:#A5D6A7;border-radius:50%;transform:rotate(45deg);"></div></div>',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30]
+        });
+
+        filtered.forEach(o => {
+          const lat = Number(o.latitude);
+          const lng = Number(o.longitude);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            bounds.push([lat, lng]);
+            const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(webAgriOfficeMarkersLayer);
+            marker.on('click', () => openWebAgriOfficeDetail(o));
+          }
+        });
+
+        if (bounds.length > 0) {
+          webAgriOfficeMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+        }
+      }
+
+      if (!container) return;
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 36px 20px; background: #fff; border-radius: 16px; border: 1px dashed #CFD8DC;">
+            <i class="fa-solid fa-building-circle-exclamation" style="font-size: 36px; color: #90A4AE; margin-bottom: 10px; display: block;"></i>
+            <div style="font-size: 14px; font-weight: 700; color: #37474F;">এই জেলা/উপজেলায় এখনো কোনো যাচাইকৃত কৃষি অফিসের তথ্য যুক্ত করা হয়নি</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(o => {
+        const lat = Number(o.latitude);
+        const lng = Number(o.longitude);
+        let distBadge = '';
+        if (webAgriOfficeUserPos && !isNaN(lat) && !isNaN(lng)) {
+          const km = calcHaversineKm(webAgriOfficeUserPos.lat, webAgriOfficeUserPos.lng, lat, lng);
+          distBadge = `<span style="background:#E1F5FE;color:#0288D1;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;">${km.toFixed(1)} km দূরে</span>`;
+        }
+        const safeId = (o.id || '').replace(/'/g, "\\'");
+        return `
+          <div onclick="focusAndOpenWebOffice('${safeId}')"
+            style="background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid #E2E8E2; box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+              <div style="font-size: 14.5px; font-weight: 700; color: #1B5E20;">${o.officeName || ''}</div>
+              ${distBadge}
+            </div>
+            <div style="margin-bottom: 6px;">
+              <span style="background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">${o.officeType || 'কৃষি অফিস'}</span>
+            </div>
+            <div style="font-size: 12.5px; color: #546E7A; margin-bottom: 8px;">
+              <i class="fa-solid fa-location-dot" style="color:#2E7D32;"></i> ${o.fullAddress || ''}${o.upazilaBnName ? ', ' + o.upazilaBnName : ''}${o.districtBnName ? ', ' + o.districtBnName : ''}
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <a href="tel:${o.phoneNumber || ''}" onclick="event.stopPropagation();"
+                style="flex: 1; text-decoration: none; text-align: center; background: #E8F5E9; color: #1B5E20; padding: 7px 10px; border-radius: 10px; font-size: 12px; font-weight: 700;">
+                <i class="fa-solid fa-phone"></i> ${o.phoneNumber || 'নম্বর নেই'}
+              </a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" onclick="event.stopPropagation();"
+                style="flex: 1; text-decoration: none; text-align: center; background: #00897B; color: #fff; padding: 7px 10px; border-radius: 10px; font-size: 12px; font-weight: 700;">
+                <i class="fa-solid fa-diamond-turn-right"></i> ডিরেকশন
+              </a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function focusAndOpenWebOffice(docId) {
+      const o = webAgriOfficeDistrictList.find(x => x.id === docId);
+      if (!o) return;
+      const lat = Number(o.latitude);
+      const lng = Number(o.longitude);
+      if (webAgriOfficeMap && !isNaN(lat) && !isNaN(lng)) {
+        webAgriOfficeMap.flyTo([lat, lng], 15);
+      }
+      openWebAgriOfficeDetail(o);
+    }
+
+    function openWebAgriOfficeDetail(o) {
+      const modal = document.getElementById('webAgriOfficeDetailModal');
+      const body = document.getElementById('webAgriOfficeDetailBody');
+      if (!modal || !body || !o) return;
+      const lat = Number(o.latitude);
+      const lng = Number(o.longitude);
+      let distHtml = '';
+      if (webAgriOfficeUserPos && !isNaN(lat) && !isNaN(lng)) {
+        const km = calcHaversineKm(webAgriOfficeUserPos.lat, webAgriOfficeUserPos.lng, lat, lng);
+        distHtml = `<div style="font-size:12.5px;font-weight:700;color:#0288D1;margin-bottom:8px;"><i class="fa-solid fa-route"></i> আপনার অবস্থান থেকে ${km.toFixed(1)} km দূরে</div>`;
+      }
+      body.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <h3 style="margin:0;font-size:17px;font-weight:800;color:#1B5E20;">${o.officeName || ''}</h3>
+          <button onclick="closeWebAgriOfficeDetail()" style="background:none;border:none;font-size:20px;color:#78909C;cursor:pointer;">✕</button>
+        </div>
+        <div style="margin-bottom:10px;">
+          <span style="background:#E8F5E9;color:#2E7D32;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:8px;">${o.officeType || 'কৃষি অফিস'}</span>
+        </div>
+        ${distHtml}
+        <div style="font-size:13.5px;color:#37474F;line-height:1.5;margin-bottom:12px;">
+          <i class="fa-solid fa-location-dot" style="color:#2E7D32;"></i> ${o.fullAddress || ''}<br/>
+          <span style="font-size:12px;color:#607D8B;">${o.upazilaBnName || ''}, ${o.districtBnName || ''}, ${o.divisionBnName || ''}</span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <a href="tel:${o.phoneNumber || ''}" style="flex:1;text-decoration:none;text-align:center;background:#E8F5E9;color:#1B5E20;padding:12px;border-radius:12px;font-size:13.5px;font-weight:700;">
+            <i class="fa-solid fa-phone"></i> কল করুন (${o.phoneNumber || 'নেই'})
+          </a>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" style="flex:1;text-decoration:none;text-align:center;background:linear-gradient(135deg,#00897B,#1B5E20);color:#fff;padding:12px;border-radius:12px;font-size:13.5px;font-weight:700;">
+            <i class="fa-solid fa-diamond-turn-right"></i> Get Directions
+          </a>
+        </div>
+      `;
+      modal.classList.add('active');
+      modal.style.setProperty('display', 'flex', 'important');
+    }
+
+    function closeWebAgriOfficeDetail() {
+      const modal = document.getElementById('webAgriOfficeDetailModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    window.openAgriOfficePage = openAgriOfficePage;
+    window.closeAgriOfficePage = closeAgriOfficePage;
+    window.refreshWebAgriOfficeGeo = refreshWebAgriOfficeGeo;
+    window.onWebOfficeDivChange = onWebOfficeDivChange;
+    window.onWebOfficeDistChange = onWebOfficeDistChange;
+    window.onWebOfficeUpaChange = onWebOfficeUpaChange;
+    window.webOfficeMapZoomIn = webOfficeMapZoomIn;
+    window.webOfficeMapZoomOut = webOfficeMapZoomOut;
+    window.locateUserOnAgriOfficeMap = locateUserOnAgriOfficeMap;
+    window.focusAndOpenWebOffice = focusAndOpenWebOffice;
+    window.openWebAgriOfficeDetail = openWebAgriOfficeDetail;
+    window.closeWebAgriOfficeDetail = closeWebAgriOfficeDetail;
 
   </script>
 </body>
